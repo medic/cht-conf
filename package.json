@@ -4,7 +4,7 @@
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt test"
   },
   "bin": {
     "medic-conf": "bin/medic-conf"
@@ -22,5 +22,9 @@
   "dependencies": {
     "pouchdb": "^6.2.0",
     "request-promise-native": "^1.0.4"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-jshint": "^1.1.0"
   }
 }

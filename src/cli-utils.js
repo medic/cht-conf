@@ -10,7 +10,7 @@ module.exports.usage = () => {
 Usage:
 	$0 <projectName> <instanceUrl>
 `);
-}
+};
 
 module.exports.log = (...args) => {
   args.unshift(`[${process.argv[1]}]`);
@@ -19,4 +19,4 @@ module.exports.log = (...args) => {
 
 module.exports.big_log = (...args) => {
   module.exports.log('##', ...args);
-}
+};
