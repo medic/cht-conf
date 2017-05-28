@@ -1,4 +1,5 @@
 const fs = require('./sync-fs');
+const attachmentsFromDir = require('./attachments-from-dir');
 
 const PouchDB = require('pouchdb');
 
@@ -25,46 +26,16 @@ module.exports = (project, couchUrl) => {
         doc.context = properties.context;
         doc.icon = properties.icon;
         if(properties.internalId) {
-          console.log('WARN', 'DEPRECATED', 'Please do not manually set internalId in properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
+          console.log('WARN', 'DEPRECATED', 'Form:', name, 'Please do not manually set internalId in properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
           doc.internalId = properties.internalId;
         }
       }
 
-      const attachments = {};
-      fs.readdir(`${formDir}`)
-        .filter(name => name !== 'properties.json')
-        .forEach(fileName => {
-          const filePath = `${formDir}/${fileName}`;
-          const data = fs.readBinary(filePath);
-          const mime = mimeTypeFor(fileName);
-          attachments[fileName] = {
-            content_type: mime,
-            data: new Buffer(data),
-          };
+      const xml = fs.read(`${formDir}/xml`);
+      doc.title = xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>'));
 
-          if(fileName === 'xml') {
-            // FIXME this is not how to parse XML
-            const xml = fs.read(filePath);
-            const title = xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>'));
-            doc.title = title;
-          }
-        });
-      doc._attachments = attachments;
+      doc._attachments = attachmentsFromDir(formDir);
 
       return db.put(doc);
     }));
 };
-
-function mimeTypeFor(fileName) {
-  const extensionStart = fileName.indexOf('.');
-  const extension = extensionStart === -1 ?
-      fileName :
-      fileName.substring(extensionStart+1);
-
-  switch(extension) {
-    case 'json': return 'application/json';
-    case 'png' : return 'image/png';
-    case 'xml' : return 'application/xml';
-    default: throw new Error(`Unrecongised file extension: ${extension}`);
-  }
-}

@@ -9,6 +9,7 @@ const uploadAppSettings = require('../src/upload-app-settings');
 const backupForms = require('../src/backup-forms');
 const deleteForms = require('../src/delete-forms');
 const uploadForms = require('../src/upload-forms');
+const uploadResources = require('../src/upload-resources');
 
 if(process.argv.length < 4) {
   usage();
@@ -47,6 +48,10 @@ Promise.resolve()
   .then(() => big_log('Uploading forms...'))
   .then(() => uploadForms(project, couchUrl))
   .then(() => big_log('Form upload complete.'))
+
+  .then(() => big_log('Uploading resources...'))
+  .then(() => uploadResources(project, couchUrl))
+  .then(() => big_log('Resources upload complete.'))
 
   .then(() => big_log('Project configuration upload complete.'))
 
