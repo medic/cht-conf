@@ -20,13 +20,13 @@ module.exports = (project, couchUrl) => {
 
       const doc = { _id: `form:${name}`, type:'form' };
 
-      const propertiesPath = `${formDir}/properties.json`;
+      const propertiesPath = `${dir}/${name}.properties.json`;
       if(fs.exists(propertiesPath)) {
         const properties = fs.readJson(propertiesPath);
         doc.context = properties.context;
         doc.icon = properties.icon;
         if(properties.internalId) {
-          console.log('WARN', 'DEPRECATED', 'Form:', name, 'Please do not manually set internalId in properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
+          console.log('WARN', 'DEPRECATED', 'Form:', name, 'Please do not manually set internalId in .properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
           doc.internalId = properties.internalId;
         }
       }
