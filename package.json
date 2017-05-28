@@ -1,0 +1,23 @@
+{
+  "name": "medic-configurer",
+  "version": "1.0.0",
+  "description": "Configure Medic Mobile deployments",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/alxndrsn/medic-configurer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alxndrsn/medic-configurer/issues"
+  },
+  "homepage": "https://github.com/alxndrsn/medic-configurer#readme",
+  "dependencies": {
+    "pouchdb": "^6.2.0",
+    "request-promise-native": "^1.0.4"
+  }
+}
