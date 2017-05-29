@@ -1,4 +1,5 @@
-const big_log = require('./utils').big_log;
+const big_log = (...args) => { require('../lib/log')('!!', ...args); };
+
 const compileAppSettings = require('../fn/compile-app-settings');
 const backupAppSettings = require('../fn/backup-app-settings');
 const uploadAppSettings = require('../fn/upload-app-settings');

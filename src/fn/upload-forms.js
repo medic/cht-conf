@@ -1,6 +1,6 @@
 const fs = require('../lib/sync-fs');
 const attachmentsFromDir = require('../lib/attachments-from-dir');
-const warn = require('../cli/utils').warn;
+const warn = require('../lib/log').warn;
 
 const PouchDB = require('pouchdb');
 

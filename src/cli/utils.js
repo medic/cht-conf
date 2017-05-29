@@ -11,12 +11,3 @@ Usage:
 	$0 <projectName> <instanceUrl>
 `);
 };
-
-module.exports.log = (...args) => logAtLevel('INFO', ...args);
-module.exports.warn = (...args) => logAtLevel('WARN', ...args);
-module.exports.big_log = (...args) => module.exports.log('!!', ...args);
-
-function logAtLevel(level, ...args) {
-  args.unshift(level);
-  console.log.apply(console.log, args);
-}
