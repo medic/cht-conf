@@ -11,11 +11,11 @@ Medic Project Configurer
 
 ## Upload all config
 
-	medic-config lg-uganda http://admin:pass@localhost:5984
+	medic-config example-project http://admin:pass@localhost:5984
 
 ## Perform specific action
 
-	medic-config <action> lg-uganda http://admin:pass@localhost:5984
+	medic-config <action> example-project http://admin:pass@localhost:5984
 
 The list of available actions can be seen in [`supported-actions.js`](https://github.com/alxndrsn/medic-configurer/blob/master/src/cli/supported-actions.js).
 
@@ -23,7 +23,7 @@ The list of available actions can be seen in [`supported-actions.js`](https://gi
 
 This tool expects a project to be sctructured as follows:
 
-	/
+	example-project/
 		app_settings.json
 		contact-summary.json
 		nools.json
