@@ -30,7 +30,7 @@ This tool expects a project to be sctructured as follows:
 			contact:person:create.xlsx
 			…
 			my_project_form.xlsx
-			my_project_form.json
+			my_project_form.properties.json
 			my_project_form/
 				xml
 				…
