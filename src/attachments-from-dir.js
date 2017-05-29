@@ -1,9 +1,8 @@
 const fs = require('./sync-fs');
 
-module.exports = (dir, ...ignore) => {
+module.exports = dir => {
   const attachments = {};
   fs.readdir(dir)
-    .filter(name => !ignore || !ignore.includes(name))
     .forEach(fileName => {
       const filePath = `${dir}/${fileName}`;
       const data = fs.readBinary(filePath);
