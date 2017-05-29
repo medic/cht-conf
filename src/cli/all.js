@@ -8,12 +8,10 @@ const deleteForms = require('../fn/delete-forms');
 const uploadForms = require('../fn/upload-forms');
 const uploadResources = require('../fn/upload-resources');
 
-module.exports = (project, instanceUrl) => {
-  const couchUrl = `${instanceUrl}/medic`;
-
+module.exports = (project, couchUrl) => {
   return Promise.resolve()
 
-    .then(() => big_log(`Uploading project configuration for ${project} to ${instanceUrl}...`))
+    .then(() => big_log(`Uploading project configuration for ${project} to ${couchUrl}...`))
 
     .then(() => big_log('Compiling app settings...'))
     .then(() => compileAppSettings(project))

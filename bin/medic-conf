@@ -9,5 +9,7 @@ if(process.argv.length < 4) {
 
 const project = process.argv[2];
 const instanceUrl = process.argv[3];
+const couchUrl = `${instanceUrl}/medic`;
 
-require('../src/cli/all.js')(project, instanceUrl);
+
+require('../src/cli/all.js')(project, couchUrl);
