@@ -31,7 +31,7 @@ This tool expects a project to be sctructured as follows:
 		resources/
 			icon-one.png
 			…
-		schedules.json
+		tasks.json
 		targets.json
 		forms/
 			contact:person:create.xlsx

@@ -10,7 +10,7 @@ module.exports = (project /*, couchUrl */) => {
         'app_settings.json',
         'contact-summary.js',
         'nools.js',
-        'schedules.json',
+        'tasks.json',
         'targets.json',
       ].forEach(f => files[simple(f)] = readProjectFile(f));
 
@@ -20,7 +20,7 @@ module.exports = (project /*, couchUrl */) => {
 
       app_settings.tasks = {
         rules: cleanJs(files.nools),
-        schedules: JSON.parse(files.schedules),
+        schedules: JSON.parse(files.tasks),
         targets: JSON.parse(files.targets),
       };
 
