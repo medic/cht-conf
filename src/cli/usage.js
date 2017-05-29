@@ -1,4 +1,4 @@
-module.exports.usage = () => {
+module.exports = () => {
   console.log(`
 # This script will update and upload all of a particular project configuration
 # to a particular instance.
