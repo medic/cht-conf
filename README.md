@@ -37,6 +37,28 @@ This tool expects a project to be sctructured as follows:
 			…
 
 
+# Currently supported
+
+## App Settings
+
+* compile from:
+  - tasks
+  - rules
+  - schedules
+  - contact-summary
+* backup from server
+* upload to server
+
+## Forms
+
+* backup from server
+* delete from server
+* upload to server
+
+## Resources
+
+* upload to server
+
 # TODO
 
 * support form XSL -> XML conversion
