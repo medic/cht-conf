@@ -40,3 +40,5 @@ This tool expects a project to be sctructured as follows:
 # TODO
 
 * support form XSL -> XML conversion
+* support uploading translations
+* only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
