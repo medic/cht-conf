@@ -1,4 +1,4 @@
-const fs = require('./sync-fs');
+const fs = require('../lib/sync-fs');
 
 module.exports = project => {
   const readProjectFile = f => fs.read(`${project}/${f}`);

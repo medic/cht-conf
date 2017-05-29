@@ -1,4 +1,4 @@
-const fs = require('./sync-fs');
+const fs = require('../lib/sync-fs');
 const request = require('request-promise-native');
 
 module.exports = (project, couchUrl) => {

@@ -1,7 +1,7 @@
-const fs = require('./sync-fs');
+const fs = require('../lib/sync-fs');
 const request = require('request-promise-native');
 
-const backupFileFor = require('./backup-file-for');
+const backupFileFor = require('../lib/backup-file-for');
 
 module.exports = (project, couchUrl) => {
   return request({

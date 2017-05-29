@@ -1,15 +1,7 @@
 #!/usr/bin/env node
 
-const usage = require('../src/cli-utils').usage;
-const log = require('../src/cli-utils').log;
-const big_log = require('../src/cli-utils').big_log;
-const compileAppSettings = require('../src/compile-app-settings');
-const backupAppSettings = require('../src/backup-app-settings');
-const uploadAppSettings = require('../src/upload-app-settings');
-const backupForms = require('../src/backup-forms');
-const deleteForms = require('../src/delete-forms');
-const uploadForms = require('../src/upload-forms');
-const uploadResources = require('../src/upload-resources');
+const usage = require('../src/cli/utils').usage;
+const log = require('../src/cli/utils').log;
 
 if(process.argv.length < 4) {
   usage();
@@ -18,41 +10,5 @@ if(process.argv.length < 4) {
 
 const project = process.argv[2];
 const instanceUrl = process.argv[3];
-const couchUrl = `${instanceUrl}/medic`;
 
-
-Promise.resolve()
-
-  .then(() => big_log(`Uploading project configuration for ${project} to ${instanceUrl}...`))
-
-  .then(() => big_log('Compiling app settings...'))
-  .then(() => compileAppSettings(project))
-  .then(() => big_log('Tasks updated.'))
-
-  .then(() => big_log('Backing up app_settings...'))
-  .then(() => backupAppSettings(project, couchUrl))
-  .then(() => big_log('App settings backed up.'))
-
-  .then(() => big_log('Uploading app_settings...'))
-  .then(() => uploadAppSettings(project, couchUrl))
-  .then(() => big_log('app_settings upload complete.'))
-
-  .then(() => big_log('Backing up existing forms...'))
-  .then(() => backupForms(project, couchUrl))
-  .then(() => big_log('Forms backed up.'))
-
-  .then(() => big_log('Deleting forms...'))
-  .then(() => deleteForms(couchUrl))
-  .then(() => big_log('Forms deleted.'))
-
-  .then(() => big_log('Uploading forms...'))
-  .then(() => uploadForms(project, couchUrl))
-  .then(() => big_log('Form upload complete.'))
-
-  .then(() => big_log('Uploading resources...'))
-  .then(() => uploadResources(project, couchUrl))
-  .then(() => big_log('Resources upload complete.'))
-
-  .then(() => big_log('Project configuration upload complete.'))
-
-  .catch(console.log);
+require('../src/cli/all.js')(project, instanceUrl);

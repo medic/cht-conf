@@ -1,5 +1,5 @@
-const fs = require('./sync-fs');
-const attachmentsFromDir = require('./attachments-from-dir');
+const fs = require('../lib/sync-fs');
+const attachmentsFromDir = require('../lib/attachments-from-dir');
 
 const PouchDB = require('pouchdb');
 
