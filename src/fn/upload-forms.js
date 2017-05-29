@@ -20,7 +20,11 @@ module.exports = (project, couchUrl) => {
         return Promise.resolve();
       }
 
-      const doc = { _id: `form:${name}`, type:'form' };
+      const doc = {
+        _id: `form:${name}`,
+        type: 'form',
+        internalId: name,
+      };
 
       const propertiesPath = `${dir}/${name}.properties.json`;
       if(fs.exists(propertiesPath)) {
