@@ -1,5 +1,6 @@
 const fs = require('../lib/sync-fs');
 const attachmentsFromDir = require('../lib/attachments-from-dir');
+const warn = require('../cli/utils').warn;
 
 const PouchDB = require('pouchdb');
 
@@ -14,7 +15,7 @@ module.exports = (project, couchUrl) => {
       const formDir = `${dir}/${name}`;
 
       if(!fs.exists(formDir)) {
-        console.log(`No form directory found corresponding to XML ${dir}/${name}`);
+        warn(`No form directory found corresponding to XML ${dir}/${name}`);
         return Promise.resolve();
       }
 
@@ -26,7 +27,7 @@ module.exports = (project, couchUrl) => {
         doc.context = properties.context;
         doc.icon = properties.icon;
         if(properties.internalId) {
-          console.log('WARN', 'DEPRECATED', 'Form:', name, 'Please do not manually set internalId in .properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
+          warn('DEPRECATED', 'Form:', name, 'Please do not manually set internalId in .properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
           doc.internalId = properties.internalId;
         }
       }

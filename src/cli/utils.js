@@ -12,11 +12,11 @@ Usage:
 `);
 };
 
-module.exports.log = (...args) => {
-  args.unshift(`[${process.argv[1]}]`);
-  console.log.apply(console.log, args);
-};
+module.exports.log = (...args) => logAtLevel('INFO', ...args);
+module.exports.warn = (...args) => logAtLevel('WARN', ...args);
+module.exports.big_log = (...args) => module.exports.log('!!', ...args);
 
-module.exports.big_log = (...args) => {
-  module.exports.log('##', ...args);
-};
+function logAtLevel(level, ...args) {
+  args.unshift(level);
+  console.log.apply(console.log, args);
+}
