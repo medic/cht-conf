@@ -7,6 +7,7 @@ const backupForms = require('../fn/backup-forms');
 const deleteForms = require('../fn/delete-forms');
 const uploadForms = require('../fn/upload-forms');
 const uploadResources = require('../fn/upload-resources');
+const uploadCustomTranslations = require('../fn/upload-custom-translations');
 
 module.exports = (project, couchUrl) => {
   return Promise.resolve()
@@ -40,6 +41,10 @@ module.exports = (project, couchUrl) => {
     .then(() => big_log('Uploading resources...'))
     .then(() => uploadResources(project, couchUrl))
     .then(() => big_log('Resources upload complete.'))
+
+    .then(() => big_log('Uploading custom translations...'))
+    .then(() => uploadCustomTranslations(project, couchUrl))
+    .then(() => big_log('Custom translation upload complete.'))
 
     .then(() => big_log('Project configuration upload complete.'))
 

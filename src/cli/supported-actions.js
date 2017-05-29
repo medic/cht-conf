@@ -6,4 +6,5 @@ module.exports = [
   'upload-app-settings',
   'upload-forms',
   'upload-resources',
+  'upload-custom-translations',
 ];
