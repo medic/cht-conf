@@ -3,7 +3,7 @@ const warn = require('../lib/log').warn;
 const PouchDB = require('pouchdb');
 
 const attachmentsFromDir = require('../lib/attachments-from-dir');
-const insertOrUpdate = require('../lib/insert-or-update');
+const insertOrReplace = require('../lib/insert-or-replace');
 
 module.exports = (project, couchUrl) => {
   const db = new PouchDB(couchUrl);
@@ -42,6 +42,6 @@ module.exports = (project, couchUrl) => {
 
       doc._attachments = attachmentsFromDir(formDir);
 
-      return insertOrUpdate(db, doc);
+      return insertOrReplace(db, doc);
     }));
 };
