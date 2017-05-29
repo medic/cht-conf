@@ -1,3 +1,4 @@
+const log = require('../lib/log');
 const fs = require('../lib/sync-fs');
 const PouchDB = require('pouchdb');
 
@@ -5,9 +6,14 @@ const backupFileFor = require('../lib/backup-file-for');
 
 module.exports = (project, couchUrl) => {
   const db = new PouchDB(couchUrl);
+  const parentBackupDir = backupFileFor(project, 'forms');
+
+  log('Backing up forms to:', parentBackupDir);
+  fs.mkdir(parentBackupDir);
 
   function backup(form) {
-    const backupDir = backupFileFor(project, form.id);
+    const backupDir = `${parentBackupDir}/${form.id}`;
+
     fs.mkdir(backupDir);
     db.get(form.id, { attachments:true, binary:true })
       .then(form => {

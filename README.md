@@ -9,8 +9,15 @@ Medic Project Configurer
 
 # Use
 
+## Upload all config
+
 	medic-config lg-uganda http://admin:pass@localhost:5984
 
+## Perform specific action
+
+	medic-config <action> lg-uganda http://admin:pass@localhost:5984
+
+The list of available actions can be seen in [`supported-actions.js`](https://github.com/alxndrsn/medic-configurer/blob/master/src/cli/supported-actions.js).
 
 # Project Layout
 

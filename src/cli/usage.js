@@ -1,3 +1,5 @@
+const supportedActions = require('./supported-actions');
+
 module.exports = () => {
   console.log(`
 # This script will update and upload all of a particular project configuration
@@ -8,6 +10,12 @@ module.exports = () => {
 # structured projects.
 
 Usage:
-	$0 <projectName> <instanceUrl>
+    $0 <projectName> <instanceUrl>
+
+Or:
+    $0 <action> <projectName> <instanceUrl>
+
+Supported actions:
+    * ${supportedActions.join('\n    * ')}
 `);
 };

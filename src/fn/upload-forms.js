@@ -1,8 +1,9 @@
 const fs = require('../lib/sync-fs');
-const attachmentsFromDir = require('../lib/attachments-from-dir');
 const warn = require('../lib/log').warn;
-
 const PouchDB = require('pouchdb');
+
+const attachmentsFromDir = require('../lib/attachments-from-dir');
+const insertOrUpdate = require('../lib/insert-or-update');
 
 module.exports = (project, couchUrl) => {
   const db = new PouchDB(couchUrl);
@@ -37,6 +38,6 @@ module.exports = (project, couchUrl) => {
 
       doc._attachments = attachmentsFromDir(formDir);
 
-      return db.put(doc);
+      return insertOrUpdate(db, doc);
     }));
 };

@@ -14,7 +14,7 @@ module.exports = (project, couchUrl) => {
     .then(() => big_log(`Uploading project configuration for ${project} to ${couchUrl}...`))
 
     .then(() => big_log('Compiling app settings...'))
-    .then(() => compileAppSettings(project))
+    .then(() => compileAppSettings(project, couchUrl))
     .then(() => big_log('Tasks updated.'))
 
     .then(() => big_log('Backing up app_settings...'))
@@ -30,7 +30,7 @@ module.exports = (project, couchUrl) => {
     .then(() => big_log('Forms backed up.'))
 
     .then(() => big_log('Deleting forms...'))
-    .then(() => deleteForms(couchUrl))
+    .then(() => deleteForms(project, couchUrl))
     .then(() => big_log('Forms deleted.'))
 
     .then(() => big_log('Uploading forms...'))

@@ -1,15 +1,35 @@
 #!/usr/bin/env node
 
 const usage = require('../src/cli/usage');
+const supportedActions = require('../src/cli/supported-actions');
 
-if(process.argv.length < 4) {
-  usage();
-  process.exit(1);
+switch(process.argv.length) {
+  case 4: {
+    const project = process.argv[2];
+    const instanceUrl = process.argv[3];
+    const couchUrl = `${instanceUrl}/medic`;
+
+    return require('../src/cli/all.js')(project, couchUrl);
+  }
+
+  case 5: {
+    const project = process.argv[3];
+    const instanceUrl = process.argv[4];
+    const couchUrl = `${instanceUrl}/medic`;
+
+    const action = process.argv[2];
+
+    if(supportedActions.includes(action)) {
+      const log = require('../src/lib/log');
+
+      log('##', `Performing ${action} on ${instanceUrl}...`);
+      return require(`../src/fn/${action}`)(project, couchUrl)
+        .then(() => log('##', action, 'complete.'));
+    }
+  }
+
+    /* falls through */
+  default:
+    usage();
+    process.exit(1);
 }
-
-const project = process.argv[2];
-const instanceUrl = process.argv[3];
-const couchUrl = `${instanceUrl}/medic`;
-
-
-require('../src/cli/all.js')(project, couchUrl);
