@@ -12,8 +12,6 @@ module.exports = project => {
     'targets.json',
   ].forEach(f => files[simple(f)] = readProjectFile(f));
 
-  console.log('app_settings: ', files);
-
   const app_settings = JSON.parse(files.app_settings);
 
   app_settings.contact_summary = cleanJs(files.contact_summary);
