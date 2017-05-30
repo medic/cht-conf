@@ -29,4 +29,10 @@ module.exports = (project /*, couchUrl */) => {
 };
 
 const simple = s => s.replace(/\..*/, '').replace('-', '_');
-const cleanJs = js => js.split('\n').map(s => s.trim().replace(/\s*\/\/.*/, '')).join('');
+const cleanJs = js =>
+  js.split('\n')
+    .map(s =>
+      s.trim()
+        .replace(/\s*\/\/.*/, '') // single-line comments (like this one)
+    ).join('')
+        .replace(/\s*\/\*(?:(?!\*\/).)*\*\/\s*/g, ''); /* this kind of comment */
