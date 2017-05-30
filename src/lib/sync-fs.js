@@ -1,10 +1,25 @@
 const fs = require('fs');
+const warn = require('../lib/log').warn;
 
 module.exports = {
   exists: fs.existsSync,
   mkdir: path => { try { fs.mkdirSync(path); } catch(e) { /* yum yum */ } },
-  read: path => fs.readFileSync(path, { encoding:'utf8' }),
-  readJson: path => JSON.parse(module.exports.read(path)),
+  read: path => {
+    try {
+      return fs.readFileSync(path, { encoding:'utf8' });
+    } catch(e) {
+      warn(`Error reading file: ${path}`);
+      throw e;
+    }
+  },
+  readJson: path => {
+    try {
+      return JSON.parse(module.exports.read(path));
+    } catch(e) {
+      warn(`Error parsing JSON in: ${path}`);
+      throw e;
+    }
+  },
   readBinary: path => fs.readFileSync(path),
   readdir: fs.readdirSync,
   write: (path, content) => fs.writeFileSync(path, content, 'utf8'),
