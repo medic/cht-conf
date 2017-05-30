@@ -1,5 +1,4 @@
 const fs = require('../lib/sync-fs');
-const info = require('../lib/log').info;
 const warn = require('../lib/log').warn;
 const PouchDB = require('pouchdb');
 
