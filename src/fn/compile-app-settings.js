@@ -1,13 +1,5 @@
 const fs = require('../lib/sync-fs');
 
-const FILES = {
-  app_settings: 'json',
-  'contact-summary': 'js',
-  nools: 'js',
-  tasks: 'json',
-  targets: 'json',
-};
-
 module.exports = (project /*, couchUrl */) => {
   const fromProject = relativePath => `${project}/${relativePath}`;
 
@@ -36,7 +28,6 @@ module.exports = (project /*, couchUrl */) => {
 };
 
 const readJs = path => cleanJs(fs.read(path));
-const simple = s => s.replace(/\..*/, '').replace('-', '_');
 const cleanJs = js =>
   js.split('\n')
     .map(s =>
