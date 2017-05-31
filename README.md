@@ -11,7 +11,7 @@ Medic Project Configurer
 
 ## Upload all config
 
-	medic-config example-project http://admin:pass@localhost:5984
+	medic-conf example-project http://admin:pass@localhost:5984
 
 ## Perform specific action
 
