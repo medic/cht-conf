@@ -4,7 +4,7 @@
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt jshint test"
   },
   "bin": {
     "medic-conf": "bin/medic-conf"
@@ -24,7 +24,10 @@
     "request-promise-native": "^1.0.4"
   },
   "devDependencies": {
+    "chai": "^4.0.0",
     "grunt": "^1.0.1",
-    "grunt-contrib-jshint": "^1.1.0"
+    "grunt-contrib-jshint": "^1.1.0",
+    "grunt-mocha-test": "^0.13.2",
+    "mocha": "^3.4.2"
   }
 }
