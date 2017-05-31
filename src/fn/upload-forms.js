@@ -1,5 +1,6 @@
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
+const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
 const PouchDB = require('pouchdb');
 
@@ -53,7 +54,9 @@ module.exports = (project, couchUrl) => {
 
       doc._attachments = attachmentsFromDir(formDir);
 
-      return insertOrReplace(db, doc)
+      return Promise.resolve()
+        .then(() => trace('Uploading form', `${formsDir}/${xls}`, 'to', id))
+        .then(() => insertOrReplace(db, doc))
         .then(() => info('Uploaded form', `${formsDir}/${xls}`, 'to', id));
     }));
 };
