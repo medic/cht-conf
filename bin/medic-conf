@@ -20,11 +20,11 @@ switch(process.argv.length) {
     const action = process.argv[2];
 
     if(supportedActions.includes(action)) {
-      const log = require('../src/lib/log');
+      const info = require('../src/lib/log').info;
 
-      log('##', `Performing ${action} on ${instanceUrl}...`);
+      info(`Performing ${action} on ${instanceUrl}...`);
       return require(`../src/fn/${action}`)(project, couchUrl)
-        .then(() => log('##', action, 'complete.'));
+        .then(() => info(action, 'complete.'));
     }
   }
 

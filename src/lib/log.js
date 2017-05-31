@@ -1,5 +1,5 @@
-module.exports = (...args) => logAtLevel('INFO', ...args);
-module.exports.info = module.exports;
+module.exports = (...args) => logAtLevel('TRACE', ...args);
+module.exports.info = (...args) => logAtLevel('INFO', ...args);
 module.exports.warn = (...args) => logAtLevel('WARN', ...args);
 
 function logAtLevel(level, ...args) {
