@@ -1,7 +1,7 @@
 /*jshint node:true*/
 "use strict";
 
-module.exports = function(grunt) {
+module.exports = grunt => {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-mocha-test');
 
