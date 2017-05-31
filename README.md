@@ -1,11 +1,16 @@
 Medic Project Configurer
 ========================
 
+# Requirements
+
+* nodejs 6
+* python 2.7
+
 
 # Installation
 
 	npm install -g medic-configurer-beta
-
+	python -m pip install -e git+https://github.com/alxndrsn/pyxform.git@master#egg=medic-pyxform
 
 # Use
 

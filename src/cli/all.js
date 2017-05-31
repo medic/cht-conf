@@ -4,6 +4,7 @@ const info = require('../lib/log').info;
 const compileAppSettings = require('../fn/compile-app-settings');
 const backupAppSettings = require('../fn/backup-app-settings');
 const uploadAppSettings = require('../fn/upload-app-settings');
+const convertForms = require('../fn/convert-forms');
 const backupForms = require('../fn/backup-forms');
 const deleteForms = require('../fn/delete-forms');
 const uploadForms = require('../fn/upload-forms');
@@ -26,6 +27,10 @@ module.exports = (project, couchUrl) => {
     .then(() => info('Uploading app_settings...'))
     .then(() => uploadAppSettings(project, couchUrl))
     .then(() => info('app_settings upload complete.'))
+
+    .then(() => info('Converting forms from XLSX to XML...'))
+    .then(() => convertForms(project, couchUrl))
+    .then(() => info('Forms converted.'))
 
     .then(() => info('Backing up existing forms...'))
     .then(() => backupForms(project, couchUrl))
