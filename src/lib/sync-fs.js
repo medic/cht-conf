@@ -22,6 +22,10 @@ module.exports = {
   },
   readBinary: path => fs.readFileSync(path),
   readdir: fs.readdirSync,
+  withoutExtension: fileName => {
+    const extensionStart = fileName.lastIndexOf('.');
+    return extensionStart === -1 ? fileName : fileName.substring(0, extensionStart);
+  },
   write: (path, content) => fs.writeFileSync(path, content, 'utf8'),
   writeBinary: (path, content) => fs.writeFileSync(path, content),
   writeJson: (path, json) => module.exports.write(path, JSON.stringify(json, null, 2) + '\n'),

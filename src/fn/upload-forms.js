@@ -14,7 +14,7 @@ module.exports = (project, couchUrl) => {
   return Promise.all(fs.readdir(formsDir)
     .filter(name => name.endsWith('.xlsx'))
     .map(xls => {
-      const baseFileName = xls.substring(0, xls.length - 5);
+      const baseFileName = fs.withoutExtension(xls);
       const formDir = `${formsDir}/${baseFileName}`;
       const expectedId = baseFileName.replace(/-/g, ':');
 
