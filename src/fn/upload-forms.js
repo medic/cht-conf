@@ -24,7 +24,7 @@ module.exports = (project, couchUrl) => {
 
       const xml = fs.read(`${formDir}/xml`);
 
-      const id = expectedId; // TODO read this name from the form XML
+      const id = readIdFrom(xml);
       if(id !== expectedId) warn('DEPRECATED', 'Form:', xls, 'Bad ID set in XML.  Expected:', expectedId, 'but saw:', id, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
 
       const doc = {
@@ -54,3 +54,8 @@ module.exports = (project, couchUrl) => {
 
 // TODO this isn't really how to parse XML
 const readTitleFrom = xml => xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>'));
+const readIdFrom = xml =>
+    xml.split('\n').join('')
+        .match(/<model>.*<\/model>/)[0]
+        .match(/<instance>.*<\/instance>/)[0]
+        .match(/id="([^"]*)"/)[1];
