@@ -22,14 +22,13 @@ module.exports = (project, couchUrl) => {
         return Promise.resolve();
       }
 
-      const xml = fs.read(`${formDir}/xml`);
-
-      // FIXME here we fix the form content before uploading it.  Seeing as we
-      // have our own fork of pyxform, we should actually be doing this fixing
-      // there.  TODO move this fix to pyxform once form conversion is
-      // integrated with this tool.
-      // TODO This is not how you should modify XML
-      xml = xml.replace(/ default="true\(\)"/g, '');
+      const xml = fs.read(`${formDir}/xml`)
+          // FIXME here we fix the form content before uploading it.  Seeing as we
+          // have our own fork of pyxform, we should actually be doing this fixing
+          // there.  TODO move this fix to pyxform once form conversion is
+          // integrated with this tool.
+          // TODO This is not how you should modify XML
+          .replace(/ default="true\(\)"/g, '');
 
       const id = readIdFrom(xml);
       if(id !== expectedId) warn('DEPRECATED', 'Form:', xls, 'Bad ID set in XML.  Expected:', expectedId, 'but saw:', id, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
