@@ -48,6 +48,9 @@ module.exports = (project, couchUrl) => {
 
     .then(() => info('Project configuration upload complete.'))
 
-    .catch(console.log);
+    .catch(e => {
+      console.log(e);
+      process.exit(1);
+    });
 
 };

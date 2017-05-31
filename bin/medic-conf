@@ -33,4 +33,7 @@ return actions.reduce((promiseChain, action) =>
       .then(() => require(`../src/fn/${action}`)(project, couchUrl))
       .then(() => info(action, 'complete')),
     Promise.resolve())
-  .catch(console.log);
+  .catch(e => {
+    console.log(e);
+    process.exit(1);
+  });
