@@ -1,4 +1,4 @@
-const big_log = (...args) => { require('../lib/log')('!!', ...args); };
+const info = require('../lib/log').info;
 
 const compileAppSettings = require('../fn/compile-app-settings');
 const backupAppSettings = require('../fn/backup-app-settings');
@@ -12,41 +12,41 @@ const uploadCustomTranslations = require('../fn/upload-custom-translations');
 module.exports = (project, couchUrl) => {
   return Promise.resolve()
 
-    .then(() => big_log(`Uploading project configuration for ${project} to ${couchUrl}...`))
+    .then(() => info(`Uploading project configuration for ${project} to ${couchUrl}...`))
 
-    .then(() => big_log('Compiling app settings...'))
+    .then(() => info('Compiling app settings...'))
     .then(() => compileAppSettings(project, couchUrl))
-    .then(() => big_log('Tasks updated.'))
+    .then(() => info('Tasks updated.'))
 
-    .then(() => big_log('Backing up app_settings...'))
+    .then(() => info('Backing up app_settings...'))
     .then(() => backupAppSettings(project, couchUrl))
-    .then(() => big_log('App settings backed up.'))
+    .then(() => info('App settings backed up.'))
 
-    .then(() => big_log('Uploading app_settings...'))
+    .then(() => info('Uploading app_settings...'))
     .then(() => uploadAppSettings(project, couchUrl))
-    .then(() => big_log('app_settings upload complete.'))
+    .then(() => info('app_settings upload complete.'))
 
-    .then(() => big_log('Backing up existing forms...'))
+    .then(() => info('Backing up existing forms...'))
     .then(() => backupForms(project, couchUrl))
-    .then(() => big_log('Forms backed up.'))
+    .then(() => info('Forms backed up.'))
 
-    .then(() => big_log('Deleting forms...'))
+    .then(() => info('Deleting forms...'))
     .then(() => deleteForms(project, couchUrl))
-    .then(() => big_log('Forms deleted.'))
+    .then(() => info('Forms deleted.'))
 
-    .then(() => big_log('Uploading forms...'))
+    .then(() => info('Uploading forms...'))
     .then(() => uploadForms(project, couchUrl))
-    .then(() => big_log('Form upload complete.'))
+    .then(() => info('Form upload complete.'))
 
-    .then(() => big_log('Uploading resources...'))
+    .then(() => info('Uploading resources...'))
     .then(() => uploadResources(project, couchUrl))
-    .then(() => big_log('Resources upload complete.'))
+    .then(() => info('Resources upload complete.'))
 
-    .then(() => big_log('Uploading custom translations...'))
+    .then(() => info('Uploading custom translations...'))
     .then(() => uploadCustomTranslations(project, couchUrl))
-    .then(() => big_log('Custom translation upload complete.'))
+    .then(() => info('Custom translation upload complete.'))
 
-    .then(() => big_log('Project configuration upload complete.'))
+    .then(() => info('Project configuration upload complete.'))
 
     .catch(console.log);
 
