@@ -1,3 +1,4 @@
+const error = require('../lib/log').error;
 const info = require('../lib/log').info;
 
 const compileAppSettings = require('../fn/compile-app-settings');
@@ -49,7 +50,7 @@ module.exports = (project, couchUrl) => {
     .then(() => info('Project configuration upload complete.'))
 
     .catch(e => {
-      console.log(e);
+      error(e);
       process.exit(1);
     });
 

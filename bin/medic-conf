@@ -25,6 +25,7 @@ if(!actions.every(a => supportedActions.includes(a))) {
   process.exit(1);
 }
 
+const error = require('../src/lib/log').error;
 const info = require('../src/lib/log').info;
 
 return actions.reduce((promiseChain, action) =>
@@ -34,6 +35,6 @@ return actions.reduce((promiseChain, action) =>
       .then(() => info(action, 'complete')),
     Promise.resolve())
   .catch(e => {
-    console.log(e);
+    error(e);
     process.exit(1);
   });
