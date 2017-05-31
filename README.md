@@ -13,9 +13,9 @@ Medic Project Configurer
 
 	medic-conf example-project http://admin:pass@localhost:5984
 
-## Perform specific action
+## Perform specific action(s)
 
-	medic-config <action> example-project http://admin:pass@localhost:5984
+	medic-config example-project http://admin:pass@localhost:5984 <...action>
 
 The list of available actions can be seen in [`supported-actions.js`](https://github.com/alxndrsn/medic-configurer/blob/master/src/cli/supported-actions.js).
 
