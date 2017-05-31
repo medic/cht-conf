@@ -26,13 +26,14 @@ This tool expects a project to be sctructured as follows:
 	example-project/
 		app_settings.json
 		contact-summary.json
-		nools.json
 		resources.json
 		resources/
 			icon-one.png
 			…
-		tasks.json
 		targets.json
+		tasks/
+			rules.nools.js
+			schedules.json
 		forms/
 			contact:person:create.xlsx
 			…

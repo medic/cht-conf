@@ -9,9 +9,17 @@ const FILES = {
 };
 
 module.exports = (project /*, couchUrl */) => {
+  const fromProject = relativePath => `${project}/${relativePath}`;
+
   return Promise.resolve()
     .then(() => {
-      const files = filesFor(project);
+      const files = {
+        app_settings: fs.readJson(fromProject('app_settings.json')),
+        contact_summary: readJs(fromProject('contact-summary.js')),
+        nools: readJs(fromProject('tasks/rules.nools.js')),
+        targets: fs.readJson(fromProject('targets.json')),
+        tasks_schedules: fs.readJson(fromProject('tasks/schedules.json')),
+      };
 
       const app_settings = files.app_settings;
 
@@ -19,7 +27,7 @@ module.exports = (project /*, couchUrl */) => {
 
       app_settings.tasks = {
         rules: files.nools,
-        schedules: files.tasks,
+        schedules: files.tasks_schedules,
         targets: files.targets,
       };
 
@@ -27,22 +35,7 @@ module.exports = (project /*, couchUrl */) => {
     });
 };
 
-const filesFor = project => {
-  const files = {};
-  for(const name in FILES) {
-    const type = FILES[name];
-    const path = `${project}/${name}.${type}`;
-
-    files[simple(name)] = readerFor[type](path);
-  }
-  return files;
-};
-
-const readerFor = {
-  js: path => cleanJs(fs.read(path)),
-  json: fs.readJson,
-};
-
+const readJs = path => cleanJs(fs.read(path));
 const simple = s => s.replace(/\..*/, '').replace('-', '_');
 const cleanJs = js =>
   js.split('\n')
