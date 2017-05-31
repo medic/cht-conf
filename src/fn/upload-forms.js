@@ -16,7 +16,7 @@ module.exports = (project, couchUrl) => {
       const formDir = `${dir}/${name}`;
 
       if(!fs.exists(formDir)) {
-        warn(`No form directory found corresponding to XML ${dir}/${name}`);
+        warn(`No form directory found corresponding to XML ${formDir}`);
         return Promise.resolve();
       }
 
