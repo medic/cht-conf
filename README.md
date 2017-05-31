@@ -35,7 +35,7 @@ This tool expects a project to be sctructured as follows:
 			rules.nools.js
 			schedules.json
 		forms/
-			contact:person:create.xlsx
+			contact-person-create.xlsx
 			…
 			my_project_form.xlsx
 			my_project_form.properties.json
