@@ -25,6 +25,10 @@ Medic Project Configurer
 
 The list of available actions can be seen in [`supported-actions.js`](https://github.com/alxndrsn/medic-configurer/blob/master/src/cli/supported-actions.js).
 
+## Perform actions for specific forms
+
+	medic-config example-project http://admin:pass@localhost:5984 <...action> -- <...form>
+
 # Project Layout
 
 This tool expects a project to be sctructured as follows:
@@ -95,5 +99,4 @@ This tool expects a project to be sctructured as follows:
 * support Google Sheets forms
 * support Collect forms
 * make form upload sequential
-* allow individual form upload, conversion
 * rename medic-xls2xform as xls2xform-medic

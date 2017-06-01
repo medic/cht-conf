@@ -11,6 +11,7 @@ module.exports = (project, subDirectory, options) => {
 
   return fs.readdir(formsDir)
     .filter(name => name.endsWith('.xlsx'))
+    .filter(name => !options.forms || options.forms.includes(fs.withoutExtension(name)))
     .reduce((promiseChain, xls) => {
         const originalSourcePath = `${formsDir}/${xls}`;
         let sourcePath;

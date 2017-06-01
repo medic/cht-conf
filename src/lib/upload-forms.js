@@ -19,6 +19,7 @@ module.exports = (project, couchUrl, subDirectory, options) => {
   const formsDir = `${project}/forms/${subDirectory}`;
   return Promise.all(fs.readdir(formsDir)
     .filter(name => name.endsWith('.xml'))
+    .filter(name => !options.forms || options.forms.includes(fs.withoutExtension(name)))
     .map(fileName => {
       const baseFileName = fs.withoutExtension(fileName);
       const mediaDir = `${formsDir}/${baseFileName}-media`;

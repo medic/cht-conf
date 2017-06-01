@@ -1,11 +1,11 @@
 module.exports = [
   'backup-app-settings',
-  'backup-forms',
+  'backup-all-forms',
   'compile-app-settings',
   'compress-images',
   'convert-app-forms',
   'convert-contact-forms',
-  'delete-forms',
+  'delete-all-forms',
   'upload-app-forms',
   'upload-app-settings',
   'upload-contact-forms',
