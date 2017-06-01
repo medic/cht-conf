@@ -11,16 +11,7 @@ const args = process.argv.slice(2);
 switch(args[0]) {
   case '--help': return usage(0);
   case '--shell-completion':
-    const shell = args.length > 1 && args[1] || 'bash';
-    const completionFile = `${fs.path.dirname(require.main.filename)}/../src/cli/shell-completion.${shell}`;
-    if(fs.exists(completionFile)) {
-      console.log(fs.read(completionFile));
-      process.exit(0);
-    } else {
-      console.log('# ERROR medic-conf shell completion not yet supported for', shell);
-      process.exit(1);
-    }
-    return;
+    return require('../src/cli/shell-completion-setup')(args[1]);
   case '--supported-actions':
     console.log('Supported actions:\n ', supportedActions.join('\n  '));
     return process.exit(0);
