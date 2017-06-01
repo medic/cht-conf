@@ -81,7 +81,9 @@ This tool expects a project to be sctructured as follows:
 
 # TODO
 
-* support form XSL -> XML conversion
+* split app/ and contact/ forms into separate directories
+* apply all necessary transforms to contact forms
 * only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
 * require manual confirmation of upload if url is *.app.medicmobile.org and either git is not available, or the working directory is dirty or has new files
 * move `npm publish` to travis and rename module to `medic-configurer`
+* add pngout step to compress images to the max
