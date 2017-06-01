@@ -95,3 +95,4 @@ This tool expects a project to be sctructured as follows:
 * support Google Sheets forms
 * support Collect forms
 * make form upload sequential
+* allow individual form upload, conversion
