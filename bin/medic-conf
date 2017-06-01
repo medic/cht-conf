@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const error = require('../src/lib/log').error;
+const info = require('../src/lib/log').info;
 const usage = require('../src/cli/usage');
 const supportedActions = require('../src/cli/supported-actions');
 
@@ -13,11 +15,23 @@ const project = args[0];
 const instanceUrl = args[1];
 const couchUrl = `${instanceUrl}/medic`;
 
-if(args.length === 2) {
-  return require('../src/cli/all.js')(project, couchUrl);
-}
+let actions;
 
-const actions = args.slice(2);
+if(args.length === 2) {
+  actions = [
+    'compile-app-settings',
+    'backup-app-settings',
+    'upload-app-settings',
+    'convert-forms',
+    'backup-forms',
+    'delete-forms',
+    'upload-forms',
+    'upload-resources',
+    'upload-custom-translations',
+  ];
+} else {
+  actions = args.slice(2);
+}
 
 if(!actions.every(a => supportedActions.includes(a))) {
   error(`Unsupported action: ${a}`);
@@ -25,15 +39,15 @@ if(!actions.every(a => supportedActions.includes(a))) {
   process.exit(1);
 }
 
-const error = require('../src/lib/log').error;
-const info = require('../src/lib/log').info;
+info(`Processing config in ${project} for ${instanceUrl}.  Actions: ${actions}`);
 
 return actions.reduce((promiseChain, action) =>
     promiseChain
-      .then(() => info('Starting action:', action, '...'))
+      .then(() => info(`Starting action: ${action}…`))
       .then(() => require(`../src/fn/${action}`)(project, couchUrl))
-      .then(() => info(action, 'complete')),
+      .then(() => info(`${action} complete.`)),
     Promise.resolve())
+  .then(() => { if(actions.length > 1) info('All actions completed.'); })
   .catch(e => {
     error(e);
     process.exit(1);
