@@ -6,7 +6,6 @@ const trace = require('../lib/log').trace;
 module.exports = (project/*, couchUrl*/) => {
   return fs.recurseFiles(project)
     .filter(name => name.endsWith('.png'))
-    .map(f => { console.log('compressing png: ', f); return f; })
     .reduce((promiseChain, png) =>
       promiseChain
         .then(() => info('Compressing PNG:', png, '…'))
