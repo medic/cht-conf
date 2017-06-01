@@ -11,6 +11,7 @@ Medic Project Configurer
 
 	npm install -g medic-configurer-beta
 	python -m pip install -e git+https://github.com/alxndrsn/pyxform.git@master#egg=medic-pyxform
+	eval "$(medic-conf --shell-completion bash)"
 
 # Use
 
@@ -88,7 +89,6 @@ This tool expects a project to be sctructured as follows:
 
 # TODO
 
-* add bash tab-completion
 * only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
 * require manual confirmation of upload if url is *.app.medicmobile.org and either git is not available, or the working directory is dirty or has new files
 * move `npm publish` to travis and rename module to `medic-configurer`

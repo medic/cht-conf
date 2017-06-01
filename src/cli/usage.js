@@ -1,6 +1,6 @@
 const supportedActions = require('./supported-actions');
 
-module.exports = () => {
+module.exports = exitCode => {
   console.log(`
 # This script will update and upload all of a particular project configuration
 # to a particular instance.
@@ -18,4 +18,6 @@ Or:
 Supported actions:
     * ${supportedActions.join('\n    * ')}
 `);
+
+  process.exit(exitCode);
 };

@@ -1,26 +1,37 @@
 #!/usr/bin/env node
 
 const error = require('../src/lib/log').error;
+const fs = require('../src/lib/sync-fs');
 const info = require('../src/lib/log').info;
-const path = require('path');
 const usage = require('../src/cli/usage');
 const supportedActions = require('../src/cli/supported-actions');
 
 const args = process.argv.slice(2);
-if(args.length === 1) {
-  switch(args[0]) {
-    case '--help': usage(); return process.exit(0);
-    case '--version':
-      console.log(require('../package.json').version);
+
+switch(args[0]) {
+  case '--help': return usage(0);
+  case '--shell-completion':
+    const shell = args.length > 1 && args[1] || 'bash';
+    const completionFile = `${fs.path.dirname(require.main.filename)}/../src/shell-completion.${shell}`;
+    if(fs.exists(completionFile)) {
+      console.log(fs.read(completionFile));
       process.exit(0);
-  }
-}
-if(args.length < 2) {
-    usage();
-    process.exit(1);
+    } else {
+      console.log('# ERROR medic-conf shell completion not yet supported for', shell);
+      process.exit(1);
+    }
+    return;
+  case '--supported-actions':
+    console.log('Supported actions:\n ', supportedActions.join('\n  '));
+    return process.exit(0);
+  case '--version':
+    console.log(require('../package.json').version);
+    return process.exit(0);
 }
 
-const project = path.normalize(args[0]).replace(/\/$/, '');
+if(args.length < 2) return usage(1);
+
+const project = fs.path.normalize(args[0]).replace(/\/$/, '');
 const instanceUrl = args[1];
 const couchUrl = `${instanceUrl}/medic`;
 
