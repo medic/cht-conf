@@ -92,3 +92,5 @@ This tool expects a project to be sctructured as follows:
 * only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
 * require manual confirmation of upload if url is *.app.medicmobile.org and either git is not available, or the working directory is dirty or has new files
 * move `npm publish` to travis and rename module to `medic-configurer`
+* support Google Sheets forms
+* support Collect forms
