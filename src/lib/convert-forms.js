@@ -4,18 +4,15 @@ const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
 const trace = require('../lib/log').trace;
 
-module.exports = (project/*, couchUrl*/) => {
-  const formsDir = `${project}/forms`;
+module.exports = (project, subDirectory) => {
+  const formsDir = `${project}/forms/${subDirectory}`;
 
   return Promise.all(
     fs.readdir(formsDir)
       .filter(name => name.endsWith('.xlsx'))
       .map(xls => {
         const sourcePath = `${formsDir}/${xls}`;
-        const targetDir = `${formsDir}/${fs.withoutExtension(xls)}`;
-        const targetPath = `${targetDir}/xml`;
-
-        fs.mkdir(targetDir);
+        const targetPath = `${formsDir}/${fs.withoutExtension(xls)}.xml`;
 
         return Promise.resolve()
           .then(() => info('Converting form', sourcePath, '…'))
