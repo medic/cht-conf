@@ -96,3 +96,4 @@ This tool expects a project to be sctructured as follows:
 * support Collect forms
 * make form upload sequential
 * allow individual form upload, conversion
+* rename medic-xls2xform as xls2xform-medic
