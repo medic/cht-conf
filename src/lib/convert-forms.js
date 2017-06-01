@@ -42,18 +42,45 @@ const xls2xform = (sourcePath, targetPath) =>
 // FIXME here we fix the form content before uploading it.  Seeing as we
 // have our own fork of pyxform, we should probably be doing this fixing
 // there.
-const fixXml = path =>
-      fs.write(path, fs.read(path)
-          // TODO This is not how you should modify XML
-          .replace(/ default="true\(\)"/g, '')
+const fixXml = path => {
+  let xml = fs.read(path)
+      // TODO This is not how you should modify XML
+      .replace(/ default="true\(\)"/g, '')
 
-          // TODO The following copies behaviour from old bash scripts, and will
-          // create a second <meta> element if one already existed.  We may want
-          // to actually merge the two instead.
-          .replace(/<inputs>/, META_XML_SECTION)
+      // TODO The following copies behaviour from old bash scripts, and will
+      // create a second <meta> element if one already existed.  We may want
+      // to actually merge the two instead.
+      .replace(/<inputs>/, META_XML_SECTION)
 
-          .replace(/.*DELETE_THIS_LINE.*\n/g, '')
-          );
+      // No comment.
+      .replace(/.*DELETE_THIS_LINE.*(\r|\n)/g, '')
+      ;
+
+  // The ordering of elements in the <model> has an arcane affect on the
+  // order that docs are saved in the database when processing a form.
+  // Move the main doc's element down to the bottom.
+  xml = shiftThingsAroundInTheModel(path, xml);
+
+  fs.write(path, xml);
+};
+
+const shiftThingsAroundInTheModel = (path, xml) => {
+  const baseName = fs.path.parse(path).name;
+  let matchedBlock;
+
+  const matcher = new RegExp(`\\s*<${baseName}>[\\s\\S]*</${baseName}>\\s*(\\r|\\n)`);
+
+  xml = xml.replace(matcher, match => {
+    matchedBlock = match;
+    return '\n';
+  });
+
+  if(matchedBlock) {
+    xml = xml.replace(/<\/inputs>(\r|\n)/, '</inputs>' + matchedBlock);
+  }
+
+  return xml;
+};
 
 const META_XML_SECTION = `<inputs>
             <meta>
