@@ -1,6 +1,5 @@
 const attachmentFromFile = require('./attachment-from-file');
 const fs = require('./sync-fs');
-const path = require('path');
 const warn = require('./log').warn;
 
 module.exports = dir => {
@@ -9,7 +8,7 @@ module.exports = dir => {
   const attachments = {};
   fs.recurseFiles(dir)
     .forEach(form => {
-      attachments[path.relative(dir, form)] = attachmentFromFile(form);
+      attachments[fs.path.relative(dir, form)] = attachmentFromFile(form);
     });
   return attachments;
 };
