@@ -1,6 +1,6 @@
 {
   "name": "medic-configurer-beta",
-  "version": "1.0.38",
+  "version": "1.0.39",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {

@@ -12,7 +12,7 @@ switch(args[0]) {
   case '--help': return usage(0);
   case '--shell-completion':
     const shell = args.length > 1 && args[1] || 'bash';
-    const completionFile = `${fs.path.dirname(require.main.filename)}/../src/shell-completion.${shell}`;
+    const completionFile = `${fs.path.dirname(require.main.filename)}/../src/cli/shell-completion.${shell}`;
     if(fs.exists(completionFile)) {
       console.log(fs.read(completionFile));
       process.exit(0);
