@@ -42,14 +42,16 @@ This tool expects a project to be sctructured as follows:
 		forms/
 			app/
 				my_project_form.xlsx
+				my_project_form.xml
 				my_project_form.properties.json
 				my_project_form/
-					xml
+					[extra files]
 					…
 			contact/
 				person-create.xlsx
+				person-create.xml
 				person-create/
-					xml
+					[extra files]
 					…
 			…
 			…

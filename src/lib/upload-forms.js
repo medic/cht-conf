@@ -1,11 +1,12 @@
+const attachmentsFromDir = require('../lib/attachments-from-dir');
+const attachmentFromFile = require('../lib/attachment-from-file');
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
+const insertOrReplace = require('../lib/insert-or-replace');
 const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
 const PouchDB = require('pouchdb');
 
-const attachmentsFromDir = require('../lib/attachments-from-dir');
-const insertOrReplace = require('../lib/insert-or-replace');
 
 module.exports = (project, couchUrl, subDirectory, options) => {
   const db = new PouchDB(couchUrl);
@@ -18,6 +19,7 @@ module.exports = (project, couchUrl, subDirectory, options) => {
     .map(xls => {
       const baseFileName = fs.withoutExtension(xls);
       const formDir = `${formsDir}/${baseFileName}`;
+      const xformPath = `${formsDir}/${baseFileName}.xml`;
       const expectedId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
 
       if(!fs.exists(formDir)) {
@@ -25,7 +27,7 @@ module.exports = (project, couchUrl, subDirectory, options) => {
         return Promise.resolve();
       }
 
-      const xml = fs.read(`${formDir}/xml`);
+      const xml = fs.read(xformPath);
 
       const id = readIdFrom(xml);
       if(id !== expectedId) warn('DEPRECATED', 'Form:', xls, 'Bad ID set in XML.  Expected:', expectedId, 'but saw:', id, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
@@ -48,7 +50,8 @@ module.exports = (project, couchUrl, subDirectory, options) => {
         }
       }
 
-      doc._attachments = attachmentsFromDir(formDir);
+      doc._attachments = fs.exists(formDir) ? attachmentsFromDir(formDir) : {};
+      doc._attachments.xml = attachmentFromFile(xformPath);
 
       return Promise.resolve()
         .then(() => trace('Uploading form', `${formsDir}/${xls}`, 'to', id))

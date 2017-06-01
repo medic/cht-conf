@@ -10,7 +10,7 @@ module.exports = path => {
 };
 
 function mimeTypeFor(fileName) {
-  const extensionStart = fileName.indexOf('.');
+  const extensionStart = fileName.lastIndexOf('.');
   const extension = extensionStart === -1 ?
       fileName :
       fileName.substring(extensionStart+1);
@@ -19,6 +19,6 @@ function mimeTypeFor(fileName) {
     case 'json': return 'application/json';
     case 'png' : return 'image/png';
     case 'xml' : return 'application/xml';
-    default: throw new Error(`Unrecongised file extension: ${extension}`);
+    default: throw new Error(`Unrecongised file extension: ${extension} for file ${fileName}`);
   }
 }
