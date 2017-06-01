@@ -99,3 +99,4 @@ This tool expects a project to be sctructured as follows:
 * support Google Sheets forms
 * support Collect forms
 * make form upload sequential
+* update links for pyxform to medic branch
