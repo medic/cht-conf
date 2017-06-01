@@ -15,9 +15,9 @@ module.exports = (project, couchUrl, subDirectory, options) => {
 
   const formsDir = `${project}/forms/${subDirectory}`;
   return Promise.all(fs.readdir(formsDir)
-    .filter(name => name.endsWith('.xlsx'))
-    .map(xls => {
-      const baseFileName = fs.withoutExtension(xls);
+    .filter(name => name.endsWith('.xml'))
+    .map(fileName => {
+      const baseFileName = fs.withoutExtension(fileName);
       const mediaDir = `${formsDir}/${baseFileName}-media`;
       const xformPath = `${formsDir}/${baseFileName}.xml`;
       const expectedId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
@@ -27,7 +27,7 @@ module.exports = (project, couchUrl, subDirectory, options) => {
       const xml = fs.read(xformPath);
 
       const id = readIdFrom(xml);
-      if(id !== expectedId) warn('DEPRECATED', 'Form:', xls, 'Bad ID set in XML.  Expected:', expectedId, 'but saw:', id, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
+      if(id !== expectedId) warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', expectedId, 'but saw:', id, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
 
       const doc = {
         _id: `form:${id}`,
@@ -42,7 +42,7 @@ module.exports = (project, couchUrl, subDirectory, options) => {
         doc.context = properties.context;
         doc.icon = properties.icon;
         if(properties.internalId) {
-          warn('DEPRECATED', 'Form:', xls, 'Please do not manually set internalId in .properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
+          warn('DEPRECATED', 'Form:', fileName, 'Please do not manually set internalId in .properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
           doc.internalId = properties.internalId;
         }
       }
@@ -51,9 +51,9 @@ module.exports = (project, couchUrl, subDirectory, options) => {
       doc._attachments.xml = attachmentFromFile(xformPath);
 
       return Promise.resolve()
-        .then(() => trace('Uploading form', `${formsDir}/${xls}`, 'to', id))
+        .then(() => trace('Uploading form', `${formsDir}/${fileName}`, 'to', id))
         .then(() => insertOrReplace(db, doc))
-        .then(() => info('Uploaded form', `${formsDir}/${xls}`, 'to', id));
+        .then(() => info('Uploaded form', `${formsDir}/${fileName}`, 'to', id));
     }));
 };
 
