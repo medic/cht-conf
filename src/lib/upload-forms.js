@@ -22,10 +22,7 @@ module.exports = (project, couchUrl, subDirectory, options) => {
       const xformPath = `${formsDir}/${baseFileName}.xml`;
       const expectedId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
 
-      if(!fs.exists(formDir)) {
-        warn(`No form directory found corresponding to XML ${formDir}`);
-        return Promise.resolve();
-      }
+      if(!fs.exists(formDir)) info(`No form directory found corresponding to XML ${formDir}`);
 
       const xml = fs.read(xformPath);
 
