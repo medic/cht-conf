@@ -29,11 +29,13 @@ const xls2xform = (sourcePath, targetPath) =>
         throw e;
       });
 
+// FIXME here we fix the form content before uploading it.  Seeing as we
+// have our own fork of pyxform, we should probably be doing this fixing
+// there.
 const fixXml = path =>
       fs.write(path, fs.read(path)
-          // FIXME here we fix the form content before uploading it.  Seeing as we
-          // have our own fork of pyxform, we should actually be doing this fixing
-          // there.  TODO move this fix to pyxform once form conversion is
-          // integrated with this tool.
           // TODO This is not how you should modify XML
-          .replace(/ default="true\(\)"/g, ''));
+          .replace(/ default="true\(\)"/g, ''))
+          .replace(/NO_LABEL/g, '')
+          .replace(/.*DELETE_THIS_LINE.*/g, '')
+          ;
