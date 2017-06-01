@@ -1,3 +1,4 @@
+const error = require('../lib/log').error;
 const exec = require('../lib/exec-promise');
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
@@ -18,7 +19,14 @@ module.exports = (project/*, couchUrl*/) => {
 
         return Promise.resolve()
           .then(() => info('Converting form', sourcePath, '…'))
-          .then(() => exec('medic-xls2xform', sourcePath, targetPath))
+          .then(() => xls2xform(sourcePath, targetPath))
           .then(() => trace('Converted form', sourcePath));
       }));
 };
+
+const xls2xform = (sourcePath, targetPath) =>
+    exec('medic-xls2xform', sourcePath, targetPath)
+      .catch(e => {
+        error('There was a problem executing xls2xform.  It may not be installed.  To install, run ' + require('../cli/xls2xform-installation-command'));
+        throw e;
+      });

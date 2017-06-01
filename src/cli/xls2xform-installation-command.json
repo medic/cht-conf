@@ -1,0 +1,1 @@
+"python -m pip install -e git+https://github.com/alxndrsn/pyxform.git@master#egg=medic-pyxform"
