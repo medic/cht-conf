@@ -95,3 +95,4 @@ This tool expects a project to be sctructured as follows:
 * move `npm publish` to travis and rename module to `medic-configurer`
 * support Google Sheets forms
 * support Collect forms
+* warn when properties in `<form>.properties.json` are ignored
