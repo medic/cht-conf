@@ -46,7 +46,12 @@ const fixXml = path =>
       fs.write(path, fs.read(path)
           // TODO This is not how you should modify XML
           .replace(/ default="true\(\)"/g, '')
+
+          // TODO The following copies behaviour from old bash scripts, and will
+          // create a second <meta> element if one already existed.  We may want
+          // to actually merge the two instead.
           .replace(/<inputs>/, META_XML_SECTION)
+
           .replace(/.*DELETE_THIS_LINE.*\n/g, '')
           );
 
