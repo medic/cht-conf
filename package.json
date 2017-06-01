@@ -7,7 +7,7 @@
     "test": "grunt jshint test"
   },
   "bin": {
-    "medic-conf": "bin/medic-conf",
+    "medic-conf": "bin/medic-conf.js",
     "medic-pngout": "bin/pngout"
   },
   "repository": {
