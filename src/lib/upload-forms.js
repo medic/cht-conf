@@ -18,11 +18,11 @@ module.exports = (project, couchUrl, subDirectory, options) => {
     .filter(name => name.endsWith('.xlsx'))
     .map(xls => {
       const baseFileName = fs.withoutExtension(xls);
-      const formDir = `${formsDir}/${baseFileName}`;
+      const mediaDir = `${formsDir}/${baseFileName}-media`;
       const xformPath = `${formsDir}/${baseFileName}.xml`;
       const expectedId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
 
-      if(!fs.exists(formDir)) info(`No form directory found corresponding to XML ${formDir}`);
+      if(!fs.exists(mediaDir)) info(`No media directory found at ${mediaDir} for form ${xformPath}`);
 
       const xml = fs.read(xformPath);
 
@@ -47,7 +47,7 @@ module.exports = (project, couchUrl, subDirectory, options) => {
         }
       }
 
-      doc._attachments = fs.exists(formDir) ? attachmentsFromDir(formDir) : {};
+      doc._attachments = fs.exists(mediaDir) ? attachmentsFromDir(mediaDir) : {};
       doc._attachments.xml = attachmentFromFile(xformPath);
 
       return Promise.resolve()

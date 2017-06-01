@@ -44,13 +44,13 @@ This tool expects a project to be sctructured as follows:
 				my_project_form.xlsx
 				my_project_form.xml
 				my_project_form.properties.json
-				my_project_form/
+				my_project_form-media/
 					[extra files]
 					…
 			contact/
 				person-create.xlsx
 				person-create.xml
-				person-create/
+				person-create-media/
 					[extra files]
 					…
 			…
