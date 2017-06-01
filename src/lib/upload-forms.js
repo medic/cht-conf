@@ -8,6 +8,9 @@ const warn = require('../lib/log').warn;
 const PouchDB = require('pouchdb');
 
 
+const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId'];
+
+
 module.exports = (project, couchUrl, subDirectory, options) => {
   const db = new PouchDB(couchUrl);
 
@@ -37,15 +40,7 @@ module.exports = (project, couchUrl, subDirectory, options) => {
       };
 
       const propertiesPath = `${formsDir}/${baseFileName}.properties.json`;
-      if(fs.exists(propertiesPath)) {
-        const properties = fs.readJson(propertiesPath);
-        doc.context = properties.context;
-        doc.icon = properties.icon;
-        if(properties.internalId) {
-          warn('DEPRECATED', 'Form:', fileName, 'Please do not manually set internalId in .properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
-          doc.internalId = properties.internalId;
-        }
-      }
+      updateFromPropertiesFile(doc, propertiesPath);
 
       doc._attachments = fs.exists(mediaDir) ? attachmentsFromDir(mediaDir) : {};
       doc._attachments.xml = attachmentFromFile(xformPath);
@@ -64,3 +59,19 @@ const readIdFrom = xml =>
         .match(/<model>.*<\/model>/)[0]
         .match(/<instance>.*<\/instance>/)[0]
         .match(/id="([^"]*)"/)[1];
+
+const updateFromPropertiesFile = (doc, path) => {
+  if(fs.exists(path)) {
+    const properties = fs.readJson(path);
+    doc.context = properties.context;
+    doc.icon = properties.icon;
+
+    if(properties.internalId) {
+      warn('DEPRECATED', path, 'Please do not manually set internalId in .properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
+      doc.internalId = properties.internalId;
+    }
+
+    const ignoredKeys = Object.keys(properties).filter(k => !SUPPORTED_PROPERTIES.includes(k));
+    if(ignoredKeys.length) warn('Ignoring property keys', ignoredKeys, 'in', path);
+  }
+};
