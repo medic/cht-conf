@@ -1,4 +1,5 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
@@ -50,7 +51,7 @@ module.exports = {
   copy: (from, to) => fs.writeFileSync(to, fs.readFileSync(from)),
   exists: fs.existsSync,
   mkdir: path => { try { fs.mkdirSync(path); } catch(e) { /* yum yum */ } },
-  mkdtemp: () => fs.mkdtempSync('medic-conf'),
+  mkdtemp: () => fs.mkdtempSync(`${os.tmpdir()}/medic-conf`),
   read: read,
   readJson: readJson,
   readBinary: path => fs.readFileSync(path),
