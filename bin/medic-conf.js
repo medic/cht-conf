@@ -9,7 +9,7 @@ const supportedActions = require('../src/cli/supported-actions');
 const args = process.argv.slice(2);
 if(args.length === 1) {
   switch(args[0]) {
-    case '--help': usage(); process.exit(0);
+    case '--help': usage(); return process.exit(0);
     case '--version':
       console.log(require('../package.json').version);
       process.exit(0);
