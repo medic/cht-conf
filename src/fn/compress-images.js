@@ -10,7 +10,7 @@ module.exports = (project/*, couchUrl*/) => {
       promiseChain
         .then(() => info('Compressing PNG:', png, '…'))
         .then(() =>
-            exec('pngout', `'${png}'`)
+            exec('pngout-medic', `'${png}'`)
               .then(() => trace('Compressed', png))
               .catch(e => {
                 if(e.status === 2) {

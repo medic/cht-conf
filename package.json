@@ -1,6 +1,6 @@
 {
   "name": "medic-configurer-beta",
-  "version": "1.0.37",
+  "version": "1.0.38",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "bin": {
     "medic-conf": "bin/medic-conf.js",
     "shell-completion-for-medic-conf": "bin/shell-completion.js",
-    "medic-pngout": "bin/pngout"
+    "pngout-medic": "bin/pngout"
   },
   "repository": {
     "type": "git",
