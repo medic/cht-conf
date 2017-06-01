@@ -47,6 +47,7 @@ const fixXml = path =>
           // TODO This is not how you should modify XML
           .replace(/ default="true\(\)"/g, '')
           .replace(/<inputs>/, META_XML_SECTION)
+          .replace(/.*DELETE_THIS_LINE.*\n/g, '')
           );
 
 const META_XML_SECTION = `<inputs>
