@@ -40,13 +40,18 @@ This tool expects a project to be sctructured as follows:
 			rules.nools.js
 			schedules.json
 		forms/
-			contact-person-create.xlsx
+			app/
+				my_project_form.xlsx
+				my_project_form.properties.json
+				my_project_form/
+					xml
+					…
+			contact/
+				person-create.xlsx
+				person-create/
+					xml
+					…
 			…
-			my_project_form.xlsx
-			my_project_form.properties.json
-			my_project_form/
-				xml
-				…
 			…
 		translations/
 			messages-xx.properties
@@ -81,7 +86,6 @@ This tool expects a project to be sctructured as follows:
 
 # TODO
 
-* split app/ and contact/ forms into separate directories
 * apply all necessary transforms to contact forms
 * only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
 * require manual confirmation of upload if url is *.app.medicmobile.org and either git is not available, or the working directory is dirty or has new files

@@ -7,16 +7,18 @@ const PouchDB = require('pouchdb');
 const attachmentsFromDir = require('../lib/attachments-from-dir');
 const insertOrReplace = require('../lib/insert-or-replace');
 
-module.exports = (project, couchUrl) => {
+module.exports = (project, couchUrl, subDirectory, options) => {
   const db = new PouchDB(couchUrl);
 
-  const formsDir = `${project}/forms`;
+  if(!options) options = {};
+
+  const formsDir = `${project}/forms/${subDirectory}`;
   return Promise.all(fs.readdir(formsDir)
     .filter(name => name.endsWith('.xlsx'))
     .map(xls => {
       const baseFileName = fs.withoutExtension(xls);
       const formDir = `${formsDir}/${baseFileName}`;
-      const expectedId = baseFileName.replace(/-/g, ':');
+      const expectedId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
 
       if(!fs.exists(formDir)) {
         warn(`No form directory found corresponding to XML ${formDir}`);

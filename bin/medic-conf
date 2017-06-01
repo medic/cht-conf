@@ -25,7 +25,8 @@ if(args.length === 2) {
     'convert-forms',
     'backup-forms',
     'delete-forms',
-    'upload-forms',
+    'upload-app-forms',
+    'upload-contact-forms',
     'upload-resources',
     'upload-custom-translations',
   ];

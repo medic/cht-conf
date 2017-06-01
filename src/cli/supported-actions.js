@@ -5,8 +5,9 @@ module.exports = [
   'compress-images',
   'convert-forms',
   'delete-forms',
+  'upload-app-forms',
   'upload-app-settings',
-  'upload-forms',
+  'upload-contact-forms',
   'upload-resources',
   'upload-custom-translations',
 ];
