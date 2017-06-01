@@ -7,19 +7,19 @@ const trace = require('../lib/log').trace;
 module.exports = (project, subDirectory) => {
   const formsDir = `${project}/forms/${subDirectory}`;
 
-  return Promise.all(
-    fs.readdir(formsDir)
-      .filter(name => name.endsWith('.xlsx'))
-      .map(xls => {
+  return fs.readdir(formsDir)
+    .filter(name => name.endsWith('.xlsx'))
+    .reduce((promiseChain, xls) => {
         const sourcePath = `${formsDir}/${xls}`;
         const targetPath = `${formsDir}/${fs.withoutExtension(xls)}.xml`;
 
-        return Promise.resolve()
+        return promiseChain
           .then(() => info('Converting form', sourcePath, '…'))
           .then(() => xls2xform(sourcePath, targetPath))
           .then(() => fixXml(targetPath))
           .then(() => trace('Converted form', sourcePath));
-      }));
+      },
+      Promise.resolve());
 };
 
 const xls2xform = (sourcePath, targetPath) =>
