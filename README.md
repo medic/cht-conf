@@ -95,3 +95,4 @@ This tool expects a project to be sctructured as follows:
 * support Google Sheets forms
 * support Collect forms
 * warn when properties in `<form>.properties.json` are ignored
+* make form upload sequential
