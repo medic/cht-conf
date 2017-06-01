@@ -35,4 +35,16 @@ const xls2xform = (sourcePath, targetPath) =>
 const fixXml = path =>
       fs.write(path, fs.read(path)
           // TODO This is not how you should modify XML
-          .replace(/ default="true\(\)"/g, ''));
+          .replace(/ default="true\(\)"/g, '')
+          .replace(/<inputs>/, META_XML_SECTION)
+          );
+
+const META_XML_SECTION = `<inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>`;
