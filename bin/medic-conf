@@ -33,9 +33,9 @@ if(args.length === 2) {
   actions = args.slice(2);
 }
 
-if(!actions.every(a => supportedActions.includes(a))) {
-  error(`Unsupported action: ${a}`);
-  usage();
+const unsupported = actions.filter(a => !supportedActions.includes(a));
+if(unsupported.length) {
+  error(`Unsupported action(s): ${unsupported.join(' ')}`);
   process.exit(1);
 }
 
