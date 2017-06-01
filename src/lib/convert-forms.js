@@ -34,7 +34,7 @@ module.exports = (project, subDirectory, options) => {
 };
 
 const xls2xform = (sourcePath, targetPath) =>
-    exec('medic-xls2xform', sourcePath, targetPath)
+    exec('xls2xform-medic', sourcePath, targetPath)
       .catch(e => {
         error('There was a problem executing xls2xform.  It may not be installed.  To install, run ' + require('../cli/xls2xform-installation-command'));
         throw e;
