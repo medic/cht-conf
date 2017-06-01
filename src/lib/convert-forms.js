@@ -4,20 +4,30 @@ const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
 const trace = require('../lib/log').trace;
 
-module.exports = (project, subDirectory) => {
+module.exports = (project, subDirectory, options) => {
+  if(!options) options = {};
+
   const formsDir = `${project}/forms/${subDirectory}`;
 
   return fs.readdir(formsDir)
     .filter(name => name.endsWith('.xlsx'))
     .reduce((promiseChain, xls) => {
-        const sourcePath = `${formsDir}/${xls}`;
-        const targetPath = `${formsDir}/${fs.withoutExtension(xls)}.xml`;
+        const originalSourcePath = `${formsDir}/${xls}`;
+        let sourcePath;
+
+        if(options.force_data_node) {
+          const temporaryPath = `${fs.mkdtemp()}/${options.force_data_node}.xlsx`;
+          fs.copy(originalSourcePath, temporaryPath);
+          sourcePath = temporaryPath;
+        } else sourcePath = originalSourcePath;
+
+        const targetPath = `${fs.withoutExtension(originalSourcePath)}.xml`;
 
         return promiseChain
-          .then(() => info('Converting form', sourcePath, '…'))
+          .then(() => info('Converting form', originalSourcePath, '…'))
           .then(() => xls2xform(sourcePath, targetPath))
           .then(() => fixXml(targetPath))
-          .then(() => trace('Converted form', sourcePath));
+          .then(() => trace('Converted form', originalSourcePath));
       },
       Promise.resolve());
 };

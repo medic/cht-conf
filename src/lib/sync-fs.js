@@ -47,8 +47,10 @@ function withoutExtension(fileName) {
 }
 
 module.exports = {
+  copy: (from, to) => fs.writeFileSync(to, fs.readFileSync(from)),
   exists: fs.existsSync,
   mkdir: path => { try { fs.mkdirSync(path); } catch(e) { /* yum yum */ } },
+  mkdtemp: () => fs.mkdtempSync('medic-conf'),
   read: read,
   readJson: readJson,
   readBinary: path => fs.readFileSync(path),
