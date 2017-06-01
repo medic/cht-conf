@@ -10,7 +10,7 @@ Medic Project Configurer
 # Installation
 
 	npm install -g medic-configurer-beta
-	python -m pip install -e git+https://github.com/alxndrsn/pyxform.git@master#egg=pyxform-medic
+	python -m pip install git+https://github.com/alxndrsn/pyxform.git@master#egg=pyxform-medic
 	eval "$(medic-conf --shell-completion bash)"
 
 # Use
