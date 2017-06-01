@@ -1,5 +1,7 @@
 const exec = require('../lib/exec-promise');
 const fs = require('../lib/sync-fs');
+const info = require('../lib/log').info;
+const trace = require('../lib/log').trace;
 
 module.exports = (project/*, couchUrl*/) => {
   const formsDir = `${project}/forms`;
