@@ -2,6 +2,7 @@
 
 const error = require('../src/lib/log').error;
 const info = require('../src/lib/log').info;
+const path = require('path');
 const usage = require('../src/cli/usage');
 const supportedActions = require('../src/cli/supported-actions');
 
@@ -11,7 +12,7 @@ if(args.length < 2) {
     process.exit(1);
 }
 
-const project = args[0];
+const project = path.normalize(args[0]).replace(/\/$/, '');
 const instanceUrl = args[1];
 const couchUrl = `${instanceUrl}/medic`;
 
