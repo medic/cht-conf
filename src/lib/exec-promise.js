@@ -1,7 +1,15 @@
-const exec = require('child_process').exec;
+const execSync = require('child_process').execSync;
 
-module.exports = (...args) =>
-  new Promise((resolve, reject) =>
-    exec(args.join(' '), err => {
-      return err ? reject(err) : resolve();
-    }));
+// TODO might be important to sanitise input to `exec()` to prevent injection
+// attacks by devious tech leads.
+
+module.exports = (...args) => {
+  try {
+    execSync(args.join(' '), {
+      stdio: ['ignore', process.stdout, process.stderr],
+    });
+    return Promise.resolve();
+  } catch(e) {
+    return Promise.reject(e);
+  }
+};

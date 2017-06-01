@@ -1,13 +1,14 @@
 {
   "name": "medic-configurer-beta",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
     "test": "grunt jshint test"
   },
   "bin": {
-    "medic-conf": "bin/medic-conf"
+    "medic-conf": "bin/medic-conf",
+    "medic-pngout": "bin/pngout"
   },
   "repository": {
     "type": "git",

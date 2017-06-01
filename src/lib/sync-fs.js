@@ -1,4 +1,6 @@
 const fs = require('fs');
+const path = require('path');
+const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
 
 function read(path) {
@@ -19,6 +21,26 @@ function readJson(path) {
   }
 }
 
+function recurseFiles(dir, files) {
+  if(!files) files = [];
+
+  fs.readdirSync(dir)
+    .forEach(name => {
+      const f = path.join(dir, name);
+      try {
+        const stat = fs.statSync(f);
+
+        if(stat.isDirectory()) recurseFiles(f, files);
+        else files.push(f);
+      } catch(e) {
+        if(e.code === 'ENOENT') trace('Ignoring file (err ENOENT - may be a symlink):', f);
+        else throw e;
+      }
+    });
+
+  return files;
+}
+
 function withoutExtension(fileName) {
   const extensionStart = fileName.lastIndexOf('.');
   return extensionStart === -1 ? fileName : fileName.substring(0, extensionStart);
@@ -30,6 +52,7 @@ module.exports = {
   read: read,
   readJson: readJson,
   readBinary: path => fs.readFileSync(path),
+  recurseFiles: recurseFiles,
   readdir: fs.readdirSync,
   withoutExtension: withoutExtension,
   write: (path, content) => fs.writeFileSync(path, content, 'utf8'),
