@@ -101,3 +101,6 @@ This tool expects a project to be sctructured as follows:
 * make form upload sequential
 * update links for pyxform to medic branch
 * ignore Excel temp files when converting to XML - ~$clinic.xlsx
+* make error logs shorter
+* redact server passwords from log output
+* redact server passwords from error output
