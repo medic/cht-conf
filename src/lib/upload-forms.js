@@ -39,6 +39,7 @@ module.exports = (project, couchUrl, subDirectory, options) => {
         type: 'form',
         internalId: internalId,
         title: readTitleFrom(xml),
+        context: options.default_context,
       };
 
       const propertiesPath = `${formsDir}/${baseFileName}.properties.json`;
@@ -67,7 +68,7 @@ const readIdFrom = xml =>
 const updateFromPropertiesFile = (doc, path) => {
   if(fs.exists(path)) {
     const properties = fs.readJson(path);
-    doc.context = properties.context;
+    if(typeof properties.context !== 'undefined') doc.context = properties.context;
     doc.icon = properties.icon;
 
     if(properties.internalId) {
