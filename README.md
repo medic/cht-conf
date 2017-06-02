@@ -102,3 +102,4 @@ This tool expects a project to be sctructured as follows:
 * update links for pyxform to medic branch
 * ignore Excel temp files when converting to XML - ~$clinic.xlsx
 * make error logs shorter
+* add task to create new project folder layout
