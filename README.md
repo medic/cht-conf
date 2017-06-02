@@ -100,3 +100,4 @@ This tool expects a project to be sctructured as follows:
 * support Collect forms
 * make form upload sequential
 * update links for pyxform to medic branch
+* ignore Excel temp files when converting to XML - ~$clinic.xlsx
