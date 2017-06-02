@@ -6,5 +6,7 @@ module.exports.warn = (...args) => logAtLevel('WARN', ...args);
 
 function logAtLevel(level, ...args) {
   args.unshift(level);
-  console.log.apply(console.log, args);
+  console.log.apply(console.log, args.map(redactUrls));
 }
+
+const redactUrls = s => s && s.toString().replace(/(http[s]?:\/\/[^:]*):[^@]*@/g, '$1:****@');
