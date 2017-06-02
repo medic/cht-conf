@@ -24,19 +24,20 @@ module.exports = (project, couchUrl, subDirectory, options) => {
       const baseFileName = fs.withoutExtension(fileName);
       const mediaDir = `${formsDir}/${baseFileName}-media`;
       const xformPath = `${formsDir}/${baseFileName}.xml`;
-      const expectedId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
+      const baseDocId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
 
       if(!fs.exists(mediaDir)) info(`No media directory found at ${mediaDir} for form ${xformPath}`);
 
       const xml = fs.read(xformPath);
 
-      const id = readIdFrom(xml);
-      if(id !== expectedId) warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', expectedId, 'but saw:', id, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
+      const internalId = readIdFrom(xml);
+      if(internalId !== baseDocId) warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
 
+      const docId = `form:${baseDocId}`;
       const doc = {
-        _id: `form:${id}`,
+        _id: docId,
         type: 'form',
-        internalId: id,
+        internalId: internalId,
         title: readTitleFrom(xml),
       };
 
@@ -46,10 +47,12 @@ module.exports = (project, couchUrl, subDirectory, options) => {
       doc._attachments = fs.exists(mediaDir) ? attachmentsFromDir(mediaDir) : {};
       doc._attachments.xml = attachmentFromFile(xformPath);
 
+      const docUrl = `${couchUrl}/${docId}`;
+
       return Promise.resolve()
-        .then(() => trace('Uploading form', `${formsDir}/${fileName}`, 'to', id))
+        .then(() => trace('Uploading form', `${formsDir}/${fileName}`, 'to', docUrl))
         .then(() => insertOrReplace(db, doc))
-        .then(() => info('Uploaded form', `${formsDir}/${fileName}`, 'to', id));
+        .then(() => info('Uploaded form', `${formsDir}/${fileName}`, 'to', docUrl));
     }));
 };
 
