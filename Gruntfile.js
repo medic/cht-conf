@@ -16,6 +16,16 @@ module.exports = grunt => {
           unused: true,
         },
       },
+      test: {
+        src: ['test/**/*.js'],
+        options: {
+          esversion: 6,
+          node: true,
+          undef: true,
+          unused: true,
+          predef: ['describe', 'it'],
+        },
+      },
     },
     mochaTest: {
       test: {
@@ -28,5 +38,5 @@ module.exports = grunt => {
   });
 
   grunt.registerTask('test', ['mochaTest']);
-  grunt.registerTask('default', ['jshint', 'test']);
+  grunt.registerTask('default', ['jshint:all', 'jshint:test', 'test']);
 };
