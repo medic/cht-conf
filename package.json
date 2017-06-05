@@ -1,6 +1,6 @@
 {
   "name": "medic-configurer-beta",
-  "version": "1.0.44",
+  "version": "1.0.45",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
@@ -30,6 +30,7 @@
     "grunt": "^1.0.1",
     "grunt-contrib-jshint": "^1.1.0",
     "grunt-mocha-test": "^0.13.2",
+    "lodash": "^4.17.4",
     "mocha": "^3.4.2"
   }
 }

@@ -10,7 +10,12 @@ if(idx === 1 && cur.match(/^-/)) {
 }
 
 if(idx === 2) {
-  options = ['http\\://', 'https\\://'];
+  const localhostMatch = cur.match(/http:\/\/[^:]+:[^@]+@/);
+  const remoteMatch = cur.match(/(https:\/\/[^:]+:[^@]+@[^-]+-[^.]+\.).*/);
+
+  if(localhostMatch) options = [ `${localhostMatch[0]}localhost:5988` ];
+  else if(remoteMatch) options = [ `${remoteMatch[1]}app.medicmobile.org`,  `${remoteMatch[1]}dev.medicmobile.org` ];
+  else options = ['http\\://', 'https\\://'];
 }
 
 if(idx >= 3) {
