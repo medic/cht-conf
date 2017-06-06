@@ -1,1 +1,1 @@
-"python -m pip install git+https://github.com/alxndrsn/pyxform.git@master#egg=pyxform-medic"
+"python -m pip install git+https://github.com/medic/pyxform.git@master#egg=pyxform-medic"

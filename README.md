@@ -10,7 +10,7 @@ Medic Project Configurer
 # Installation
 
 	npm install -g medic-configurer-beta
-	python -m pip install git+https://github.com/alxndrsn/pyxform.git@master#egg=pyxform-medic
+	python -m pip install git+https://github.com/medic/pyxform.git@master#egg=pyxform-medic
 	eval "$(medic-conf --shell-completion bash)"
 
 # Use
@@ -99,7 +99,6 @@ This tool expects a project to be sctructured as follows:
 * support Google Sheets forms
 * support Collect forms
 * make form upload sequential
-* update links for pyxform to medic branch
 * ignore Excel temp files when converting to XML - ~$clinic.xlsx
 * make error logs shorter
 * add task to create new project folder layout
