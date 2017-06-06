@@ -103,3 +103,4 @@ This tool expects a project to be sctructured as follows:
 * ignore Excel temp files when converting to XML - ~$clinic.xlsx
 * make error logs shorter
 * add task to create new project folder layout
+* add PNGout as somehow part of the form conversion step.  But make sure it's cleanly separated from XML processing step
