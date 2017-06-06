@@ -104,3 +104,4 @@ This tool expects a project to be sctructured as follows:
 * make error logs shorter
 * add task to create new project folder layout
 * add PNGout as somehow part of the form conversion step.  But make sure it's cleanly separated from XML processing step
+* remove `beta-` prefix from `--version` output

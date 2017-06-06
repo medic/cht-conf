@@ -16,7 +16,7 @@ switch(args[0]) {
     console.log('Supported actions:\n ', supportedActions.join('\n  '));
     return process.exit(0);
   case '--version':
-    console.log(require('../package.json').version);
+    console.log('beta-' + require('../package.json').version);
     return process.exit(0);
 }
 
