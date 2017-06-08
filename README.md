@@ -21,13 +21,13 @@ Medic Project Configurer
 
 ## Perform specific action(s)
 
-	medic-config example-project http://admin:pass@localhost:5984 <...action>
+	medic-conf example-project http://admin:pass@localhost:5984 <...action>
 
 The list of available actions can be seen in [`supported-actions.js`](https://github.com/alxndrsn/medic-configurer/blob/master/src/cli/supported-actions.js).
 
 ## Perform actions for specific forms
 
-	medic-config example-project http://admin:pass@localhost:5984 <...action> -- <...form>
+	medic-conf example-project http://admin:pass@localhost:5984 <...action> -- <...form>
 
 # Project Layout
 
