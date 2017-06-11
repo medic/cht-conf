@@ -6,6 +6,7 @@ module.exports = [
   'convert-app-forms',
   'convert-contact-forms',
   'delete-all-forms',
+  'initialise-project-layout',
   'upload-app-forms',
   'upload-app-settings',
   'upload-contact-forms',

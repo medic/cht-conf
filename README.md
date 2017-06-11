@@ -103,7 +103,6 @@ This tool expects a project to be sctructured as follows:
 * make form upload sequential
 * ignore Excel temp files when converting to XML - ~$clinic.xlsx
 * make error logs shorter
-* add task to create new project folder layout
 * add PNGout as somehow part of the form conversion step.  But make sure it's cleanly separated from XML processing step
 * remove `beta-` prefix from `--version` output
 * define configure-all as separate action; convert argument order to <action>-first?  How to allow multiple actions (if at all?)?
