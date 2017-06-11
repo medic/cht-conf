@@ -1,4 +1,3 @@
-const error = require('../lib/log').error;
 const execSync = require('child_process').execSync;
 const exec = require('../lib/exec-promise');
 const fs = require('../lib/sync-fs');
