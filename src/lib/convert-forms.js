@@ -39,10 +39,8 @@ module.exports = (project, subDirectory, options) => {
 const xls2xform = (sourcePath, targetPath) =>
     exec(XLS2XFORM, sourcePath, targetPath)
       .catch(e => {
-        if(!executableAvailable()) {
-          error('There was a problem executing xls2xform.  It may not be installed.  To install, run ' + require('../cli/xls2xform-installation-command'));
-        }
-        throw e;
+        if(executableAvailable()) throw e;
+        else throw new Error('There was a problem executing xls2xform.  It may not be installed.  To install, run ' + require('../cli/xls2xform-installation-command'));
       });
 
 // FIXME here we fix the form content in arcane ways.  Seeing as we have out own
