@@ -108,3 +108,4 @@ This tool expects a project to be sctructured as follows:
 * remove `beta-` prefix from `--version` output
 * define configure-all as separate action; convert argument order to <action>-first?  How to allow multiple actions (if at all?)?
 * improve xls2xform-medic error - manually detect whether it's installed before suggesting in the error message that it may not be
+* parse xls2xform JSON output and display nicely
