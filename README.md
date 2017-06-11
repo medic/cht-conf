@@ -37,7 +37,7 @@ This tool expects a project to be sctructured as follows:
 
 	example-project/
 		app_settings.json
-		contact-summary.json
+		contact-summary.js
 		resources.json
 		resources/
 			icon-one.png
