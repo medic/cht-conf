@@ -5,6 +5,8 @@ const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
 const trace = require('../lib/log').trace;
 
+const XLS2XFORM = 'xls2xform-medic';
+
 module.exports = (project, subDirectory, options) => {
   if(!options) options = {};
 
@@ -35,7 +37,7 @@ module.exports = (project, subDirectory, options) => {
 };
 
 const xls2xform = (sourcePath, targetPath) =>
-    exec('xls2xform-medic', sourcePath, targetPath)
+    exec(XLS2XFORM, sourcePath, targetPath)
       .catch(e => {
         if(!executableAvailable()) {
           error('There was a problem executing xls2xform.  It may not be installed.  To install, run ' + require('../cli/xls2xform-installation-command'));
@@ -69,7 +71,7 @@ const fixXml = path => {
 
 function executableAvailable() {
   try {
-    execSync('xls2xform-medic -h', {
+    execSync(`${XLS2XFORM} -h`, {
       stdio: ['ignore', 'ignore', 'ignore'],
     });
     return true;
