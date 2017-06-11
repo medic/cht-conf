@@ -95,14 +95,20 @@ This tool expects a project to be sctructured as follows:
 
 # TODO
 
-* only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
-* require manual confirmation of upload if url is *.app.medicmobile.org and either git is not available, or the working directory is dirty or has new files
-* move `npm publish` to travis and rename module to `medic-configurer`
 * support Google Sheets forms
 * support Collect forms
 * make form upload sequential
-* make error logs shorter
 * add PNGout as somehow part of the form conversion step.  But make sure it's cleanly separated from XML processing step
-* remove `beta-` prefix from `--version` output
 * define configure-all as separate action; convert argument order to <action>-first?  How to allow multiple actions (if at all?)?
+
+## Wishlist
+
+* make error logs shorter
+* only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
+* require manual confirmation of upload if url is *.app.medicmobile.org and either git is not available, or the working directory is dirty or has new files
 * parse xls2xform JSON output and display nicely
+
+## For official release
+
+* move `npm publish` to travis and rename module to `medic-configurer`
+* remove `beta-` prefix from `--version` output
