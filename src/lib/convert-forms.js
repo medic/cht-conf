@@ -1,4 +1,5 @@
 const error = require('../lib/log').error;
+const execSync = require('child_process').execSync;
 const exec = require('../lib/exec-promise');
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
@@ -36,7 +37,9 @@ module.exports = (project, subDirectory, options) => {
 const xls2xform = (sourcePath, targetPath) =>
     exec('xls2xform-medic', sourcePath, targetPath)
       .catch(e => {
-        error('There was a problem executing xls2xform.  It may not be installed.  To install, run ' + require('../cli/xls2xform-installation-command'));
+        if(!executableAvailable()) {
+          error('There was a problem executing xls2xform.  It may not be installed.  To install, run ' + require('../cli/xls2xform-installation-command'));
+        }
         throw e;
       });
 
@@ -63,6 +66,17 @@ const fixXml = path => {
 
   fs.write(path, xml);
 };
+
+function executableAvailable() {
+  try {
+    execSync('xls2xform-medic -h', {
+      stdio: ['ignore', 'ignore', 'ignore'],
+    });
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
 
 const shiftThingsAroundInTheModel = (path, xml) => {
   const baseName = fs.path.parse(path).name;
