@@ -40,9 +40,8 @@ const xls2xform = (sourcePath, targetPath) =>
         throw e;
       });
 
-// FIXME here we fix the form content before uploading it.  Seeing as we
-// have our own fork of pyxform, we should probably be doing this fixing
-// there.
+// FIXME here we fix the form content in arcane ways.  Seeing as we have out own
+// fork of pyxform, we should probably be doing this fixing there.
 const fixXml = path => {
   let xml = fs.read(path)
       // TODO This is not how you should modify XML
