@@ -12,7 +12,7 @@ module.exports = (project, couchUrl) => {
   fs.mkdir(parentBackupDir);
 
   function backup(form) {
-    const backupDir = `${parentBackupDir}/${form.id}`;
+    const backupDir = `${parentBackupDir}/${form.id.replace(/:/g, '_')}`;
 
     fs.mkdir(backupDir);
     db.get(form.id, { attachments:true, binary:true })
