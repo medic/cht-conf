@@ -30,7 +30,8 @@ module.exports = (project, subDirectory, options) => {
         return promiseChain
           .then(() => info('Converting form', originalSourcePath, '…'))
           .then(() => xls2xform(sourcePath, targetPath))
-          .then(() => fixXml(targetPath))
+          .then(() => getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`))
+          .then(hiddenFields => fixXml(targetPath, hiddenFields))
           .then(() => trace('Converted form', originalSourcePath));
       },
       Promise.resolve());
@@ -45,7 +46,7 @@ const xls2xform = (sourcePath, targetPath) =>
 
 // FIXME here we fix the form content in arcane ways.  Seeing as we have out own
 // fork of pyxform, we should probably be doing this fixing there.
-const fixXml = path => {
+const fixXml = (path, hiddenFields) => {
   let xml = fs.read(path)
       // TODO This is not how you should modify XML
       .replace(/ default="true\(\)"/g, '')
@@ -63,6 +64,11 @@ const fixXml = path => {
       .replace(/.*DELETE_THIS_LINE.*(\r|\n)/g, '')
       ;
 
+  if(hiddenFields) {
+    const r = new RegExp(`<(${hiddenFields.join('|')})(/?)>`, 'g');
+    xml = xml.replace(r, '<$1 tag="hidden"$2>');
+  }
+
   // The ordering of elements in the <model> has an arcane affect on the
   // order that docs are saved in the database when processing a form.
   // Move the main doc's element down to the bottom.
@@ -70,6 +76,11 @@ const fixXml = path => {
 
   fs.write(path, xml);
 };
+
+function getHiddenFields(propsJson) {
+  if(!fs.exists(propsJson)) return [];
+  else return fs.readJson(propsJson).hidden_fields;
+}
 
 function executableAvailable() {
   try {
