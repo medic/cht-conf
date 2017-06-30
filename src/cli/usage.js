@@ -13,7 +13,7 @@ Usage:
     medic-conf <projectName> <instanceUrl>
 
 Or:
-    medic-conf <action> <projectName> <instanceUrl>
+    medic-conf <projectName> <instanceUrl> <action>
 
 Supported actions:
     * ${supportedActions.join('\n    * ')}
