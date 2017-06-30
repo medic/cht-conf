@@ -8,7 +8,7 @@ const warn = require('../lib/log').warn;
 const PouchDB = require('pouchdb');
 
 
-const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId'];
+const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 
 
 module.exports = (project, couchUrl, subDirectory, options) => {
