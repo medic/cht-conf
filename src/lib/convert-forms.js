@@ -55,6 +55,10 @@ const fixXml = path => {
       // to actually merge the two instead.
       .replace(/<inputs>/, META_XML_SECTION)
 
+      // XLSForm does not allow saving a field without a label, so we use the
+      // placeholder NO_LABEL.
+      .replace(/NO_LABEL/g, '')
+
       // No comment.
       .replace(/.*DELETE_THIS_LINE.*(\r|\n)/g, '')
       ;
