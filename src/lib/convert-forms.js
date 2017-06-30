@@ -94,7 +94,7 @@ function executableAvailable() {
 }
 
 const shiftThingsAroundInTheModel = (path, xml) => {
-  const baseName = fs.path.parse(path).name;
+  const baseName = fs.path.parse(path).name.replace(/-(create|edit)$/, '');
   let matchedBlock;
 
   const matcher = new RegExp(`\\s*<${baseName}>[\\s\\S]*</${baseName}>\\s*(\\r|\\n)`);
