@@ -9,4 +9,7 @@ function logAtLevel(level, ...args) {
   console.log.apply(console.log, args.map(redactUrls));
 }
 
-const redactUrls = s => s && s.toString().replace(/(http[s]?:\/\/[^:]*):[^@]*@/g, '$1:****@');
+const redactUrls = s => {
+  if(s && typeof s !== 'string') s = JSON.stringify(s);
+  return s && s.replace(/(http[s]?:\/\/[^:]*):[^@]*@/g, '$1:****@');
+};
