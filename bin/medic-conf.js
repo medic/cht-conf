@@ -58,8 +58,8 @@ if(unsupported.length) {
 }
 
 info(`Processing config in ${project} for ${instanceUrl}.`);
-info('  Actions:', actions);
-info('  Extra args:', extraArgs);
+info('Actions:\n     -', actions.join('\n     - '));
+info('Extra args:', extraArgs);
 
 return actions.reduce((promiseChain, action) =>
     promiseChain
