@@ -9,6 +9,7 @@ module.exports = [
   'initialise-project-layout',
   'upload-app-forms',
   'upload-app-settings',
+  'upload-collect-forms',
   'upload-contact-forms',
   'upload-resources',
   'upload-custom-translations',

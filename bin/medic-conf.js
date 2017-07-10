@@ -45,6 +45,7 @@ if(!actions.length) {
     'backup-all-forms',
     'delete-all-forms',
     'upload-app-forms',
+    'upload-collect-forms',
     'upload-contact-forms',
     'upload-resources',
     'upload-custom-translations',
