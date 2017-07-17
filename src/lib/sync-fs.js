@@ -53,6 +53,7 @@ module.exports = {
   mkdir: path => { try { fs.mkdirSync(path); } catch(e) { /* yum yum */ } },
   mkdtemp: () => fs.mkdtempSync(`${os.tmpdir()}/medic-conf`),
   path: path,
+  posixPath: p => p.split(path.sep).join('/'),
   read: read,
   readJson: readJson,
   readBinary: path => fs.readFileSync(path),
