@@ -17,6 +17,12 @@ module.exports = (project, couchUrl, subDirectory, options) => {
   if(!options) options = {};
 
   const formsDir = `${project}/forms/${subDirectory}`;
+
+  if(!fs.exists(formsDir)) {
+    warn(`Forms dir not found: ${formsDir}`);
+    return Promise.resolve();
+  }
+
   return Promise.all(fs.readdir(formsDir)
     .filter(name => name.endsWith('.xml'))
     .filter(name => !options.forms || options.forms.includes(fs.withoutExtension(name)))

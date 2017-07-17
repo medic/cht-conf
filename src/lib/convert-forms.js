@@ -3,6 +3,7 @@ const exec = require('../lib/exec-promise');
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
 const trace = require('../lib/log').trace;
+const warn = require('../lib/log').warn;
 
 const XLS2XFORM = 'xls2xform-medic';
 
@@ -10,6 +11,11 @@ module.exports = (project, subDirectory, options) => {
   if(!options) options = {};
 
   const formsDir = `${project}/forms/${subDirectory}`;
+
+  if(!fs.exists(formsDir)) {
+    warn(`Forms dir not found: ${formsDir}`);
+    return Promise.resolve();
+  }
 
   return fs.readdir(formsDir)
     .filter(name => name.endsWith('.xlsx'))
