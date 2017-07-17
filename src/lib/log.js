@@ -11,6 +11,7 @@ function logAtLevel(color, level, ...args) {
 }
 
 const redactUrls = s => {
-  if(s && typeof s !== 'string') s = JSON.stringify(s);
+  if(s instanceof Error) s = s.toString();
+  else if(s && typeof s !== 'string') s = JSON.stringify(s);
   return s && s.replace(/(http[s]?:\/\/[^:]*):[^@]*@/g, '$1:****@');
 };
