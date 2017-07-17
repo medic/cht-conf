@@ -29,7 +29,7 @@ const couchUrl = `${instanceUrl}/medic`;
 let actions = args.slice(2);
 let extraArgs;
 
-const argDivider = actions.indexOf('--', 2);
+const argDivider = actions.indexOf('--');
 if(argDivider !== -1) {
   extraArgs = actions.slice(argDivider + 1);
   actions = actions.slice(0, argDivider);
