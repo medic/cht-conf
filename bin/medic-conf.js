@@ -3,8 +3,8 @@
 const error = require('../src/lib/log').error;
 const fs = require('../src/lib/sync-fs');
 const info = require('../src/lib/log').info;
-const usage = require('../src/cli/usage');
 const supportedActions = require('../src/cli/supported-actions');
+const usage = require('../src/cli/usage');
 
 const args = process.argv.slice(2);
 
