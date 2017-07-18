@@ -22,19 +22,21 @@ To enable tab completion in bash, add the following to your `.bashrc`/`.bash_pro
 
 # Use
 
+`medic-conf` will upload the configuration **_from your current directory_**.
+
 ## Upload all config
 
-	medic-conf example-project http://admin:pass@localhost:5984
+	medic-conf http://admin:pass@localhost:5984
 
 ## Perform specific action(s)
 
-	medic-conf example-project http://admin:pass@localhost:5984 <...action>
+	medic-conf http://admin:pass@localhost:5984 <...action>
 
 The list of available actions can be seen in [`supported-actions.js`](https://github.com/alxndrsn/medic-configurer/blob/master/src/cli/supported-actions.js).
 
 ## Perform actions for specific forms
 
-	medic-conf example-project http://admin:pass@localhost:5984 <...action> -- <...form>
+	medic-conf http://admin:pass@localhost:5984 <...action> -- <...form>
 
 # Project Layout
 

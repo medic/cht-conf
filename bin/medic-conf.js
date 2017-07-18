@@ -20,13 +20,13 @@ switch(args[0]) {
     return process.exit(0);
 }
 
-if(args.length < 2) return usage(1);
+if(args.length < 1) return usage(1);
 
-const project = fs.path.normalize(args[0]).replace(/\/$/, '');
-const instanceUrl = args[1];
+const projectName = fs.path.basename(fs.path.resolve('.'));
+const instanceUrl = args[0];
 const couchUrl = `${instanceUrl}/medic`;
 
-let actions = args.slice(2);
+let actions = args.slice(1);
 let extraArgs;
 
 const argDivider = actions.indexOf('--');
@@ -58,14 +58,14 @@ if(unsupported.length) {
   process.exit(1);
 }
 
-info(`Processing config in ${project} for ${instanceUrl}.`);
+info(`Processing config in ${projectName} for ${instanceUrl}.`);
 info('Actions:\n     -', actions.join('\n     - '));
 info('Extra args:', extraArgs);
 
 return actions.reduce((promiseChain, action) =>
     promiseChain
       .then(() => info(`Starting action: ${action}…`))
-      .then(() => require(`../src/fn/${action}`)(project, couchUrl, extraArgs))
+      .then(() => require(`../src/fn/${action}`)('.', couchUrl, extraArgs))
       .then(() => info(`${action} complete.`)),
     Promise.resolve())
   .then(() => { if(actions.length > 1) info('All actions completed.'); })

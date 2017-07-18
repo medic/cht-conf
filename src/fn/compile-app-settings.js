@@ -1,7 +1,7 @@
 const fs = require('../lib/sync-fs');
 
-module.exports = (project /*, couchUrl */) => {
-  const fromProject = relativePath => `${project}/${relativePath}`;
+module.exports = (projectDir /*, couchUrl */) => {
+  const fromProject = relativePath => `${projectDir}/${relativePath}`;
 
   return Promise.resolve()
     .then(() => {
@@ -23,7 +23,7 @@ module.exports = (project /*, couchUrl */) => {
         targets: files.targets,
       };
 
-      fs.writeJson(`${project}/app_settings.json`, app_settings);
+      fs.writeJson(`${projectDir}/app_settings.json`, app_settings);
     });
 };
 

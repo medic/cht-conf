@@ -3,8 +3,8 @@ const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
 const trace = require('../lib/log').trace;
 
-module.exports = (project/*, couchUrl*/) => {
-  return fs.recurseFiles(project)
+module.exports = (projectDir/*, couchUrl*/) => {
+  return fs.recurseFiles(projectDir)
     .filter(name => name.endsWith('.png'))
     .reduce((promiseChain, png) =>
       promiseChain

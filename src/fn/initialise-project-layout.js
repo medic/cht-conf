@@ -18,10 +18,10 @@ const LAYOUT = {
 };
 
 
-module.exports = (project/*, couchUrl*/) => {
-  if(fs.exists(project)) throw new Error(`Cannot initialise new project at ${project} because directory already exists.`);
+module.exports = (projectDir/*, couchUrl*/) => {
+  if(fs.exists(projectDir)) throw new Error(`Cannot initialise new project at ${projectDir} because directory already exists.`);
 
-  createRecursively(project, LAYOUT);
+  createRecursively(projectDir, LAYOUT);
 };
 
 function createRecursively(dir, layout) {

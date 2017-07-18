@@ -7,10 +7,10 @@ const warn = require('../lib/log').warn;
 
 const XLS2XFORM = 'xls2xform-medic';
 
-module.exports = (project, subDirectory, options) => {
+module.exports = (projectDir, subDirectory, options) => {
   if(!options) options = {};
 
-  const formsDir = `${project}/forms/${subDirectory}`;
+  const formsDir = `${projectDir}/forms/${subDirectory}`;
 
   if(!fs.exists(formsDir)) {
     warn(`Forms dir not found: ${formsDir}`);

@@ -4,8 +4,8 @@ const PouchDB = require('pouchdb');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
-module.exports = (project, couchUrl) => {
-  const dir = `${project}/translations`;
+module.exports = (projectDir, couchUrl) => {
+  const dir = `${projectDir}/translations`;
   const db = new PouchDB(couchUrl);
 
   return Promise.resolve()

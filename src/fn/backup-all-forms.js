@@ -4,9 +4,9 @@ const PouchDB = require('pouchdb');
 
 const backupFileFor = require('../lib/backup-file-for');
 
-module.exports = (project, couchUrl) => {
+module.exports = (projectDir, couchUrl) => {
   const db = new PouchDB(couchUrl);
-  const parentBackupDir = backupFileFor(project, 'forms');
+  const parentBackupDir = backupFileFor(projectDir, 'forms');
 
   log('Backing up forms to:', parentBackupDir);
   fs.mkdir(parentBackupDir);

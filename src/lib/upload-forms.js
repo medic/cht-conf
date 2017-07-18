@@ -11,12 +11,12 @@ const PouchDB = require('pouchdb');
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 
 
-module.exports = (project, couchUrl, subDirectory, options) => {
+module.exports = (projectDir, couchUrl, subDirectory, options) => {
   const db = new PouchDB(couchUrl);
 
   if(!options) options = {};
 
-  const formsDir = `${project}/forms/${subDirectory}`;
+  const formsDir = `${projectDir}/forms/${subDirectory}`;
 
   if(!fs.exists(formsDir)) {
     warn(`Forms dir not found: ${formsDir}`);

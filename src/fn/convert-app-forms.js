@@ -1,5 +1,5 @@
 const convertForms = require('../lib/convert-forms');
 
-module.exports = (project, couchUrl, extras) => convertForms(project, 'app', {
+module.exports = (projectDir, couchUrl, extras) => convertForms(projectDir, 'app', {
   forms: extras,
 });

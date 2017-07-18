@@ -1,6 +1,6 @@
 const PouchDB = require('pouchdb');
 
-module.exports = (project, couchUrl) => {
+module.exports = (projectDir, couchUrl) => {
   const db = new PouchDB(couchUrl);
 
   return db.query('medic-client/forms', { include_docs:true })

@@ -10,10 +10,10 @@ module.exports = exitCode => {
 # structured projects.
 
 Usage:
-    medic-conf <projectName> <instanceUrl>
+    medic-conf <instanceUrl>
 
 Or:
-    medic-conf <projectName> <instanceUrl> <action>
+    medic-conf <instanceUrl> <action>
 
 Supported actions:
     * ${supportedActions.join('\n    * ')}
