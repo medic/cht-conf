@@ -49,10 +49,9 @@ This tool expects a project to be sctructured as follows:
 		resources/
 			icon-one.png
 			…
+		rules.nools.js
 		targets.json
-		tasks/
-			rules.nools.js
-			schedules.json
+		tasks.json
 		forms/
 			app/
 				my_project_form.xlsx

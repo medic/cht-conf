@@ -8,9 +8,9 @@ module.exports = (projectDir /*, couchUrl */) => {
       const files = {
         app_settings: fs.readJson(fromProject('app_settings.json')),
         contact_summary: readJs(fromProject('contact-summary.js')),
-        nools: readJs(fromProject('tasks/rules.nools.js')),
+        nools: readJs(fromProject('rules.nools.js')),
         targets: fs.readJson(fromProject('targets.json')),
-        tasks_schedules: fs.readJson(fromProject('tasks/schedules.json')),
+        tasks_schedules: fs.readJson(fromProject('tasks.json')),
       };
 
       const app_settings = files.app_settings;

@@ -5,11 +5,9 @@ const LAYOUT = {
   'contact-summary.js': '',
   'resources.json': {},
   resources: {},
+  'rules.nools.js': '',
   'targets.json': {},
-  tasks: {
-    'rules.nools.js': '',
-    'schedules.json': {},
-  },
+  'tasks.json': {},
   forms: {
     app: {},
     contact: {},
