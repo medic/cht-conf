@@ -1,3 +1,5 @@
+const redactBasicAuth = require('redact-basic-auth');
+
 module.exports = (...args) => logAtLevel('\x1b[2m', 'TRACE', ...args);
 module.exports.error = (...args) => logAtLevel('\x1b[31m', 'ERROR', ...args);
 module.exports.info = (...args) => logAtLevel('\x1b[32m', 'INFO', ...args);
@@ -13,5 +15,5 @@ function logAtLevel(color, level, ...args) {
 const redactUrls = s => {
   if(s instanceof Error) s = s.toString();
   else if(s && typeof s !== 'string') s = JSON.stringify(s);
-  return s && s.replace(/(http[s]?:\/\/[^:]*):[^@]*@/g, '$1:****@');
+  return s && redactBasicAuth(s);
 };
