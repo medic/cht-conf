@@ -7,6 +7,7 @@ const readline = require('readline-sync');
 const redactBasicAuth = require('redact-basic-auth');
 const supportedActions = require('../src/cli/supported-actions');
 const usage = require('../src/cli/usage');
+const warn = require('../src/lib/log').warn;
 
 const args = process.argv.slice(2);
 
@@ -30,10 +31,9 @@ const couchUrl = `${instanceUrl}/medic`;
 
 const productionUrlMatch = /^http(?:s)?:\/\/(?:[^@]*@)?(.*)\.app\.medicmobile\.org(?:$|\/)/.exec(instanceUrl);
 if(productionUrlMatch && productionUrlMatch[1] !== projectName) {
-  if(!readline.keyInYN('\x1b[33mWARN ' +
-      `Attempting to upload configuration for \x1b[31m${projectName}\x1b[33m ` +
-      `to production instance: \x1b[31m${redactBasicAuth(instanceUrl)}\x1b[33m\n` +
-      'Continue?\x1b[0m')) {
+  warn(`Attempting to upload configuration for \x1b[31m${projectName}\x1b[33m `,
+      `to production instance: \x1b[31m${redactBasicAuth(instanceUrl)}\x1b[33m`);
+  if(!readline.keyInYN()) {
     error('User failed to confirm action.');
     process.exit(1);
   }
