@@ -1,4 +1,5 @@
 const fs = require('fs');
+const mkdirp = require('mkdirp').sync;
 const os = require('os');
 const path = require('path');
 const trace = require('../lib/log').trace;
@@ -50,7 +51,7 @@ function withoutExtension(fileName) {
 module.exports = {
   copy: (from, to) => fs.writeFileSync(to, fs.readFileSync(from)),
   exists: fs.existsSync,
-  mkdir: path => { try { fs.mkdirSync(path); } catch(e) { /* yum yum */ } },
+  mkdir: path => { try { mkdirp(path); } catch(e) { warn(e); } },
   mkdtemp: () => fs.mkdtempSync(`${os.tmpdir()}/medic-conf`),
   path: path,
   posixPath: p => p.split(path.sep).join('/'),
