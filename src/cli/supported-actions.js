@@ -4,6 +4,7 @@ module.exports = [
   'compile-app-settings',
   'compress-images',
   'convert-app-forms',
+  'convert-collect-forms',
   'convert-contact-forms',
   'delete-all-forms',
   'initialise-project-layout',

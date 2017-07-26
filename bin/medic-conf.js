@@ -54,6 +54,7 @@ if(!actions.length) {
     'backup-app-settings',
     'upload-app-settings',
     'convert-app-forms',
+    'convert-collect-forms',
     'convert-contact-forms',
     'backup-all-forms',
     'delete-all-forms',
