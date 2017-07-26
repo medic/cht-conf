@@ -4,7 +4,8 @@
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
-    "test": "grunt jshint test"
+    "jshint": "jshint src/**/*.js bin/*.js test/**/*.js",
+    "test": "npm run jshint && mocha test/**/*.js"
   },
   "bin": {
     "medic-conf": "bin/medic-conf.js",
@@ -29,9 +30,7 @@
   },
   "devDependencies": {
     "chai": "^4.0.0",
-    "grunt": "^1.0.1",
-    "grunt-contrib-jshint": "^1.1.0",
-    "grunt-mocha-test": "^0.13.2",
+    "jshint": "^2.9.5",
     "lodash": "^4.17.4",
     "mocha": "^3.4.2"
   }
