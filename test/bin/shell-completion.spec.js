@@ -1,71 +1,35 @@
-const _ = require('lodash');
 const assert = require('chai').assert;
 
-describe('shell-completion', () => {
+describe.only('shell-completion', () => {
 
-  it('should supply --XXX options if initial dash is provided', () => {
+  it('should supply --options and actions', () => {
 
     // expect
-    return assertShellComplete('-',
+    return assertShellComplete('',
+        '--instance',
+        '--local',
+        '--url',
+
         '--help',
         '--shell-completion',
         '--supported-actions',
-        '--version');
+        '--version',
 
-  });
-
-  it('should supply http... option if entering second word', () => {
-
-    // expect
-    return assertShellComplete(['some-project', ''],
-        'http\\://',
-        'https\\://');
-
-  });
-
-  describe('URL autocompletion', () => {
-
-    _.forIn({
-      'http://admin:pass@': 'http://admin:pass@localhost:5988',
-      'http://uname:pword@': 'http://uname:pword@localhost:5988',
-
-      'https://admin:pass@asdf-asdf.': [ 'https://admin:pass@asdf-asdf.app.medicmobile.org', 'https://admin:pass@asdf-asdf.dev.medicmobile.org' ],
-      'https://admin:pass@asdf-asdf.app.medic': [ 'https://admin:pass@asdf-asdf.app.medicmobile.org', 'https://admin:pass@asdf-asdf.dev.medicmobile.org' ],
-    }, (expectedCompletion, prefix) => {
-
-      if(!Array.isArray(expectedCompletion)) expectedCompletion = [ expectedCompletion ];
-
-      it(`should autocomplete ${prefix}`, () => {
-
-        // expect
-        return assertShellComplete(['some-project', prefix], ...expectedCompletion);
-
-      });
-
-    });
-
-    [
-      'http://admin',
-      'http://admin:',
-      'http://admin:pass',
-
-      'https://admin',
-      'https://admin:',
-      'https://admin:pass',
-      'https://admin:pass@',
-      'https://admin:pass@asdf',
-      'https://admin:pass@asdf-',
-      'https://admin:pass@asdf-asdf',
-    ].forEach(prefix => {
-
-      it(`should not autocomplete ${prefix}`, () => {
-
-        // expect
-        return assertShellComplete(['some-project', prefix], 'http\\://', 'https\\://');
-
-      });
-
-    });
+        'backup-app-settings',
+        'backup-all-forms',
+        'compile-app-settings',
+        'compress-images',
+        'convert-app-forms',
+        'convert-collect-forms',
+        'convert-contact-forms',
+        'delete-all-forms',
+        'initialise-project-layout',
+        'upload-app-forms',
+        'upload-app-settings',
+        'upload-collect-forms',
+        'upload-contact-forms',
+        'upload-resources',
+        'upload-custom-translations');
 
   });
 
