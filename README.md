@@ -119,7 +119,6 @@ This tool expects a project to be sctructured as follows:
 
 * make error logs shorter
 * only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
-* require manual confirmation of upload if url is *.app.medicmobile.org and either git is not available, or the working directory is dirty or has new files
 * parse xls2xform JSON output and display nicely
 
 ## For official release
