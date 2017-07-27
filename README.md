@@ -114,7 +114,6 @@ This tool expects a project to be sctructured as follows:
 * support Google Sheets forms
 * make form upload sequential
 * add PNGout as somehow part of the form conversion step.  But make sure it's cleanly separated from XML processing step
-* define configure-all as separate action; convert argument order to <action>-first?  How to allow multiple actions (if at all?)?
 
 ## Wishlist
 
