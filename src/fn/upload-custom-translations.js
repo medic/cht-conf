@@ -1,10 +1,13 @@
 const fs = require('../lib/sync-fs');
+const skipFn = require('../lib/skip-fn');
 const warn = require('../lib/log').warn;
 const PouchDB = require('pouchdb');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
 module.exports = (projectDir, couchUrl) => {
+  if(!couchUrl) return skipFn('no couch URL set');
+
   const dir = `${projectDir}/translations`;
   const db = new PouchDB(couchUrl);
 

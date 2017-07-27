@@ -1,7 +1,10 @@
 const fs = require('../lib/sync-fs');
 const request = require('request-promise-native');
+const skipFn = require('../lib/skip-fn');
 
 module.exports = (projectDir, couchUrl) => {
+  if(!couchUrl) return skipFn('no couch URL set');
+
   return request
     .put({
       method: 'PUT',

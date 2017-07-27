@@ -3,6 +3,7 @@ const attachmentFromFile = require('../lib/attachment-from-file');
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
 const insertOrReplace = require('../lib/insert-or-replace');
+const skipFn = require('../lib/skip-fn');
 const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
 const PouchDB = require('pouchdb');
@@ -12,6 +13,8 @@ const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 
 
 module.exports = (projectDir, couchUrl, subDirectory, options) => {
+  if(!couchUrl) return skipFn('no couch URL set');
+
   const db = new PouchDB(couchUrl);
 
   if(!options) options = {};

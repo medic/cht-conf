@@ -9,9 +9,28 @@ const supportedActions = require('../src/cli/supported-actions');
 const usage = require('../src/cli/usage');
 const warn = require('../src/lib/log').warn;
 
-const args = process.argv.slice(2);
+let args = process.argv.slice(2);
+const shift = n => args = args.slice(n || 1);
+
+let instanceUrl;
 
 switch(args[0]) {
+
+//> instance URL handling:
+  case '--instance':
+    instanceUrl = `https://${args[1]}.medicmobile.org`;
+    shift(2);
+    break;
+  case '--local':
+    instanceUrl = 'http://admin:pass@localhost:5988';
+    shift();
+    break;
+  case '--url':
+    instanceUrl = args[1];
+    shift(2);
+    break;
+
+//> general option handling:
   case '--help': return usage(0);
   case '--shell-completion':
     return require('../src/cli/shell-completion-setup')(args[1]);
@@ -23,25 +42,24 @@ switch(args[0]) {
     return process.exit(0);
 }
 
-if(args.length < 1) return usage(1);
-
 const projectName = fs.path.basename(fs.path.resolve('.'));
-const instanceUrl = args[0];
-const couchUrl = `${instanceUrl}/medic`;
+const couchUrl = instanceUrl && `${instanceUrl}/medic`;
 
-if(instanceUrl.match('/medic$')) warn('Supplied URL ends in "/medic".  This is probably incorrect.');
+if(instanceUrl) {
+  if(instanceUrl.match('/medic$')) warn('Supplied URL ends in "/medic".  This is probably incorrect.');
 
-const productionUrlMatch = /^http(?:s)?:\/\/(?:[^@]*@)?(.*)\.app\.medicmobile\.org(?:$|\/)/.exec(instanceUrl);
-if(productionUrlMatch && productionUrlMatch[1] !== projectName) {
-  warn(`Attempting to upload configuration for \x1b[31m${projectName}\x1b[33m `,
-      `to production instance: \x1b[31m${redactBasicAuth(instanceUrl)}\x1b[33m`);
-  if(!readline.keyInYN()) {
-    error('User failed to confirm action.');
-    process.exit(1);
+  const productionUrlMatch = instanceUrl.match(/^http(?:s)?:\/\/(?:[^@]*@)?(.*)\.app\.medicmobile\.org(?:$|\/)/);
+  if(productionUrlMatch && productionUrlMatch[1] !== projectName) {
+    warn(`Attempting to upload configuration for \x1b[31m${projectName}\x1b[33m `,
+        `to production instance: \x1b[31m${redactBasicAuth(instanceUrl)}\x1b[33m`);
+    if(!readline.keyInYN()) {
+      error('User failed to confirm action.');
+      process.exit(1);
+    }
   }
 }
 
-let actions = args.slice(1);
+let actions = args;
 let extraArgs;
 
 const argDivider = actions.indexOf('--');

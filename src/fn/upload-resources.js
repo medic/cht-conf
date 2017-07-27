@@ -1,4 +1,5 @@
 const fs = require('../lib/sync-fs');
+const skipFn = require('../lib/skip-fn');
 const warn = require('../lib/log').warn;
 const PouchDB = require('pouchdb');
 
@@ -6,6 +7,8 @@ const attachmentsFromDir = require('../lib/attachments-from-dir');
 const insertOrReplace = require('../lib/insert-or-replace');
 
 module.exports = (projectDir, couchUrl) => {
+  if(!couchUrl) return skipFn('no couch URL set');
+
   const resourcesPath = fs.path.resolve(`${projectDir}/resources.json`);
 
   if(!fs.exists(resourcesPath)) {
