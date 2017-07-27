@@ -29,6 +29,8 @@ const projectName = fs.path.basename(fs.path.resolve('.'));
 const instanceUrl = args[0];
 const couchUrl = `${instanceUrl}/medic`;
 
+if(instanceUrl.match('/medic$')) warn('Supplied URL ends in "/medic".  This is probably incorrect.');
+
 const productionUrlMatch = /^http(?:s)?:\/\/(?:[^@]*@)?(.*)\.app\.medicmobile\.org(?:$|\/)/.exec(instanceUrl);
 if(productionUrlMatch && productionUrlMatch[1] !== projectName) {
   warn(`Attempting to upload configuration for \x1b[31m${projectName}\x1b[33m `,
