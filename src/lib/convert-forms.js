@@ -6,12 +6,16 @@ const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
 
 const XLS2XFORM = 'xls2xform-medic';
-const INSTALLATION_INSTRUCTIONS = `\nE To install, try one of the following:
+const INSTALLATION_INSTRUCTIONS = `\nE To install the latest pyxform, try one of the following:
 E
 E Ubuntu
-E	sudo python -m pip install git+https://github.com/medic/pyxform.git@master#egg=pyxform-medic
+E	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
 E OSX
-E	pip install git+https://github.com/medic/pyxform.git@master#egg=pyxform-medic`;
+E	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic`;
+const UPDATE_INSTRUCTIONS = `\nE To remove the old version of pyxform:
+E
+E	pip uninstall pyxform-medic
+E` + INSTALLATION_INSTRUCTIONS;
 
 module.exports = (projectDir, subDirectory, options) => {
   if(!options) options = {};
@@ -50,10 +54,13 @@ module.exports = (projectDir, subDirectory, options) => {
 };
 
 const xls2xform = (sourcePath, targetPath) =>
-    exec(XLS2XFORM, sourcePath, targetPath)
+    exec(XLS2XFORM, '--skip_validate', sourcePath, targetPath)
       .catch(e => {
-        if(executableAvailable()) throw e;
-        else throw new Error('There was a problem executing xls2xform.  It may not be installed.' + INSTALLATION_INSTRUCTIONS);
+        if(executableAvailable()) {
+          if(e.includes('unrecognized arguments: --skip_validate')) {
+            throw new Error('Your xls2xform installation appears to be out of date.' + UPDATE_INSTRUCTIONS);
+          } else throw e;
+        } else throw new Error('There was a problem executing xls2xform.  It may not be installed.' + INSTALLATION_INSTRUCTIONS);
       });
 
 // FIXME here we fix the form content in arcane ways.  Seeing as we have out own

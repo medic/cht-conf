@@ -12,12 +12,12 @@ Medic Project Configurer
 ## Ubuntu
 
 	npm install -g medic-configurer-beta
-	sudo python -m pip install git+https://github.com/medic/pyxform.git@master#egg=pyxform-medic
+	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
 
 ## OSX
 
 	npm install -g medic-configurer-beta
-	pip install git+https://github.com/medic/pyxform.git@master#egg=pyxform-medic
+	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
 
 ## Bash completion
 

@@ -19,7 +19,9 @@ module.exports = {
 
       const projectDir = 'build/test';
 
-      // recursively copy forms and expected XML to temp directory
+      // recursively copy forms and expected XML to temp directory, and create
+      // tests dynamically
+
       const srcDir = `test/data/fn/convert-${type}-forms`;
       const formsDir = `${projectDir}/forms/${type}`;
 
@@ -29,29 +31,27 @@ module.exports = {
         .forEach(file => {
           let targetName = path.basename(file);
 
-          if(XML.test(file)) targetName += '.expected';
-          else if(!XLS.test(file) && !PROPERTIES_JSON.test(file))
+          if(XML.test(file)) {
+
+            const srcXml = `${formsDir}/${targetName}`;
+            targetName += '.expected';
+
+            it(`should convert ${srcXml} as expected`, () => {
+
+              const expectedXml = `${srcXml}.expected`;
+              assert.ok(fs.exists(expectedXml), `Missing expected XML file: ${expectedXml}`);
+              assert.equal(fs.read(srcXml), fs.read(expectedXml), `Content of ${srcXml} was not as expected.`);
+
+            });
+
+          } else if(!XLS.test(file) && !PROPERTIES_JSON.test(file)) {
             warn(`Ignoring unexpected file type: ${file}`);
+          }
 
           fs.copy(file, `${formsDir}/${targetName}`);
         });
 
-      convertForms(projectDir)
-        .then(() => {
-
-          fs.recurseFiles(formsDir)
-            .filter(name => XML.test(name))
-            .forEach(xml => {
-
-              it(`should convert ${xml} as expected`, () => {
-
-                const expectedXml = `${xml}.expected`;
-                assert.ok(fs.exists(expectedXml), `Missing expected XML file: ${xml}`);
-                assert.equal(fs.read(xml), fs.read(expectedXml), `Content of ${xml} was not as expected.`);
-
-              });
-            });
-          });
+      before(() => convertForms(projectDir));
 
     });
 
