@@ -44,7 +44,7 @@ module.exports = (projectDir, subDirectory, options) => {
 };
 
 const xls2xform = (sourcePath, targetPath) =>
-    exec(XLS2XFORM, sourcePath, targetPath)
+    exec(XLS2XFORM, '--skip_validate', sourcePath, targetPath)
       .catch(e => {
         if(executableAvailable()) throw e;
         else throw new Error('There was a problem executing xls2xform.  It may not be installed.  To install, run ' + require('../cli/xls2xform-installation-command'));

@@ -9,10 +9,15 @@ Medic Project Configurer
 
 # Installation
 
+## Ubuntu
+
 	npm install -g medic-configurer-beta
 	sudo python -m pip install git+https://github.com/medic/pyxform.git@master#egg=pyxform-medic
 
-Note: on some setups, e.g. OSX, `sudo` may not be required when installing `pyxform-medic`.
+## OSX
+
+	npm install -g medic-configurer-beta
+	pip install git+https://github.com/medic/pyxform.git@master#egg=pyxform-medic
 
 ## Bash completion
 
