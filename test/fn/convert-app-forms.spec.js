@@ -1,6 +1,7 @@
 const assert = require('chai').assert;
 const fs = require('../../src/lib/sync-fs');
 const path = require('path');
+const warn = require('../../src/lib/log').warn;
 
 const convertAppForms = require('../../src/fn/convert-app-forms');
 
@@ -27,7 +28,7 @@ describe('convert-app-forms', () => {
 
         if(XML.test(file)) targetName += '.expected';
         else if(!XLS.test(file) && !PROPERTIES_JSON.test(file))
-          throw new Error(`Unexpected file type ${file}`);
+          warn(`Ignoring unexpected file type: ${file}`);
 
         fs.copy(file, `${appFormsDir}/${targetName}`);
       });
