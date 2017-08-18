@@ -14,7 +14,7 @@ describe('convert-app-forms', () => {
   let testId = 0;
 
   beforeEach(() => {
-    // TODO recursively copy forms and expected XML to temp directory
+    // recursively copy forms and expected XML to temp directory
     const srcDir = 'test/data/fn/convert-app-forms';
     console.log('this', this);
     projectDir = 'build/test/' + (++testId);
