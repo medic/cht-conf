@@ -33,7 +33,7 @@ describe('convert-app-forms', () => {
       });
   });
 
-  it.only('should convert app forms in-line with examples', function() {
+  it('should convert app forms in-line with examples', function() {
     // given
     this.timeout(30000);
 
