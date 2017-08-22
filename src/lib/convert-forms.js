@@ -6,6 +6,12 @@ const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
 
 const XLS2XFORM = 'xls2xform-medic';
+const INSTALLATION_INSTRUCTIONS = `\nE To install, try one of the following:
+E
+E Ubuntu
+E	sudo python -m pip install git+https://github.com/medic/pyxform.git@master#egg=pyxform-medic
+E OSX
+E	pip install git+https://github.com/medic/pyxform.git@master#egg=pyxform-medic`;
 
 module.exports = (projectDir, subDirectory, options) => {
   if(!options) options = {};
@@ -47,7 +53,7 @@ const xls2xform = (sourcePath, targetPath) =>
     exec(XLS2XFORM, sourcePath, targetPath)
       .catch(e => {
         if(executableAvailable()) throw e;
-        else throw new Error('There was a problem executing xls2xform.  It may not be installed.  To install, run ' + require('../cli/xls2xform-installation-command'));
+        else throw new Error('There was a problem executing xls2xform.  It may not be installed.' + INSTALLATION_INSTRUCTIONS);
       });
 
 // FIXME here we fix the form content in arcane ways.  Seeing as we have out own
