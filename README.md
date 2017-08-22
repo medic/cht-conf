@@ -121,7 +121,6 @@ This tool expects a project to be sctructured as follows:
 
 ## Wishlist
 
-* make error logs shorter
 * only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
 * parse xls2xform JSON output and display nicely
 
