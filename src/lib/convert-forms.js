@@ -103,15 +103,17 @@ const shiftThingsAroundInTheModel = (path, xml) => {
   const baseName = fs.path.parse(path).name.replace(/-(create|edit)$/, '');
   let matchedBlock;
 
-  const matcher = new RegExp(`\\s*<${baseName}>[\\s\\S]*</${baseName}>\\s*(\\r|\\n)`);
+  if(xml.includes('</inputs>')) {
+    const matcher = new RegExp(`\\s*<${baseName}>[\\s\\S]*</${baseName}>\\s*(\\r|\\n)`);
 
-  xml = xml.replace(matcher, match => {
-    matchedBlock = match;
-    return '\n';
-  });
+    xml = xml.replace(matcher, match => {
+      matchedBlock = match;
+      return '\n';
+    });
 
-  if(matchedBlock) {
-    xml = xml.replace(/<\/inputs>(\r|\n)/, '</inputs>' + matchedBlock);
+    if(matchedBlock) {
+      xml = xml.replace(/<\/inputs>(\r|\n)/, '</inputs>' + matchedBlock);
+    }
   }
 
   return xml;
