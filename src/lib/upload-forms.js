@@ -26,10 +26,10 @@ module.exports = (projectDir, couchUrl, subDirectory, options) => {
     return Promise.resolve();
   }
 
-  return Promise.all(fs.readdir(formsDir)
+  return fs.readdir(formsDir)
     .filter(name => name.endsWith('.xml'))
     .filter(name => !options.forms || options.forms.includes(fs.withoutExtension(name)))
-    .map(fileName => {
+    .reduce((promiseChain, fileName) => {
       const baseFileName = fs.withoutExtension(fileName);
       const mediaDir = `${formsDir}/${baseFileName}-media`;
       const xformPath = `${formsDir}/${baseFileName}.xml`;
@@ -59,11 +59,11 @@ module.exports = (projectDir, couchUrl, subDirectory, options) => {
 
       const docUrl = `${couchUrl}/${docId}`;
 
-      return Promise.resolve()
+      return promiseChain
         .then(() => trace('Uploading form', `${formsDir}/${fileName}`, 'to', docUrl))
         .then(() => insertOrReplace(db, doc))
         .then(() => info('Uploaded form', `${formsDir}/${fileName}`, 'to', docUrl));
-    }));
+    }, Promise.resolve());
 };
 
 // TODO this isn't really how to parse XML

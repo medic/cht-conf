@@ -117,7 +117,6 @@ This tool expects a project to be sctructured as follows:
 # TODO
 
 * support Google Sheets forms
-* make form upload sequential
 * add PNGout as somehow part of the form conversion step.  But make sure it's cleanly separated from XML processing step
 
 ## Wishlist
