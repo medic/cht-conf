@@ -1,1 +1,2 @@
 language: node_js
+before_script: ! grep -Fq '.only(' test/**/*.spec.js
