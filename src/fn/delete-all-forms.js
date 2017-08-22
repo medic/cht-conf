@@ -4,7 +4,7 @@ const pouch = require('../lib/db');
 module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
 
-  const db = new pouch(couchUrl);
+  const db = pouch(couchUrl);
 
   return db.query('medic-client/forms', { include_docs:true })
     .then(res => res.rows)

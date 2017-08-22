@@ -8,7 +8,7 @@ const backupFileFor = require('../lib/backup-file-for');
 module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
 
-  const db = new pouch(couchUrl);
+  const db = pouch(couchUrl);
   const parentBackupDir = backupFileFor(projectDir, 'forms');
 
   log('Backing up forms to:', parentBackupDir);

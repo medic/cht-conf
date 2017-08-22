@@ -16,7 +16,7 @@ module.exports = (projectDir, couchUrl) => {
     return Promise.resolve();
   }
 
-  const db = new pouch(couchUrl);
+  const db = pouch(couchUrl);
 
   return insertOrReplace(db, {
     _id: 'resources',

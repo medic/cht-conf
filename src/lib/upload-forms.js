@@ -14,7 +14,7 @@ const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 module.exports = (projectDir, couchUrl, subDirectory, options) => {
   if(!couchUrl) return skipFn('no couch URL set');
 
-  const db = new pouch(couchUrl);
+  const db = pouch(couchUrl);
 
   if(!options) options = {};
 

@@ -9,7 +9,7 @@ module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
 
   const dir = `${projectDir}/translations`;
-  const db = new pouch(couchUrl);
+  const db = pouch(couchUrl);
 
   return Promise.resolve()
     .then(() => {
