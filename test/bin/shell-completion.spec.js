@@ -1,6 +1,6 @@
 const assert = require('chai').assert;
 
-describe.only('shell-completion', () => {
+describe('shell-completion', () => {
 
   it('should supply --options and actions', () => {
 
