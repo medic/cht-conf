@@ -127,5 +127,5 @@ This tool expects a project to be sctructured as follows:
 
 ## For official release
 
-* move `npm publish` to travis and rename module to `medic-configurer`
+* rename module to `medic-configurer`
 * remove `beta-` prefix from `--version` output
