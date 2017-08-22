@@ -6,7 +6,8 @@
       <itext>
         <translation lang="hi">
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:label">
-            <value><output value=" /postnatal_visit/chw_name "/>के साथ पुष्टि करें के क्या बच्चे को इनमें से कोई खतरा है |</value></text>
+            <value><output value=" /postnatal_visit/chw_name "/> के साथ पुष्टि करें के क्या बच्चे को इनमें से कोई खतरा है |</value>
+          </text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign9:label">
             <value>सब कुछ उल्टी कर देता है</value>
           </text>
@@ -103,7 +104,7 @@
             <value>बुखार</value>
           </text>
           <text id="/postnatal_visit/group_review/r_referral:label">
-            <value>खतरे के संकेत&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+            <value>खतरे के संकेत&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
             <value>अन्य खतरे के संकेत</value>
@@ -163,7 +164,7 @@
             <value>संक्रमित गर्भनाल</value>
           </text>
           <text id="/postnatal_visit/group_review/r_followup:label">
-            <value>सुनिश्चित करने के लिए सन्देश &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>सुनिश्चित करने के लिए सन्देश &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign10:label">
             <value>बहुत निद्रालु</value>
@@ -184,8 +185,7 @@
             <value>दस्त</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:label">
-            <value>
-              <output value=" /postnatal_visit/chw_name "/>के साथ पुष्टि करें के क्या <output value=" /postnatal_visit/patient_name "/> को इनमें से कोई खतरा है |</value>
+            <value><output value=" /postnatal_visit/chw_name "/> के साथ पुष्टि करें के क्या <output value=" /postnatal_visit/patient_name "/> को इनमें से कोई खतरा है |</value>
           </text>
           <text id="/postnatal_visit/danger_signs_mom:label">
             <value>माँ की खतरे के संकेत</value>
@@ -289,7 +289,8 @@
             <value>तेजी से सांस लेना</value>
           </text>
           <text id="/postnatal_visit/group_chw_info/chw_information:label">
-            <value><output value=" /postnatal_visit/patient_name "/>के लिए गर्भावस्था की बाद की जांच दर्ज नहीं की गयी है |</value></text>
+            <value><output value=" /postnatal_visit/patient_name "/> के लिए गर्भावस्था की बाद की जांच दर्ज नहीं की गयी है |</value>
+          </text>
           <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit:label">
             <value>-</value>
           </text>
@@ -339,10 +340,10 @@
             <value>सिरदर्द या चेहरे की सूजन</value>
           </text>
           <text id="/postnatal_visit/group_review/r_visit:label">
-            <value>जांच की जानकारी &lt;i class=&quot;fa fa-plus-square&quot;&gt;&lt;/i&gt;</value>
+            <value>जांच की जानकारी &lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/group_review/r_summary:label">
-            <value>मरीज़ की जानकारी &lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>मरीज़ की जानकारी &lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/referral_follow_up_needed_baby:label">
             <value>बच्चे को भेजें</value>
@@ -470,7 +471,7 @@ Call: <output value=" /postnatal_visit/chw_phone "/></value></text>
             <value>Fever</value>
           </text>
           <text id="/postnatal_visit/group_review/r_referral:label">
-            <value>Danger Signs&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+            <value>Danger Signs&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
             <value>Other danger signs</value>
@@ -530,7 +531,7 @@ Call: <output value=" /postnatal_visit/chw_phone "/></value></text>
             <value>Infected umblical cord</value>
           </text>
           <text id="/postnatal_visit/group_review/r_followup:label">
-            <value>Follow Up Message &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>Follow Up Message &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign10:label">
             <value>Very sleepy</value>
@@ -707,10 +708,10 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
             <value>Headaches or swelling of the face</value>
           </text>
           <text id="/postnatal_visit/group_review/r_visit:label">
-            <value>Visit Information&lt;i class=&quot;fa fa-plus-square&quot;&gt;&lt;/i&gt;</value>
+            <value>Visit Information&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/group_review/r_summary:label">
-            <value>Patient Information&lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>Patient Information&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/referral_follow_up_needed_baby:label">
             <value>Refer Baby</value>
@@ -837,7 +838,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
             <value>Demam</value>
           </text>
           <text id="/postnatal_visit/group_review/r_referral:label">
-            <value>Tanda-tanda bahaya&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+            <value>Tanda-tanda bahaya&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
             <value>Tanda bahaya lainnya</value>
@@ -897,7 +898,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
             <value>Tali pusar terinfeksi</value>
           </text>
           <text id="/postnatal_visit/group_review/r_followup:label">
-            <value>Follow Up Pesan &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>Follow Up Pesan &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign10:label">
             <value>Sangat mengantuk</value>
@@ -1075,10 +1076,10 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
             <value>Sakit kepala atau pembengkakan wajah</value>
           </text>
           <text id="/postnatal_visit/group_review/r_visit:label">
-            <value>Mengunjungi informasi&lt;i class=&quot;fa fa-plus-square&quot;&gt;&lt;/i&gt;</value>
+            <value>Mengunjungi informasi&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/group_review/r_summary:label">
-            <value>Informasi pasien &lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>Informasi pasien &lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/postnatal_visit/referral_follow_up_needed_baby:label">
             <value>Merujuk bayi</value>
