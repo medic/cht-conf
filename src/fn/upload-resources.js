@@ -1,7 +1,7 @@
 const fs = require('../lib/sync-fs');
 const skipFn = require('../lib/skip-fn');
 const warn = require('../lib/log').warn;
-const PouchDB = require('pouchdb');
+const pouch = require('../lib/db');
 
 const attachmentsFromDir = require('../lib/attachments-from-dir');
 const insertOrReplace = require('../lib/insert-or-replace');
@@ -16,7 +16,7 @@ module.exports = (projectDir, couchUrl) => {
     return Promise.resolve();
   }
 
-  const db = new PouchDB(couchUrl);
+  const db = new pouch(couchUrl);
 
   return insertOrReplace(db, {
     _id: 'resources',

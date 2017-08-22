@@ -6,8 +6,7 @@ const insertOrReplace = require('../lib/insert-or-replace');
 const skipFn = require('../lib/skip-fn');
 const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
-const PouchDB = require('pouchdb');
-
+const pouch = require('../lib/db');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 
@@ -15,7 +14,7 @@ const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 module.exports = (projectDir, couchUrl, subDirectory, options) => {
   if(!couchUrl) return skipFn('no couch URL set');
 
-  const db = new PouchDB(couchUrl);
+  const db = new pouch(couchUrl);
 
   if(!options) options = {};
 
