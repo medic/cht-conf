@@ -2325,6 +2325,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           </meta>
         </immunization_visit>
       </instance>
+      <instance id="contact-summary"/>
       <bind nodeset="/immunization_visit/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/immunization_visit/inputs/source" type="string"/>
       <bind nodeset="/immunization_visit/inputs/source_id" type="string"/>

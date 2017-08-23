@@ -48,6 +48,7 @@ module.exports = (projectDir, subDirectory, options) => {
           .then(() => xls2xform(sourcePath, targetPath))
           .then(() => getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`))
           .then(hiddenFields => fixXml(targetPath, hiddenFields))
+          .then(() => options.transformer && fs.write(targetPath, options.transformer(fs.read(targetPath))))
           .then(() => trace('Converted form', originalSourcePath));
       },
       Promise.resolve());

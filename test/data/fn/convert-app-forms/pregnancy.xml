@@ -1071,6 +1071,7 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
           </meta>
         </pregnancy>
       </instance>
+      <instance id="contact-summary"/>
       <bind nodeset="/pregnancy/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pregnancy/inputs/source" type="string"/>
       <bind nodeset="/pregnancy/inputs/source_id" type="string"/>

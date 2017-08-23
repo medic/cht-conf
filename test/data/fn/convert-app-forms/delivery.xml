@@ -740,6 +740,7 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
           </meta>
         </delivery>
       </instance>
+      <instance id="contact-summary"/>
       <bind nodeset="/delivery/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/delivery/inputs/source" type="string"/>
       <bind nodeset="/delivery/inputs/source_id" type="string"/>
