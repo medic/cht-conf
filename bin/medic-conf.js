@@ -48,10 +48,12 @@ const couchUrl = instanceUrl && `${instanceUrl}/medic`;
 if(instanceUrl) {
   if(instanceUrl.match('/medic$')) warn('Supplied URL ends in "/medic".  This is probably incorrect.');
 
-  const productionUrlMatch = instanceUrl.match(/^http(?:s)?:\/\/(?:[^@]*@)?(.*)\.app\.medicmobile\.org(?:$|\/)/);
-  if(productionUrlMatch && productionUrlMatch[1] !== projectName) {
-    warn(`Attempting to upload configuration for \x1b[31m${projectName}\x1b[33m `,
-        `to production instance: \x1b[31m${redactBasicAuth(instanceUrl)}\x1b[33m`);
+  const productionUrlMatch = instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
+  if(productionUrlMatch &&
+      productionUrlMatch[1] !== projectName &&
+      productionUrlMatch[1] !== 'alpha') {
+    warn(`Attempting to upload configuration for \x1b[31m${projectName}\x1b[33m`,
+        `to non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl)}\x1b[33m`);
     if(!readline.keyInYN()) {
       error('User failed to confirm action.');
       process.exit(1);
