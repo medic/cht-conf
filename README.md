@@ -25,6 +25,12 @@ To enable tab completion in bash, add the following to your `.bashrc`/`.bash_pro
 
 	eval "$(medic-conf --shell-completion bash)"
 
+## Upgrading
+
+To upgrade to the latest version
+
+	npm install -g medic-configurer-beta
+
 # Use
 
 `medic-conf` will upload the configuration **_from your current directory_**.
