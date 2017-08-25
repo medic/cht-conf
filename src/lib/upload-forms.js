@@ -76,8 +76,10 @@ const readIdFrom = xml =>
 const updateFromPropertiesFile = (doc, path) => {
   if(fs.exists(path)) {
     const properties = fs.readJson(path);
+
     if(typeof properties.context !== 'undefined') doc.context = properties.context;
     doc.icon = properties.icon;
+    if(properties.title) doc.title = properties.title;
 
     if(properties.internalId) {
       warn('DEPRECATED', path, 'Please do not manually set internalId in .properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
