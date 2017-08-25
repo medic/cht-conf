@@ -47,7 +47,7 @@ module.exports = (projectDir, subDirectory, options) => {
           .then(() => info('Converting form', originalSourcePath, '…'))
           .then(() => xls2xform(sourcePath, targetPath))
           .then(() => getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`))
-          .then(hiddenFields => fixXml(targetPath, hiddenFields))
+          .then(hiddenFields => fixXml(targetPath, hiddenFields, options.enketo))
           .then(() => options.transformer && fs.write(targetPath, options.transformer(fs.read(targetPath))))
           .then(() => trace('Converted form', originalSourcePath));
       },
@@ -66,10 +66,9 @@ const xls2xform = (sourcePath, targetPath) =>
 
 // FIXME here we fix the form content in arcane ways.  Seeing as we have out own
 // fork of pyxform, we should probably be doing this fixing there.
-const fixXml = (path, hiddenFields) => {
+const fixXml = (path, hiddenFields, enketo) => {
+  // TODO This is not how you should modify XML
   let xml = fs.read(path)
-      // TODO This is not how you should modify XML
-      .replace(/ default="true\(\)"/g, '')
 
       // TODO The following copies behaviour from old bash scripts, and will
       // create a second <meta> element if one already existed.  We may want
@@ -83,6 +82,10 @@ const fixXml = (path, hiddenFields) => {
       // No comment.
       .replace(/.*DELETE_THIS_LINE.*(\r|\n)/g, '')
       ;
+
+  // Enketo _may_ not work with forms which define a default language - see
+  // https://github.com/medic/medic-webapp/issues/3174
+  if(enketo) xml = xml.replace(/ default="true\(\)"/g, '');
 
   if(hiddenFields) {
     const r = new RegExp(`<(${hiddenFields.join('|')})(/?)>`, 'g');
