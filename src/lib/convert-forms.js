@@ -30,6 +30,7 @@ module.exports = (projectDir, subDirectory, options) => {
   return fs.readdir(formsDir)
     .filter(name => name.endsWith('.xlsx'))
     .filter(name => !name.startsWith('~$')) // ignore Excel "owner files"
+    .filter(name => name !== 'PLACE_TYPE-create.xlsx' && name !== 'PLACE_TYPE-edit.xlsx')
     .filter(name => !options.forms || options.forms.includes(fs.withoutExtension(name)))
     .reduce((promiseChain, xls) => {
         const originalSourcePath = `${formsDir}/${xls}`;
@@ -47,8 +48,7 @@ module.exports = (projectDir, subDirectory, options) => {
           .then(() => info('Converting form', originalSourcePath, '…'))
           .then(() => xls2xform(sourcePath, targetPath))
           .then(() => getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`))
-          .then(hiddenFields => fixXml(targetPath, hiddenFields, options.enketo))
-          .then(() => options.transformer && fs.write(targetPath, options.transformer(fs.read(targetPath))))
+          .then(hiddenFields => fixXml(targetPath, hiddenFields, options.transformer, options.enketo))
           .then(() => trace('Converted form', originalSourcePath));
       },
       Promise.resolve());
@@ -66,7 +66,7 @@ const xls2xform = (sourcePath, targetPath) =>
 
 // FIXME here we fix the form content in arcane ways.  Seeing as we have out own
 // fork of pyxform, we should probably be doing this fixing there.
-const fixXml = (path, hiddenFields, enketo) => {
+const fixXml = (path, hiddenFields, transformer, enketo) => {
   // TODO This is not how you should modify XML
   let xml = fs.read(path)
 
@@ -92,9 +92,12 @@ const fixXml = (path, hiddenFields, enketo) => {
     xml = xml.replace(r, '<$1 tag="hidden"$2>');
   }
 
+  if(transformer) xml = transformer(xml, path);
+
   // The ordering of elements in the <model> has an arcane affect on the
   // order that docs are saved in the database when processing a form.
   // Move the main doc's element down to the bottom.
+  // For templated PLACE_TYPE forms, shifting must be done _after_ templating.
   xml = shiftThingsAroundInTheModel(path, xml);
 
   fs.write(path, xml);

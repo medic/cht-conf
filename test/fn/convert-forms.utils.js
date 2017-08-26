@@ -3,53 +3,50 @@ const fs = require('../../src/lib/sync-fs');
 const path = require('path');
 const warn = require('../../src/lib/log').warn;
 
-const PROPERTIES_JSON = /\.properties.json/;
-const XLS = /\.xlsx$/;
-const XML = /\.xml$/;
-
 
 module.exports = {
-  testFor: type => {
+  testFor: (testName, type) => {
 
     const convertForms = require(`../../src/fn/convert-${type}-forms`);
 
-    describe(`convert-${type}-forms`, function() {
+    describe(testName, function() {
 
       this.timeout(30000); // allow time for form conversion
 
-      const projectDir = 'build/test';
+      const projectDir = `build/test/${testName}`;
 
       // recursively copy forms and expected XML to temp directory, and create
       // tests dynamically
 
-      const srcDir = `test/data/fn/convert-${type}-forms`;
-      const formsDir = `${projectDir}/forms/${type}`;
+      const srcDir = `test/data/${testName}`;
+      const targetDir = `${projectDir}/forms/${type}`;
 
-      fs.mkdir(formsDir);
+      fs.mkdir(targetDir);
 
       fs.recurseFiles(srcDir)
         .forEach(file => {
-          let targetName = path.basename(file);
+          if(file.endsWith('.expected.xml')) {
 
-          if(XML.test(file)) {
+            const expectedXml = file;
+            const generatedXml = `${targetDir}/${path.basename(file, '.expected.xml')}.xml`;
 
-            const srcXml = `${formsDir}/${targetName}`;
-            targetName += '.expected';
+            it(`should generate ${generatedXml} as expected`, () => {
 
-            it(`should convert ${srcXml} as expected`, () => {
-
-              const expectedXml = `${srcXml}.expected`;
-              assert.ok(fs.exists(expectedXml), `Missing expected XML file: ${expectedXml}`);
-              assert.equal(fs.read(srcXml), fs.read(expectedXml), `Content of ${srcXml} was not as expected.`);
+              assert.ok(fs.exists(generatedXml), `Missing generated XML file: ${generatedXml}`);
+              assert.equal(fs.read(generatedXml), fs.read(expectedXml), `Content of ${generatedXml} was not as expected.`);
 
             });
 
-          } else if(!XLS.test(file) && !PROPERTIES_JSON.test(file)) {
+          } else if(file.endsWith('.xlsx') ||
+              file.endsWith('.properties.json') ||
+              path.basename(file) === 'place-types.json') {
+
+            const targetName = path.basename(file);
+            fs.copy(file, `${targetDir}/${targetName}`);
+          } else {
             warn(`Ignoring unexpected file type: ${file}`);
-            return;
           }
 
-          fs.copy(file, `${formsDir}/${targetName}`);
         });
 
       before(() => convertForms(projectDir));

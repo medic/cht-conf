@@ -1,1 +1,1 @@
-require('./convert-forms.utils.js').testFor('collect');
+require('./convert-forms.utils.js').testFor('convert-collect-forms', 'collect');
