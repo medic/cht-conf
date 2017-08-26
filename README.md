@@ -21,6 +21,13 @@ Medic Project Configurer
 	npm install -g medic-configurer-beta
 	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
 
+## Windows
+
+As Administrator:
+
+	npm install -g medic-configurer-beta
+	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic --upgrade
+
 ## Bash completion
 
 To enable tab completion in bash, add the following to your `.bashrc`/`.bash_profile`:

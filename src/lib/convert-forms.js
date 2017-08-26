@@ -11,7 +11,9 @@ E
 E Ubuntu
 E	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
 E OSX
-E	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic`;
+E	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
+E Windows (as Administrator)
+E	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic --upgrade`;
 const UPDATE_INSTRUCTIONS = `\nE To remove the old version of pyxform:
 E
 E	pip uninstall pyxform-medic
