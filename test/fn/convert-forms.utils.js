@@ -46,6 +46,7 @@ module.exports = {
 
           } else if(!XLS.test(file) && !PROPERTIES_JSON.test(file)) {
             warn(`Ignoring unexpected file type: ${file}`);
+            return;
           }
 
           fs.copy(file, `${formsDir}/${targetName}`);
