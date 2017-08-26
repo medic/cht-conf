@@ -1,6 +1,8 @@
 Medic Project Configurer
 ========================
 
+<img src="https://travis-ci.org/alxndrsn/medic-configurer.svg?branch=master"/>
+
 # Requirements
 
 * nodejs 6
