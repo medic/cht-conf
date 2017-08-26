@@ -5,4 +5,5 @@ node_js:
   - 6
   - 5
   - 4
+install: "pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic"
 before_script: "! grep -Fq '.only(' test/**/*.spec.js"
