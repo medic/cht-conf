@@ -12,6 +12,8 @@ const warn = require('../src/lib/log').warn;
 let args = process.argv.slice(2);
 const shift = n => args = args.slice(n || 1);
 
+if(!args.length) return usage(0);
+
 let instanceUrl;
 
 switch(args[0]) {
