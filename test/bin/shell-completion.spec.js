@@ -17,6 +17,7 @@ describe('shell-completion', () => {
 
         'backup-app-settings',
         'backup-all-forms',
+        'check-for-updates',
         'compile-app-settings',
         'compress-images',
         'convert-app-forms',
