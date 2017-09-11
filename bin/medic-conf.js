@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const checkForUpdates = require('../src/lib/check-for-updates');
 const error = require('../src/lib/log').error;
 const fs = require('../src/lib/sync-fs');
 const info = require('../src/lib/log').info;
@@ -12,7 +13,10 @@ const warn = require('../src/lib/log').warn;
 let args = process.argv.slice(2);
 const shift = n => args = args.slice(n || 1);
 
-if(!args.length) return usage(0);
+if(!args.length) {
+  return checkForUpdates({ nonFatal:true })
+      .then(() => usage(0));
+}
 
 let instanceUrl;
 
@@ -100,12 +104,15 @@ info(`Processing config in ${projectName} for ${instanceUrl}.`);
 info('Actions:\n     -', actions.join('\n     - '));
 info('Extra args:', extraArgs);
 
+const initialPromise = actions.includes('check-for-updates') ?
+    Promise.resolve() : checkForUpdates({ nonFatal:true });
+
 return actions.reduce((promiseChain, action) =>
     promiseChain
       .then(() => info(`Starting action: ${action}…`))
       .then(() => require(`../src/fn/${action}`)('.', couchUrl, extraArgs))
       .then(() => info(`${action} complete.`)),
-    Promise.resolve())
+    initialPromise)
   .then(() => { if(actions.length > 1) info('All actions completed.'); })
   .catch(e => {
     error(e);
