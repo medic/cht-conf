@@ -102,6 +102,11 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
   // For templated PLACE_TYPE forms, shifting must be done _after_ templating.
   xml = shiftThingsAroundInTheModel(path, xml);
 
+  // Check for deprecations
+  if(xml.includes('repeat-relevant')) {
+    warn('From webapp version 2.14.0, repeat-relevant is no longer required.  See https://github.com/medic/medic-webapp/issues/3449 for more info.');
+  }
+
   fs.write(path, xml);
 };
 
