@@ -1,5 +1,6 @@
 const info = require('../lib/log').info;
 const request = require('request-promise-native');
+const warn = require('../lib/log').warn;
 
 module.exports = () => request
   .get('https://registry.npmjs.org/medic-configurer-beta')
@@ -12,7 +13,13 @@ module.exports = () => request
       if(latest === current) {
         info('You are already on the latest version :¬)');
       } else {
-        info(`New version available!  To install:
-	npm install -g medic-configurer-beta`);
+        warn(`New version available!
+
+		${current} -> ${latest}
+
+	To install:
+
+		npm install -g medic-configurer-beta
+`);
       }
     });
