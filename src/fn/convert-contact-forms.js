@@ -47,6 +47,19 @@ module.exports = (projectDir, couchUrl, extras) => {
           }
         }
 
+        if(xml.includes('/data/init/custom_place_name')) {
+          let matchedBlock;
+          xml = xml.replace(/\s*<input ref="\/data\/init\/custom_place_name">[^]*?<\/input>/, match => {
+            matchedBlock = match;
+            return '';
+          });
+
+          if(matchedBlock) {
+            const targetMatcher = new RegExp(`\\s*<input ref="/data/${type}/external_id">\\s*(\\r|\\n)`);
+            xml = xml.replace(targetMatcher, match => matchedBlock + match);
+          }
+        }
+
         return xml;
       },
     });
