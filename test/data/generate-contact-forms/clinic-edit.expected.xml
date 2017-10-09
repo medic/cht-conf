@@ -885,10 +885,6 @@
         <label ref="jr:itext('/data/init/select_person:label')"/>
         <hint ref="jr:itext('/data/init/select_person:hint')"/>
       </input>
-      <input ref="/data/init/custom_place_name">
-        <label ref="jr:itext('/data/init/custom_place_name:label')"/>
-        <hint ref="jr:itext('/data/init/custom_place_name:hint')"/>
-      </input>
     </group>
     <group appearance="field-list" ref="/data/clinic">
       <label ref="jr:itext('/data/clinic:label')"/>
@@ -903,6 +899,10 @@
           <value>false</value>
         </item>
       </select1>
+      <input ref="/data/init/custom_place_name">
+        <label ref="jr:itext('/data/init/custom_place_name:label')"/>
+        <hint ref="jr:itext('/data/init/custom_place_name:hint')"/>
+      </input>
       <input ref="/data/clinic/external_id">
         <label ref="jr:itext('/data/clinic/external_id:label')"/>
       </input>
