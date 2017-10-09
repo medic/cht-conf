@@ -32,4 +32,4 @@ module.exports = (options) => {
 	} else throw err;
       })
       ;
-}
+};
