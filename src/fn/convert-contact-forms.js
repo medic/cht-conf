@@ -22,9 +22,32 @@ module.exports = (projectDir, couchUrl, extras) => {
       forms: extras,
       transformer: (xml, path) => {
         const type = path.replace(/.*\/(.*)-(create|edit)\.xml/, '$1');
-        return !PLACE_TYPES ? xml : xml
-            .replace(/PLACE_TYPE/g, type)
-            .replace(/PLACE_NAME/g, PLACE_TYPES[type]);
+
+        if(PLACE_TYPES) {
+          xml = xml
+              .replace(/PLACE_TYPE/g, type)
+              .replace(/PLACE_NAME/g, PLACE_TYPES[type]);
+        }
+
+        // The ordering of elements in the <model> has an arcane affect on the
+        // order that docs are saved in the database when processing a form.
+        // Move the main doc's element down to the bottom.
+        // For templated PLACE_TYPE forms, shifting must be done _after_ templating.
+        if(xml.includes('</inputs>')) {
+          let matchedBlock;
+          const matcher = new RegExp(`\\s*<${type}>[\\s\\S]*</${type}>\\s*(\\r|\\n)`);
+
+          xml = xml.replace(matcher, match => {
+            matchedBlock = match;
+            return '\n';
+          });
+
+          if(matchedBlock) {
+            xml = xml.replace(/<\/inputs>(\r|\n)/, '</inputs>' + matchedBlock);
+          }
+        }
+
+        return xml;
       },
     });
 

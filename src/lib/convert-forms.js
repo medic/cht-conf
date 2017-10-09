@@ -96,11 +96,6 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
 
   if(transformer) xml = transformer(xml, path);
 
-  // The ordering of elements in the <model> has an arcane affect on the
-  // order that docs are saved in the database when processing a form.
-  // Move the main doc's element down to the bottom.
-  // For templated PLACE_TYPE forms, shifting must be done _after_ templating.
-  xml = shiftThingsAroundInTheModel(path, xml);
 
   // Check for deprecations
   if(xml.includes('repeat-relevant')) {
@@ -125,26 +120,6 @@ function executableAvailable() {
     return false;
   }
 }
-
-const shiftThingsAroundInTheModel = (path, xml) => {
-  const baseName = fs.path.parse(path).name.replace(/-(create|edit)$/, '');
-  let matchedBlock;
-
-  if(xml.includes('</inputs>')) {
-    const matcher = new RegExp(`\\s*<${baseName}>[\\s\\S]*</${baseName}>\\s*(\\r|\\n)`);
-
-    xml = xml.replace(matcher, match => {
-      matchedBlock = match;
-      return '\n';
-    });
-
-    if(matchedBlock) {
-      xml = xml.replace(/<\/inputs>(\r|\n)/, '</inputs>' + matchedBlock);
-    }
-  }
-
-  return xml;
-};
 
 const META_XML_SECTION = `<inputs>
             <meta>
