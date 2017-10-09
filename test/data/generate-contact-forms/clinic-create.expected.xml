@@ -1281,57 +1281,57 @@
           <value>clinic</value>
         </item>
       </select1>
-    </group>
-    <group appearance="field-list" ref="/data/contact">
-      <label ref="jr:itext('/data/contact:label')"/>
-      <input ref="/data/contact/name">
-        <label ref="jr:itext('/data/contact/name:label')"/>
-      </input>
-      <input ref="/data/contact/phone">
-        <label ref="jr:itext('/data/contact/phone:label')"/>
-      </input>
-      <input ref="/data/contact/phone_alternate">
-        <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
-      </input>
-      <select1 ref="/data/contact/role">
-        <label ref="jr:itext('/data/contact/role:label')"/>
-        <item>
-          <label ref="jr:itext('/data/contact/role/chw:label')"/>
-          <value>chw</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/contact/role/chw_supervisor:label')"/>
-          <value>chw_supervisor</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/contact/role/nurse:label')"/>
-          <value>nurse</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/contact/role/manager:label')"/>
-          <value>manager</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/contact/role/patient:label')"/>
-          <value>patient</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/contact/role/other:label')"/>
-          <value>other</value>
-        </item>
-      </select1>
-      <input ref="/data/contact/role_other">
-        <label ref="jr:itext('/data/contact/role_other:label')"/>
-        <hint ref="jr:itext('/data/contact/role_other:hint')"/>
-      </input>
-      <input ref="/data/contact/external_id">
-        <label ref="jr:itext('/data/contact/external_id:label')"/>
-      </input>
-      <input appearance="multiline" ref="/data/contact/notes">
-        <label ref="jr:itext('/data/contact/notes:label')"/>
-      </input>
-      <group appearance="hidden" ref="/data/contact/meta">
-        <label ref="jr:itext('/data/contact/meta:label')"/>
+      <group appearance="field-list" ref="/data/contact">
+        <label ref="jr:itext('/data/contact:label')"/>
+        <input ref="/data/contact/name">
+          <label ref="jr:itext('/data/contact/name:label')"/>
+        </input>
+        <input ref="/data/contact/phone">
+          <label ref="jr:itext('/data/contact/phone:label')"/>
+        </input>
+        <input ref="/data/contact/phone_alternate">
+          <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
+        </input>
+        <select1 ref="/data/contact/role">
+          <label ref="jr:itext('/data/contact/role:label')"/>
+          <item>
+            <label ref="jr:itext('/data/contact/role/chw:label')"/>
+            <value>chw</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/data/contact/role/chw_supervisor:label')"/>
+            <value>chw_supervisor</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/data/contact/role/nurse:label')"/>
+            <value>nurse</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/data/contact/role/manager:label')"/>
+            <value>manager</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/data/contact/role/patient:label')"/>
+            <value>patient</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/data/contact/role/other:label')"/>
+            <value>other</value>
+          </item>
+        </select1>
+        <input ref="/data/contact/role_other">
+          <label ref="jr:itext('/data/contact/role_other:label')"/>
+          <hint ref="jr:itext('/data/contact/role_other:hint')"/>
+        </input>
+        <input ref="/data/contact/external_id">
+          <label ref="jr:itext('/data/contact/external_id:label')"/>
+        </input>
+        <input appearance="multiline" ref="/data/contact/notes">
+          <label ref="jr:itext('/data/contact/notes:label')"/>
+        </input>
+        <group appearance="hidden" ref="/data/contact/meta">
+          <label ref="jr:itext('/data/contact/meta:label')"/>
+        </group>
       </group>
     </group>
     <group appearance="field-list" ref="/data/clinic">

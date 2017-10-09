@@ -60,6 +60,25 @@ module.exports = (projectDir, couchUrl, extras) => {
           }
         }
 
+        if(xml.includes('ref="/data/contact"')) {
+          const groupRegex = name => new RegExp(`(\\s*)<group(\\s.*)?\\sref="${name}"(\\s.*)?>[^]*?</group>`);
+          let matchedBlock;
+
+          xml = xml.replace(groupRegex('/data/contact'), match => {
+            matchedBlock = match;
+            return '';
+          });
+
+          if(matchedBlock) {
+            const stripTrailingGroup = s => s.replace(/[\r\n\s]*<\/group>$/, '');
+            xml = xml.replace(groupRegex('/data/init'), match => {
+              return stripTrailingGroup(match) +
+                     stripTrailingGroup(matchedBlock).replace(/\n/g, '\n  ') +
+                     '\n        </group>\n      </group>';
+            });
+          }
+        }
+
         return xml;
       },
     });
