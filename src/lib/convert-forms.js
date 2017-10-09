@@ -128,9 +128,9 @@ function executableAvailable() {
 
 const shiftThingsAroundInTheModel = (path, xml) => {
   const baseName = fs.path.parse(path).name.replace(/-(create|edit)$/, '');
-  let matchedBlock;
 
   if(xml.includes('</inputs>')) {
+    let matchedBlock;
     const matcher = new RegExp(`\\s*<${baseName}>[\\s\\S]*</${baseName}>\\s*(\\r|\\n)`);
 
     xml = xml.replace(matcher, match => {
@@ -140,6 +140,19 @@ const shiftThingsAroundInTheModel = (path, xml) => {
 
     if(matchedBlock) {
       xml = xml.replace(/<\/inputs>(\r|\n)/, '</inputs>' + matchedBlock);
+    }
+  }
+
+  if(xml.includes('/data/init/custom_place_name')) {
+    let matchedBlock;
+    xml = xml.replace(/\s*<input ref="\/data\/init\/custom_place_name">[^]*?<\/input>/, match => {
+      matchedBlock = match;
+      return '';
+    });
+
+    if(matchedBlock) {
+      const targetMatcher = new RegExp(`\\s*<input ref="/data/${baseName}/external_id">\\s*(\\r|\\n)`);
+      xml = xml.replace(targetMatcher, match => matchedBlock + match);
     }
   }
 
