@@ -13,6 +13,6 @@ module.exports = [
   'upload-app-settings',
   'upload-collect-forms',
   'upload-contact-forms',
-  'upload-resources',
   'upload-custom-translations',
+  'upload-resources',
 ];
