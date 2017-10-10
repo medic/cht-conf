@@ -91,6 +91,8 @@ if(!actions.length) {
     'upload-contact-forms',
     'upload-resources',
     'upload-custom-translations',
+    'csv-to-docs',
+    'upload-docs',
   ];
 }
 

@@ -1,0 +1,3 @@
+csv:person:chw_id,name,int:field.z_score,bool:field.happy,field.notes,csv:household:field.fam
+1,Charlie Chalk,52,true,A boisterous fellow,1
+2,Donnie Darko,64,false,A troubled youth,2

@@ -24,17 +24,21 @@
   },
   "homepage": "https://github.com/alxndrsn/medic-configurer#readme",
   "dependencies": {
+    "canonical-json": "0.0.4",
+    "csv-parse": "^1.2.4",
     "mkdirp": "^0.5.1",
     "pouchdb-adapter-http": "^6.3.4",
     "pouchdb-core": "^6.3.4",
     "readline-sync": "^1.4.7",
     "redact-basic-auth": "^0.1.1",
-    "request-promise-native": "^1.0.4"
+    "request-promise-native": "^1.0.4",
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "chai": "^4.0.0",
     "jshint": "^2.9.5",
     "lodash": "^4.17.4",
-    "mocha": "^3.4.2"
+    "mocha": "^3.4.2",
+    "ncp": "^2.0.0"
   }
 }

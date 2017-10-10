@@ -7,6 +7,7 @@ module.exports = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'csv-to-docs',
   'delete-all-forms',
   'initialise-project-layout',
   'upload-app-forms',
@@ -14,5 +15,6 @@ module.exports = [
   'upload-collect-forms',
   'upload-contact-forms',
   'upload-custom-translations',
+  'upload-docs',
   'upload-resources',
 ];

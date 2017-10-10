@@ -51,6 +51,7 @@ function withoutExtension(fileName) {
 module.exports = {
   copy: (from, to) => fs.writeFileSync(to, fs.readFileSync(from)),
   exists: fs.existsSync,
+  fs: fs,
   mkdir: path => { try { mkdirp(path); } catch(e) { warn(e); } },
   mkdtemp: () => fs.mkdtempSync(`${os.tmpdir()}/medic-conf`),
   path: path,
