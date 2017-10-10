@@ -1,7 +1,7 @@
 Medic Project Configurer
 ========================
 
-<img src="https://travis-ci.org/medic/medic-configurer.svg?branch=master"/>
+<a href="https://travis-ci.org/medic/medic-configurer"><img src="https://travis-ci.org/medic/medic-configurer.svg?branch=master"/></a>
 
 # Requirements
 
