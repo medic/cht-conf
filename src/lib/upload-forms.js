@@ -70,10 +70,9 @@ module.exports = (projectDir, couchUrl, subDirectory, options) => {
 // TODO this isn't really how to parse XML
 const readTitleFrom = xml => xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>'));
 const readIdFrom = xml =>
-    xml.split('\n').join('')
-        .match(/<model>.*<\/model>/)[0]
-        .match(/<instance>.*<\/instance>/)[0]
-        .match(/id="([^"]*)"/)[1];
+    xml.match(/<model>[^]*<\/model>/)[0]
+       .match(/<instance>[^]*<\/instance>/)[0]
+       .match(/id="([^"]*)"/)[1];
 
 const updateFromPropertiesFile = (doc, path) => {
   if(fs.exists(path)) {
