@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+require('../src/cli/check-node-version');
+
 const checkForUpdates = require('../src/lib/check-for-updates');
 const error = require('../src/lib/log').error;
 const fs = require('../src/lib/sync-fs');
