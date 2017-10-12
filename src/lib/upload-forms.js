@@ -29,6 +29,8 @@ module.exports = (projectDir, couchUrl, subDirectory, options) => {
     .filter(name => name.endsWith('.xml'))
     .filter(name => !options.forms || options.forms.includes(fs.withoutExtension(name)))
     .reduce((promiseChain, fileName) => {
+      info(`Preparing form for upload: ${fileName}…`);
+
       const baseFileName = fs.withoutExtension(fileName);
       const mediaDir = `${formsDir}/${baseFileName}-media`;
       const xformPath = `${formsDir}/${baseFileName}.xml`;
