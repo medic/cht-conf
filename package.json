@@ -25,7 +25,8 @@
   "homepage": "https://github.com/alxndrsn/medic-configurer#readme",
   "dependencies": {
     "mkdirp": "^0.5.1",
-    "pouchdb": "^6.2.0",
+    "pouchdb-adapter-http": "^6.3.4",
+    "pouchdb-core": "^6.3.4",
     "readline-sync": "^1.4.7",
     "redact-basic-auth": "^0.1.1",
     "request-promise-native": "^1.0.4"
