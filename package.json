@@ -1,6 +1,6 @@
 {
   "name": "medic-configurer-beta",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
@@ -29,6 +29,7 @@
     "mkdirp": "^0.5.1",
     "pouchdb-adapter-http": "^6.3.4",
     "pouchdb-core": "^6.3.4",
+    "pouchdb-mapreduce": "^6.3.4",
     "readline-sync": "^1.4.7",
     "redact-basic-auth": "^0.1.1",
     "request-promise-native": "^1.0.4",
