@@ -11,6 +11,7 @@ const LAYOUT = {
   'tasks.json': {},
   forms: {
     app: {},
+    collect: {},
     contact: {},
   },
   translations: {},
