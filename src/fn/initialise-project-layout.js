@@ -23,12 +23,10 @@ module.exports = (projectDir/*, couchUrl*/) => {
 };
 
 function createRecursively(dir, layout) {
-  let k, path;
-
   fs.mkdir(dir);
 
-  for(k in layout) {
-    path = `${dir}/${k}`;
+  for(const k in layout) {
+    const path = `${dir}/${k}`;
 
     const val = layout[k];
     if(typeof val === 'object') {
