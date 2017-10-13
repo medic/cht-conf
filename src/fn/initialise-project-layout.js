@@ -1,4 +1,5 @@
 const fs = require('../lib/sync-fs');
+const info = require('../lib/log').info;
 
 const LAYOUT = {
   'app_settings.json': {},
@@ -16,10 +17,15 @@ const LAYOUT = {
 };
 
 
-module.exports = (projectDir/*, couchUrl*/) => {
-  if(fs.exists(projectDir)) throw new Error(`Cannot initialise new project at ${projectDir} because directory already exists.`);
+module.exports = (projectDir, couchUrl, extraArgs) => {
+  const createProject = root => {
+    const dir = `${projectDir}/${root}`;
+    info(`Initialising project at ${dir}`);
+    createRecursively(dir, LAYOUT);
+  }
 
-  createRecursively(projectDir, LAYOUT);
+  if(extraArgs && extraArgs.length) extraArgs.forEach(createProject);
+  else createProject('.');
 };
 
 function createRecursively(dir, layout) {
