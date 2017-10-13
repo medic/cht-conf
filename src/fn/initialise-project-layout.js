@@ -18,14 +18,14 @@ const LAYOUT = {
 
 
 module.exports = (projectDir, couchUrl, extraArgs) => {
-  const createProject = root => {
+  if(extraArgs && extraArgs.length) extraArgs.forEach(createProject);
+  else createProject('.');
+
+  function createProject(root) {
     const dir = `${projectDir}/${root}`;
     info(`Initialising project at ${dir}`);
     createRecursively(dir, LAYOUT);
   }
-
-  if(extraArgs && extraArgs.length) extraArgs.forEach(createProject);
-  else createProject('.');
 };
 
 function createRecursively(dir, layout) {
