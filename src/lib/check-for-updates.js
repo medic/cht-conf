@@ -3,6 +3,9 @@ const request = require('request-promise-native');
 const warn = require('../lib/log').warn;
 
 module.exports = (options) => {
+  const current = require('../../package').version;
+  info(`Current version: ${current}.  Checking NPM for updates…`);
+
   if(!options) options = {};
 
   return request
@@ -10,9 +13,7 @@ module.exports = (options) => {
       .then(res => {
 	const json = JSON.parse(res);
 	const latest = json['dist-tags'].latest;
-	const current = require('../../package').version;
 
-	info(`Current version: ${current}`);
 	if(latest === current) {
 	  info('You are already on the latest version :¬)');
 	} else {
