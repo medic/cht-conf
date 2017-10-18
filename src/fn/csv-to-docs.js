@@ -1,7 +1,6 @@
 const csvParse = require('csv-parse/lib/sync');
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
-const skipFn = require('../lib/skip-fn');
 const stringify = require('canonical-json/index2');
 const trace = require('../lib/log').trace;
 const uuid5 = require('uuid/v5');
@@ -9,9 +8,8 @@ const warn = require('../lib/log').warn;
 
 require('../lib/polyfill');
 
-module.exports = (projectDir, couchUrl) => {
-  if(!couchUrl) return skipFn('no couch URL set');
-  const couchUrlUuid = uuid5(couchUrl, uuid5.URL);
+module.exports = projectDir => {
+  const couchUrlUuid = uuid5('http://medicmobile.org/configurer/csv-to-docs/permanent-hash', uuid5.URL);
 
   const csvDir = `${projectDir}/csv`;
   if(!fs.exists(csvDir)) {

@@ -18,7 +18,7 @@ describe('csv-to-docs', function() {
       if(err) done(err);
 
       // when
-      csvToDocs(testDir, 'http://admin:pass@localhost:5988/medic')
+      csvToDocs(testDir)
         .then(() => {
           const generatedDocsDir = `${testDir}/json_docs`;
           const expectedDocsDir  = `${testDir}/expected-json_docs`;
