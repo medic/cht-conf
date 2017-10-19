@@ -53,15 +53,32 @@ module.exports = projectDir => {
           .then(addToModel),
       Promise.resolve())
 
-    .then(() => {
-      model.references.forEach(ref => {
-        setCol(ref.doc, ref.property, model[ref.type][ref.index]._id);
-      });
-    })
+    .then(() => model.references.forEach(updateRef))
 
     .then(() => trace('Should now create all files for docs:', JSON.stringify(model, null, 2)))
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));
 
+
+  function updateRef(ref) {
+    let referencedDoc;
+    if(ref.type.includes('>')) {
+      const refTypeParts = ref.type.split('>');
+
+      const docType = refTypeParts[0];
+      const fieldName = refTypeParts[1];
+
+      referencedDoc = Object.values(model.docs)
+          .find(doc => (doc.type === docType || doc.form === docType) && doc[fieldName] === ref.val);
+    } else {
+      const rowIdx = -1 + Number.parseInt(ref.val, 10);
+      referencedDoc = model[ref.type][rowIdx];
+    }
+
+    const finalVal = referencedDoc ?
+        referencedDoc._id :
+        warn('No doc found for reference:', ref) || null;
+    setCol(ref.doc, ref.property, finalVal);
+  }
 
   function withId(json) {
     const id = uuid(json);
@@ -144,12 +161,10 @@ module.exports = projectDir => {
 
       col = parts[2];
 
-      const refIdx = -1 + Number.parseInt(rawVal, 10);
-
       references.push({
         property: col,
         type: parts[1],
-        index: refIdx,
+        val: rawVal,
       });
 
       // We still need to return a value here so that the object will be unique
