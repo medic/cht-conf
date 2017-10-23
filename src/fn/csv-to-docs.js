@@ -152,6 +152,7 @@ module.exports = projectDir => {
       col = parts[1];
       switch(type) {
         case 'date': val = new Date(rawVal); break;
+        case 'timestamp': val = new Date(rawVal).getTime(); break;
         case 'int': val = Number.parseInt(rawVal, 10); break;
         case 'bool': val = rawVal.toLowerCase() === 'true'; break;
         default: throw new Error(`Unrecognised column type: ${type} for ${rawCol}`);
