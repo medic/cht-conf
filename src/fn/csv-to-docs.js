@@ -107,7 +107,7 @@ module.exports = projectDir => {
   function processReports(report_type, csv) {
     const { rows, cols } = loadCsv(csv);
     return rows
-      .map(r => processCsv('report', cols, r, { form:report_type }));
+      .map(r => processCsv('data_record', cols, r, { form:report_type }));
   }
 
   function processContacts(contactType, csv) {

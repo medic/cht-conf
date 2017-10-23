@@ -1,6 +1,6 @@
 {
   "form": "follow_up",
-  "type": "report",
+  "type": "data_record",
   "chw_id": "32120a8b-9432-544b-ab61-2631440255ec",
   "name": "Charlie Chalk",
   "field": {
@@ -9,5 +9,5 @@
     "notes": "A boisterous fellow",
     "fam": "cc56b63e-aade-5e30-9f06-c4dcd31587ff"
   },
-  "_id": "09e3215e-25fc-5960-9034-784d920db457"
+  "_id": "017648ca-a4cf-5171-93b7-852ed049e777"
 }
