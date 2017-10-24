@@ -142,3 +142,41 @@ This tool expects a project to be sctructured as follows:
 
 * rename module to `medic-configurer`
 * remove `beta-` prefix from `--version` output
+
+# csv-to-docs
+
+To convert CSV to JSON docs, use the `csv-to-docs` action.
+
+By default, values are parsed as strings.  To parse a CSV column as a JSON type, prefix a data type to the column definition, e.g.
+
+	column_1,bool:column_2,int:column_3,date:column_4
+
+To reference other docs, there are a number of options:
+
+## Reference to a row of CSV
+
+1. `_id` of doc at row `N` of csv file `F`
+
+	csv:F:id>target_property_name
+
+2. entire doc at row `N` of csv file `F`
+
+	csv:F:doc>target_property_name
+
+3. value of field `some_field` of doc at row `N` of csv file `F`
+
+	csv:F:.some_field>target_property_name
+
+## Reference to a doc by matching properties
+
+1. `_id` of doc with properties X=a and Y=b where property P matches this column's value
+
+	match=P:X=a&Y=y:id>target_property_name
+
+2. entire doc with properties X=a and Y=b where property P matches this column's value
+
+	match=P:X=a&Y=y:doc>target_property_name
+
+3. value of field `some_field` of doc with properties X=a and Y=b where property P matches this column's value
+
+	match=P:X=a&Y=y:.some_field>target_property_name
