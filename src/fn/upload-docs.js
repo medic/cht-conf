@@ -41,7 +41,7 @@ module.exports = (projectDir, couchUrl) => {
           trace('Uploaded', docSet);
           res.forEach(r => {
             if(r.error) {
-              results.failed[r.id] = r.error;
+              results.failed[r.id] = `${r.error}: ${r.reason}`;
             } else {
               results.ok.push(r.id);
             }
