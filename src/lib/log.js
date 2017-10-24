@@ -13,7 +13,7 @@ function logAtLevel(color, level, ...args) {
 }
 
 const redactUrls = s => {
-  if(s instanceof Error) s = s.toString();
+  if(s instanceof Error) s = s.stack;
   else if(s && typeof s !== 'string') s = JSON.stringify(s);
   return s && redactBasicAuth(s);
 };
