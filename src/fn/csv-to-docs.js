@@ -6,6 +6,8 @@ const trace = require('../lib/log').trace;
 const uuid5 = require('uuid/v5');
 const warn = require('../lib/log').warn;
 
+const pretty = o => JSON.stringify(o, null, 2);
+
 require('../lib/polyfill');
 
 module.exports = projectDir => {
@@ -23,10 +25,13 @@ module.exports = projectDir => {
   const saveJsonDoc = doc => fs.writeJson(`${jsonDir}/${doc._id}.doc.json`, doc);
 
   const model = {
+    csvFiles: {},
     docs: {},
     references: [],
   };
-  const addToModel = docs => {
+  const addToModel = (csvFile, docs) => {
+    csvFile = csvFile.match(/^(?:.*\/)?csv\/(.*)\.csv$/)[1];
+    model.csvFiles[csvFile] = docs;
     docs.forEach(doc => {
       model.docs[doc._id] = doc;
       if(!model[doc.type]) model[doc.type] = [];
@@ -50,34 +55,47 @@ module.exports = projectDir => {
               default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
             }
           })
-          .then(addToModel),
+          .then(docs => addToModel(csv, docs)),
       Promise.resolve())
 
     .then(() => model.references.forEach(updateRef))
 
-    .then(() => trace('Should now create all files for docs:', JSON.stringify(model, null, 2)))
+    .then(() => trace('Should now create all files for docs:', pretty(model)))
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));
 
 
   function updateRef(ref) {
     let referencedDoc;
-    if(ref.type.includes('>')) {
-      const refTypeParts = ref.type.split('>');
 
-      const docType = refTypeParts[0];
-      const fieldName = refTypeParts[1];
-
-      referencedDoc = Object.values(model.docs)
-          .find(doc => (doc.type === docType || doc.form === docType) && doc[fieldName] === ref.val);
-    } else {
-      const rowIdx = -1 + Number.parseInt(ref.val, 10);
-      referencedDoc = model[ref.type][rowIdx];
+    switch(ref.refType) {
+      case 'csv':
+        if(!model.csvFiles[ref.sourceFile])
+          throw new Error(`Cannot find referenced CSV file: ${projectDir}/csv/${ref.sourceFile}.csv`);
+        referencedDoc = model.csvFiles[ref.sourceFile][ref.rowIdx-1];
+        break;
+      case 'match':
+        referencedDoc = Object.values(model.docs)
+            .find(doc => doc[ref.colName] === ref.colVal &&
+                Object.keys(ref.matchers)
+                    .every(col => doc[col] === ref.matchers[col]));
+        if(!referencedDoc) warn(`Couldn't find doc for ref ${pretty(ref)}`);
+        break;
+      default: throw new Error(`Don't know how to handle ref of type: ${ref.refType}:\n${pretty(ref)}`);
     }
 
-    const finalVal = referencedDoc ?
-        referencedDoc._id :
-        warn('No doc found for reference:', ref) || null;
-    setCol(ref.doc, ref.property, finalVal);
+    let finalVal;
+    if(ref.expandTo === 'doc') {
+      finalVal = referencedDoc;
+    } else if(ref.expandTo === 'id') {
+      finalVal = { _id:referencedDoc._id };
+    } else if(ref.expandTo.startsWith('.')) {
+      let prop;
+      const props = ref.expandTo.substring(1).split('.');
+      finalVal = referencedDoc;
+      while((prop = props.shift())) finalVal = finalVal[prop];
+    } else throw new Error(`Don't know how to expand reference to value:\n${pretty(ref)}`);
+
+    setCol(ref.doc, ref.targetProperty, finalVal);
   }
 
   function withId(json) {
@@ -142,7 +160,7 @@ module.exports = projectDir => {
     let col, val;
     const references = [];
 
-    const parts = rawCol.split(':');
+    const parts = rawCol.split(/[:>]/);
 
     if(parts.length === 1) {
       col = rawCol;
@@ -157,24 +175,45 @@ module.exports = projectDir => {
         case 'bool': val = rawVal.toLowerCase() === 'true'; break;
         default: throw new Error(`Unrecognised column type: ${type} for ${rawCol}`);
       }
-    } else if(parts.length === 3) {
-      if(parts[0] !== 'csv') throw new Error(`Unrecognised column type: ${rawCol}`);
-
-      col = parts[2];
-
-      references.push({
-        property: col,
-        type: parts[1],
-        val: rawVal,
-      });
-
+    } else if(parts.length === 4) {
       // We still need to return a value here so that the object will be unique
       // when compared with another object which is identical except for one or
       // more reference values.  E.g.
       // { name:'alice', parent:ref1 } vs { name:'alice', parent:ref2 }
       val = rawVal;
+
+      if(parts[0] === 'csv') {
+        col = parts[3];
+
+        references.push({
+          refType: 'csv',
+          sourceFile: parts[1],
+          rowIdx: rawVal,
+          expandTo: parts[2],
+          targetProperty: col,
+        });
+      } else if(parts[0].startsWith('match=')) {
+        col = parts[3];
+
+        // split a=1&b=2&c=3 into { a:1, b:2, c:3 }
+        const matchers = {};
+        parts[1].split('&')
+            .map(pair => pair.split('='))
+            .forEach(p => matchers[p[0]] = p[1]);
+
+        references.push({
+          refType: 'match',
+          matchers: matchers,
+          colName: parts[0].split('=')[1],
+          colVal: rawVal,
+          expandTo: parts[2],
+          targetProperty: col,
+        });
+      } else {
+        throw new Error(`Unrecognised column definition: ${rawCol} (expected: "csv:…" or "match=…"`);
+      }
     } else {
-      throw new Error(`Too many colons in column name: ${rawCol}`);
+      throw new Error(`Wrong number of parts in column definition: ${rawCol} (should be 1, 2 or 4, but found ${parts.length}).`);
     }
 
     return { col:col, val:val, references:references };
