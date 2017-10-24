@@ -35,8 +35,15 @@ module.exports = (projectDir, couchUrl) => {
   const results = { ok:[], failed:{} };
 
   const process = sets.reduce((promiseChain, docSet) =>
-    promiseChain.then(() =>
-      db.bulkDocs(docSet.map(fs.readJson))
+    promiseChain.then(() => {
+      const now = new Date().toISOString();
+      const docs = docSet.map(file => {
+        const doc = fs.readJson(file);
+        doc.imported_date = now;
+        return doc;
+      });
+
+      return db.bulkDocs(docs)
         .then(res => {
           trace('Uploaded', docSet);
           res.forEach(r => {
@@ -46,7 +53,8 @@ module.exports = (projectDir, couchUrl) => {
               results.ok.push(r.id);
             }
           });
-        })),
+        });
+    }),
     Promise.resolve());
 
   return process
