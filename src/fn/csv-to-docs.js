@@ -8,6 +8,8 @@ const warn = require('../lib/log').warn;
 
 const pretty = o => JSON.stringify(o, null, 2);
 
+const RESERVED_COL_NAMES = [ 'type', 'form' ];
+
 require('../lib/polyfill');
 
 module.exports = projectDir => {
@@ -222,6 +224,10 @@ module.exports = projectDir => {
 
 function setCol(doc, col, val) {
   const colParts = col.split('.');
+
+  if(RESERVED_COL_NAMES.includes(colParts[0]))
+    throw new Error(`Cannot set property defined by column '${col}' - this property name is protected.`);
+
   while(colParts.length > 1) {
     col = colParts.shift();
     if(!doc[col]) doc[col] = {};
