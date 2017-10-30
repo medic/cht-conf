@@ -12,7 +12,6 @@ describe('csv-to-docs', function() {
     // given
     const srcDir = `test/data/csv-to-docs`;
     const testDir = `build/test/csv-to-docs`;
-    fs.mkdir(testDir);
 
     ncp(srcDir, testDir, function(err) {
       if(err) done(err);
