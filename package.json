@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "clean": "rm -rf ./build/",
-    "jshint": "jshint src/**/*.js bin/*.js test/**/*.js",
+    "jshint": "jshint src/**/*.js bin/*.js test/*.js test/**/*.js",
     "test": "npm run jshint && npm run clean && mocha test/**/*.spec.js"
   },
   "bin": {
@@ -37,9 +37,12 @@
   },
   "devDependencies": {
     "chai": "^4.0.0",
+    "express-pouchdb": "^2.3.7",
     "jshint": "^2.9.5",
     "lodash": "^4.17.4",
+    "memdown": "^1.4.1",
     "mocha": "^3.4.2",
-    "ncp": "^2.0.0"
+    "ncp": "^2.0.0",
+    "pouchdb": "^6.3.4"
   }
 }
