@@ -20,7 +20,7 @@ if(!args.length) {
       .then(() => usage(0));
 }
 
-let instanceUrl;
+let instanceUrl, skipCheckForUpdates;
 
 switch(args[0]) {
 
@@ -48,6 +48,11 @@ switch(args[0]) {
   case '--version':
     console.log('beta-' + require('../package.json').version);
     return process.exit(0);
+}
+
+if(args[0] === '--no-check') {
+  skipCheckForUpdates = true;
+  shift();
 }
 
 const projectName = fs.path.basename(fs.path.resolve('.'));
@@ -108,7 +113,7 @@ info(`Processing config in ${projectName} for ${instanceUrl}.`);
 info('Actions:\n     -', actions.join('\n     - '));
 info('Extra args:', extraArgs);
 
-const initialPromise = actions.includes('check-for-updates') ?
+const initialPromise = actions.includes('check-for-updates') || skipCheckForUpdates ?
     Promise.resolve() : checkForUpdates({ nonFatal:true });
 
 return actions.reduce((promiseChain, action) =>
