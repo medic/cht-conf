@@ -1,0 +1,10 @@
+{
+  "type": "circular-1",
+  "name": "trouble A",
+  "parent": {
+    "type": "circular-2",
+    "name": "trouble one",
+    "_id": "6e62fde3-e383-5c6d-906b-e06e8617d048"
+  },
+  "_id": "531efd27-5d8c-5440-8e7f-bbeccee7e99d"
+}

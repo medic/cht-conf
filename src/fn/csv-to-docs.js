@@ -24,7 +24,7 @@ module.exports = projectDir => {
   const jsonDir = `${projectDir}/json_docs`;
   fs.mkdir(jsonDir);
 
-  const saveJsonDoc = doc => fs.writeJson(`${jsonDir}/${doc._id}.doc.json`, doc);
+  const saveJsonDoc = doc => fs.write(`${jsonDir}/${doc._id}.doc.json`, toSafeJson(doc) + '\n');
 
   const model = {
     csvFiles: {},
@@ -62,7 +62,7 @@ module.exports = projectDir => {
 
     .then(() => model.references.forEach(updateRef))
 
-    .then(() => trace('Should now create all files for docs:', pretty(model)))
+    .then(() => trace('Should now create all files for docs:', toSafeJson(model)))
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));
 
 
@@ -234,4 +234,41 @@ function setCol(doc, col, val) {
     doc = doc[col];
   }
   doc[colParts[0]] = val;
+}
+
+/** @return JSON string with circular references ignored */
+function toSafeJson(o, depth, seen) {
+  if(!depth) depth = 0;
+  if(!seen) seen = [];
+
+  const TAB = '  ';
+  let i = depth, indent = '';
+  while(--i >= 0) indent += TAB;
+
+  switch(typeof o) {
+    case 'boolean':
+    case 'number':
+      return o.toString();
+    case 'string':
+      return `"${o}"`;
+    case 'object':
+      if(Array.isArray(o)) {
+        return `${indent}[\n` +
+            o.map(el => toSafeJson(el, depth + 1)) +
+            `\n${indent}]`;
+      } else if(o instanceof Date) {
+        return `"${o.toJSON()}"`;
+      }
+      return '{' +
+          Object.keys(o)
+              .map(k => {
+                const v = o[k];
+                if(seen.includes(v)) return;
+                return `\n${TAB}${indent}"${k}": ` +
+                    toSafeJson(v, depth+1, seen.concat(o));
+              })
+              .filter(el => el) +
+          '\n' + indent + '}';
+    default: throw new Error(`Unknown type/val: ${typeof o}/${o}`);
+  }
 }
