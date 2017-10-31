@@ -1,7 +1,7 @@
 Medic Project Configurer
 ========================
 
-<a href="https://travis-ci.org/medic/medic-configurer"><img src="https://travis-ci.org/medic/medic-configurer.svg?branch=master"/></a>
+<a href="https://travis-ci.org/medic/medic-conf"><img src="https://travis-ci.org/medic/medic-conf.svg?branch=master"/></a>
 
 # Requirements
 
@@ -13,19 +13,19 @@ Medic Project Configurer
 
 ## Ubuntu
 
-	npm install -g medic-configurer-beta
+	npm install -g medic-conf
 	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
 
 ## OSX
 
-	npm install -g medic-configurer-beta
+	npm install -g medic-conf
 	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
 
 ## Windows
 
 As Administrator:
 
-	npm install -g medic-configurer-beta
+	npm install -g medic-conf
 	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic --upgrade
 
 ## Bash completion
@@ -38,7 +38,7 @@ To enable tab completion in bash, add the following to your `.bashrc`/`.bash_pro
 
 To upgrade to the latest version
 
-	npm install -g medic-configurer-beta
+	npm install -g medic-conf
 
 # Use
 
@@ -62,7 +62,7 @@ To upgrade to the latest version
 
 	medic-conf <--local|--instance instance-name|--url url> <...action>
 
-The list of available actions can be seen in [`supported-actions.js`](https://github.com/alxndrsn/medic-configurer/blob/master/src/cli/supported-actions.js).
+The list of available actions can be seen in [`supported-actions.js`](https://github.com/medic/medic-conf/blob/master/src/cli/supported-actions.js).
 
 ## Perform actions for specific forms
 
@@ -137,11 +137,6 @@ This tool expects a project to be sctructured as follows:
 ## Wishlist
 
 * only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
-
-## For official release
-
-* rename module to `medic-configurer`
-* remove `beta-` prefix from `--version` output
 
 # csv-to-docs
 

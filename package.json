@@ -1,6 +1,6 @@
 {
-  "name": "medic-configurer-beta",
-  "version": "1.6.16",
+  "name": "medic-conf",
+  "version": "1.7.0",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
@@ -16,14 +16,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/alxndrsn/medic-configurer.git"
+    "url": "git+ssh://git@github.com/medic/medic-conf.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/alxndrsn/medic-configurer/issues"
+    "url": "https://github.com/medic/medic-conf/issues"
   },
-  "homepage": "https://github.com/alxndrsn/medic-configurer#readme",
+  "homepage": "https://github.com/medic/medic-conf#readme",
   "dependencies": {
     "canonical-json": "0.0.4",
     "csv-parse": "^1.2.4",

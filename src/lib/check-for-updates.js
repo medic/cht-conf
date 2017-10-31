@@ -9,7 +9,7 @@ module.exports = (options) => {
   if(!options) options = {};
 
   return request
-    .get('https://registry.npmjs.org/medic-configurer-beta')
+    .get('https://registry.npmjs.org/medic-conf')
       .then(res => {
 	const json = JSON.parse(res);
 	const latest = json['dist-tags'].latest;
@@ -23,7 +23,7 @@ module.exports = (options) => {
 
      To install:
 
-	  npm install -g medic-configurer-beta
+	  npm install -g medic-conf
   `);
 	}
       })
