@@ -25,6 +25,7 @@ module.exports = (projectDir, couchUrl) => {
     .forEach(validateJson);
 
   const sets = [];
+  const totalCount = docFiles.length;
   while(docFiles.length) {
     sets.push(docFiles.slice(0, BATCH_SIZE));
     docFiles = docFiles.slice(BATCH_SIZE);
@@ -45,7 +46,7 @@ module.exports = (projectDir, couchUrl) => {
 
       return db.bulkDocs(docs)
         .then(res => {
-          trace('Uploaded', docSet);
+          trace(`Processed ${docSet.length} docs.`);
           res.forEach(r => {
             if(r.error) {
               results.failed[r.id] = `${r.error}: ${r.reason}`;
@@ -59,8 +60,9 @@ module.exports = (projectDir, couchUrl) => {
 
   return process
     .then(() => {
-      info('Upload ok for', results.ok);
+      const okCount = results.ok.length;
       info('Upload failed for:\n' + JSON.stringify(results.failed, null, 2));
+      info(`Summary: ${okCount} of ${totalCount} docs uploaded OK.`);
     });
 };
 
