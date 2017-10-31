@@ -9,38 +9,35 @@ describe('upload-docs', function() {
   
   it('should upload docs to pouch', function(done) {
 
-    // given
+    // given the test files are copied over
     const srcDir = `test/data/upload-docs`;
     const testDir = `build/test/upload-docs`;
 
     ncp(srcDir, testDir, err => {
       if(err) done(err);
 
-      // and
-      // TODO there are no docs in the db
+      assertDbEmpty()
 
-      // when
-      uploadDocs(testDir, api.couchUrl)
+        .then(() => /* when */ uploadDocs(testDir, api.couchUrl))
 
-        .then(() => {
+        .then(() => api.db.allDocs())
+        .then(res =>
 
-          api.db.allDocs()
-            .then(res => {
+            // then
+            assert.deepEqual(res.rows.map(doc => doc.id), [
+              'one', 'three', 'two'
+            ]))
 
-              // then
-              assert.deepEqual(res.rows.map(doc => doc.id), [
-                'one', 'three', 'two'
-              ]);
-
-              done();
-
-            })
-            .catch(done);
-
-        });
+        .then(done)
+        .catch(done);
 
     });
 
   });
 
 });
+
+function assertDbEmpty() {
+  return api.db.allDocs()
+    .then(res => assert.equal(res.rows.length, 0));
+}
