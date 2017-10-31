@@ -2,7 +2,6 @@ const csvParse = require('csv-parse/lib/sync');
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
 const stringify = require('canonical-json/index2');
-const trace = require('../lib/log').trace;
 const uuid5 = require('uuid/v5');
 const warn = require('../lib/log').warn;
 
@@ -62,7 +61,6 @@ module.exports = projectDir => {
 
     .then(() => model.references.forEach(updateRef))
 
-    .then(() => trace('Should now create all files for docs:', toSafeJson(model)))
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));
 
 
