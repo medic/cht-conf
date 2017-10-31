@@ -66,8 +66,8 @@ const xls2xform = (sourcePath, targetPath) =>
         } else throw new Error('There was a problem executing xls2xform.  It may not be installed.' + INSTALLATION_INSTRUCTIONS);
       });
 
-// FIXME here we fix the form content in arcane ways.  Seeing as we have out own
-// fork of pyxform, we should probably be doing this fixing there.
+// here we fix the form content in arcane ways.  Seeing as we have out own fork
+// of pyxform, we should probably be doing this fixing there.
 const fixXml = (path, hiddenFields, transformer, enketo) => {
   // TODO This is not how you should modify XML
   let xml = fs.read(path)
