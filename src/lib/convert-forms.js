@@ -69,7 +69,9 @@ const xls2xform = (sourcePath, targetPath) =>
 // here we fix the form content in arcane ways.  Seeing as we have out own fork
 // of pyxform, we should probably be doing this fixing there.
 const fixXml = (path, hiddenFields, transformer, enketo) => {
-  // TODO This is not how you should modify XML
+  // This is not how you should modify XML, but we have reasonable control over
+  // the input and so far this works OK.  Keep an eye on the tests, and any
+  // future changes to the output of xls2xform.
   let xml = fs.read(path)
 
       // The following copies behaviour from old bash scripts, and will create a
