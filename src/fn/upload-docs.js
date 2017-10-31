@@ -5,7 +5,7 @@ const skipFn = require('../lib/skip-fn');
 const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
 
-const BATCH_SIZE = 2; // increase to 100
+const BATCH_SIZE = 100;
 
 module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
