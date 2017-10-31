@@ -31,7 +31,7 @@ module.exports = (projectDir, couchUrl) => {
     docFiles = docFiles.slice(BATCH_SIZE);
   }
 
-  info(`Uploading docs in ${sets.length} sets…`);
+  info(`Uploading ${totalCount} docs in ${sets.length} sets…`);
 
   const results = { ok:[], failed:{} };
 
