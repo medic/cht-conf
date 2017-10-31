@@ -67,7 +67,9 @@ module.exports = (projectDir, couchUrl, subDirectory, options) => {
     }, Promise.resolve());
 };
 
-// TODO this isn't really how to parse XML
+// This isn't really how to parse XML, but we have fairly good control over the
+// input and this code is working so far.  This may break with changes to the
+// formatting of output from xls2xform.
 const readTitleFrom = xml => xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>'));
 const readIdFrom = xml =>
     xml.match(/<model>[^]*<\/model>/)[0]
