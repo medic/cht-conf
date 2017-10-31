@@ -6,6 +6,7 @@ const checkForUpdates = require('../src/lib/check-for-updates');
 const error = require('../src/lib/log').error;
 const fs = require('../src/lib/sync-fs');
 const info = require('../src/lib/log').info;
+const log = require('../src/lib/log');
 const readline = require('readline-sync');
 const redactBasicAuth = require('redact-basic-auth');
 const supportedActions = require('../src/cli/supported-actions');
@@ -21,6 +22,12 @@ if(!args.length) {
 }
 
 let instanceUrl, skipCheckForUpdates;
+
+switch(args[0]) {
+  case '--silent':  log.level = log.LEVEL_NONE;  shift(); break;
+  case '--verbose': log.level = log.LEVEL_TRACE; shift(); break;
+  default:          log.level = log.LEVEL_INFO;
+}
 
 switch(args[0]) {
 
