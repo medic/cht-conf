@@ -3,8 +3,6 @@ const memPouch = require('pouchdb').defaults({ db:memdown });
 const express = require('express');
 const expressPouch = require('express-pouchdb');
 
-const PORT = 5988;
-
 const opts = {
   inMemoryConfig: true,
   logPath: 'build/test/express-pouchdb.log',
@@ -16,15 +14,18 @@ app.use('/', stripAuth, expressPouch(memPouch, opts));
 let server;
 
 module.exports = {
-  couchUrl: `http://admin:pass@localhost:${PORT}/medic`,
   db: new memPouch('medic'),
   start: () => {
     if(server) throw new Error('Server already started.');
-    server = app.listen(PORT);
+    server = app.listen();
+
+    const port = server.address().port;
+    module.exports.couchUrl = `http://admin:pass@localhost:${port}/medic`;
   },
   stop: () => {
     server.close();
     server = null;
+    delete module.exports.couchUrl;
   },
 };
 
