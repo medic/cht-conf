@@ -1,23 +1,29 @@
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
 const log = require('../lib/log');
-const pouch = require('../lib/db');
+const PouchDB = require('pouchdb');
+const pouchHttp = require('../lib/remote-db');
 const progressBar = require('../lib/progress-bar');
 const skipFn = require('../lib/skip-fn');
 const warn = require('../lib/log').warn;
 
-const BATCH_SIZE = 10;
+const LOCAL_BATCH_SIZE = 1000;
+const REMOTE_BATCH_SIZE = 100;
 
 module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
 
   const docDir = `${projectDir}/json_docs`;
-  const db = pouch(couchUrl);
+  const dbPath = './json_docs.pouch.db';
+  const localDb = PouchDB(dbPath);
+  const remoteDb = pouchHttp(couchUrl);
 
   if(!fs.exists(docDir)) {
     warn(`No docs directory found at ${docDir}.`);
     return Promise.resolve();
   }
+
+  info(`Searching for .doc.json files in '${docDir}'…`);
 
   let docFiles = fs.recurseFiles(docDir)
     .filter(name => name.endsWith('.doc.json'));
@@ -28,17 +34,11 @@ module.exports = (projectDir, couchUrl) => {
   const sets = [];
   const totalCount = docFiles.length;
   while(docFiles.length) {
-    sets.push(docFiles.slice(0, BATCH_SIZE));
-    docFiles = docFiles.slice(BATCH_SIZE);
+    sets.push(docFiles.slice(0, LOCAL_BATCH_SIZE));
+    docFiles = docFiles.slice(LOCAL_BATCH_SIZE);
   }
 
-  const progress = log.level > log.LEVEL_ERROR ?
-      progressBar.init(totalCount, '{{N}}/{{M}} docs ') : null;
-
-  info(`Uploading ${totalCount} docs in ${sets.length} sets…`);
-  if(progress) progress.print();
-
-  const results = { ok:[], failed:{} };
+  info(`Saving ${totalCount} docs to local db ${dbPath}…`);
 
   const process = sets.reduce((promiseChain, docSet) =>
     promiseChain.then(() => {
@@ -49,29 +49,37 @@ module.exports = (projectDir, couchUrl) => {
         return doc;
       });
 
-      return db.bulkDocs(docs)
-        .then(res => {
-          if(progress) {
-            progress.increment(docSet.length);
-            progress.print();
-          }
-          res.forEach(r => {
-            if(r.error) {
-              results.failed[r.id] = `${r.error}: ${r.reason}`;
-            } else {
-              results.ok.push(r.id);
-            }
-          });
-        });
+      return localDb.bulkDocs(docs);
     }),
     Promise.resolve());
 
   return process
-    .then(() => {
-      const okCount = results.ok.length;
-      info('Upload failed for:\n' + JSON.stringify(results.failed, null, 2));
-      info(`Summary: ${okCount} of ${totalCount} docs uploaded OK.`);
-    });
+    .then(() => info('Docs saved OK.'))
+    .then(() => info('Syncing to remote db…'))
+    .then(() => new Promise((resolve, reject) => {
+      let progress;
+      localDb
+        .replicate.to(remoteDb, { timeout:120000, checkpoint:false, batch_size:REMOTE_BATCH_SIZE })
+        .on('active', () => {
+          if(log.level > log.LEVEL_ERROR) progress = progressBar.init(totalCount, '{{n}}/{{N}} docs ', ' {{%}} {{m}}:{{s}}');
+        })
+        .on('change', details => {
+          if(progress) progress.inc(REMOTE_BATCH_SIZE);
+        })
+        .on('complete', details => {
+          if(progress) progress.done();
+          info(`Replication complete.  Wrote ${details.docs_written} of ${totalCount} docs to remote DB.`);
+          info('Errors:', details.errors);
+          if(details.docs_written < totalCount && !details.errors.length) {
+            info('There were no errors, but not all docs were uploaded.  Some of these docs may have been uploaded previously.');
+          }
+          resolve();
+        })
+        .on('error', err => {
+          if(progress) progress.cancel();
+          reject(err);
+        });
+    }));
 };
 
 function idFromFilename(doc) {

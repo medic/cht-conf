@@ -1,7 +1,7 @@
 const fs = require('../lib/sync-fs');
 const skipFn = require('../lib/skip-fn');
 const warn = require('../lib/log').warn;
-const pouch = require('../lib/db');
+const pouchHttp = require('../lib/remote-db');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
@@ -9,7 +9,7 @@ module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
 
   const dir = `${projectDir}/translations`;
-  const db = pouch(couchUrl);
+  const db = pouchHttp(couchUrl);
 
   return Promise.resolve()
     .then(() => {

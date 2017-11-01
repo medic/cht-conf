@@ -1,10 +1,10 @@
 const skipFn = require('../lib/skip-fn');
-const pouch = require('../lib/db');
+const pouchHttp = require('../lib/remote-db');
 
 module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
 
-  const db = pouch(couchUrl);
+  const db = pouchHttp(couchUrl);
 
   return db.query('medic-client/forms', { include_docs:true })
     .then(res => res.rows)

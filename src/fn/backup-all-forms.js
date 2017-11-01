@@ -1,14 +1,14 @@
 const log = require('../lib/log');
 const fs = require('../lib/sync-fs');
 const skipFn = require('../lib/skip-fn');
-const pouch = require('../lib/db');
+const pouchHttp = require('../lib/remote-db');
 
 const backupFileFor = require('../lib/backup-file-for');
 
 module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
 
-  const db = pouch(couchUrl);
+  const db = pouchHttp(couchUrl);
   const parentBackupDir = backupFileFor(projectDir, 'forms');
 
   log('Backing up forms to:', parentBackupDir);
