@@ -1,11 +1,13 @@
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
+const log = require('../lib/log');
 const pouch = require('../lib/db');
+const progressBar = require('../lib/progress-bar');
 const skipFn = require('../lib/skip-fn');
 const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
 
-const BATCH_SIZE = 100;
+const BATCH_SIZE = 10;
 
 module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
@@ -31,7 +33,11 @@ module.exports = (projectDir, couchUrl) => {
     docFiles = docFiles.slice(BATCH_SIZE);
   }
 
+  const progress = log.level > log.LEVEL_ERROR ?
+      progressBar.init(totalCount, '{{N}}/{{M}} docs ') : null;
+
   info(`Uploading ${totalCount} docs in ${sets.length} sets…`);
+  if(progress) progress.print();
 
   const results = { ok:[], failed:{} };
 
@@ -46,7 +52,10 @@ module.exports = (projectDir, couchUrl) => {
 
       return db.bulkDocs(docs)
         .then(res => {
-          trace(`Processed ${docSet.length} docs.`);
+          if(progress) {
+            progress.increment(docSet.length);
+            progress.print();
+          }
           res.forEach(r => {
             if(r.error) {
               results.failed[r.id] = `${r.error}: ${r.reason}`;
