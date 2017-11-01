@@ -4,7 +4,6 @@ const log = require('../lib/log');
 const pouch = require('../lib/db');
 const progressBar = require('../lib/progress-bar');
 const skipFn = require('../lib/skip-fn');
-const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
 
 const BATCH_SIZE = 10;
