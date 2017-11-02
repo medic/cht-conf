@@ -4,9 +4,8 @@ const log = require('../lib/log');
 const pouch = require('../lib/db');
 const progressBar = require('../lib/progress-bar');
 const skipFn = require('../lib/skip-fn');
+const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
-
-const BATCH_SIZE = 10;
 
 module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
@@ -19,40 +18,46 @@ module.exports = (projectDir, couchUrl) => {
     return Promise.resolve();
   }
 
-  let docFiles = fs.recurseFiles(docDir)
+  const docFiles = fs.recurseFiles(docDir)
     .filter(name => name.endsWith('.doc.json'));
 
   docFiles
     .forEach(validateJson);
 
-  const sets = [];
   const totalCount = docFiles.length;
-  while(docFiles.length) {
-    sets.push(docFiles.slice(0, BATCH_SIZE));
-    docFiles = docFiles.slice(BATCH_SIZE);
-  }
 
   const progress = log.level > log.LEVEL_ERROR ?
       progressBar.init(totalCount, '{{N}}/{{M}} docs ') : null;
 
-  info(`Uploading ${totalCount} docs in ${sets.length} sets…`);
+  info(`Uploading ${totalCount} docs.  This may take some time to start…`);
   if(progress) progress.print();
 
   const results = { ok:[], failed:{} };
 
-  const process = sets.reduce((promiseChain, docSet) =>
-    promiseChain.then(() => {
-      const now = new Date().toISOString();
-      const docs = docSet.map(file => {
-        const doc = fs.readJson(file);
-        doc.imported_date = now;
-        return doc;
-      });
+  return processNextBatch(docFiles, 100);
 
-      return db.bulkDocs(docs)
-        .then(res => {
+  function processNextBatch(docFiles, batchSize) {
+    if(!docFiles.length) {
+      info('Upload failed for:\n' + JSON.stringify(results.failed, null, 2));
+      info(`Summary: ${results.ok.length} of ${totalCount} docs uploaded OK.`);
+      return Promise.resolve();
+    }
+
+    const now = new Date().toISOString();
+    const docs = docFiles.slice(0, batchSize)
+        .map(file => {
+          const doc = fs.readJson(file);
+          doc.imported_date = now;
+          return doc;
+        });
+
+    if(log.level >= log.LEVEL_TRACE) console.log();
+    trace(`Attempting to upload batch of ${docs.length} docs…`);
+
+    return db.bulkDocs(docs)
+      .then(res => {
           if(progress) {
-            progress.increment(docSet.length);
+            progress.increment(docs.length);
             progress.print();
           }
           res.forEach(r => {
@@ -62,16 +67,21 @@ module.exports = (projectDir, couchUrl) => {
               results.ok.push(r.id);
             }
           });
-        });
-    }),
-    Promise.resolve());
-
-  return process
-    .then(() => {
-      const okCount = results.ok.length;
-      info('Upload failed for:\n' + JSON.stringify(results.failed, null, 2));
-      info(`Summary: ${okCount} of ${totalCount} docs uploaded OK.`);
-    });
+          return processNextBatch(docFiles.slice(batchSize), batchSize + 10);
+      })
+      .catch(err => {
+        if(err.code === 'ESOCKETTIMEDOUT') {
+          if(batchSize > 1) {
+            if(log.level >= log.LEVEL_TRACE) console.log();
+            trace('Server connection timed out.  Decreasing batch size…');
+            processNextBatch(docFiles, batchSize >> 1);
+          } else {
+            warn('Server connection timed out for batch size of 1 document.  We will continue to retry, but you might want to cancel the job if this continues.');
+            return processNextBatch(docFiles, 1);
+          }
+        } else throw err;
+      });
+  }
 };
 
 function idFromFilename(doc) {
