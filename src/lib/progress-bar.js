@@ -19,7 +19,7 @@ module.exports = {
       const fPrefix = prefix ? format(prefix) : '';
       const fSuffix = suffix ? format(suffix) : '';
 
-      const barTotal = process.stdout.columns - fPrefix.length - fSuffix.length - 2;
+      const barTotal = process.stdout.columns - fPrefix.length - fSuffix.length - 3;
       const pBarLen = Math.floor(runningTotal * barTotal / target);
 
       for(i=pBarLen; i>0; --i) bar += '█';
