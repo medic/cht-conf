@@ -38,8 +38,11 @@ module.exports = (projectDir, couchUrl) => {
   function processNextBatch(docFiles, batchSize) {
     if(!docFiles.length) {
       if(progress) progress.done();
-      info('Upload failed for:\n' + JSON.stringify(results.failed, null, 2));
-      info(`Summary: ${results.ok.length} of ${totalCount} docs uploaded OK.`);
+
+      const reportFile = `upload-to-docs.${Date.now()}.log.json`;
+      fs.writeJson(reportFile, results);
+      info(`Summary: ${results.ok.length} of ${totalCount} docs uploaded OK.  Full report written to: ${reportFile}`);
+
       return Promise.resolve();
     }
 
