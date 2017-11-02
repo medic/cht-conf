@@ -26,18 +26,18 @@ module.exports = (projectDir, couchUrl) => {
 
   const totalCount = docFiles.length;
 
-  const progress = log.level > log.LEVEL_ERROR ?
-      progressBar.init(totalCount, '{{N}}/{{M}} docs ') : null;
-
   info(`Uploading ${totalCount} docs.  This may take some time to start…`);
-  if(progress) progress.print();
 
   const results = { ok:[], failed:{} };
+
+  const progress = log.level > log.LEVEL_ERROR ?
+      progressBar.init(totalCount, '{{n}}/{{N}} docs ', ' {{%}} {{m}}:{{s}}') : null;
 
   return processNextBatch(docFiles, 100);
 
   function processNextBatch(docFiles, batchSize) {
     if(!docFiles.length) {
+      if(progress) progress.done();
       info('Upload failed for:\n' + JSON.stringify(results.failed, null, 2));
       info(`Summary: ${results.ok.length} of ${totalCount} docs uploaded OK.`);
       return Promise.resolve();
@@ -56,10 +56,7 @@ module.exports = (projectDir, couchUrl) => {
 
     return db.bulkDocs(docs)
       .then(res => {
-          if(progress) {
-            progress.increment(docs.length);
-            progress.print();
-          }
+          if(progress) progress.inc(docs.length);
           res.forEach(r => {
             if(r.error) {
               results.failed[r.id] = `${r.error}: ${r.reason}`;
