@@ -74,7 +74,7 @@ module.exports = (projectDir, couchUrl) => {
           if(batchSize > 1) {
             if(log.level >= log.LEVEL_TRACE) console.log();
             trace('Server connection timed out.  Decreasing batch size…');
-            processNextBatch(docFiles, batchSize >> 1);
+            return processNextBatch(docFiles, batchSize >> 1);
           } else {
             warn('Server connection timed out for batch size of 1 document.  We will continue to retry, but you might want to cancel the job if this continues.');
             return processNextBatch(docFiles, 1);
