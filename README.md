@@ -102,6 +102,37 @@ This tool expects a project to be sctructured as follows:
 			messages-xx.properties
 			…
 
+## Derived configs
+
+Configuration can be inherited from another project, and then modified.  This allows the `app_settings.json` and contained files (`tasks.json`, `targets.json` etc.) to be imported, and then modified.
+
+To achieve this, create a file called `settings.inherit.json` in your project's root directory with the following format:
+
+	{
+		"inherit": "../path/to/other/project",
+		"replace": {
+			"keys.to.replace": "value-to-replace-it-with"
+		},
+		"merge": {
+			"complex.objects": {
+				"will_be_merged": true
+			}
+		},
+		"delete": [
+			"all.keys.listed.here",
+			"will.be.deleted"
+		],
+		"filter": {
+			"object.at.this.key": [
+				"will",
+				"keep",
+				"only",
+				"these",
+				"properties"
+			]
+		}
+	}
+
 
 # Currently supported
 

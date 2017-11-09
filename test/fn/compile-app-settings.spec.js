@@ -22,4 +22,22 @@ describe('compile-app-settings', () => {
 
   });
 
+  it('should handle derivative app-settings definitions', () => {
+
+    // given
+    const testDir = 'build/test/data/compile-app-settings/derivative/child';
+
+    // when
+    return compileAppSettings(testDir)
+
+      .then(() => {
+
+        // then
+        assert.equal(fs.read(`${testDir}/app_settings.json`),
+                     fs.read(`${testDir}/../app_settings.expected.json`));
+
+      });
+
+  });
+
 });
