@@ -1,0 +1,25 @@
+const assert = require('chai').assert;
+const compileAppSettings = require('../../src/fn/compile-app-settings');
+const fs = require('../../src/lib/sync-fs');
+
+describe('compile-app-settings', () => {
+
+  it('should handle simple config', () => {
+
+    // given
+    const testDir = 'build/test/data/compile-app-settings/simple/project';
+
+    // when
+    return compileAppSettings(testDir)
+
+      .then(() => {
+
+        // then
+        assert.equal(fs.read(`${testDir}/app_settings.json`),
+                      fs.read(`${testDir}/../app_settings.expected.json`));
+
+      });
+
+  });
+
+});
