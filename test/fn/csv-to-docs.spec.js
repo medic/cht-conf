@@ -1,6 +1,5 @@
 const assert = require('chai').assert;
 const fs = require('../../src/lib/sync-fs');
-const ncp = require('ncp');
 
 const csvToDocs = require('../../src/fn/csv-to-docs');
 
@@ -10,38 +9,32 @@ describe('csv-to-docs', function() {
     this.timeout(30000); // allow time for slow things
 
     // given
-    const srcDir = `test/data/csv-to-docs`;
-    const testDir = `build/test/csv-to-docs`;
+    const testDir = `build/test/data/csv-to-docs`;
 
-    ncp(srcDir, testDir, function(err) {
-      if(err) done(err);
+    // when
+    csvToDocs(testDir)
+      .then(() => {
+        const generatedDocsDir = `${testDir}/json_docs`;
+        const expectedDocsDir  = `${testDir}/expected-json_docs`;
 
-      // when
-      csvToDocs(testDir)
-        .then(() => {
-          const generatedDocsDir = `${testDir}/json_docs`;
-          const expectedDocsDir  = `${testDir}/expected-json_docs`;
+        // then
+        assert.equal(countFilesInDir(generatedDocsDir),
+                     countFilesInDir(expectedDocsDir ),
+                     `Different number of files in ${generatedDocsDir} and ${expectedDocsDir}.`);
 
-          // then
-          assert.equal(countFilesInDir(generatedDocsDir),
-                       countFilesInDir(expectedDocsDir ),
-                       `Different number of files in ${generatedDocsDir} and ${expectedDocsDir}.`);
+        fs.recurseFiles(expectedDocsDir)
+          .map(file => fs.path.basename(file))
+          .forEach(file => {
+            const expected  = fs.read(`${expectedDocsDir}/${file}`);
+            const generated = fs.read(`${generatedDocsDir}/${file}`);
 
-          fs.recurseFiles(expectedDocsDir)
-            .map(file => fs.path.basename(file))
-            .forEach(file => {
-              const expected  = fs.read(`${expectedDocsDir}/${file}`);
-              const generated = fs.read(`${generatedDocsDir}/${file}`);
+            // and
+            assert.equal(generated, expected);
+          });
 
-              // and
-              assert.equal(generated, expected);
-            });
-
-          done();
-        })
-        .catch(done);
-
-    });
+        done();
+      })
+      .catch(done);
 
   });
 

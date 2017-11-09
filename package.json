@@ -7,7 +7,7 @@
     "clean": "rm -rf ./build/",
     "jshint": "jshint src/**/*.js bin/*.js test/*.js test/**/*.js",
     "release": "git tag v$(jq -r .version package.json) && git push --tags && npm publish",
-    "test": "npm run jshint && npm run clean && mocha test/**/*.spec.js"
+    "test": "npm run jshint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && mocha test/**/*.spec.js"
   },
   "bin": {
     "medic-conf": "bin/medic-conf.js",
@@ -43,7 +43,6 @@
     "lodash": "^4.17.4",
     "memdown": "^1.4.1",
     "mocha": "^3.4.2",
-    "ncp": "^2.0.0",
     "pouchdb": "^6.3.4"
   }
 }

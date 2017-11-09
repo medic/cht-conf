@@ -1,7 +1,5 @@
 const assert = require('chai').assert;
 const fs = require('../../src/lib/sync-fs');
-const path = require('path');
-const warn = require('../../src/lib/log').warn;
 
 
 module.exports = {
@@ -13,39 +11,25 @@ module.exports = {
 
       this.timeout(30000); // allow time for form conversion
 
-      const projectDir = `build/test/${testName}`;
+      const projectDir = `build/test/data/${testName}`;
 
       // recursively copy forms and expected XML to temp directory, and create
       // tests dynamically
 
-      const srcDir = `test/data/${testName}`;
       const targetDir = `${projectDir}/forms/${type}`;
 
-      fs.mkdir(targetDir);
+      fs.recurseFiles(targetDir)
+        .filter(file => file.endsWith('.expected.xml'))
+        .forEach(expectedXml => {
 
-      fs.recurseFiles(srcDir)
-        .forEach(file => {
-          if(file.endsWith('.expected.xml')) {
+          const generatedXml = expectedXml.replace(/\.expected\.xml$/, '.xml');
 
-            const expectedXml = file;
-            const generatedXml = `${targetDir}/${path.basename(file, '.expected.xml')}.xml`;
+          it(`should generate ${generatedXml} as expected`, () => {
 
-            it(`should generate ${generatedXml} as expected`, () => {
+            assert.ok(fs.exists(generatedXml), `Missing generated XML file: ${generatedXml}`);
+            assert.equal(fs.read(generatedXml), fs.read(expectedXml), `Content of ${generatedXml} was not as expected.`);
 
-              assert.ok(fs.exists(generatedXml), `Missing generated XML file: ${generatedXml}`);
-              assert.equal(fs.read(generatedXml), fs.read(expectedXml), `Content of ${generatedXml} was not as expected.`);
-
-            });
-
-          } else if(file.endsWith('.xlsx') ||
-              file.endsWith('.properties.json') ||
-              path.basename(file) === 'place-types.json') {
-
-            const targetName = path.basename(file);
-            fs.copy(file, `${targetDir}/${targetName}`);
-          } else {
-            warn(`Ignoring unexpected file type: ${file}`);
-          }
+          });
 
         });
 

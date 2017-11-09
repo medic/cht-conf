@@ -1,6 +1,5 @@
 const api = require('../api-stub');
 const assert = require('chai').assert;
-const ncp = require('ncp');
 const uploadDocs = require('../../src/fn/upload-docs');
 
 describe('upload-docs', function() {
@@ -9,29 +8,24 @@ describe('upload-docs', function() {
   
   it('should upload docs to pouch', function(done) {
 
-    // given the test files are copied over
-    const srcDir = `test/data/upload-docs`;
-    const testDir = `build/test/upload-docs`;
+    // given
+    const testDir = `build/test/data/upload-docs`;
 
-    ncp(srcDir, testDir, err => {
-      if(err) done(err);
+    assertDbEmpty()
 
-      assertDbEmpty()
+      .then(() => /* when */ uploadDocs(testDir, api.couchUrl))
 
-        .then(() => /* when */ uploadDocs(testDir, api.couchUrl))
+      .then(() => api.db.allDocs())
+      .then(res =>
 
-        .then(() => api.db.allDocs())
-        .then(res =>
+          // then
+          assert.deepEqual(res.rows.map(doc => doc.id), [
+            'one', 'three', 'two'
+          ]))
 
-            // then
-            assert.deepEqual(res.rows.map(doc => doc.id), [
-              'one', 'three', 'two'
-            ]))
+      .then(done)
+      .catch(done);
 
-        .then(done)
-        .catch(done);
-
-    });
 
   });
 
