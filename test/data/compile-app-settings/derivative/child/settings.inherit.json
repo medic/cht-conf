@@ -1,7 +1,26 @@
 {
-  "parent": "../parent",
-  "app_settings": {
-    "from_child": true,
-    "overridden": true
+  "inherit": "../parent",
+  "replace": {
+    "locale": "sw",
+    "locales": [
+      {
+        "code": "sw",
+        "name": "Kiswahili (Swahili)"
+      }
+    ]
+  },
+  "merge": {
+    "kujua-reporting": [
+      {
+        "code": "99",
+        "reporting_freq": "weekly"
+      }
+    ]
+  },
+  "delete": [
+    "transitions.update_clinics"
+  ],
+  "filter": {
+    "forms": [ "IMM" ]
   }
 }
