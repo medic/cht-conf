@@ -25,6 +25,7 @@ describe('shell-completion', () => {
         'convert-contact-forms',
         'csv-to-docs',
         'delete-all-forms',
+        'fetch-forms-from-google-drive',
         'initialise-project-layout',
         'upload-app-forms',
         'upload-app-settings',
