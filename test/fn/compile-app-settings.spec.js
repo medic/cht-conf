@@ -34,7 +34,7 @@ describe('compile-app-settings', () => {
 
         // then
         assert.equal(fs.read(`${testDir}/app_settings.json`),
-                      fs.read(`${testDir}/../app_settings.expected.json`));
+                     fs.read(`${testDir}/../app_settings.expected.json`));
 
       });
 

@@ -1,0 +1,7 @@
+{
+  "parent": "../parent",
+  "app_settings": {
+    "from_child": true,
+    "overridden": true
+  }
+}

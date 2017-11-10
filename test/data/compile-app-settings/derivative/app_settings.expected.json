@@ -1,5 +1,11 @@
 {
-  "from_child": true,
   "from_parent": true,
-  "overridden": false
+  "overridden": true,
+  "contact_summary": "",
+  "tasks": {
+    "rules": "",
+    "schedules": {},
+    "targets": {}
+  },
+  "from_child": true
 }
