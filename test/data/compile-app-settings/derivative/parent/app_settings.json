@@ -27,5 +27,24 @@
   "transitions": {
     "default_responses": true,
     "update_clinics": true
+  },
+  "something": {
+    "really": {
+      "really": {
+        "deep": {
+          "byebye": true,
+          "still-here": true,
+          "filterme": {
+            "one": true,
+            "two": false,
+            "three": 3,
+            "four": 4,
+            "five": [ 5, 5, 5, 5, 5 ],
+            "six": [ 6, 6, 6, 6, 6, 6 ]
+          },
+          "replacemycontents": "i-am-simple"
+        }
+      }
+    }
   }
 }

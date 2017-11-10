@@ -27,6 +27,31 @@
   "transitions": {
     "default_responses": true
   },
+  "something": {
+    "really": {
+      "really": {
+        "deep": {
+          "still-here": true,
+          "filterme": {
+            "one": true,
+            "three": 3,
+            "five": [
+              5,
+              5,
+              5,
+              5,
+              5
+            ]
+          },
+          "replacemycontents": {
+            "complex": {
+              "object": true
+            }
+          }
+        }
+      }
+    }
+  },
   "contact_summary": "",
   "tasks": {
     "rules": "",

@@ -70,7 +70,7 @@ function doDelete(target, rules) {
     const parts = k.split('.');
     let t = target;
     while(parts.length > 1) {
-      t = target[parts[0]];
+      t = t[parts[0]];
       parts.shift();
     }
     delete t[parts[0]];
@@ -85,7 +85,7 @@ function doReplace(target, rules) {
       const parts = k.split('.');
       let t = target;
       while(parts.length > 1) {
-        t = target[parts[0]];
+        t = t[parts[0]];
         parts.shift();
       }
       t[parts[0]] = rules[k];
@@ -109,7 +109,7 @@ function doFilter(target, rules) {
       const parts = k.split('.');
       let t = target;
       while(parts.length > 1) {
-        t = target[parts[0]];
+        t = t[parts[0]];
         parts.shift();
       }
 

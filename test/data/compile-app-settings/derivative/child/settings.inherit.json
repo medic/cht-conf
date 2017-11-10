@@ -7,7 +7,12 @@
         "code": "sw",
         "name": "Kiswahili (Swahili)"
       }
-    ]
+    ],
+    "something.really.really.deep.replacemycontents": {
+      "complex": {
+        "object": true
+      }
+    }
   },
   "merge": {
     "kujua-reporting": [
@@ -18,9 +23,11 @@
     ]
   },
   "delete": [
-    "transitions.update_clinics"
+    "transitions.update_clinics",
+    "something.really.really.deep.byebye"
   ],
   "filter": {
-    "forms": [ "IMM" ]
+    "forms": [ "IMM" ],
+    "something.really.really.deep.filterme": [ "one", "three", "five" ]
   }
 }
