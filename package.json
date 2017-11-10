@@ -1,6 +1,6 @@
 {
   "name": "medic-conf",
-  "version": "1.7.8",
+  "version": "1.8.0",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
@@ -27,6 +27,7 @@
   "dependencies": {
     "canonical-json": "0.0.4",
     "csv-parse": "^1.2.4",
+    "googleapis": "^22.2.0",
     "mkdirp": "^0.5.1",
     "pouchdb-adapter-http": "^6.3.4",
     "pouchdb-core": "^6.3.4",
