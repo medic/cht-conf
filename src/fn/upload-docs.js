@@ -39,7 +39,7 @@ module.exports = (projectDir, couchUrl) => {
     if(!docFiles.length) {
       if(progress) progress.done();
 
-      const reportFile = `upload-to-docs.${Date.now()}.log.json`;
+      const reportFile = `upload-docs.${Date.now()}.log.json`;
       fs.writeJson(reportFile, results);
       info(`Summary: ${results.ok.length} of ${totalCount} docs uploaded OK.  Full report written to: ${reportFile}`);
 
