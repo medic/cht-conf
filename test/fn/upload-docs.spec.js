@@ -9,7 +9,7 @@ describe('upload-docs', function() {
   it('should upload docs to pouch', function(done) {
 
     // given
-    const testDir = `build/test/data/upload-docs`;
+    const testDir = `data/upload-docs`;
 
     assertDbEmpty()
 

@@ -7,7 +7,7 @@
     "clean": "rm -rf ./build/",
     "jshint": "jshint src/**/*.js bin/*.js test/*.js test/**/*.js",
     "release": "git push && git tag v$(jq -r .version package.json) && git push --tags && npm publish",
-    "test": "npm run jshint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && mocha test/**/*.spec.js"
+    "test": "npm run jshint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js"
   },
   "bin": {
     "medic-conf": "bin/medic-conf.js",

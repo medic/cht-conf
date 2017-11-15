@@ -1,7 +1,7 @@
 const assert = require('chai').assert;
 const fs = require('../../src/lib/sync-fs');
 
-const TARGET_DIR = 'build/test/initialise-project-layout';
+const TARGET_DIR = 'initialise-project-layout';
 
 const initialiseProjectLayout = require('../../src/fn/initialise-project-layout');
 

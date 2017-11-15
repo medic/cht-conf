@@ -7,7 +7,7 @@ describe('compile-app-settings', () => {
   it('should handle simple config', () => {
 
     // given
-    const testDir = 'build/test/data/compile-app-settings/simple/project';
+    const testDir = 'data/compile-app-settings/simple/project';
 
     // when
     return compileAppSettings(testDir)
@@ -25,7 +25,7 @@ describe('compile-app-settings', () => {
   it('should handle derivative app-settings definitions', () => {
 
     // given
-    const testDir = 'build/test/data/compile-app-settings/derivative/child';
+    const testDir = 'data/compile-app-settings/derivative/child';
 
     // when
     return compileAppSettings(testDir)

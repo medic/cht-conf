@@ -9,7 +9,7 @@ describe('csv-to-docs', function() {
     this.timeout(30000); // allow time for slow things
 
     // given
-    const testDir = `build/test/data/csv-to-docs`;
+    const testDir = `data/csv-to-docs`;
 
     // when
     csvToDocs(testDir)

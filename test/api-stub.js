@@ -5,7 +5,7 @@ const expressPouch = require('express-pouchdb');
 
 const opts = {
   inMemoryConfig: true,
-  logPath: 'build/test/express-pouchdb.log',
+  logPath: 'express-pouchdb.log',
   mode: 'fullCouchDB',
 };
 const app = express();

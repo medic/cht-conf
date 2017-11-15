@@ -11,7 +11,7 @@ module.exports = {
 
       this.timeout(30000); // allow time for form conversion
 
-      const projectDir = `build/test/data/${testName}`;
+      const projectDir = `data/${testName}`;
 
       // recursively copy forms and expected XML to temp directory, and create
       // tests dynamically
