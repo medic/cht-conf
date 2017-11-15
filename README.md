@@ -117,6 +117,7 @@ This tool expects a project to be sctructured as follows:
 
 ## Forms
 
+* fetch from google docs/google sheets/google drive and save locally as `.xlsx`
 * backup from server
 * delete from server
 * upload to server
@@ -131,7 +132,6 @@ This tool expects a project to be sctructured as follows:
 
 # TODO
 
-* support Google Sheets forms
 * add PNGout as somehow part of the form conversion step.  But make sure it's cleanly separated from XML processing step
 
 ## Wishlist
