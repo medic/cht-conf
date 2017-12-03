@@ -18,6 +18,7 @@ function mimeTypeFor(fileName) {
   switch(extension) {
     case 'json': return 'application/json';
     case 'png' : return 'image/png';
+    case 'svg' : return 'image/svg+xml';
     case 'xml' : return 'application/xml';
     default: throw new Error(`Unrecongised file extension: ${extension} for file ${fileName}`);
   }
