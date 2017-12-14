@@ -4,37 +4,42 @@ const fs = require('../../src/lib/sync-fs');
 const csvToDocs = require('../../src/fn/csv-to-docs');
 
 describe('csv-to-docs', function() {
+  this.timeout(30000); // allow time for slow things
 
-  it('should convert demo files to expected JSON', function(done) {
-    this.timeout(30000); // allow time for slow things
+  const testDir = `data/csv-to-docs`;
 
-    // given
-    const testDir = `data/csv-to-docs`;
+  fs.dirs(testDir)
+    .forEach(dir => {
 
-    // when
-    csvToDocs(testDir)
-      .then(() => {
-        const generatedDocsDir = `${testDir}/json_docs`;
-        const expectedDocsDir  = `${testDir}/expected-json_docs`;
+      it(`should convert demo files in ${dir} to expected JSON`, function(done) {
+        // given
+        dir = `${testDir}/${dir}`;
 
-        // then
-        assert.equal(countFilesInDir(generatedDocsDir),
-                     countFilesInDir(expectedDocsDir ),
-                     `Different number of files in ${generatedDocsDir} and ${expectedDocsDir}.`);
+        // when
+        csvToDocs(dir)
+          .then(() => {
+            const generatedDocsDir = `${dir}/json_docs`;
+            const expectedDocsDir  = `${dir}/expected-json_docs`;
 
-        fs.recurseFiles(expectedDocsDir)
-          .map(file => fs.path.basename(file))
-          .forEach(file => {
-            const expected  = fs.read(`${expectedDocsDir}/${file}`);
-            const generated = fs.read(`${generatedDocsDir}/${file}`);
+            // then
+            assert.equal(countFilesInDir(generatedDocsDir),
+                         countFilesInDir(expectedDocsDir ),
+                         `Different number of files in ${generatedDocsDir} and ${expectedDocsDir}.`);
 
-            // and
-            assert.equal(generated, expected);
-          });
+            fs.recurseFiles(expectedDocsDir)
+              .map(file => fs.path.basename(file))
+              .forEach(file => {
+                const expected  = fs.read(`${expectedDocsDir}/${file}`);
+                const generated = fs.read(`${generatedDocsDir}/${file}`);
 
-        done();
-      })
-      .catch(done);
+                // and
+                assert.equal(generated, expected);
+              });
+          })
+          .then(done)
+          .catch(done);
+
+      });
 
   });
 

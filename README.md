@@ -177,36 +177,59 @@ To achieve this, create a file called `settings.inherit.json` in your project's 
 
 To convert CSV to JSON docs, use the `csv-to-docs` action.
 
-By default, values are parsed as strings.  To parse a CSV column as a JSON type, prefix a data type to the column definition, e.g.
+## property types
 
-	column_1,bool:column_2,int:column_3,date:column_4
+By default, values are parsed as strings.  To parse a CSV column as a JSON type, suffix a data type to the column definition, e.g.
 
-To reference other docs, there are a number of options:
+	column_one,column_two:bool,column_three:int,column_four:float,column_five:date,column_six:timestamp
 
-## Reference to a row of CSV
+This would create a structure such as:
 
-1. `_id` of doc at row `N` of csv file `F`
+	{
+		"_id": "09efb53f-9cd8-524c-9dfd-f62c242f1817",
+		"column_one": "some string",
+		"column_two": true,
+		"column_three": 1,
+		"column_four": 2.3,
+		"column_five": "2017-12-31T00:00:00.000Z",
+		"column_six": 1513255007072
+	}
 
-	csv:F:id>target_property_name
+## excluded columns
 
-2. entire doc at row `N` of csv file `F`
+To exclude a column from the final object structure, give it the type `excluded`:
 
-	csv:F:doc>target_property_name
+	my_column_that_will_not_be_a_property:excluded
 
-3. value of field `some_field` of doc at row `N` of csv file `F`
+This can be useful if using a column for doc references.
 
-	csv:F:.some_field>target_property_name
+## doc references
 
-## Reference to a doc by matching properties
+To reference other docs, replace the type suffix with a matching clause:
 
-1. `_id` of doc with properties X=a and Y=b where property P matches this column's value
+	location:place WHERE external_id=COL_VAL
 
-	match=P:X=a&Y=y:id>target_property_name
+This would create a structure such as:
 
-2. entire doc with properties X=a and Y=b where property P matches this column's value
+	{
+		"_id": "09efb53f-9cd8-524c-9dfd-f62c242f1817",
+		"location": {
+		"_id": "7ac33d1f-10d8-5198-b39d-9d61595292f6"
+			"name": "some place"
+		}
+	}
 
-	match=P:X=a&Y=y:doc>target_property_name
+## doc property references
 
-3. value of field `some_field` of doc with properties X=a and Y=b where property P matches this column's value
+To reference specific properties of other docs:
 
-	match=P:X=a&Y=y:.some_field>target_property_name
+	location:_id OF place WHERE external_id=COL_VAL
+
+This would create a structure such as:
+
+	{
+		"_id": "09efb53f-9cd8-524c-9dfd-f62c242f1817",
+		"location": "7ac33d1f-10d8-5198-b39d-9d61595292f6"
+	}
+
+Note the special string `COL_VAL` - this matches the CSV column value for the row being processed.
