@@ -8,6 +8,8 @@ const warn = require('../lib/log').warn;
 const pretty = o => JSON.stringify(o, null, 2);
 
 const RESERVED_COL_NAMES = [ 'type', 'form' ];
+const REF_MATCHER = /^((\w+) OF )?(\w+) WHERE (.*)$/;
+const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
 
 require('../lib/polyfill');
 
@@ -29,6 +31,7 @@ module.exports = projectDir => {
     csvFiles: {},
     docs: {},
     references: [],
+    exclusions: [],
   };
   const addToModel = (csvFile, docs) => {
     csvFile = csvFile.match(/^(?:.*[\/\\])?csv[\/\\](.*)\.csv$/)[1];
@@ -60,57 +63,25 @@ module.exports = projectDir => {
       Promise.resolve())
 
     .then(() => model.references.forEach(updateRef))
+    .then(() => model.exclusions.forEach(removeExcludedField))
 
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));
 
 
   function updateRef(ref) {
-    let referencedDoc;
+    const match = ref.matcher.match(REF_MATCHER);
+    const [, , propertyName, type, where] = match;
 
-    switch(ref.refType) {
-      case 'csv':
-        if(!model.csvFiles[ref.sourceFile])
-          throw new Error(`Cannot find referenced CSV file: ${projectDir}/csv/${ref.sourceFile}.csv`);
-        referencedDoc = model.csvFiles[ref.sourceFile][ref.rowIdx-1];
-        break;
-      case 'match':
-        referencedDoc = Object.values(model.docs)
-            .find(doc => doc[ref.colName] === ref.colVal &&
-                Object.keys(ref.matchers)
-                    .every(col => doc[col] === ref.matchers[col]));
-        if(!referencedDoc) warn(`Couldn't find doc for ref ${pretty(ref)}`);
-        break;
-      default: throw new Error(`Don't know how to handle ref of type: ${ref.refType}:\n${pretty(ref)}`);
+    const referencedDoc = Object.values(model.docs)
+      .find(doc => (doc.type === type ||
+              (type === 'place' && PLACE_TYPES.includes(doc.type))) &&
+          matchesWhereClause(where, doc, ref.colVal));
+
+    if(!referencedDoc) {
+      throw new Error(`Failed to match reference ${pretty(ref)}`);
     }
 
-    let finalVal;
-    if(ref.expandTo === 'doc') {
-      finalVal = referencedDoc;
-    } else if(ref.expandTo === 'id') {
-      finalVal = { _id:referencedDoc._id };
-    } else if(ref.expandTo.startsWith('.')) {
-      let prop;
-      const props = ref.expandTo.substring(1).split('.');
-      finalVal = referencedDoc;
-      while((prop = props.shift())) finalVal = finalVal[prop];
-    } else throw new Error(`Don't know how to expand reference to value:\n${pretty(ref)}`);
-
-    setCol(ref.doc, ref.targetProperty, finalVal);
-  }
-
-  function withId(json) {
-    const id = uuid(json);
-    json._id = id;
-    return json;
-  }
-
-  function loadCsv(csv) {
-    const raw = csvParse(fs.read(csv));
-    if(!raw.length) return { cols:[], rows:[] };
-    return {
-      cols: raw[0],
-      rows: raw.slice(1),
-    };
+    ref.doc[ref.targetProperty] = propertyName ? referencedDoc[propertyName] : referencedDoc;
   }
 
   function processPersons(csv) {
@@ -138,85 +109,28 @@ module.exports = projectDir => {
     const doc = baseDoc || {};
     doc.type = docType;
 
-    function addReference(r) {
-      r.doc = doc;
-      model.references.push(r);
-    }
-
     for(let i=0; i<cols.length; ++i) {
-      const { col, val, references } = parseColumn(cols[i], row[i]);
+      const { col, val, reference, excluded } = parseColumn(cols[i], row[i]);
       setCol(doc, col, val);
-      references.forEach(addReference);
+      if(reference) model.references.push({
+        doc: doc,
+        matcher: reference,
+        colVal: val,
+        targetProperty: col,
+      });
+      if(excluded) model.exclusions.push({
+        doc: doc,
+        propertyName: col,
+      });
     }
 
     return withId(doc);
   }
 
-  function uuid(json) {
-    return uuid5(stringify(json), couchUrlUuid);
-  }
-
-  function parseColumn(rawCol, rawVal) {
-    let col, val;
-    const references = [];
-
-    const parts = rawCol.split(/[:>]/);
-
-    if(parts.length === 1) {
-      col = rawCol;
-      val = rawVal;
-    } else if(parts.length === 2) {
-      const type = parts[0];
-      col = parts[1];
-      switch(type) {
-        case 'date': val = new Date(rawVal); break;
-        case 'timestamp': val = new Date(rawVal).getTime(); break;
-        case 'int': val = Number.parseInt(rawVal, 10); break;
-        case 'bool': val = rawVal.toLowerCase() === 'true'; break;
-        default: throw new Error(`Unrecognised column type: ${type} for ${rawCol}`);
-      }
-    } else if(parts.length === 4) {
-      // We still need to return a value here so that the object will be unique
-      // when compared with another object which is identical except for one or
-      // more reference values.  E.g.
-      // { name:'alice', parent:ref1 } vs { name:'alice', parent:ref2 }
-      val = rawVal;
-
-      if(parts[0] === 'csv') {
-        col = parts[3];
-
-        references.push({
-          refType: 'csv',
-          sourceFile: parts[1],
-          rowIdx: rawVal,
-          expandTo: parts[2],
-          targetProperty: col,
-        });
-      } else if(parts[0].startsWith('match=')) {
-        col = parts[3];
-
-        // split a=1&b=2&c=3 into { a:1, b:2, c:3 }
-        const matchers = {};
-        parts[1].split('&')
-            .map(pair => pair.split('='))
-            .forEach(p => matchers[p[0]] = p[1]);
-
-        references.push({
-          refType: 'match',
-          matchers: matchers,
-          colName: parts[0].split('=')[1],
-          colVal: rawVal,
-          expandTo: parts[2],
-          targetProperty: col,
-        });
-      } else {
-        throw new Error(`Unrecognised column definition: ${rawCol} (expected: "csv:…" or "match=…"`);
-      }
-    } else {
-      throw new Error(`Wrong number of parts in column definition: ${rawCol} (should be 1, 2 or 4, but found ${parts.length}).`);
-    }
-
-    return { col:col, val:val, references:references };
+  function withId(json) {
+    const id = uuid5(stringify(json), couchUrlUuid);
+    json._id = id;
+    return json;
   }
 };
 
@@ -269,4 +183,81 @@ function toSafeJson(o, depth, seen) {
           '\n' + indent + '}';
     default: throw new Error(`Unknown type/val: ${typeof o}/${o}`);
   }
+}
+
+function parseTimestamp(t) {
+  if(isIntegerString(t)) return int(t);
+  else return Date.parse(t);
+}
+
+function parseBool(b) {
+  if(isIntegerString(b)) return b !== '0';
+  else return b.toLowerCase() === 'true';
+}
+
+function isIntegerString(s) {
+  return int(s).toString() === s;
+}
+
+function int(s) {
+  return Number.parseInt(s, 10);
+}
+
+function isReference(s) {
+  return s.match(REF_MATCHER);
+}
+
+function matchesWhereClause(where, doc, colVal) {
+  const whereMatch = where.match(/^([\w-]+)=COL_VAL$/);
+  if(!whereMatch) throw new Error(`Cannot interpret WHERE clause: ${where}`);
+
+  const [, propertyName] = whereMatch;
+
+  return doc[propertyName] === colVal;
+}
+
+function removeExcludedField(exclusion) {
+  delete exclusion.doc[exclusion.propertyName];
+}
+
+function loadCsv(csv) {
+  const raw = csvParse(fs.read(csv));
+  if(!raw.length) return { cols:[], rows:[] };
+  return {
+    cols: raw[0],
+    rows: raw.slice(1),
+  };
+}
+
+function parseColumn(rawCol, rawVal) {
+  let val, reference, excluded = false;
+
+  const parts = rawCol.split(/[:>]/);
+  const col = parts[0];
+
+  if(parts.length === 1) {
+    val = rawVal;
+  } else if(parts.length === 2) {
+    const type = parts[1];
+    switch(type) {
+      case 'date': val = new Date(rawVal); break;
+      case 'timestamp': val = parseTimestamp(rawVal); break;
+      case 'int': val = int(rawVal); break;
+      case 'bool': val = parseBool(rawVal); break;
+      case 'string': val = rawVal; break;
+      case 'float': val = Number.parseFloat(rawVal); break;
+      case 'excluded': val = rawVal; excluded = true; break;
+      default: {
+        if(isReference(type)) {
+          val = rawVal;
+          reference = type;
+        } else {
+          throw new Error(`Unrecognised column type: ${type} for ${rawCol}`);
+        }
+      }
+    }
+  } else {
+    throw new Error(`Wrong number of parts in column definition: ${rawCol} (should be 1, 2 or 4, but found ${parts.length}).`);
+  }
+  return { col:col, val:val, reference:reference, excluded:excluded };
 }

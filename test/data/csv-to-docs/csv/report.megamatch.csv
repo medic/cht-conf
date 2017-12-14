@@ -1,3 +1,0 @@
-name,csv:report.widget:id>widgetId_fromCSV,csv:report.widget:doc>widgetDoc_fromCSV,csv:report.widget:.description>widgetDescription_fromCSV,match=code_name:type=data_record&form=widget:id>widgetId_fromMatch,match=code_name:type=data_record&form=widget:doc>widgetDoc_fromMatch,match=code_name:type=data_record&form=widget:.description>widgetDescription_fromMatch
-finesse,1,1,1,a694,a694,a694
-brute force,2,2,2,b912,b912,b912

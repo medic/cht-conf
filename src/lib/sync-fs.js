@@ -23,6 +23,14 @@ function readJson(path) {
   }
 }
 
+function dirs(dir) {
+  return fs
+      .readdirSync(dir)
+      .filter(file => fs
+          .statSync(path.join(dir, file))
+          .isDirectory());
+}
+
 function recurseFiles(dir, files) {
   if(!files) files = [];
 
@@ -50,6 +58,7 @@ function withoutExtension(fileName) {
 
 module.exports = {
   copy: (from, to) => fs.writeFileSync(to, fs.readFileSync(from)),
+  dirs: dirs,
   exists: fs.existsSync,
   fs: fs,
   mkdir: path => { try { mkdirp(path); } catch(e) { warn(e); } },
