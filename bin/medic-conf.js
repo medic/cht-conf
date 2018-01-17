@@ -37,7 +37,12 @@ switch(args[0]) {
     shift(2);
     break;
   case '--local':
-    instanceUrl = 'http://admin:pass@localhost:5988';
+    if(process.env.COUCH_URL) {
+      instanceUrl = process.env.COUCH_URL.replace(/\/medic$/, '');
+      info('Using instance URL from COUCH_URL environment variable.');
+    } else {
+      instanceUrl = 'http://admin:pass@localhost:5988';
+    }
     shift();
     break;
   case '--url':
