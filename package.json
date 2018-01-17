@@ -1,6 +1,6 @@
 {
   "name": "medic-conf",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
@@ -33,7 +33,7 @@
     "pouchdb-core": "^6.3.4",
     "pouchdb-mapreduce": "^6.3.4",
     "readline-sync": "^1.4.7",
-    "redact-basic-auth": "^0.1.1",
+    "redact-basic-auth": "^1.0.0",
     "request-promise-native": "^1.0.4",
     "uuid": "^3.1.0"
   },
