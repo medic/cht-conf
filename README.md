@@ -150,7 +150,8 @@ To achieve this, create a file called `settings.inherit.json` in your project's 
 
 * fetch from google docs/google sheets/google drive and save locally as `.xlsx`
 * backup from server
-* delete from server
+* delete all forms from server
+* delete specific form from server
 * upload to server
 
 ## Resources
