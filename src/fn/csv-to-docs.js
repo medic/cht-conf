@@ -8,7 +8,7 @@ const warn = require('../lib/log').warn;
 const pretty = o => JSON.stringify(o, null, 2);
 
 const RESERVED_COL_NAMES = [ 'type', 'form' ];
-const REF_MATCHER = /^((\w+) OF )?(\w+) WHERE (.*)$/;
+const REF_MATCHER = /^(?:GET )?((\w+) OF )?(\w+) WHERE (.*)$/i;
 const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
 
 require('../lib/polyfill');
