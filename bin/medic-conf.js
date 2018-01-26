@@ -33,7 +33,8 @@ switch(args[0]) {
 
 //> instance URL handling:
   case '--instance':
-    instanceUrl = `https://${args[1]}.medicmobile.org`;
+    const password = readline.question('🔑  Password: ', { hideEchoBack:true })
+    instanceUrl = `https://admin:${password}@${args[1]}.medicmobile.org`;
     shift(2);
     break;
   case '--local':

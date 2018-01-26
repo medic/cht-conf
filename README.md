@@ -52,7 +52,9 @@ To upgrade to the latest version
 
 ### To a specific Medic instance
 
-	medic-conf --instance username:password@instance-name.dev
+	medic-conf --instance instance-name.dev
+
+Username `admin` is used.  A prompt is shown for entering password.
 
 ### To an arbitrary URL
 

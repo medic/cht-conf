@@ -25,8 +25,8 @@ ${bold('SPECIFYING URL')}
 	--local
 		Upload to http://admin:pass@localhost:5988
 
-	--instance <username:password@instance-name>
-		Upload to https://username:password@instance-name.medicmobile.org
+	--instance <instance-name>
+		Upload to https://admin:<password>@instance-name.medicmobile.org
 
 	--url <url>
 		Upload to URL specified.
