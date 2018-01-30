@@ -207,7 +207,7 @@ This can be useful if using a column for doc references.
 
 To reference other docs, replace the type suffix with a matching clause:
 
-	location:place WHERE external_id=COL_VAL
+	GET location:place WHERE external_id=COL_VAL
 
 This would create a structure such as:
 
@@ -223,7 +223,7 @@ This would create a structure such as:
 
 To reference specific properties of other docs:
 
-	location:_id OF place WHERE external_id=COL_VAL
+	GET location:_id OF place WHERE external_id=COL_VAL
 
 This would create a structure such as:
 
