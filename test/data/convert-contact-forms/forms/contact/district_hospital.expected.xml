@@ -21,14 +21,14 @@
               <district_name/>
             </contact>
           </inputs>
+          <district_hospital>
+            <name/>
+          </district_hospital>
           <contact>
             <debug_note/>
             <name/>
           </contact>
           <contact_notes/>
-          <district_hospital>
-            <name/>
-          </district_hospital>
           <meta>
             <instanceID/>
           </meta>

@@ -21,7 +21,7 @@ module.exports = (projectDir, couchUrl, extras) => {
       force_data_node: 'data',
       forms: extras,
       transformer: (xml, path) => {
-        const type = path.replace(/.*\/(.*)-(create|edit)\.xml/, '$1');
+        const type = path.replace(/.*\/(.*?)(-(create|edit))?\.xml/, '$1');
 
         if(PLACE_TYPES) {
           xml = xml
