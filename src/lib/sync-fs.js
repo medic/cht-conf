@@ -51,6 +51,13 @@ function recurseFiles(dir, files) {
   return files;
 }
 
+function extension(fileName) {
+  const extensionStart = fileName.lastIndexOf('.');
+  return extensionStart === -1 ?
+      fileName :
+      fileName.substring(extensionStart+1);
+}
+
 function withoutExtension(fileName) {
   const extensionStart = fileName.lastIndexOf('.');
   return extensionStart === -1 ? fileName : fileName.substring(0, extensionStart);
@@ -60,6 +67,7 @@ module.exports = {
   copy: (from, to) => fs.writeFileSync(to, fs.readFileSync(from)),
   dirs: dirs,
   exists: fs.existsSync,
+  extension: extension,
   fs: fs,
   mkdir: path => { try { mkdirp(path); } catch(e) { warn(e); } },
   mkdtemp: () => fs.mkdtempSync(`${os.tmpdir()}/medic-conf`),

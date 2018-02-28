@@ -166,8 +166,7 @@ To achieve this, create a file called `settings.inherit.json` in your project's 
 
 # TODO
 
-* add PNGout as somehow part of the form conversion step.  But make sure it's cleanly separated from XML processing step
-* add similar for SVGs
+* add compress-pngs, compress-svgs as somehow part of the form conversion step.  But make sure it's cleanly separated from XML processing step
 
 ## Wishlist
 

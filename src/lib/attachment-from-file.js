@@ -10,10 +10,7 @@ module.exports = path => {
 };
 
 function mimeTypeFor(fileName) {
-  const extensionStart = fileName.lastIndexOf('.');
-  const extension = extensionStart === -1 ?
-      fileName :
-      fileName.substring(extensionStart+1);
+  const extension = fs.extension(fileName);
 
   switch(extension) {
     case 'json': return 'application/json';
