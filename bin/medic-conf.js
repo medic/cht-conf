@@ -3,6 +3,7 @@
 require('../src/cli/check-node-version');
 
 const checkForUpdates = require('../src/lib/check-for-updates');
+const emoji = require('../src/lib/emoji');
 const error = require('../src/lib/log').error;
 const fs = require('../src/lib/sync-fs');
 const info = require('../src/lib/log').info;
@@ -33,7 +34,7 @@ switch(args[0]) {
 
 //> instance URL handling:
   case '--instance':
-    const password = readline.question('🔑  Password: ', { hideEchoBack:true });
+    const password = readline.question(`${emoji.key}  Password: `, { hideEchoBack:true });
     instanceUrl = `https://admin:${password}@${args[1]}.medicmobile.org`;
     shift(2);
     break;
