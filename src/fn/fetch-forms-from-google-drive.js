@@ -33,16 +33,18 @@ module.exports = projectDir => {
 
             info(`Exporting ${remoteName} from google drive to ${target}…`);
 
-            drive.files.export(fetchOpts, (err, buffer) => {
-              if(err) return reject(err);
-              try {
-                fs.writeBinary(target, buffer);
+            var dest = fs.createWriteStream(target);
+            
+            drive.files.export(fetchOpts)
+            .on('end', function() {
                 info(`Successfully wrote ${target}.`);
                 resolve();
-              } catch(e) {
-                reject(e);
-              }
-            });
+            })
+            .on('error', function(err) {
+              reject(err);
+            })
+            .pipe(dest);
+      
           }));
       }
     });
