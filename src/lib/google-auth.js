@@ -43,9 +43,9 @@ function oauthClient() {
       (configFile.redirect_uris && configFile.redirect_uris[0]);
 
   const missingConfig =
-      checkRequred(clientId, 'client_id', 'GOOGLE_CLIENT_ID') |
-      checkRequred(clientSecret, 'client_secret', 'GOOGLE_CLIENT_SECRET') |
-      checkRequred(redirectUri, 'redirect_uris', 'GOOGLE_REDIRECT_URI');
+      checkRequired(clientId, 'client_id', 'GOOGLE_CLIENT_ID') |
+      checkRequired(clientSecret, 'client_secret', 'GOOGLE_CLIENT_SECRET') |
+      checkRequired(redirectUri, 'redirect_uris', 'GOOGLE_REDIRECT_URI');
 
   if(missingConfig) throw new Error('Missing required config for google drive access.  Please check warnings.');
 
@@ -57,7 +57,7 @@ function openBrowserAt(url) {
   child_process.exec(`open "${url}" || firefox "${url}" || chromium-browser "${url}" || chrome "${url}"`);
 }
 
-function checkRequred(value, jsonKey, envVar) {
+function checkRequired(value, jsonKey, envVar) {
   if(value) return;
 
   warn(`Missing .${jsonKey} in ${SECRETS_FILE} or env var ${envVar}!`);
