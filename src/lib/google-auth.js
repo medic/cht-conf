@@ -6,10 +6,21 @@ const readline = require('readline-sync');
 const warn = require('../lib/log').warn;
 
 const SECRETS_FILE = './.gdrive.secrets.json';
+const TOKENS_FILE = './.gdrive.session.json';
 
 module.exports = () => {
   const client = oauthClient();
 
+  if(!fs.exists(TOKENS_FILE)) return newSessionFor(client);
+
+  client.setCredentials(fs.readJson(TOKENS_FILE));
+
+  if(client.credentials.expiry_date < Date.now()) return newSessionFor(client);
+
+  return Promise.resolve(client);
+};
+
+function newSessionFor(client) {
   const authUrl = client.generateAuthUrl({
     scope: 'https://www.googleapis.com/auth/drive.readonly'
   });
@@ -21,12 +32,14 @@ module.exports = () => {
     client.getToken(accessCode, function (err, tokens) {
       if(err) return reject(err);
 
+      fs.writeJson(TOKENS_FILE, tokens);
+
       client.setCredentials(tokens);
 
       resolve(client);
     });
   });
-};
+}
 
 function oauthClient() {
   let configFile;
