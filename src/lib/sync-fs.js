@@ -74,4 +74,5 @@ module.exports = {
   write: (path, content) => fs.writeFileSync(path, content, 'utf8'),
   writeBinary: (path, content) => fs.writeFileSync(path, content),
   writeJson: (path, json) => module.exports.write(path, JSON.stringify(json, null, 2) + '\n'),
+  createWriteStream: (target) => fs.createWriteStream(target),
 };
