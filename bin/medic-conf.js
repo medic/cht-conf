@@ -35,7 +35,8 @@ switch(args[0]) {
 //> instance URL handling:
   case '--instance':
     const password = readline.question(`${emoji.key}  Password: `, { hideEchoBack:true });
-    instanceUrl = `https://admin:${password}@${args[1]}.medicmobile.org`;
+    const encodedPassword = encodeURIComponent(password);
+    instanceUrl = `https://admin:${encodedPassword}@${args[1]}.medicmobile.org`;
     shift(2);
     break;
   case '--local':
