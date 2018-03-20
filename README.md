@@ -172,6 +172,12 @@ To achieve this, create a file called `settings.inherit.json` in your project's 
 
 * only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
 
+# create-users **[ALPHA]**
+
+N.B. this feature is currently in development, and probably not ready for production yet.
+
+To create users on a remote server, use the `create-users` action.  The CSV file should be called `users.csv`, and an example is available [in the tests directory](test/data/create-users/users.csv).
+
 # csv-to-docs
 
 To convert CSV to JSON docs, use the `csv-to-docs` action.

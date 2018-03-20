@@ -1,3 +1,4 @@
+const csvParse = require('csv-parse/lib/sync');
 const fs = require('fs');
 const mkdirp = require('mkdirp').sync;
 const os = require('os');
@@ -12,6 +13,15 @@ function read(path) {
     warn(`Error reading file: ${path}`);
     throw e;
   }
+}
+
+function readCsv(path) {
+  const raw = csvParse(read(path));
+  if(!raw.length) return { cols:[], rows:[] };
+  return {
+    cols: raw[0],
+    rows: raw.slice(1),
+  };
 }
 
 function readJson(path) {
@@ -75,8 +85,9 @@ module.exports = {
   path: path,
   posixPath: p => p.split(path.sep).join('/'),
   read: read,
-  readJson: readJson,
   readBinary: path => fs.readFileSync(path),
+  readCsv: readCsv,
+  readJson: readJson,
   recurseFiles: recurseFiles,
   readdir: fs.readdirSync,
   withoutExtension: withoutExtension,
