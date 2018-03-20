@@ -1,4 +1,3 @@
-const csvParse = require('csv-parse/lib/sync');
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
 const stringify = require('canonical-json/index2');
@@ -94,13 +93,13 @@ module.exports = projectDir => {
   }
 
   function processReports(report_type, csv) {
-    const { rows, cols } = loadCsv(csv);
+    const { rows, cols } = fs.readCsv(csv);
     return rows
       .map(r => processCsv('data_record', cols, r, { form:report_type }));
   }
 
   function processContacts(contactType, csv) {
-    const { rows, cols } = loadCsv(csv);
+    const { rows, cols } = fs.readCsv(csv);
     return rows
       .map(r => processCsv(contactType, cols, r));
   }
@@ -218,15 +217,6 @@ function matchesWhereClause(where, doc, colVal) {
 
 function removeExcludedField(exclusion) {
   delete exclusion.doc[exclusion.propertyName];
-}
-
-function loadCsv(csv) {
-  const raw = csvParse(fs.read(csv));
-  if(!raw.length) return { cols:[], rows:[] };
-  return {
-    cols: raw[0],
-    rows: raw.slice(1),
-  };
 }
 
 function parseColumn(rawCol, rawVal) {

@@ -8,6 +8,7 @@ module.exports = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'create-users',
   'csv-to-docs',
   'delete-forms',
   'delete-all-forms',

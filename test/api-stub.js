@@ -2,6 +2,10 @@ const memdown = require('memdown');
 const memPouch = require('pouchdb').defaults({ db:memdown });
 const express = require('express');
 const expressPouch = require('express-pouchdb');
+const ExpressSpy = require('./express-spy');
+const bodyParser = require('body-parser');
+
+const mockMiddleware = new ExpressSpy();
 
 const opts = {
   inMemoryConfig: true,
@@ -9,12 +13,16 @@ const opts = {
   mode: 'fullCouchDB',
 };
 const app = express();
+app.use(bodyParser.json());
+app.all('/api/*', mockMiddleware.requestHandler);
 app.use('/', stripAuth, expressPouch(memPouch, opts));
 
 let server;
 
 module.exports = {
   db: new memPouch('medic'),
+  giveResponses: mockMiddleware.setResponses,
+  requestLog: () => mockMiddleware.requests.map(r => ({ method:r.method, url:r.originalUrl, body:r.body })),
   start: () => {
     if(server) throw new Error('Server already started.');
     server = app.listen();
@@ -26,6 +34,7 @@ module.exports = {
     server.close();
     server = null;
     delete module.exports.couchUrl;
+    mockMiddleware.reset();
   },
 };
 
