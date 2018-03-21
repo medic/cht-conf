@@ -7,9 +7,9 @@ module.exports = dir => {
 
   const attachments = {};
   fs.recurseFiles(dir)
-    .forEach(form => {
-      const attachmentPath = fs.posixPath(fs.path.relative(dir, form));
-      attachments[attachmentPath] = attachmentFromFile(form);
+    .forEach(file => {
+      const attachmentPath = fs.posixPath(fs.path.relative(dir, file));
+      attachments[attachmentPath] = attachmentFromFile(file);
     });
   return attachments;
 };
