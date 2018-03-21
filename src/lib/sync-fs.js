@@ -35,6 +35,7 @@ function recurseFiles(dir, files) {
   if(!files) files = [];
 
   fs.readdirSync(dir)
+    .filter(name => !name.startsWith('.'))
     .forEach(name => {
       const f = path.join(dir, name);
       try {
