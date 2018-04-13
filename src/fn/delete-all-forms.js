@@ -6,7 +6,7 @@ module.exports = (projectDir, couchUrl) => {
 
   const db = pouch(couchUrl);
 
-  return db.query('medic-client/forms', { include_docs:true })
+  return db.getForms({ include_docs:true })
     .then(res => res.rows)
     .then(forms => Promise.all(forms.map(f => db.remove(f.doc))));
 };

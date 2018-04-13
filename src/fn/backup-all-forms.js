@@ -31,7 +31,7 @@ module.exports = (projectDir, couchUrl) => {
       });
   }
 
-  return db.query('medic-client/forms')
+  return db.getForms()
     .then(res => res.rows)
     .then(forms => Promise.all(forms.map(backup)));
 };
