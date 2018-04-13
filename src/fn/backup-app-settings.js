@@ -9,9 +9,14 @@ module.exports = (projectDir, couchUrl) => {
 
   const backupLocation = backupFileFor(projectDir, 'app_settings.json');
 
-  return request({
-      url: `${couchUrl}/_design/medic/_rewrite/app_settings/medic`,
-      json: true,
+  const settingsUrl = `${couchUrl}/_design/medic/_rewrite/app_settings/medic`;
+
+  return request({ url:settingsUrl, json:true })
+    .catch(err => {
+      if(err.statusCode === 404) {
+        throw new Error(`Failed to fetch existing app_settings from ${settingsUrl}.\n` +
+            `      Check that medic-api is running and that you're connecting on the correct port!`);
+      } else throw err;
     })
     .then(body => fs.writeJson(backupLocation, body.settings))
     .then(() => log('Backed up to:', backupLocation));
