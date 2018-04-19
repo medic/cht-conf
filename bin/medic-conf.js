@@ -14,8 +14,6 @@ const supportedActions = require('../src/cli/supported-actions');
 const usage = require('../src/cli/usage');
 const warn = require('../src/lib/log').warn;
 
-log.level = log.LEVEL_INFO;
-
 let args = process.argv.slice(2);
 const shift = n => args = args.slice(n || 1);
 
@@ -24,7 +22,13 @@ if(!args.length) {
       .then(() => usage(0));
 }
 
-let domain, instanceUrl, skipCheckForUpdates;
+let instanceUrl, skipCheckForUpdates;
+
+switch(args[0]) {
+  case '--silent':  log.level = log.LEVEL_NONE;  shift(); break;
+  case '--verbose': log.level = log.LEVEL_TRACE; shift(); break;
+  default:          log.level = log.LEVEL_INFO;
+}
 
 switch(args[0]) {
 
@@ -32,8 +36,7 @@ switch(args[0]) {
   case '--instance':
     const password = readline.question(`${emoji.key}  Password: `, { hideEchoBack:true });
     const encodedPassword = encodeURIComponent(password);
-    domain = `${args[1]}.medicmobile.org`;
-    instanceUrl = `https://admin:${encodedPassword}@${domain}`;
+    instanceUrl = `https://admin:${encodedPassword}@${args[1]}.medicmobile.org`;
     shift(2);
     break;
   case '--local':
@@ -50,10 +53,6 @@ switch(args[0]) {
     shift(2);
     break;
 
-//> logging options:
-  case '--silent':  log.level = log.LEVEL_NONE;  shift(); break;
-  case '--verbose': log.level = log.LEVEL_TRACE; shift(); break;
-
 //> general option handling:
   case '--help': return usage(0);
   case '--shell-completion':
@@ -64,7 +63,11 @@ switch(args[0]) {
   case '--version':
     console.log(require('../package.json').version);
     return process.exit(0);
-  case '--no-check': skipCheckForUpdates = true; shift(); break;
+}
+
+if(args[0] === '--no-check') {
+  skipCheckForUpdates = true;
+  shift();
 }
 
 const projectName = fs.path.basename(fs.path.resolve('.'));
