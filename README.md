@@ -238,3 +238,11 @@ This would create a structure such as:
 	}
 
 Note the special string `COL_VAL` - this matches the CSV column value for the row being processed.
+
+# medic-logs
+
+Fetch logs from a production server.
+
+## Usage
+
+	medic-logs <instance-name> <log-types...>
