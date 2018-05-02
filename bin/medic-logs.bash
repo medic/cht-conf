@@ -9,6 +9,14 @@ Fetch logs from production Medic Mobile servers.
 
 USAGE
 	$0 <instance-name> <log-types...>
+
+Accepted log types:
+
+	api
+	couchdb
+	gardener
+	nginx
+	sentinel
 EOF
 }
 

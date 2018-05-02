@@ -246,3 +246,11 @@ Fetch logs from a production server.
 ## Usage
 
 	medic-logs <instance-name> <log-types...>
+
+Accepted log types:
+
+	api
+	couchdb
+	gardener
+	nginx
+	sentinel
