@@ -10,6 +10,7 @@ module.exports = [
   'convert-contact-forms',
   'create-users',
   'csv-to-docs',
+  'csv-to-sms',
   'delete-forms',
   'delete-all-forms',
   'fetch-forms-from-google-drive',

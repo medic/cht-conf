@@ -14,6 +14,11 @@ const opts = {
 };
 const app = express();
 app.use(bodyParser.json());
+app.post('/api/sms', (req, res) => {
+  module.exports.gatewayRequests.push(req.body);
+  res.write('{}');
+  res.end();
+});
 app.all('/api/*', mockMiddleware.requestHandler);
 app.use('/', stripAuth, expressPouch(memPouch, opts));
 
@@ -29,6 +34,8 @@ module.exports = {
 
     const port = server.address().port;
     module.exports.couchUrl = `http://admin:pass@localhost:${port}/medic`;
+
+    module.exports.gatewayRequests = [];
   },
   stop: () => {
     server.close();
