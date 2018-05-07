@@ -1,0 +1,14 @@
+define Contact {}
+
+/**
+ * This is an example file.  Not all required functions have actually been
+ * defined.
+ */
+rule GenerateEvents {
+  when {
+    c: Contact
+  }
+  then {
+    ___TEMPLATE:rules.contact.nools.js___
+  }
+}

@@ -27,7 +27,7 @@ module.exports = (projectDir /*, couchUrl */) => {
     const files = {
       app_settings: fs.readJson(`${projectDir}/app_settings.json`),
       contact_summary: readJs(`${projectDir}/contact-summary.js`),
-      nools: readJs(`${projectDir}/rules.nools.js`),
+      nools: loadNools(projectDir),
       targets: fs.readJson(`${projectDir}/targets.json`),
       tasks_schedules: fs.readJson(`${projectDir}/tasks.json`),
     };
@@ -120,4 +120,21 @@ function doFilter(target, rules) {
           if(!rules[k].includes(tK)) delete t[parts[0]][tK];
         });
     });
+}
+
+function loadNools(projectDir) {
+  const simpleNoolsFile = `${projectDir}/rules.nools.js`;
+  const noolsTemplateFile = `${projectDir}/rules.nools.template`;
+
+  if(fs.exists(simpleNoolsFile)) {
+    return readJs(simpleNoolsFile);
+  } else if(fs.exists(noolsTemplateFile)) {
+    return cleanJs(fs.read(noolsTemplateFile)
+        .replace(/___TEMPLATE:([^_]*)___/g, (_, filename) =>
+            fs.read(`${projectDir}/${filename}`)));
+  } else {
+    throw new Error(`No nools definition file found.  Please create at one of:
+	* ${simpleNoolsFile}
+	* ${noolsTemplateFile}`);
+  }
 }

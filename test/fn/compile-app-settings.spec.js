@@ -4,40 +4,26 @@ const fs = require('../../src/lib/sync-fs');
 
 describe('compile-app-settings', () => {
 
-  it('should handle simple config', () => {
+  it('should handle simple config', () =>
+    test('simple/project'));
 
-    // given
-    const testDir = 'data/compile-app-settings/simple/project';
+  it('should handle derivative app-settings definitions', () =>
+    test('derivative/child'));
 
-    // when
-    return compileAppSettings(testDir)
-
-      .then(() => {
-
-        // then
-        assert.equal(fs.read(`${testDir}/app_settings.json`),
-                      fs.read(`${testDir}/../app_settings.expected.json`));
-
-      });
-
-  });
-
-  it('should handle derivative app-settings definitions', () => {
-
-    // given
-    const testDir = 'data/compile-app-settings/derivative/child';
-
-    // when
-    return compileAppSettings(testDir)
-
-      .then(() => {
-
-        // then
-        assert.equal(fs.read(`${testDir}/app_settings.json`),
-                     fs.read(`${testDir}/../app_settings.expected.json`));
-
-      });
-
-  });
+  it('should handle nools templating', () =>
+    test('nools-templating/project'));
 
 });
+
+function test(relativeProjectDir) {
+  const testDir = `./data/compile-app-settings/${relativeProjectDir}`;
+
+  // when
+  return compileAppSettings(testDir)
+
+    .then(() => {
+      // then
+      assert.equal(fs.read(`${testDir}/app_settings.json`),
+                   fs.read(`${testDir}/../app_settings.expected.json`));
+    });
+}
