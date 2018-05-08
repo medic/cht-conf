@@ -7,7 +7,7 @@ module.exports = (projectDir, couchUrl, extras) => {
   const instanceUrl = couchUrl.replace(/\/medic$/, '');
   const csvFiles = extras || ['sms.csv'];
 
-  trace('csv-to-sms', 'csv files:', csvFiles);
+  trace('upload-sms-from-csv', 'csv files:', csvFiles);
   
   return csvFiles.map(fileName => `${projectDir}/${fileName}`)
     .reduce((promiseChain, csvFile) => {

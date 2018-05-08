@@ -36,7 +36,8 @@ describe('shell-completion', () => {
         'upload-contact-forms',
         'upload-custom-translations',
         'upload-docs',
-        'upload-resources');
+        'upload-resources',
+        'upload-sms-from-csv');
 
   });
 
