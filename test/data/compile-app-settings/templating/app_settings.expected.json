@@ -1,5 +1,5 @@
 {
-  "contact_summary": "",
+  "contact_summary": "function myFn() { console.log('hi'); }",
   "tasks": {
     "rules": "define Contact {}rule GenerateEvents {when {c: Contact}then {if (c.contact != null && c.contact.type === 'person') {emitTarget(c);}if (c.contact && c.contact.type === 'person') {emitTask(c);}emit('_complete', { _id: true });}}",
     "schedules": {

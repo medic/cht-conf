@@ -10,8 +10,8 @@ describe('compile-app-settings', () => {
   it('should handle derivative app-settings definitions', () =>
     test('derivative/child'));
 
-  it('should handle nools templating', () =>
-    test('nools-templating/project'));
+  it('should handle nools & contact-summary templating', () =>
+    test('templating/project'));
 
 });
 

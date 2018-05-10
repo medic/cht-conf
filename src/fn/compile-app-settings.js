@@ -26,8 +26,8 @@ module.exports = (projectDir /*, couchUrl */) => {
   function compileAppSettings(projectDir) {
     const files = {
       app_settings: fs.readJson(`${projectDir}/app_settings.json`),
-      contact_summary: readJs(`${projectDir}/contact-summary.js`),
-      nools: loadNools(projectDir),
+      contact_summary: readJs(projectDir, 'contact-summary.js'),
+      nools: readJs(projectDir, 'rules.nools.js'),
       targets: fs.readJson(`${projectDir}/targets.json`),
       tasks_schedules: fs.readJson(`${projectDir}/tasks.json`),
     };
@@ -47,7 +47,10 @@ module.exports = (projectDir /*, couchUrl */) => {
 
 };
 
-const readJs = path => cleanJs(fs.read(path));
+const readJs = (projectDir, rootFile) =>
+    cleanJs(fs.read(`${projectDir}/${rootFile}`)
+	.replace(/__include_inline__\('\s*([^_]*)'\s*\);/g, (_, includedFile) =>
+	    fs.read(`${projectDir}/${includedFile}`)));
 const cleanJs = js =>
   js.split('\n')
     .map(s =>
@@ -120,12 +123,4 @@ function doFilter(target, rules) {
           if(!rules[k].includes(tK)) delete t[parts[0]][tK];
         });
     });
-}
-
-function loadNools(projectDir) {
-  const noolsBaseFile = `${projectDir}/rules.nools.js`;
-
-  return cleanJs(fs.read(noolsBaseFile)
-      .replace(/__include_inline__\('\s*([^_]*)'\s*\);/g, (_, filename) =>
-	  fs.read(`${projectDir}/${filename}`)));
 }
