@@ -13,6 +13,9 @@ describe('compile-app-settings', () => {
   it('should handle nools & contact-summary templating', () =>
     test('templating/project'));
 
+  it('should handle config with no separate tasks.json file', () =>
+    test('no-tasks.json/project'));
+
 });
 
 function test(relativeProjectDir) {

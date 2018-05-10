@@ -30,7 +30,7 @@ module.exports = (projectDir /*, couchUrl */) => {
       contact_summary: readJs(projectDir, 'contact-summary.js'),
       nools: readJs(projectDir, 'rules.nools.js'),
       targets: fs.readJson(`${projectDir}/targets.json`),
-      tasks_schedules: fs.readJson(`${projectDir}/tasks.json`),
+      tasks_schedules: readOptionalJson(`${projectDir}/tasks.json`),
     };
 
     const app_settings = files.app_settings;
@@ -46,6 +46,10 @@ module.exports = (projectDir /*, couchUrl */) => {
     return app_settings;
   }
 
+};
+
+const readOptionalJson = path => {
+  if(fs.exists(path)) return fs.readJson(path);
 };
 
 function applyTransforms(app_settings, inherited) {
