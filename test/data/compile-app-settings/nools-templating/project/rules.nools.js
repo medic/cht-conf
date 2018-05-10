@@ -9,6 +9,6 @@ rule GenerateEvents {
     c: Contact
   }
   then {
-    ___TEMPLATE:rules.contact.nools.js___
+    __include_inline__('rules.contact.nools.js');
   }
 }

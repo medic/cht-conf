@@ -123,18 +123,9 @@ function doFilter(target, rules) {
 }
 
 function loadNools(projectDir) {
-  const simpleNoolsFile = `${projectDir}/rules.nools.js`;
-  const noolsTemplateFile = `${projectDir}/rules.nools.template`;
+  const noolsBaseFile = `${projectDir}/rules.nools.js`;
 
-  if(fs.exists(simpleNoolsFile)) {
-    return readJs(simpleNoolsFile);
-  } else if(fs.exists(noolsTemplateFile)) {
-    return cleanJs(fs.read(noolsTemplateFile)
-        .replace(/___TEMPLATE:([^_]*)___/g, (_, filename) =>
-            fs.read(`${projectDir}/${filename}`)));
-  } else {
-    throw new Error(`No nools definition file found.  Please create at one of:
-	* ${simpleNoolsFile}
-	* ${noolsTemplateFile}`);
-  }
+  return cleanJs(fs.read(noolsBaseFile)
+      .replace(/__include_inline__\('\s*([^_]*)'\s*\);/g, (_, filename) =>
+	  fs.read(`${projectDir}/${filename}`)));
 }
