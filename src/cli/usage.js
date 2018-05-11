@@ -44,6 +44,9 @@ ${bold('OPTIONS')}
 
 	--version
 		Display the current version number.
+
+	--changelog
+		Display application changelog.
 `);
 
   process.exit(exitCode);
