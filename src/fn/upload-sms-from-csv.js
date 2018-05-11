@@ -14,13 +14,17 @@ module.exports = (projectDir, couchUrl, extras) => {
       trace(`Processing csv file ${csvFile}…`);
       const raw = fs.readCsv(csvFile);
 
-      const messages = raw.rows.map(row => ({
-      	id:           uuid(),
-	from:         row[raw.cols.indexOf('from')],
-	content:      row[raw.cols.indexOf('message')],
-	sms_sent:     Date.now(),
-	sms_received: Date.now(),
-      }));
+      const messages = raw.rows.map(row => {
+	const valueOf = column => row[raw.cols.indexOf(column)];
+
+	return {
+	  id:           uuid(),
+	  from:         valueOf('from'),
+	  content:      valueOf('message'),
+	  sms_sent:     valueOf('sent_timestamp') || Date.now(),
+	  sms_received: Date.now(),
+	};
+      });
 
       return request({
 	uri: `${instanceUrl}/api/sms`,
