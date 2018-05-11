@@ -1,6 +1,6 @@
 {
   "name": "medic-conf",
-  "version": "1.16.3",
+  "version": "1.16.4",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
@@ -27,17 +27,17 @@
   "homepage": "https://github.com/medic/medic-conf#readme",
   "dependencies": {
     "canonical-json": "0.0.4",
-    "csv-parse": "^1.2.4",
+    "csv-parse": "^2.4.0",
     "googleapis": "^22.2.0",
     "mkdirp": "^0.5.1",
     "pouchdb-adapter-http": "^6.4.3",
     "pouchdb-core": "^6.4.3",
     "pouchdb-mapreduce": "^6.4.3",
-    "readline-sync": "^1.4.7",
+    "readline-sync": "^1.4.9",
     "redact-basic-auth": "^1.0.0",
-    "request-promise-native": "^1.0.4",
+    "request-promise-native": "^1.0.5",
     "svgo": "^1.0.5",
-    "uuid": "^3.1.0"
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
     "chai": "^4.0.0",
