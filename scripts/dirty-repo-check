@@ -1,0 +1,8 @@
+#!/bin/bash -eu
+git update-index -q --refresh
+if ! git diff-index --quiet HEAD --; then
+	echo '!!!'
+	echo '!!! ERROR local git repo has changes'
+	echo '!!!'
+	exit 1
+fi

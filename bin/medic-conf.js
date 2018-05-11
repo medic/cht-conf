@@ -63,6 +63,9 @@ switch(args[0]) {
   case '--version':
     console.log(require('../package.json').version);
     return process.exit(0);
+  case '--changelog':
+    console.log(fs.read(`${__dirname}/../CHANGELOG.md`));
+    return process.exit(0);
 }
 
 if(args[0] === '--no-check') {
