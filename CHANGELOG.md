@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.16.6
+* Add CHANGELOG entries pre v1.6
+* Add --changelog flag to usage output
+
 ## v1.16.5
 * Add support for changelog
 
@@ -218,4 +222,304 @@
 * Fail to start if node version is lower than required
 * Add upload-docs and csv-to-docs actions
 * Don't include unnecessary pouch dependencies
+
+## v1.6.0
+* Bump version to 1.6.0
+* Move new contact creation form to first page
+* Move custom place name field when converting contact forms
+* Add link to travis in README
+* Update build badge
+* Fix order of shell-completion test expectations
+* Correct order of supported actions array
+* Refactor contact form fiddling for clarity
+* Fix Travis build
+* Fix jshint - add missing semicolon
+
+## v1.5.11
+* Add check for updates to common execution targets
+* Make new version warning clearer
+
+## v1.5.10
+* Add deprecation warning for repeat-relevant
+
+## v1.5.9
+* Add command to check for updates
+
+## v1.5.8
+* Display help if no args are supplied
+
+## v1.5.7
+* Add installation instructions for Windows
+* Travis: remove node versions 4 and 5 from test matrix
+* Travis: npm install before trying to run tests
+* Travis: install pyxform-medic
+* Travis: specify node versions
+* Escape yml better(?) in travis config
+* Add travis build badge
+
+## v1.5.6
+* Generate place forms if place-types.json is supplied
+* Don't copy irrelevant files in form conversion tests
+
+## v1.5.5
+* Add note on how to upgrade
+
+## v1.5.4
+* Use form title included in properties file
+
+## v1.5.3
+* Allow default form language for collect
+
+## v1.5.2
+* Warn when uploading to non-matching dev servers
+
+## v1.5.1
+* Add for contact-summary <instance> element to app forms
+
+## v1.5.0
+* Upgrade to latest pyxform
+
+## v1.4.2
+* Fix pouch constructors
+* Remove wishlist item which seems unimportant
+* Remove resolved TODO item
+* Simplify TODO
+
+## v1.4.1
+* Increase db connection timeouts
+
+## v1.4.0
+* Make form upload sequential
+* Update pyxform installation instructions
+
+## v1.3.0
+* Fix bug in forms missing <inputs> section
+* Remove bad commit of new pyxform flag
+* Fail travis build if .only() calls found in tests
+* Restrict mocha to running .spec.js files
+* Remove .only from test
+* Remove test .only() call
+* Update installation instructions for pyxform-medic
+* Remove pointless logging from convert-app-forms test
+* Remove resolved TODO
+* Warn when temp files are found in the test data dir
+* Remove outdated TODO item
+* Remove outdated TODO item
+
+## v1.2.1
+* Fix and simplify shell completion script
+
+## v1.2.0
+* Make URL specification simpler via --local --instance and --url opts
+
+## v1.1.8
+* Add warning when supplied URL ends in /medic
+
+## v1.1.7
+* Add convert step for Collect forms
+* Add test forms for convert-app-forms
+* Replace grunt with npm scripts
+
+## v1.1.6
+* Move colours out of readline-sync call, as they're not supported on Windows
+
+## v1.1.5
+* Match production URL properly when trying to warn about bad uploads
+
+## v1.1.4
+* Redact basic auth credentials when confirming upload URL
+
+## v1.1.3
+* Refactor expected project layout a bit
+
+## v1.1.2
+* Warn instead of fail if resources.json is missing
+
+## v1.1.1
+* Confirm upload before pushing to production server
+* Fix import order
+
+## v1.1.0
+* Upload config FROM THE CURRENT DIRECTORY
+* Support arg divider properly
+* WARN if form dirs are missing
+* Bump version for release
+* Fix including error content in log
+* Handle app_settings upload errors
+* Handle attachment paths properly on Windows
+* Add support for medic-collect forms
+* Fix model juggling in contact forms
+* Revert "Fix XML model juggling in contact forms"
+* Fix XML model juggling in contact forms
+* Add hidden tag to model elements listed in props.hidden_fields
+* Allow inclusion of title translations from forms properties file
+* Remove NO_LABEL labels when converting forms
+* Make action list easier to read in log output
+* Make terminal output pretty colours
+* Fix logging of JSON objects
+* Correct position of action in usage CLI output
+* Don't use colons in form backup filenames
+* Update bash-completion instructions in README
+* Bump version number for release
+* Fix command name in usage text
+* Categorise TODO list
+* Ignore Excel owner files when converting XLS to Xform
+* Bump version number
+* Add action for creating project folder structure
+* Remove unused import in convert-forms
+* Fix contat-summary.js file name in README
+* Bump version number
+* Only show "command missing" error if xls2xform not found
+* Pull xls2xform executable name into a constant
+* Only display pyxform installation suggestion if xls2xform cannot be found
+* Add `sudo` to xls2xform-installation-command
+* Update comment for accuracy
+* Add TODO item
+* Add TODO item
+* Simplify installation instructions
+* Bump version number
+* Add separate installation instructions for ubuntu
+* Add TODO item
+* Fix typo in command name in README
+* Add TODO item
+* Update links to pyxform to point to medic branch
+* Add `beta-` prefix to output of `--version`
+* Don't force data node name change in XML conversion for app forms
+* Add TODO item
+* Add URL completion to shell-completion
+* Add jshint grunt task for checking test files
+* Add unit tests for shell-completion
+* Add helpful commentary to bash shell-completion script
+* Add TODO item
+* Remove completed TODO items
+* Redact basic auth URLs before printing to log
+* Add TODO items
+* Add TODO item
+* Add default context for person forms
+* Use the correct IDs for doc._id and doc.internalId
+* Add TODO item
+* Update pyxform installation instructions
+* Rename pyxform-medic
+* Allow some actions to be performed on specific forms
+* Move shell completion setup to separate module
+* Fix bash completion with colons in
+* Add TODO item
+* Fix completion script output
+* Add TODO item
+* Fix pngout binary link
+* More shell completion tweaking
+* Fix shell completion bin
+* Add shell completion for bash
+* Oh, jshint :¬(
+* Move binary file to have proper js extension
+* Add version and help cli switches
+* Add TODO item
+* Warn when properties in `<form>.properties.json` are ignored
+* Added TODO item
+* Base form upload on XML files, not XLSX
+* Update location of form media directory
+* Still upload a form even if it has no dir
+* Remove completed TODO item
+* Use `path` from `fs`
+* Bump version
+* Move XML elements around in form model when converting
+* Add TODO item
+* Add a helpful comment
+* Create temp directories in the temp directory
+* Delete lines that ask for it
+* Force contact forms to use <model><instance><data/></../..>
+* Make paths a little cleaner
+* Include meta section when fixing forms
+* Add new TODO
+* Fix form attachments within directories
+* Fix branckets and remove potentially pointless "fix" code from form converter
+* Run form conversions in series
+* Clean forms a bit more when converting
+* Add TODO items
+* Fix form conversion for new form location
+* Change location of XML file
+* Separate attachment-from-file function
+* Remove pointless debug form compress-images
+* Restructure forms to separate contact and app forms
+* Remove completed README item
+* Add compress-images action
+* Move XML fix to convert-forms
+* Handle unsupported actions better
+* Clean up sync-fs exports
+* Simplify CLI script
+* Update TODO list
+* Add installation instructions if medic-xls2xform is missing
+* Fix imports in convert-forms
+* Bump version number for release
+* Add convert forms action; convert XLS forms before upload
+* Remove console.log() use on errors
+* Move get-filename-without-extension function to sync-fs
+* Add more logging to upload-form action
+* Non-0 exit code on CLI error
+* Close promise chain for specific-action calls
+* Fix bug reassigning xml in convert-forms
+* Bump version for release
+* Fix forms before uploading by removing the `default="true()"` attribute
+* Bump version number for release
+* Allow running multiple actions in a row with a single CLI call
+* Use ES6 func syntax in Gruntfile
+* Convert tabs to spaces in Gruntfile
+* Add travis build file
+* Add mocha for testing
+* More clean up of log levels and messages
+* Remove noisy log extras from do-all script
+* Fix `medic-conf` command reference in README
+* Update README to reflect contact form name change
+* Bump npm version for release
+* Read form ID from XML
+* Windows compat: convert `-` character in form names to `:` in form IDs
+* Remove dead code
+* Safer error message
+* Update structure of task-related files
+* Bump npm version number for release
+* Remove unused var
+* Improve error messages when compiling app_settings.json
+* Bump npm version for release
+* Strip inline comments when cleaning javascript
+* Change README examples to be for a specific project
+* Bump npm version for release
+* Add support for uploading custom translations
+* Rename insert-or-update to insert-or-replace
+* Bump npm version for release
+* Include internalId property when uploading forms
+* Add TODO item
+* Bump npm version number for release
+* Allow missing directories in attachments-from-dir
+* Rename schedules.json as tasks.json
+* Bump npm version for release
+* Allow performing of specific actions
+* Calculate couchUrl in CLI parent script
+* Move usage script to more obvious place
+* Refactor logging code
+* Make logging neater
+* Remove annoying console.log
+* Restructure directory layout
+* Move upload of translations from TODO to Might Support
+* Add list of supported functionality to README
+* Update project structure example for .properties.json file
+* Remove `ignore` option from attachments-from-dir
+* Format code blocks in README
+* Add README item
+* Add TODO items
+* Bump version number
+* Update expectation for form properties file location
+* Add expected project structure to README
+* Add support for icon uploads
+* Add TODO
+* Bump version number for npm
+* Add readme
+* Add jshint and fix violations
+* Bump npm version number
+* Make CLI output calls clearer
+* Put CLI script imports back in the right place
+* Add bin target
+
+## v1.0.0
+* Add `-beta` suffix to package name before uploading to NPM
+* Allow setting of internalId field, but include deprecation warning
 

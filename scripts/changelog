@@ -25,3 +25,4 @@ for previous in $(versions); do
 	fi
 	current="$previous"
 done
+changelog initial "$current" "$current"
