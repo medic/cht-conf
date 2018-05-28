@@ -23,7 +23,7 @@ describe('initialise-project-layout', () => {
     assertExists('resources.json');
     assertExists('rules.nools.js');
     assertExists('targets.json');
-    assertExists('tasks.json');
+    assertExists('task-schedules.json');
     assertExists('translations');
 
   });

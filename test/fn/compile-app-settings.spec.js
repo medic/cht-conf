@@ -13,8 +13,11 @@ describe('compile-app-settings', () => {
   it('should handle nools & contact-summary templating', () =>
     test('templating/project'));
 
-  it('should handle config with no separate tasks.json file', () =>
-    test('no-tasks.json/project'));
+  it('should handle config with no separate task-schedules.json file', () =>
+    test('no-task-schedules.json/project'));
+
+  it('should handle config with combined targets.js definition', () =>
+    test('targets.js/project'));
 
 });
 

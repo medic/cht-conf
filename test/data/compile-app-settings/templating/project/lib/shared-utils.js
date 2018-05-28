@@ -1,1 +1,1 @@
-function myFn() { console.log('hi'); }
+function myFn() { return 1 + 1; }
