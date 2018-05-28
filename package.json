@@ -1,6 +1,6 @@
 {
   "name": "medic-conf",
-  "version": "1.16.8",
+  "version": "1.16.9",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
@@ -30,6 +30,7 @@
     "canonical-json": "0.0.4",
     "csv-parse": "^2.4.0",
     "googleapis": "^22.2.0",
+    "jshint": "^2.9.5",
     "mkdirp": "^0.5.1",
     "pouchdb-adapter-http": "^6.4.3",
     "pouchdb-core": "^6.4.3",
@@ -44,7 +45,6 @@
     "chai": "^4.0.0",
     "chai-exclude": "^1.0.8",
     "express-pouchdb": "^4.0.0",
-    "jshint": "^2.9.5",
     "lodash": "^4.17.10",
     "memdown": "^2.0.0",
     "mocha": "^5.2.0",

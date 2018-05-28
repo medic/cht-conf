@@ -87,7 +87,7 @@ This tool expects a project to be sctructured as follows:
 			…
 		rules.nools.js
 		targets.json
-		tasks.json
+		task-schedules.json
 		forms/
 			app/
 				my_project_form.xlsx
@@ -110,7 +110,7 @@ This tool expects a project to be sctructured as follows:
 
 ## Derived configs
 
-Configuration can be inherited from another project, and then modified.  This allows the `app_settings.json` and contained files (`tasks.json`, `targets.json` etc.) to be imported, and then modified.
+Configuration can be inherited from another project, and then modified.  This allows the `app_settings.json` and contained files (`task-schedules.json`, `targets.json` etc.) to be imported, and then modified.
 
 To achieve this, create a file called `settings.inherit.json` in your project's root directory with the following format:
 

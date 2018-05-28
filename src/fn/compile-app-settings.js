@@ -1,5 +1,8 @@
+const compileContactSummary = require('../lib/compile-contact-summary');
+const compileNoolsRules = require('../lib/compile-nools-rules');
 const fs = require('../lib/sync-fs');
-const readJs = require('../lib/read-templated-js');
+const parseTargets = require('../lib/parse-targets');
+const warn = require('../lib/log').warn;
 
 module.exports = (projectDir /*, couchUrl */) => {
 
@@ -25,12 +28,25 @@ module.exports = (projectDir /*, couchUrl */) => {
     });
 
   function compileAppSettings(projectDir) {
+    // Helpful support for refactoring tasks.json to task-schedules.json
+    // This warning can be removed when all projects have moved to the new layout.
+    let taskSchedulesPath = `${projectDir}/task-schedules.json`;
+    const oldTaskSchedulesPath = `${projectDir}/tasks.json`;
+    if(fs.exists(oldTaskSchedulesPath)) {
+      if(fs.exists(taskSchedulesPath)) {
+        throw new Error(`You have both ${taskSchedulesPath} and ${oldTaskSchedulesPath}.  Please remove one to continue!`);
+      }
+      warn(`tasks.json file is deprecated.  Please rename ${oldTaskSchedulesPath} to ${taskSchedulesPath}`);
+      taskSchedulesPath = oldTaskSchedulesPath;
+    }
+
+    // TODO why not inline this with app_settings.tasks setup below?
     const files = {
       app_settings: fs.readJson(`${projectDir}/app_settings.json`),
-      contact_summary: readJs(projectDir, 'contact-summary.js'),
-      nools: readJs(projectDir, 'rules.nools.js'),
-      targets: fs.readJson(`${projectDir}/targets.json`),
-      tasks_schedules: readOptionalJson(`${projectDir}/tasks.json`),
+      contact_summary: compileContactSummary(projectDir),
+      nools: compileNoolsRules(projectDir),
+      targets: parseTargets.json(projectDir),
+      tasks_schedules: readOptionalJson(taskSchedulesPath),
     };
 
     const app_settings = files.app_settings;

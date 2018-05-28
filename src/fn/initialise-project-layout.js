@@ -8,7 +8,7 @@ const LAYOUT = {
   resources: {},
   'rules.nools.js': '',
   'targets.json': {},
-  'tasks.json': {},
+  'task-schedules.json': {},
   forms: {
     app: {},
     collect: {},

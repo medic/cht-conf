@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.16.9
+* Allow structured tasks & targets config
+
 ## v1.16.8
 * Update dependencies
 
