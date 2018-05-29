@@ -30,13 +30,19 @@ switch(args[0]) {
   default:          log.level = log.LEVEL_INFO;
 }
 
+let instanceUsername = 'admin';
 switch(args[0]) {
 
 //> instance URL handling:
+  case '--user':
+    instanceUsername = args[1];
+    shift(2);
+    if(args[0] !== '--instance') throw new Error('The --user switch can only be used if followed by --instance');
+    /* falls through */
   case '--instance':
     const password = readline.question(`${emoji.key}  Password: `, { hideEchoBack:true });
     const encodedPassword = encodeURIComponent(password);
-    instanceUrl = `https://admin:${encodedPassword}@${args[1]}.medicmobile.org`;
+    instanceUrl = `https://${instanceUsername}:${encodedPassword}@${args[1]}.medicmobile.org`;
     shift(2);
     break;
   case '--local':

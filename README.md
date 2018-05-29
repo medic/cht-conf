@@ -56,6 +56,10 @@ To upgrade to the latest version
 
 Username `admin` is used.  A prompt is shown for entering password.
 
+If a different username is required, add the `--user` switch:
+
+	--user user-name --instance instance-name.dev
+
 ### To an arbitrary URL
 
 	medic-conf --url https://username:password@example.com:12345
