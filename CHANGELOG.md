@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.16.7
+* Update changelog for release
+* Add option to specify username with --instance CLI switch
+
 ## v1.16.6
 * Add CHANGELOG entries pre v1.6
 * Add --changelog flag to usage output
