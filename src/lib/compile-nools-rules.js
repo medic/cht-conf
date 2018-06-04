@@ -1,7 +1,8 @@
 const fs = require('./sync-fs');
 const jshint = require('jshint').JSHINT;
 const jsToString = require('./js-to-string');
-const minify = require('./minify-js');
+const minifyJs = require('./minify-js');
+const minifyNools = require('./minify-nools');
 const parseTargets = require('./parse-targets');
 const templatedJs = require('./templated-js');
 const withLineNumbers = require('./with-line-numbers');
@@ -207,7 +208,9 @@ function compileWithDefaultLayout(projectDir) {
 
   lint(jsCode);
 
-  return minify(`
+  const minifiedJs = minifyJs(jsCode);
+
+  return minifyNools(`
     define Target {
       _id: null,
       deleted: null,
@@ -242,7 +245,7 @@ function compileWithDefaultLayout(projectDir) {
         c: Contact
       }
       then {
-        ${jsCode}
+        ${minifiedJs}
       }
     }
   `);
@@ -260,6 +263,6 @@ function checkForRequiredFilesForDefaultLayout(projectDir) {
 
 module.exports = projectDir => {
   const noolsPath = `${projectDir}/rules.nools.js`;
-  if(fs.exists(noolsPath)) return minify(templatedJs.fromFile(projectDir, noolsPath));
+  if(fs.exists(noolsPath)) return minifyNools(templatedJs.fromFile(projectDir, noolsPath));
   else return compileWithDefaultLayout(projectDir);
 };

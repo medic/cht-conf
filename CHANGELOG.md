@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.16.10
+* [compile-app-settings] Uglify app-settings JS
+
 ## v1.16.9
 * Allow structured tasks & targets config
 

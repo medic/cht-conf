@@ -1,6 +1,6 @@
 {
   "name": "medic-conf",
-  "version": "1.16.9",
+  "version": "1.16.10",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
@@ -39,6 +39,7 @@
     "redact-basic-auth": "^1.0.0",
     "request-promise-native": "^1.0.5",
     "svgo": "^1.0.5",
+    "uglify-js": "^3.4.0",
     "uuid": "^3.2.1"
   },
   "devDependencies": {
