@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.16.11
+* [compile-app-settings] Add missing source file
+
 ## v1.16.10
 * [compile-app-settings] Uglify app-settings JS
 
