@@ -1,5 +1,5 @@
-const error = require('./log').error;
 const uglify = require('uglify-js');
+const warn = require('./log').warn;
 const withLineNumbers = require('./with-line-numbers');
 
 module.exports = js => {
@@ -18,7 +18,7 @@ module.exports = js => {
     }
 
     if(result.warnings) {
-      error(result.warnings);
+      result.warnings.forEach(w => warn(w));
       throw new Error(`Warnings generated while minifying javscript.`);
     }
   }
