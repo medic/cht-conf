@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.16.12
+* [compile-contact-summary] introduce standardised layout
+* Fix indentation
+* [minify-js] print warnings better
+
 ## v1.16.11
 * [compile-app-settings] Add missing source file
 
