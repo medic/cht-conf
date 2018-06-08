@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.16.13
+* Update ordering and content of README
+* Remove items from README which have been done
+
 ## v1.16.12
 * [compile-contact-summary] introduce standardised layout
 * Fix indentation

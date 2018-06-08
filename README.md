@@ -168,17 +168,13 @@ To achieve this, create a file called `settings.inherit.json` in your project's 
 
 * upload of custom translations to the server
 
-## Wishlist
-
-* only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
-
-# create-users **[ALPHA]**
+## create-users **[ALPHA]**
 
 N.B. this feature is currently in development, and probably not ready for production yet.
 
 To create users on a remote server, use the `create-users` action.  The CSV file should be called `users.csv`, and an example is available [in the tests directory](test/data/create-users/users.csv).
 
-# csv-to-docs
+## csv-to-docs
 
 To convert CSV to JSON docs, use the `csv-to-docs` action.
 
@@ -239,9 +235,11 @@ This would create a structure such as:
 
 Note the special string `COL_VAL` - this matches the CSV column value for the row being processed.
 
-# medic-logs
+# `medic-logs`
 
 Fetch logs from a production server.
+
+This is a standalone command installed alongside `medic-conf`.  For usage information, run `medic-logs --help`.
 
 ## Usage
 
@@ -254,3 +252,14 @@ Accepted log types:
 	gardener
 	nginx
 	sentinel
+
+## compress images
+
+To compress PNGs and SVGs in the current directory and its subdirectories, two commands are available:
+
+	compress-pngs
+	compress-svgs
+
+## Wishlist
+
+* only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
