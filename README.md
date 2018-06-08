@@ -168,10 +168,6 @@ To achieve this, create a file called `settings.inherit.json` in your project's 
 
 * upload of custom translations to the server
 
-# TODO
-
-* add compress-pngs, compress-svgs as somehow part of the form conversion step.  But make sure it's cleanly separated from XML processing step
-
 ## Wishlist
 
 * only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
