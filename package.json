@@ -1,6 +1,6 @@
 {
   "name": "medic-conf",
-  "version": "1.16.13",
+  "version": "1.16.14",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {

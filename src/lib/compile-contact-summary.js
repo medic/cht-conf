@@ -59,6 +59,51 @@ var result = {
 };
 
 
+function addCard(card, r) {
+  if(!card.appliesIf(r)) return;
+
+  function addValue(src, dst, prop) {
+    switch(typeof src[prop]) {
+      case 'undefined': return;
+      case 'function': dst[prop] = src[prop](r); break;
+      default: dst[prop] = src[prop];
+    }
+  }
+
+  var fields = typeof card.fields === 'function' ?
+      card.fields(r) :
+      card.fields
+        .filter(function(f) {
+          switch(typeof f.appliesIf) {
+            case 'undefined': return true;
+            case 'function':  return f.appliesIf(r);
+            default:          return f.appliesIf;
+          }
+        })
+        .map(function(f) {
+          var ret = {};
+          addValue(f, ret, 'label');
+          addValue(f, ret, 'value');
+          addValue(f, ret, 'translate');
+          addValue(f, ret, 'filter');
+          addValue(f, ret, 'width');
+          addValue(f, ret, 'icon');
+          if(f.context) {
+            ret.context = {};
+            addValue(f.context, ret.context, 'count');
+            addValue(f.context, ret.context, 'total');
+          }
+          return ret;
+        });
+
+  result.cards.push({
+    label: card.label,
+    fields: fields,
+  });
+
+  if(card.modifyContext) card.modifyContext(context, r);
+}
+
 cards.forEach(function(card) {
   var idx1, r;
   switch(card.appliesToType) {
@@ -66,24 +111,12 @@ cards.forEach(function(card) {
       for(idx1=0; idx1<reports.length; ++idx1) {
         r = reports[idx1];
         if(!isReportValid(r)) continue;
-        if(card.appliesIf(r)) {
-          result.cards.push({
-            label: card.label,
-            fields: card.fields(r),
-          });
-          if(card.modifyContext) card.modifyContext(context);
-        }
+        addCard(card, r);
       }
       break;
     default:
       if(contact.type !== card.appliesToType) return;
-      if(card.appliesIf()) {
-        result.cards.push({
-          label: card.label,
-          fields: card.fields(),
-        });
-        if(card.modifyContext) card.modifyContext(context);
-      }
+      addCard(card);
   }
 });
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.16.14
+* [contact-summary] allow structured card.fields
+* Fix __include_inline__() input trimming
+
 ## v1.16.13
 * Update ordering and content of README
 * Remove items from README which have been done
