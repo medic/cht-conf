@@ -5,14 +5,7 @@ const templatedJs = require('../lib/templated-js');
 
 function lint(code) {
   jshintWithReport('contact-summary', code, {
-    esversion: 5,
-    eqeqeq: true,
-    funcscope: true,
-    latedef: 'nofunc',
-    nonbsp: true,
     predef: [ 'contact', 'lineage', 'reports' ],
-    undef: true,
-    unused: true,
   });
 }
 

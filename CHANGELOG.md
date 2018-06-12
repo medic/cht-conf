@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.16.16
+* [compile-app-settings] use default jshint settings
+
 ## v1.16.15
 * [compile-contact-summary] fix test
 * [compile-app-settings] share jshint reporting code
