@@ -1,14 +1,13 @@
 const fs = require('./sync-fs');
-const jshint = require('jshint').JSHINT;
+const jshintWithReport = require('./jshint-with-report');
 const jsToString = require('./js-to-string');
 const minifyJs = require('./minify-js');
 const minifyNools = require('./minify-nools');
 const parseTargets = require('./parse-targets');
 const templatedJs = require('./templated-js');
-const withLineNumbers = require('./with-line-numbers');
 
 function lint(code) {
-  jshint(code, {
+  jshintWithReport('nools rules', code, {
     esversion: 5,
     eqeqeq: true,
     funcscope: true,
@@ -18,13 +17,6 @@ function lint(code) {
     undef: true,
     unused: true,
   });
-
-  if(jshint.errors.length) {
-    console.log('Generated code:');
-    console.log(withLineNumbers(code));
-    jshint.errors.map(e => console.log(`line ${e.line}, col ${e.character}, ${e.reason} (${e.code})`));
-    throw new Error(`jshint violations found in nools rules :¬(`);
-  }
 }
 
 function compileWithDefaultLayout(projectDir) {
