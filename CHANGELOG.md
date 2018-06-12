@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.16.15
+* [compile-contact-summary] fix test
+* [compile-app-settings] share jshint reporting code
+
 ## v1.16.14
 * [contact-summary] allow structured card.fields
 * Fix __include_inline__() input trimming
