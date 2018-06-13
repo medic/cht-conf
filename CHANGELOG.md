@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.16.17
+* [jshint] don't let config changes leak
+
 ## v1.16.16
 * [compile-app-settings] use default jshint settings
 

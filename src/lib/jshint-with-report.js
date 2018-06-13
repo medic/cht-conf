@@ -21,7 +21,7 @@ const DEFAULT_OPTS = {
 };
 
 module.exports = (description, code, options) => {
-  options = _.extend(DEFAULT_OPTS, options);
+  options = _.extend(options, DEFAULT_OPTS);
 
   jshint(code, options);
 
