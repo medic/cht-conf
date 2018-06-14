@@ -102,7 +102,7 @@ function compileWithDefaultLayout(projectDir) {
             icon: schedule.icon,
             date: dueDate,
             title: schedule.title,
-            resolved: schedule.resolvedIf(c, r, event, dueDate),
+            resolved: schedule.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
             actions: schedule.actions.map(initActions),
           };
 

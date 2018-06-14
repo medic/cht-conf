@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.16.19
+* [compile-nools-rules] pass scheduledTaskIdx to emitTasksForSchedule()
+
 ## v1.16.18
 * Add documentation about releasing
 
