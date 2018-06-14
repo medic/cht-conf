@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.16.18
+* Add documentation about releasing
+
 ## v1.16.17
 * [jshint] don't let config changes leak
 

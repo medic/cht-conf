@@ -263,3 +263,11 @@ To compress PNGs and SVGs in the current directory and its subdirectories, two c
 ## Wishlist
 
 * only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
+
+# Releasing
+
+1. bump version number in `package.json`
+2. `npm install` to update `package-lock.json`
+3. `npm run generate-changelog` to update `CHANGELOG.md`
+4. `npm run release`
+5. try to work out how you can commit the CHANGELOG including the change that includes the CHANGELOG update before you run the release script
