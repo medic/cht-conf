@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 
-require('../src/cli/check-node-version');
+require('../cli/check-node-version');
 
-const checkForUpdates = require('../src/lib/check-for-updates');
-const emoji = require('../src/lib/emoji');
-const error = require('../src/lib/log').error;
-const fs = require('../src/lib/sync-fs');
-const info = require('../src/lib/log').info;
-const log = require('../src/lib/log');
+const checkForUpdates = require('../lib/check-for-updates');
+const emoji = require('../lib/emoji');
+const error = require('../lib/log').error;
+const fs = require('../lib/sync-fs');
+const info = require('../lib/log').info;
+const log = require('../lib/log');
 const readline = require('readline-sync');
 const redactBasicAuth = require('redact-basic-auth');
-const supportedActions = require('../src/cli/supported-actions');
-const usage = require('../src/cli/usage');
-const warn = require('../src/lib/log').warn;
+const supportedActions = require('../cli/supported-actions');
+const usage = require('../cli/usage');
+const warn = require('../lib/log').warn;
 
 let args = process.argv.slice(2);
 const shift = n => args = args.slice(n || 1);
@@ -62,7 +62,7 @@ switch(args[0]) {
 //> general option handling:
   case '--help': return usage(0);
   case '--shell-completion':
-    return require('../src/cli/shell-completion-setup')(args[1]);
+    return require('../cli/shell-completion-setup')(args[1]);
   case '--supported-actions':
     console.log('Supported actions:\n ', supportedActions.join('\n  '));
     return process.exit(0);
@@ -143,7 +143,7 @@ const initialPromise = actions.includes('check-for-updates') || skipCheckForUpda
 return actions.reduce((promiseChain, action) =>
     promiseChain
       .then(() => info(`Starting action: ${action}…`))
-      .then(() => require(`../src/fn/${action}`)('.', couchUrl, extraArgs))
+      .then(() => require(`../fn/${action}`)('.', couchUrl, extraArgs))
       .then(() => info(`${action} complete.`)),
     initialPromise)
   .then(() => { if(actions.length > 1) info('All actions completed.'); })

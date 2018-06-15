@@ -6,14 +6,14 @@
   "scripts": {
     "clean": "rm -rf ./build/",
     "generate-changelog": "echo 'Generating changelog...' && ./scripts/changelog > CHANGELOG.md && echo 'Changelog generated.'",
-    "jshint": "jshint --verbose src/**/*.js bin/*.js test/*.js test/**/*.js",
+    "jshint": "jshint --verbose src/**/*.js test/*.js test/**/*.js",
     "release": "npm run --silent generate-changelog && ./scripts/dirty-repo-check && git push && git tag v$(jq -r .version package.json) && git push --tags && npm publish",
     "test": "npm run jshint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js"
   },
   "bin": {
-    "medic-conf": "bin/medic-conf.js",
-    "medic-logs": "bin/medic-logs.bash",
-    "shell-completion-for-medic-conf": "bin/shell-completion.js",
+    "medic-conf": "src/bin/medic-conf.js",
+    "medic-logs": "src/bin/medic-logs.bash",
+    "shell-completion-for-medic-conf": "src/bin/shell-completion.js",
     "pngout-medic": "bin/pngout"
   },
   "repository": {

@@ -48,7 +48,7 @@ const execSync = require('child_process').execSync;
 function assertShellComplete(cliArgs, ...expectedResponses) {
   if(!Array.isArray(cliArgs)) cliArgs = [ cliArgs ];
 
-  return execPromise('../../bin/shell-completion.js', cliArgs.length, cliArgs[cliArgs.length-1])
+  return execPromise('../../src/bin/shell-completion.js', cliArgs.length, cliArgs[cliArgs.length-1])
     .then(res => res.split(/\s/))
     .then(res => res.filter(s => s.trim()))
     .then(res => assert.deepEqual(res, expectedResponses));
