@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.17.0
+* [compile-app-settings] check conf version matches that of project
+* Move binary source files into src/
+
 ## v1.16.19
 * [compile-nools-rules] pass scheduledTaskIdx to emitTasksForSchedule()
 
