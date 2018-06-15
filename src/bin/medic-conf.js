@@ -47,6 +47,9 @@ switch(args[0]) {
     break;
   case '--local':
     if(process.env.COUCH_URL) {
+      if(!process.env.COUCH_URL.match(/localhost/)) {
+        throw new Error(`You asked to configure a local instance, but the COUCH_URL env var is set to '${process.env.COUCH_URL}'.  This may be a remote server.`);
+      }
       instanceUrl = process.env.COUCH_URL.replace(/\/medic$/, '');
       info('Using instance URL from COUCH_URL environment variable.');
     } else {

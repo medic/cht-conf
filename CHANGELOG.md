@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.17.1
+* Check COUCH_URL env var is local
+
 ## v1.17.0
 * [compile-app-settings] check conf version matches that of project
 * Move binary source files into src/
