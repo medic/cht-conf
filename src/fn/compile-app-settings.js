@@ -1,3 +1,4 @@
+const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
 const compileContactSummary = require('../lib/compile-contact-summary');
 const compileNoolsRules = require('../lib/compile-nools-rules');
 const fs = require('../lib/sync-fs');
@@ -8,6 +9,7 @@ module.exports = (projectDir /*, couchUrl */) => {
 
   return Promise.resolve()
     .then(() => {
+      checkMedicConfDependencyVersion(projectDir);
 
       let app_settings;
 

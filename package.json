@@ -38,6 +38,7 @@
     "readline-sync": "^1.4.9",
     "redact-basic-auth": "^1.0.0",
     "request-promise-native": "^1.0.5",
+    "semver": "^5.5.0",
     "svgo": "^1.0.5",
     "uglify-js": "^3.4.0",
     "uuid": "^3.2.1"
