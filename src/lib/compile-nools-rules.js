@@ -174,16 +174,6 @@ function compileWithDefaultLayout(projectDir) {
       });
     }
 
-    function createTargetInstance(type, doc, pass) {
-      return new Target({
-        _id: doc._id + '-' + type,
-        deleted: !!doc.deleted,
-        type: type,
-        pass: pass,
-        date: doc.reported_date
-      });
-    }
-
     function emitTargetInstance(i) {
       emit('target', i);
     }
