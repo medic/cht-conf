@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.17.2
+* [jshint] detect redeclarations in global scope
+* [compile-nools-rules] Remove duplicate definition of createTargetInstance
+
 ## v1.17.1
 * Check COUCH_URL env var is local
 

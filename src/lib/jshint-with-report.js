@@ -23,12 +23,16 @@ const DEFAULT_OPTS = {
 module.exports = (description, code, options) => {
   options = _.extend(options, DEFAULT_OPTS);
 
-  jshint(code, options);
+  // jshint can't detect repeated declarations in the global scope, so we wrap
+  // our code in a function.  Ref: https://github.com/jshint/jshint/issues/3288
+  jshint(`(function() {
+    ${code}
+  }());`, options);
 
   if(jshint.errors.length) {
     console.log(`Generated code for ${description}:`);
     console.log(withLineNumbers(code));
-    jshint.errors.map(e => console.log(`line ${e.line}, col ${e.character}, ${e.reason} (${e.code})`));
+    jshint.errors.map(e => console.log(`line ${e.line-1}, col ${e.character}, ${e.reason} (${e.code})`));
     throw new Error(`jshint violations found in ${description} :¬(`);
   }
 };
