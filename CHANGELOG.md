@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.17.3
+* [compile-app-settings] allow console.log() statements
+
 ## v1.17.2
 * [jshint] detect redeclarations in global scope
 * [compile-nools-rules] Remove duplicate definition of createTargetInstance

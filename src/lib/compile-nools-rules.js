@@ -8,7 +8,7 @@ const templatedJs = require('./templated-js');
 
 function lint(code) {
   jshintWithReport('nools rules', code, {
-    predef: [ 'c', 'emit', 'Contact', 'Target', 'Task', 'Utils' ],
+    predef: [ 'c', 'console', 'emit', 'Contact', 'Target', 'Task', 'Utils' ],
   });
 }
 

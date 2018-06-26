@@ -5,7 +5,7 @@ const templatedJs = require('../lib/templated-js');
 
 function lint(code) {
   jshintWithReport('contact-summary', code, {
-    predef: [ 'contact', 'lineage', 'reports' ],
+    predef: [ 'console', 'contact', 'lineage', 'reports' ],
   });
 }
 
