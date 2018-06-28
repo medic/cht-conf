@@ -23,8 +23,8 @@ const DEFAULT_OPTS = {
 module.exports = (description, code, options) => {
   options = _.extend(options, DEFAULT_OPTS);
 
-  // jshint can't detect repeated declarations in the global scope, so we wrap
-  // our code in a function.  Ref: https://github.com/jshint/jshint/issues/3288
+  // wrap our code in a function because otherwise jshint can't detect repeated
+  // declarations.  Ref: https://github.com/jshint/jshint/issues/3288
   jshint(`(function() {
     ${code}
   }());`, options);

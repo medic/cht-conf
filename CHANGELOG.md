@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.17.4
+* Don't confuse jshint by talking about jshint
+* Fix: first scheduled_task date is incorrect
+
 ## v1.17.3
 * [compile-app-settings] allow console.log() statements
 
