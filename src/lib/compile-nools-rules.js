@@ -82,7 +82,7 @@ function compileWithDefaultLayout(projectDir) {
 
           if(event.dueDate) {
             dueDate = event.dueDate(r, event, scheduledTaskIdx);
-          } else if(scheduledTaskIdx) {
+          } else if(scheduledTaskIdx !== undefined) {
             dueDate = new Date(Utils.addDate(new Date(r.scheduled_tasks[scheduledTaskIdx].due), event.days));
           } else {
             dueDate = new Date(Utils.addDate(new Date(r.reported_date), event.days));
@@ -106,7 +106,7 @@ function compileWithDefaultLayout(projectDir) {
             actions: schedule.actions.map(initActions),
           };
 
-          if(scheduledTaskIdx) {
+          if(scheduledTaskIdx !== undefined) {
             task._id += '-' + scheduledTaskIdx;
           }
 
