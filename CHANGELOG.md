@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.17.5
+* Move bundled nools code to a proper .js file
+
 ## v1.17.4
 * Don't confuse jshint by talking about jshint
 * Fix: first scheduled_task date is incorrect

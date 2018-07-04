@@ -1,0 +1,19 @@
+{
+  "esversion": 5,
+  "globals": {
+    "c": true,
+    "emit": false,
+    "idx1": true,
+    "idx2": true,
+    "now": false,
+    "r": true,
+    "target": true,
+    "targets": false,
+    "tasks": false,
+    "Target": false,
+    "Task": false,
+    "Utils": false
+  },
+  "undef": true,
+  "unused": true
+}
