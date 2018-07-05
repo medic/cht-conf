@@ -25,7 +25,7 @@ describe('compile-contact-summary', function() {
       const compiled = compileContactSummary(`${BASE_DIR}/verbatim`);
 
       // then
-      assert.equal(compiled, '\'a javascript string\';');
+      assert.equal(compiled, 'contact.x=\'a string\';');
     });
 
     it('should include other source file referenced with __include_inline__()', function() {
@@ -33,7 +33,7 @@ describe('compile-contact-summary', function() {
       const compiled = compileContactSummary(`${BASE_DIR}/includes`);
 
       // then
-      assert.equal(compiled, '\'original\';\'included\';');
+      assert.equal(compiled, 'contact.x=\'from original\',contact.y=\'from included\';');
     });
 
   });

@@ -1,1 +1,1 @@
-'a javascript string';
+contact.x = 'a string';
