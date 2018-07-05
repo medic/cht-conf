@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.17.6
+* [compile-contact-summary] separate templated source into proper .js file
+* Fix unit tests for compile-contact-summary
+
 ## v1.17.5
 * Move bundled nools code to a proper .js file
 
