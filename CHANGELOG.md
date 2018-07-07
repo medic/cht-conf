@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.17.7
+* Add simple tests for contact-summary & nools lib code
+* Fix comment ref NO_LABEL
+
 ## v1.17.6
 * [compile-contact-summary] separate templated source into proper .js file
 * Fix unit tests for compile-contact-summary

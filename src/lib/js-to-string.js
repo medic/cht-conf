@@ -1,8 +1,8 @@
 function toS(o) {
   if(Array.isArray(o)) {
-    let s = '[';
+    let s = '';
     o.forEach(i => s += toS(i) + ',');
-    return withoutTrailingComma(s) + ']';
+    return '[' + withoutTrailingComma(s) + ']';
   }
   switch(typeof o) {
     case 'function':
@@ -15,7 +15,7 @@ function toS(o) {
 }
 
 function oToS(o) {
-  let s = '{';
+  let s = '';
   Object.keys(o).forEach(k => {
     let val = o[k];
     if(typeof val === 'function') {
@@ -29,7 +29,7 @@ function oToS(o) {
     }
     s += `${k}:${val},`;
   });
-  return withoutTrailingComma(s) + '}';
+  return '{' + withoutTrailingComma(s) + '}';
 }
 
 const withoutTrailingComma = s => s.slice(0, s.length-1);
