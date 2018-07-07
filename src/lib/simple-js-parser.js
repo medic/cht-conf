@@ -15,9 +15,17 @@ module.exports = (optsOrPath, ...exportNames) => {
   if(!header) header = '';
 
   const rawCode = paths.map(fs.read).join('');
-  const indentedCode = withIndent('  ', `'use strict';
+  let indentedCode = withIndent('  ', `'use strict';
 ${header}
 ${rawCode}`);
+
+  // Allow removal of `return` statements etc.
+  if(optsOrPath.trimLinesFromEnd) {
+    indentedCode = indentedCode
+        .split('\n')
+        .slice(0, -optsOrPath.trimLinesFromEnd)
+        .join('\n');
+  }
 
   const returnList = exportNames.map(r => `${r}:${r}`).join(',');
 
