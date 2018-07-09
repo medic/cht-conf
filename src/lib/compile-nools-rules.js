@@ -21,7 +21,7 @@ function compileWithDefaultLayout(projectDir) {
   const noolsLib = fs.read(`${__dirname}/../nools/lib.js`);
 
   const jsCode = templatedJs.fromString(projectDir, `
-    var idx1, idx2, r, target;
+    var idx1, idx2, r, t;
     var now = Utils.now();
     ${supportCode}
     var targets = ${jsToString(targets)};

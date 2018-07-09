@@ -1,30 +1,44 @@
 if (c.contact && c.contact.type === 'person') {
   for(idx1=0; idx1<targets.length; ++idx1) {
-    target = targets[idx1];
-    switch(target.appliesToType) {
+    t = targets[idx1];
+    switch(t.appliesToType) {
       case 'person':
-        emitPersonBasedTargetFor(c, target);
+        emitPersonBasedTargetFor(c, t);
         break;
       case 'report':
         for(idx2=0; idx2<c.reports.length; ++idx2) {
           r = c.reports[idx2];
-          emitReportBasedTargetFor(c, r, target);
+          emitReportBasedTargetFor(c, r, t);
         }
         break;
       default:
-        throw new Error('unrecognised target type: ' + target.type);
+        throw new Error('unrecognised target type: ' + t.type);
     }
   }
   for(idx1=0; idx1<tasks.length; ++idx1) {
     // TODO currently we assume all tasks are report-based
-    for(idx2=0; idx2<c.reports.length; ++idx2) {
-      r = c.reports[idx2];
-      emitTasksForSchedule(c, r, tasks[idx1]);
+    t = tasks[idx1];
+    switch(t.appliesToType) {
+      case 'person':
+        emitPersonBasedTaskFor(c, t);
+        break;
+      case 'report':
+        for(idx2=0; idx2<c.reports.length; ++idx2) {
+          r = c.reports[idx2];
+          emitReportBasedTaskFor(c, r, t);
+        }
+        break;
+      default:
+        throw new Error('unrecognised task type: ' + t.type);
     }
   }
 }
 
-function emitTasksForSchedule(c, r, schedule) {
+function emitPersonBasedTaskFor() {
+  emit('task', new Task());
+}
+
+function emitReportBasedTaskFor(c, r, schedule) {
   var i;
 
   if(schedule.appliesToForms && schedule.appliesToForms.indexOf(r.form) === -1) {

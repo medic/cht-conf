@@ -81,6 +81,7 @@ describe('contact-summary lib', function() {
 
         // then
         assert.deepEqual(emitted, [
+          { _type:'target', date:TEST_DATE },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -142,7 +143,7 @@ describe('contact-summary lib', function() {
         });
       });
 
-      describe('with multiple target', function() {
+      describe('with multiple targets', function() {
         it('should not emit for person with no reports', function() {
           // given
           const config = {
@@ -172,8 +173,8 @@ describe('contact-summary lib', function() {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
+            { _type:'target', _id:'c-2-rT-3' },
+            { _type:'target', _id:'c-2-rT-4' },
             { _type:'_complete', _id:true },
           ]);
         });
@@ -190,12 +191,12 @@ describe('contact-summary lib', function() {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
+            { _type:'target', _id:'c-4-rT-5' },
+            { _type:'target', _id:'c-4-rT-5' },
+            { _type:'target', _id:'c-4-rT-5' },
+            { _type:'target', _id:'c-4-rT-6' },
+            { _type:'target', _id:'c-4-rT-6' },
+            { _type:'target', _id:'c-4-rT-6' },
             { _type:'_complete', _id:true },
           ]);
         });
@@ -204,6 +205,60 @@ describe('contact-summary lib', function() {
   });
 
   describe('tasks', function() {
+    describe('person-based', function() {
+      it('should emit once for a person with no reports', function() {
+        // given
+        const config = {
+          c: personWithoutReports(),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'task' },
+          { _type:'_complete', _id:true },
+        ]);
+      });
+      it('should emit once for a person with one report', function() {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'task' },
+          { _type:'_complete', _id:true },
+        ]);
+      });
+      it('should emit once for a person with multiple reports', function() {
+        // given
+        const config = {
+          c: personWithReports(aReport(), aReport(), aReport()),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'task' },
+          { _type:'_complete', _id:true },
+        ]);
+      });
+    });
+
     describe('report-based', function() {
 
       it('should not emit if contact has no reports', function() {
@@ -291,7 +346,7 @@ describe('contact-summary lib', function() {
     return parseJs({
       jsFiles: [ `${__dirname}/../../src/nools/lib.js` ],
       header: `
-          let idx1, idx2, r, target;
+          let idx1, idx2, r, t;
           const now     = new Date(${TEST_DATE});
           const c       = ${jsToString(c)};
           const targets = ${jsToString(targets)};
@@ -310,6 +365,21 @@ describe('contact-summary lib', function() {
           `,
       export: [ 'emitted' ],
     });
+  }
+
+  function aPersonBasedTask() {
+    ++idCounter;
+    return {
+      appliesToType: 'person',
+      name: `task-${idCounter}`,
+      title: [ { locale:'en', content:`Task ${idCounter}` } ],
+      actions: [],
+      events: [ {
+        id: `task-${idCounter}`,
+        days:0, start:0, end:1,
+      } ],
+      resolvedIf: function() { return false; },
+    };
   }
 
   function aReportBasedTask() {
