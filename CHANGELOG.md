@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.17.8
+* Bump version number for re-release
+
 ## v1.17.7
 * Add simple tests for contact-summary & nools lib code
 * Fix comment ref NO_LABEL
