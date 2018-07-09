@@ -4,7 +4,7 @@ const parseJs = require('../../src/lib/simple-js-parser');
 
 const TEST_DATE = 1431143098575;
 
-describe('contact-summary lib', function() {
+describe('nools lib', function() {
   let idCounter;
   beforeEach(() => idCounter = 0);
 
