@@ -286,6 +286,30 @@ describe('nools lib', function() {
       });
 
     });
+
+    describe('scheduled-task based', function() {
+      it('???', function() {
+        // given
+        const config = {
+          c: personWithReports(aReportWithScheduledTasks(5)),
+          targets: [],
+          tasks: [ aScheduledTaskBasedTask() ],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'task' },
+          { _type:'task' },
+          { _type:'task' },
+          { _type:'task' },
+          { _type:'task' },
+          { _type:'_complete', _id:true },
+        ]);
+      });
+    });
   });
 
   function loadLibWith({ c, targets, tasks }) {
@@ -328,6 +352,22 @@ describe('nools lib', function() {
     };
   }
 
+  function aScheduledTaskBasedTask() {
+    ++idCounter;
+    return {
+      appliesToType: 'report',
+      name: `task-${idCounter}`,
+      title: [ { locale:'en', content:`Task ${idCounter}` } ],
+      actions: [],
+      events: [ {
+        id: `task-${idCounter}`,
+        days:0, start:0, end:1,
+      } ],
+      resolvedIf: function() { return false; },
+      appliesToScheduledTaskIf: function() { return true; },
+    };
+  }
+
   function aPersonBasedTarget() {
     ++idCounter;
     return {
@@ -347,6 +387,15 @@ describe('nools lib', function() {
   function aReport() {
     ++idCounter;
     return { _id:`r-${idCounter}`, form:'F' };
+  }
+
+  function aReportWithScheduledTasks(scheduledTaskCount) {
+    ++idCounter;
+
+    const scheduled_tasks = [];
+    while(scheduledTaskCount--) scheduled_tasks.push({});
+
+    return { _id:`r-${idCounter}`, form:'F', scheduled_tasks };
   }
 
   function personWithoutReports() {
