@@ -142,7 +142,7 @@ describe('contact-summary lib', function() {
         });
       });
 
-      describe('with multiple target', function() {
+      describe('with multiple targets', function() {
         it('should not emit for person with no reports', function() {
           // given
           const config = {
@@ -159,7 +159,7 @@ describe('contact-summary lib', function() {
             { _type:'_complete', _id:true },
           ]);
         });
-        it('should emit once per report for person with once report', function() {
+        it('should emit once per report for person with one report', function() {
           // given
           const config = {
             c: personWithReports(aReport()),
