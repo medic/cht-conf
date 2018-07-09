@@ -81,6 +81,7 @@ describe('contact-summary lib', function() {
 
         // then
         assert.deepEqual(emitted, [
+          { _type:'target', date:TEST_DATE },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -172,8 +173,8 @@ describe('contact-summary lib', function() {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
+            { _type:'target', _id:'c-2-rT-3' },
+            { _type:'target', _id:'c-2-rT-4' },
             { _type:'_complete', _id:true },
           ]);
         });
@@ -190,12 +191,12 @@ describe('contact-summary lib', function() {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
-            { _type:'target', date:TEST_DATE },
+            { _type:'target', _id:'c-4-rT-5' },
+            { _type:'target', _id:'c-4-rT-5' },
+            { _type:'target', _id:'c-4-rT-5' },
+            { _type:'target', _id:'c-4-rT-6' },
+            { _type:'target', _id:'c-4-rT-6' },
+            { _type:'target', _id:'c-4-rT-6' },
             { _type:'_complete', _id:true },
           ]);
         });
