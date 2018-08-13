@@ -278,6 +278,7 @@ describe('nools lib', function() {
         ]);
       });
     });
+
     describe('place-based', function() {
 
       it('should emit once for a place based task', function() {
@@ -298,6 +299,7 @@ describe('nools lib', function() {
         ]);
       });
     });
+
     describe('report-based', function() {
 
       it('should not emit if contact has no reports', function() {
@@ -386,7 +388,7 @@ describe('nools lib', function() {
         const config = {
           c: personWithReports(aReportWithScheduledTasks(5)),
           targets: [],
-          tasks: [ aScheduledTaskBasedTask('reports') ],
+          tasks: [ aScheduledTaskBasedTask() ],
         };
 
         // when
@@ -461,10 +463,10 @@ describe('nools lib', function() {
     };
   }
 
-  function aScheduledTaskBasedTask(type) {
+  function aScheduledTaskBasedTask() {
     ++idCounter;
     return {
-      appliesTo: type,
+      appliesTo: 'scheduled_tasks',
       name: `task-${idCounter}`,
       title: [ { locale:'en', content:`Task ${idCounter}` } ],
       actions: [],

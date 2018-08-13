@@ -22,7 +22,8 @@ for(idx1=0; idx1<targets.length; ++idx1) {
 if(tasks) {
   for(idx1=0; idx1<tasks.length; ++idx1) {
     var task = tasks[idx1];
-    if(task.appliesTo === 'reports' && c.reports) {
+    if((task.appliesTo === 'reports' ||
+        task.appliesTo=== 'scheduled_tasks') && c.reports) {
       for(idx2=0; idx2<c.reports.length; ++idx2) {
         r = c.reports[idx2];
         emitTasksForSchedule(c, tasks[idx1], r);
