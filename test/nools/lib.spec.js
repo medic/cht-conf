@@ -346,7 +346,7 @@ describe('nools lib', function() {
         const config = {
           c: personWithReports(aReportWithScheduledTasks(5)),
           targets: [],
-          tasks: [ aScheduledTaskBasedTask() ],
+          tasks: [ aScheduledTaskBasedTask('reports') ],
         };
 
         // when
@@ -405,10 +405,10 @@ describe('nools lib', function() {
     };
   }
 
-  function aScheduledTaskBasedTask() {
+  function aScheduledTaskBasedTask(type) {
     ++idCounter;
     return {
-      appliesTo: 'reports',
+      appliesTo: type,
       name: `task-${idCounter}`,
       title: [ { locale:'en', content:`Task ${idCounter}` } ],
       actions: [],
@@ -456,9 +456,7 @@ describe('nools lib', function() {
     ++idCounter;
 
     const scheduled_tasks = [];
-    while(scheduledTaskCount--) scheduled_tasks.push({
-      appliesTo: 'scheduled_tasks'
-    });
+    while(scheduledTaskCount--) scheduled_tasks.push({});
 
     return { _id:`r-${idCounter}`, form:'F', scheduled_tasks };
   }

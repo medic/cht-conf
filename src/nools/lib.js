@@ -21,33 +21,33 @@ for(idx1=0; idx1<targets.length; ++idx1) {
 
 if(c.contact && c.contact.type === 'person') {
   for(idx1=0; idx1<tasks.length; ++idx1) {
-    // var task = tasks[idx1];
-    // if(task.appliesTo == 'reports' && c.reports) {
+    var task = tasks[idx1];
+    if(task.appliesTo === 'reports' && c.reports) {
       // TODO currently we assume all tasks are report-based
       for(idx2=0; idx2<c.reports.length; ++idx2) {
         r = c.reports[idx2];
         emitTasksForSchedule(c, r, tasks[idx1]);
       }
-    // }
+    }
   }
 }
 
 function emitTasksForSchedule(c, r, schedule) {
   var i;
 
-  if(schedule.appliesToForms && schedule.appliesToForms.indexOf(r.form) === -1) {
+  if(schedule.appliesToForms && !schedule.appliesToForms.includes(r.form)) {
     return;
   }
   if(schedule.appliesIf && !schedule.appliesIf(c, r)) {
     return;
   }
 
-  if(schedule.appliesToScheduledTaskIf) {
+  if(schedule.appliesIf) {
     if(!r.scheduled_tasks) {
       return;
     }
     for (i = 0; i < r.scheduled_tasks.length; i++) {
-      if(schedule.appliesToScheduledTaskIf(r, i)) {
+      if(schedule.appliesIf(r, i)) {
         emitForEvents(i);
       }
     }
