@@ -1,26 +1,34 @@
-if (c.contact && c.contact.type === 'person') {
-  for(idx1=0; idx1<targets.length; ++idx1) {
-    target = targets[idx1];
-    switch(target.appliesToType) {
-      case 'person':
-        emitPersonBasedTargetFor(c, target);
-        break;
-      case 'report':
-        for(idx2=0; idx2<c.reports.length; ++idx2) {
-          r = c.reports[idx2];
-          emitReportBasedTargetFor(c, r, target);
-        }
-        break;
-      default:
-        throw new Error('unrecognised target type: ' + target.type);
+var place = ['health_center', 'district_hospital', 'clinic'];
+
+for(idx1=0; idx1<targets.length; ++idx1) {
+  target = targets[idx1];
+  if(target.appliesTo === 'contacts') {
+    if(c.contact && c.contact.type === 'person' &&
+      target.appliesToType.includes('person')) {
+      emitPersonBasedTargetFor(c, target);
     }
-  }
-  for(idx1=0; idx1<tasks.length; ++idx1) {
-    // TODO currently we assume all tasks are report-based
+    if(c.contact && place.includes(c.contact.type) &&
+      target.appliesToType.includes(c.contact.type)) {
+      emitPlaceBasedTargetFor(c, target);
+    }
+  } else if(target.appliesTo === 'reports') {
     for(idx2=0; idx2<c.reports.length; ++idx2) {
       r = c.reports[idx2];
-      emitTasksForSchedule(c, r, tasks[idx1]);
+      emitReportBasedTargetFor(c, r, target);
     }
+  }
+}
+
+if(c.contact && c.contact.type === 'person') {
+  for(idx1=0; idx1<tasks.length; ++idx1) {
+    // var task = tasks[idx1];
+    // if(task.appliesTo == 'reports' && c.reports) {
+      // TODO currently we assume all tasks are report-based
+      for(idx2=0; idx2<c.reports.length; ++idx2) {
+        r = c.reports[idx2];
+        emitTasksForSchedule(c, r, tasks[idx1]);
+      }
+    // }
   }
 }
 
@@ -110,6 +118,15 @@ function emitTasksForSchedule(c, r, schedule) {
 }
 
 function emitPersonBasedTargetFor(c, targetConfig) {
+  if(targetConfig.appliesIf && !targetConfig.appliesIf(c)) return;
+
+  var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c);
+
+  var instance = createTargetInstance(targetConfig.id, c.contact, pass);
+  instance.date = targetConfig.date ? targetConfig.date(c) : now.getTime(); emitTargetInstance(instance);
+}
+
+function emitPlaceBasedTargetFor(c, targetConfig) {
   if(targetConfig.appliesIf && !targetConfig.appliesIf(c)) return;
 
   var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c);

@@ -86,6 +86,59 @@ describe('nools lib', function() {
         ]);
       });
     });
+    describe('place-based', function() {
+      it('should emit once for a place with no reports', function() {
+        // given
+        const config = {
+          c: placeWithoutReports(),
+          targets: [ aPlaceBasedTarget() ],
+          tasks: [],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'target', date:TEST_DATE },
+          { _type:'_complete', _id:true },
+        ]);
+      });
+      it('should emit once for a place with one report', function() {
+        // given
+        const config = {
+          c: placeWithReports(aReport()),
+          targets: [ aPlaceBasedTarget() ],
+          tasks: [],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'target', date:TEST_DATE },
+          { _type:'_complete', _id:true },
+        ]);
+      });
+      it('should emit once for a place with multiple reports', function() {
+        // given
+        const config = {
+          c: placeWithReports(aReport(), aReport(), aReport()),
+          targets: [ aPlaceBasedTarget() ],
+          tasks: [],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'target', date:TEST_DATE },
+          { _type:'_complete', _id:true },
+        ]);
+      });
+    });
 
     describe('report-based', function() {
       describe('with a single target', function() {
@@ -340,7 +393,7 @@ describe('nools lib', function() {
   function aReportBasedTask() {
     ++idCounter;
     return {
-      appliesToType: 'report',
+      appliesTo: 'reports',
       name: `task-${idCounter}`,
       title: [ { locale:'en', content:`Task ${idCounter}` } ],
       actions: [],
@@ -355,7 +408,7 @@ describe('nools lib', function() {
   function aScheduledTaskBasedTask() {
     ++idCounter;
     return {
-      appliesToType: 'report',
+      appliesTo: 'reports',
       name: `task-${idCounter}`,
       title: [ { locale:'en', content:`Task ${idCounter}` } ],
       actions: [],
@@ -364,7 +417,7 @@ describe('nools lib', function() {
         days:0, start:0, end:1,
       } ],
       resolvedIf: function() { return false; },
-      appliesToScheduledTaskIf: function() { return true; },
+      appliesIf: function() { return true; },
     };
   }
 
@@ -372,7 +425,17 @@ describe('nools lib', function() {
     ++idCounter;
     return {
       id: `pT-${idCounter}`,
-      appliesToType: 'person',
+      appliesTo: 'contacts',
+      appliesToType: ['person'],
+    };
+  }
+
+  function aPlaceBasedTarget() {
+    ++idCounter;
+    return {
+      id: `plT-${idCounter}`,
+      appliesTo: 'contacts',
+      appliesToType: ['clinic'],
     };
   }
 
@@ -380,7 +443,7 @@ describe('nools lib', function() {
     ++idCounter;
     return {
       id: `rT-${idCounter}`,
-      appliesToType: 'report',
+      appliesTo: 'reports',
     };
   }
 
@@ -393,7 +456,9 @@ describe('nools lib', function() {
     ++idCounter;
 
     const scheduled_tasks = [];
-    while(scheduledTaskCount--) scheduled_tasks.push({});
+    while(scheduledTaskCount--) scheduled_tasks.push({
+      appliesTo: 'scheduled_tasks'
+    });
 
     return { _id:`r-${idCounter}`, form:'F', scheduled_tasks };
   }
@@ -405,5 +470,14 @@ describe('nools lib', function() {
   function personWithReports(...reports) {
     ++idCounter;
     return { contact:{ _id:`c-${idCounter}`, type:'person' }, reports };
+  }
+
+  function placeWithoutReports() {
+    return placeWithReports();
+  }
+
+  function placeWithReports(...reports) {
+    ++idCounter;
+    return { contact:{ _id:`c-${idCounter}`, type:'clinic' }, reports };
   }
 });
