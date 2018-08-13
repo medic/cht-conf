@@ -4,11 +4,11 @@ for(idx1=0; idx1<targets.length; ++idx1) {
   target = targets[idx1];
   if(target.appliesTo === 'contacts') {
     if(c.contact && c.contact.type === 'person' &&
-      target.appliesToType.includes('person')) {
+      target.appliesToType.indexOf('person') !== -1) {
       emitContactBasedTargetFor(c, target);
     }
-    if(c.contact && place.includes(c.contact.type) &&
-      target.appliesToType.includes(c.contact.type)) {
+    if(c.contact && place.indexOf(c.contact.type) !== -1 &&
+      target.appliesToType.indexOf(c.contact.type) !== -1) {
       emitContactBasedTargetFor(c, target);
     }
   } else if(target.appliesTo === 'reports') {
@@ -30,11 +30,11 @@ if(tasks) {
       }
     } else if(c.contact && c.contact.type === 'person' &&
               task.appliesTo === 'contacts' &&
-              task.appliesToType.includes('person')) {
+              task.appliesToType.indexOf('person') !== -1) {
       emitTasksForSchedule(c, tasks[idx1]);
-    } else if(c.contact && place.includes(c.contact.type) &&
+    } else if(c.contact && place.indexOf(c.contact.type) !== -1 &&
               task.appliesTo === 'contacts' &&
-              task.appliesToType.includes(c.contact.type)) {
+              task.appliesToType.indexOf(c.contact.type) !== -1) {
       emitTasksForSchedule(c, tasks[idx1]);
     }
   }
@@ -43,7 +43,7 @@ if(tasks) {
 function emitTasksForSchedule(c, schedule, r) {
   var i;
 
-  if(schedule.appliesToForms && !schedule.appliesToForms.includes(r.form)) {
+  if(schedule.appliesToForms && schedule.appliesToForms.indexOf(r.form) === -1) {
     return;
   }
   if(schedule.appliesIf && !schedule.appliesIf(c, r)) {
