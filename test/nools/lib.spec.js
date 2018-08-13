@@ -258,6 +258,46 @@ describe('nools lib', function() {
   });
 
   describe('tasks', function() {
+    describe('person-based', function() {
+
+      it('should emit once for a person based task', function() {
+        // given
+        const config = {
+          c: personWithoutReports(),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'task' },
+          { _type:'_complete', _id:true },
+        ]);
+      });
+    });
+    describe('place-based', function() {
+
+      it('should emit once for a place based task', function() {
+        // given
+        const config = {
+          c: placeWithoutReports(),
+          targets: [],
+          tasks: [ aPlaceBasedTask() ],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'task' },
+          { _type:'_complete', _id:true },
+        ]);
+      });
+    });
     describe('report-based', function() {
 
       it('should not emit if contact has no reports', function() {
@@ -391,9 +431,25 @@ describe('nools lib', function() {
   }
 
   function aReportBasedTask() {
+    return aTask('reports');
+  }
+
+  function aPersonBasedTask() {
+    var task = aTask('contacts');
+    task.appliesToType = ['person'];
+    return task;
+  }
+
+  function aPlaceBasedTask() {
+    var task = aTask('contacts');
+    task.appliesToType = ['clinic'];
+    return task;
+  }
+
+  function aTask(type) {
     ++idCounter;
     return {
-      appliesTo: 'reports',
+      appliesTo: type,
       name: `task-${idCounter}`,
       title: [ { locale:'en', content:`Task ${idCounter}` } ],
       actions: [],
