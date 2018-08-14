@@ -50,7 +50,9 @@ switch(args[0]) {
       if(!process.env.COUCH_URL.match(/localhost/)) {
         throw new Error(`You asked to configure a local instance, but the COUCH_URL env var is set to '${process.env.COUCH_URL}'.  This may be a remote server.`);
       }
-      instanceUrl = process.env.COUCH_URL.replace(/\/medic$/, '');
+      instanceUrl = process.env.COUCH_URL
+        .replace(/\/medic$/, '') // strip off the database
+        .replace(/:5984/, ':5988'); // use api port instead of couchdb
       info('Using instance URL from COUCH_URL environment variable.');
     } else {
       instanceUrl = 'http://admin:pass@localhost:5988';
