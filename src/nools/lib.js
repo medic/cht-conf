@@ -1,14 +1,7 @@
-var place = ['health_center', 'district_hospital', 'clinic'];
-
 for(idx1=0; idx1<targets.length; ++idx1) {
   target = targets[idx1];
   if(target.appliesTo === 'contacts') {
-    if(c.contact && c.contact.type === 'person' &&
-      target.appliesToType.indexOf('person') !== -1) {
-      emitContactBasedTargetFor(c, target);
-    }
-    if(c.contact && place.indexOf(c.contact.type) !== -1 &&
-      target.appliesToType.indexOf(c.contact.type) !== -1) {
+    if(c.contact && target.appliesToType.indexOf(c.contact.type) !== -1) {
       emitContactBasedTargetFor(c, target);
     }
   } else if(target.appliesTo === 'reports') {
@@ -28,11 +21,7 @@ if(tasks) {
         r = c.reports[idx2];
         emitTasksForSchedule(c, tasks[idx1], r);
       }
-    } else if(c.contact && c.contact.type === 'person' &&
-              task.appliesTo === 'contacts' &&
-              task.appliesToType.indexOf('person') !== -1) {
-      emitTasksForSchedule(c, tasks[idx1]);
-    } else if(c.contact && place.indexOf(c.contact.type) !== -1 &&
+    } else if(c.contact &&
               task.appliesTo === 'contacts' &&
               task.appliesToType.indexOf(c.contact.type) !== -1) {
       emitTasksForSchedule(c, tasks[idx1]);
@@ -126,12 +115,6 @@ function emitTasksForSchedule(c, schedule, r) {
     };
   }
 }
-
-// function emitTasksForPerson(c, r, schedule) {
-// }
-//
-// function emitTasksForPlace(c, r, schedule) {
-// }
 
 function emitContactBasedTargetFor(c, targetConfig) {
   if(targetConfig.appliesIf && !targetConfig.appliesIf(c)) return;
