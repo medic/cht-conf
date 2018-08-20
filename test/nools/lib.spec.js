@@ -86,6 +86,7 @@ describe('nools lib', function() {
         ]);
       });
     });
+
     describe('place-based', function() {
       it('should emit once for a place with no reports', function() {
         // given
@@ -255,6 +256,23 @@ describe('nools lib', function() {
         });
       });
     });
+    describe('invalid target type', function() {
+      it('should throw error', function() {
+        // given
+        const invalidTarget = aReportBasedTarget();
+        invalidTarget.appliesTo = 'unknown';
+
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [ invalidTarget ],
+          tasks: [],
+        };
+
+        // throws
+        assert.throws(function() { loadLibWith(config); }, Error,
+          "Error: unrecognised target type: unknown");
+      });
+    });
   });
 
   describe('tasks', function() {
@@ -405,6 +423,24 @@ describe('nools lib', function() {
         ]);
       });
     });
+
+    describe('invalid task type', function() {
+      it('should throw error', function() {
+        // given
+        const invalidTask = aScheduledTaskBasedTask();
+        invalidTask.appliesTo = 'unknown';
+        const config = {
+          c: personWithReports(aReportWithScheduledTasks(5)),
+          targets: [],
+          tasks: [ invalidTask ],
+        };
+
+        // should throw error
+        assert.throws(function() { loadLibWith(config); }, Error,
+          "Error: unrecognised task type: unknown");
+      });
+    });
+
   });
 
   function loadLibWith({ c, targets, tasks }) {

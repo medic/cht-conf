@@ -1,30 +1,39 @@
 for(idx1=0; idx1<targets.length; ++idx1) {
   target = targets[idx1];
-  if(target.appliesTo === 'contacts') {
-    if(c.contact && target.appliesToType.indexOf(c.contact.type) !== -1) {
-      emitContactBasedTargetFor(c, target);
-    }
-  } else if(target.appliesTo === 'reports') {
-    for(idx2=0; idx2<c.reports.length; ++idx2) {
-      r = c.reports[idx2];
-      emitReportBasedTargetFor(c, r, target);
-    }
+  switch(target.appliesTo) {
+    case 'contacts':
+      if(c.contact && target.appliesToType.indexOf(c.contact.type) !== -1) {
+        emitContactBasedTargetFor(c, target);
+      }
+      break;
+    case 'reports':
+      for(idx2=0; idx2<c.reports.length; ++idx2) {
+        r = c.reports[idx2];
+        emitReportBasedTargetFor(c, r, target);
+      }
+      break;
+    default:
+      throw new Error('unrecognised target type: ' + target.appliesTo);
   }
 }
 
 if(tasks) {
   for(idx1=0; idx1<tasks.length; ++idx1) {
     var task = tasks[idx1];
-    if((task.appliesTo === 'reports' ||
-        task.appliesTo=== 'scheduled_tasks') && c.reports) {
-      for(idx2=0; idx2<c.reports.length; ++idx2) {
-        r = c.reports[idx2];
-        emitTasksForSchedule(c, tasks[idx1], r);
-      }
-    } else if(c.contact &&
-              task.appliesTo === 'contacts' &&
-              task.appliesToType.indexOf(c.contact.type) !== -1) {
-      emitTasksForSchedule(c, tasks[idx1]);
+    switch(task.appliesTo) {
+      case 'reports': case 'scheduled_tasks':
+        for(idx2=0; idx2<c.reports.length; ++idx2) {
+          r = c.reports[idx2];
+          emitTasksForSchedule(c, tasks[idx1], r);
+        }
+        break;
+      case 'contacts':
+        if(c.contact && task.appliesToType.indexOf(c.contact.type) !== -1) {
+          emitTasksForSchedule(c, tasks[idx1]);
+        }
+        break;
+      default:
+        throw new Error('unrecognised task type: ' + task.appliesTo);
     }
   }
 }
