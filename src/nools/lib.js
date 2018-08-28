@@ -24,12 +24,12 @@ if(tasks) {
       case 'reports': case 'scheduled_tasks':
         for(idx2=0; idx2<c.reports.length; ++idx2) {
           r = c.reports[idx2];
-          emitTasksForSchedule(c, tasks[idx1], r);
+          emitTasksForSchedule(c, task, r);
         }
         break;
       case 'contacts':
         if(c.contact && task.appliesToType.indexOf(c.contact.type) !== -1) {
-          emitTasksForSchedule(c, tasks[idx1]);
+          emitTasksForSchedule(c, task);
         }
         break;
       default:
@@ -41,10 +41,12 @@ if(tasks) {
 function emitTasksForSchedule(c, schedule, r) {
   var i;
 
-  if(schedule.appliesToForms && schedule.appliesToForms.indexOf(r.form) === -1) {
+  if(r && schedule.appliesToType && schedule.appliesToType.indexOf(r.form) === -1) {
     return;
   }
-  if(schedule.appliesIf && !schedule.appliesIf(c, r)) {
+
+  if(schedule.appliesTo !== 'scheduled_tasks' &&
+      schedule.appliesIf && !schedule.appliesIf(c, r)) {
     return;
   }
 
@@ -53,7 +55,7 @@ function emitTasksForSchedule(c, schedule, r) {
       return;
     }
     for (i = 0; i < r.scheduled_tasks.length; i++) {
-      if(schedule.appliesIf(r, i)) {
+      if(schedule.appliesIf(c, r, i)) {
         emitForEvents(i);
       }
     }
