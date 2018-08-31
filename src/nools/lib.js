@@ -50,13 +50,15 @@ function emitTasksForSchedule(c, schedule, r) {
     return;
   }
 
-  if(r && schedule.appliesIf) {
-    if(!r.scheduled_tasks) {
-      return;
-    }
-    for (i = 0; i < r.scheduled_tasks.length; i++) {
-      if(schedule.appliesIf(c, r, i)) {
-        emitForEvents(i);
+  if(schedule.appliesTo === 'scheduled_tasks'){
+    if(r && schedule.appliesIf) {
+      if(!r.scheduled_tasks) {
+        return;
+      }
+      for (i = 0; i < r.scheduled_tasks.length; i++) {
+        if(schedule.appliesIf(c, r, i)) {
+          emitForEvents(i);
+        }
       }
     }
   } else {
