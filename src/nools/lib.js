@@ -1,64 +1,46 @@
-for(idx1=0; idx1<targets.length; ++idx1) {
-  target = targets[idx1];
-  switch(target.appliesTo) {
-    case 'contacts':
-      if(c.contact && target.appliesToType.indexOf(c.contact.type) !== -1) {
-        emitContactBasedTargetFor(c, target);
-      }
-      break;
-    case 'reports':
-      for(idx2=0; idx2<c.reports.length; ++idx2) {
-        r = c.reports[idx2];
-        emitReportBasedTargetFor(c, r, target);
-      }
-      break;
-    default:
-      throw new Error('unrecognised target type: ' + target.appliesTo);
-  }
-}
-
-if(tasks) {
-  for(idx1=0; idx1<tasks.length; ++idx1) {
-    var task = tasks[idx1];
-    switch(task.appliesTo) {
-      case 'reports': case 'scheduled_tasks':
+if (c.contact && c.contact.type === 'person') {
+  for(idx1=0; idx1<targets.length; ++idx1) {
+    target = targets[idx1];
+    switch(target.appliesToType) {
+      case 'person':
+        emitPersonBasedTargetFor(c, target);
+        break;
+      case 'report':
         for(idx2=0; idx2<c.reports.length; ++idx2) {
           r = c.reports[idx2];
-          emitTasksForSchedule(c, task, r);
-        }
-        break;
-      case 'contacts':
-        if(c.contact && task.appliesToType.indexOf(c.contact.type) !== -1) {
-          emitTasksForSchedule(c, task);
+          emitReportBasedTargetFor(c, r, target);
         }
         break;
       default:
-        throw new Error('unrecognised task type: ' + task.appliesTo);
+        throw new Error('unrecognised target type: ' + target.type);
+    }
+  }
+  for(idx1=0; idx1<tasks.length; ++idx1) {
+    // TODO currently we assume all tasks are report-based
+    for(idx2=0; idx2<c.reports.length; ++idx2) {
+      r = c.reports[idx2];
+      emitTasksForSchedule(c, r, tasks[idx1]);
     }
   }
 }
 
-function emitTasksForSchedule(c, schedule, r) {
+function emitTasksForSchedule(c, r, schedule) {
   var i;
 
-  if(r && schedule.appliesToType && schedule.appliesToType.indexOf(r.form) === -1) {
+  if(schedule.appliesToForms && schedule.appliesToForms.indexOf(r.form) === -1) {
+    return;
+  }
+  if(schedule.appliesIf && !schedule.appliesIf(c, r)) {
     return;
   }
 
-  if(schedule.appliesTo !== 'scheduled_tasks' &&
-      schedule.appliesIf && !schedule.appliesIf(c, r)) {
-    return;
-  }
-
-  if(schedule.appliesTo === 'scheduled_tasks'){
-    if(r && schedule.appliesIf) {
-      if(!r.scheduled_tasks) {
-        return;
-      }
-      for (i = 0; i < r.scheduled_tasks.length; i++) {
-        if(schedule.appliesIf(c, r, i)) {
-          emitForEvents(i);
-        }
+  if(schedule.appliesToScheduledTaskIf) {
+    if(!r.scheduled_tasks) {
+      return;
+    }
+    for (i = 0; i < r.scheduled_tasks.length; i++) {
+      if(schedule.appliesToScheduledTaskIf(r, i)) {
+        emitForEvents(i);
       }
     }
   } else {
@@ -66,18 +48,16 @@ function emitTasksForSchedule(c, schedule, r) {
   }
 
   function emitForEvents(scheduledTaskIdx) {
-    var i, dueDate = null, event, priority, task;
+    var i, dueDate, event, priority, task;
     for (i = 0; i < schedule.events.length; i++) {
       event = schedule.events[i];
 
-      if(r) {
-        if(event.dueDate) {
-          dueDate = event.dueDate(r, event, scheduledTaskIdx);
-        } else if(scheduledTaskIdx !== undefined) {
-          dueDate = new Date(Utils.addDate(new Date(r.scheduled_tasks[scheduledTaskIdx].due), event.days));
-        } else {
-          dueDate = new Date(Utils.addDate(new Date(r.reported_date), event.days));
-        }
+      if(event.dueDate) {
+        dueDate = event.dueDate(r, event, scheduledTaskIdx);
+      } else if(scheduledTaskIdx !== undefined) {
+        dueDate = new Date(Utils.addDate(new Date(r.scheduled_tasks[scheduledTaskIdx].due), event.days));
+      } else {
+        dueDate = new Date(Utils.addDate(new Date(r.reported_date), event.days));
       }
 
       if (!Utils.isTimely(dueDate, event)) {
@@ -87,15 +67,15 @@ function emitTasksForSchedule(c, schedule, r) {
       task = {
         // One task instance for each event per form that triggers a task, not per contact
         // Otherwise they collide when contact has multiple reports of the same form
-        _id: r ? (r._id + '-' + event.id) : (c.contact._id + '-' + schedule.id),
-        deleted: !!((c.contact && c.contact.deleted) || r ? r.deleted : false),
+        _id: r._id + '-' + event.id,
+        deleted: !!((c.contact && c.contact.deleted) || r.deleted),
         doc: c,
         contact: c.contact,
         icon: schedule.icon,
         date: dueDate,
         title: schedule.title,
-        resolved: r ? schedule.resolvedIf(c, r, event, dueDate, scheduledTaskIdx) : false,
-        actions: r ? schedule.actions.map(initActions) : [],
+        resolved: schedule.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
+        actions: schedule.actions.map(initActions),
       };
 
       if(scheduledTaskIdx !== undefined) {
@@ -129,7 +109,7 @@ function emitTasksForSchedule(c, schedule, r) {
   }
 }
 
-function emitContactBasedTargetFor(c, targetConfig) {
+function emitPersonBasedTargetFor(c, targetConfig) {
   if(targetConfig.appliesIf && !targetConfig.appliesIf(c)) return;
 
   var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c);

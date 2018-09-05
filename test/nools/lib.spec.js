@@ -87,60 +87,6 @@ describe('nools lib', function() {
       });
     });
 
-    describe('place-based', function() {
-      it('should emit once for a place with no reports', function() {
-        // given
-        const config = {
-          c: placeWithoutReports(),
-          targets: [ aPlaceBasedTarget() ],
-          tasks: [],
-        };
-
-        // when
-        const emitted = loadLibWith(config).emitted;
-
-        // then
-        assert.deepEqual(emitted, [
-          { _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id:true },
-        ]);
-      });
-      it('should emit once for a place with one report', function() {
-        // given
-        const config = {
-          c: placeWithReports(aReport()),
-          targets: [ aPlaceBasedTarget() ],
-          tasks: [],
-        };
-
-        // when
-        const emitted = loadLibWith(config).emitted;
-
-        // then
-        assert.deepEqual(emitted, [
-          { _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id:true },
-        ]);
-      });
-      it('should emit once for a place with multiple reports', function() {
-        // given
-        const config = {
-          c: placeWithReports(aReport(), aReport(), aReport()),
-          targets: [ aPlaceBasedTarget() ],
-          tasks: [],
-        };
-
-        // when
-        const emitted = loadLibWith(config).emitted;
-
-        // then
-        assert.deepEqual(emitted, [
-          { _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id:true },
-        ]);
-      });
-    });
-
     describe('report-based', function() {
       describe('with a single target', function() {
         it('should not emit for person with no reports', function() {
@@ -256,68 +202,9 @@ describe('nools lib', function() {
         });
       });
     });
-    describe('invalid target type', function() {
-      it('should throw error', function() {
-        // given
-        const invalidTarget = aReportBasedTarget();
-        invalidTarget.appliesTo = 'unknown';
-
-        const config = {
-          c: personWithReports(aReport()),
-          targets: [ invalidTarget ],
-          tasks: [],
-        };
-
-        // throws
-        assert.throws(function() { loadLibWith(config); }, Error,
-          "Error: unrecognised target type: unknown");
-      });
-    });
   });
 
   describe('tasks', function() {
-    describe('person-based', function() {
-
-      it('should emit once for a person based task', function() {
-        // given
-        const config = {
-          c: personWithoutReports(),
-          targets: [],
-          tasks: [ aPersonBasedTask() ],
-        };
-
-        // when
-        const emitted = loadLibWith(config).emitted;
-
-        // then
-        assert.deepEqual(emitted, [
-          { _type:'task' },
-          { _type:'_complete', _id:true },
-        ]);
-      });
-    });
-
-    describe('place-based', function() {
-
-      it('should emit once for a place based task', function() {
-        // given
-        const config = {
-          c: placeWithoutReports(),
-          targets: [],
-          tasks: [ aPlaceBasedTask() ],
-        };
-
-        // when
-        const emitted = loadLibWith(config).emitted;
-
-        // then
-        assert.deepEqual(emitted, [
-          { _type:'task' },
-          { _type:'_complete', _id:true },
-        ]);
-      });
-    });
-
     describe('report-based', function() {
 
       it('should not emit if contact has no reports', function() {
@@ -423,24 +310,6 @@ describe('nools lib', function() {
         ]);
       });
     });
-
-    describe('invalid task type', function() {
-      it('should throw error', function() {
-        // given
-        const invalidTask = aScheduledTaskBasedTask();
-        invalidTask.appliesTo = 'unknown';
-        const config = {
-          c: personWithReports(aReportWithScheduledTasks(5)),
-          targets: [],
-          tasks: [ invalidTask ],
-        };
-
-        // should throw error
-        assert.throws(function() { loadLibWith(config); }, Error,
-          "Error: unrecognised task type: unknown");
-      });
-    });
-
   });
 
   function loadLibWith({ c, targets, tasks }) {
@@ -469,25 +338,9 @@ describe('nools lib', function() {
   }
 
   function aReportBasedTask() {
-    return aTask('reports');
-  }
-
-  function aPersonBasedTask() {
-    var task = aTask('contacts');
-    task.appliesToType = ['person'];
-    return task;
-  }
-
-  function aPlaceBasedTask() {
-    var task = aTask('contacts');
-    task.appliesToType = ['clinic'];
-    return task;
-  }
-
-  function aTask(type) {
     ++idCounter;
     return {
-      appliesTo: type,
+      appliesToType: 'report',
       name: `task-${idCounter}`,
       title: [ { locale:'en', content:`Task ${idCounter}` } ],
       actions: [],
@@ -502,7 +355,7 @@ describe('nools lib', function() {
   function aScheduledTaskBasedTask() {
     ++idCounter;
     return {
-      appliesTo: 'scheduled_tasks',
+      appliesToType: 'report',
       name: `task-${idCounter}`,
       title: [ { locale:'en', content:`Task ${idCounter}` } ],
       actions: [],
@@ -511,7 +364,7 @@ describe('nools lib', function() {
         days:0, start:0, end:1,
       } ],
       resolvedIf: function() { return false; },
-      appliesIf: function() { return true; },
+      appliesToScheduledTaskIf: function() { return true; },
     };
   }
 
@@ -519,17 +372,7 @@ describe('nools lib', function() {
     ++idCounter;
     return {
       id: `pT-${idCounter}`,
-      appliesTo: 'contacts',
-      appliesToType: ['person'],
-    };
-  }
-
-  function aPlaceBasedTarget() {
-    ++idCounter;
-    return {
-      id: `plT-${idCounter}`,
-      appliesTo: 'contacts',
-      appliesToType: ['clinic'],
+      appliesToType: 'person',
     };
   }
 
@@ -537,7 +380,7 @@ describe('nools lib', function() {
     ++idCounter;
     return {
       id: `rT-${idCounter}`,
-      appliesTo: 'reports',
+      appliesToType: 'report',
     };
   }
 
@@ -562,14 +405,5 @@ describe('nools lib', function() {
   function personWithReports(...reports) {
     ++idCounter;
     return { contact:{ _id:`c-${idCounter}`, type:'person' }, reports };
-  }
-
-  function placeWithoutReports() {
-    return placeWithReports();
-  }
-
-  function placeWithReports(...reports) {
-    ++idCounter;
-    return { contact:{ _id:`c-${idCounter}`, type:'clinic' }, reports };
   }
 });

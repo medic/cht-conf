@@ -27,7 +27,6 @@ function getUnfilteredJs(projectDir) {
 
     // nools paroperties
     'appliesIf',
-    'appliesTo',
     'appliesToType',
     'date',
     'emitCustom',
@@ -51,11 +50,11 @@ function getUnfilteredJs(projectDir) {
 
   // Validate required fields which are not used by all types of target:
   unfiltered.forEach(t => {
-    switch(t.appliesTo) {
-      case 'reports':
+    switch(t.appliesToType) {
+      case 'report':
         checkForRequiredProperty(t, 'date');
         break;
-      case 'contacts':
+      case 'person':
         break;
       default:
         throw new Error(`No handling implemented in medic-conf for target: ${jsToString(t)}`);
@@ -68,14 +67,14 @@ function getUnfilteredJs(projectDir) {
 function checkForRequiredProperty(target, property) {
   if(target.hasOwnProperty(property)) return;
 
-  throw new Error(`${target.appliesTo}-based target is missing required property: 'date': ${jsToString(target)}`);
+  throw new Error(`${target.appliesToType}-based target is missing required property: 'date': ${jsToString(target)}`);
 }
 
 
 module.exports = {
   js: projectDir => filterProperties(getUnfilteredJs(projectDir), {
-    required: [ 'id', 'appliesTo' ],
-    optional: [ 'date', 'emitCustom', 'idType', 'passesIf', 'appliesToType', 'appliesIf' ],
+    required: [ 'id', 'appliesToType', 'appliesIf' ],
+    optional: [ 'date', 'emitCustom', 'idType', 'passesIf' ],
   }),
 
   json: projectDir => {
