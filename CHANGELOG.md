@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.17.9
+* Replaces the CouchDB port with default API port
+* Replaces the CouchDB port with default API port
+* Add tests for scheduled_tasks-based nools task generation
+* Fix test name for nools lib
+
 ## v1.17.8
 * Bump version number for re-release
 
