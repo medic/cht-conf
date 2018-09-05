@@ -1,7 +1,7 @@
 var targets = [
   {
     id: 'active-pregnancies',
-    appliesToType: 'report',
+    appliesTo: 'reports',
     type: 'count',
     icon: 'pregnancy-1',
     goal: -1,
@@ -13,7 +13,8 @@ var targets = [
   },
   {
     id: 'imm-children-registered-this-month',
-    appliesToType: 'person',
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
     type: 'count',
     icon: 'child',
     goal: -1,
