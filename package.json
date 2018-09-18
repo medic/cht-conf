@@ -21,7 +21,7 @@
     "url": "git+ssh://git@github.com/medic/medic-conf.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "AGPL-3.0-only",
   "bugs": {
     "url": "https://github.com/medic/medic-conf/issues"
   },
