@@ -77,6 +77,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
       // The following copies behaviour from old bash scripts, and will create a
       // second <meta> element if one already existed.  We may want to actually
       // merge the two instead.
+      .replace(/<inputs tag="hidden">/, META_XML_SECTION)
       .replace(/<inputs>/, META_XML_SECTION)
 
       // XLSForm does not allow converting a field without a label, so we use
@@ -123,7 +124,7 @@ function executableAvailable() {
   }
 }
 
-const META_XML_SECTION = `<inputs>
+const META_XML_SECTION = `<inputs tag="hidden">
             <meta>
               <location>
                 <lat/>
