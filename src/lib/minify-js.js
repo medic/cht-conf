@@ -14,7 +14,7 @@ module.exports = js => {
     console.log(withLineNumbers(js));
 
     if(result.error) {
-      throw new Error(`Error while minifying javascript: ${result.error}`);
+      throw new Error(`Error while minifying javascript: ${result.error} Line number: ${result.error.line}:${result.error.col}`);
     }
 
     if(result.warnings) {
