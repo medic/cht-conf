@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.17.12
+* Output error line number and column from minifyjs
+
 ## v1.17.11
 * Fix --version flag
 
