@@ -9,11 +9,11 @@ const XLS2XFORM = 'xls2xform-medic';
 const INSTALLATION_INSTRUCTIONS = `\nE To install the latest pyxform, try one of the following:
 E
 E Ubuntu
-E	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
+E	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 E OSX
-E	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
+E	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 E Windows (as Administrator)
-E	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic --upgrade`;
+E	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic --upgrade`;
 const UPDATE_INSTRUCTIONS = `\nE To remove the old version of pyxform:
 E
 E	pip uninstall pyxform-medic

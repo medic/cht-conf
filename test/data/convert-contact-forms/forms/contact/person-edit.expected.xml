@@ -16,7 +16,7 @@
             <phone/>
             <alternate_phone/>
           </person>
-          <meta>
+          <meta tag="hidden">
             <instanceID/>
           </meta>
         </data>

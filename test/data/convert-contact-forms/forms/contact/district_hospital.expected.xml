@@ -29,7 +29,7 @@
             <name/>
           </contact>
           <contact_notes/>
-          <meta>
+          <meta tag="hidden">
             <instanceID/>
           </meta>
         </data>

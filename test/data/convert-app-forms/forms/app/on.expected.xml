@@ -41,7 +41,7 @@
             <send_note/>
             <chw_note/>
           </group_note>
-          <meta>
+          <meta tag="hidden">
             <instanceID/>
           </meta>
         </on>

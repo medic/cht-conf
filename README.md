@@ -14,19 +14,19 @@ Medic Project Configurer
 ## Ubuntu
 
 	npm install -g medic-conf
-	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
+	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
 ## OSX
 
 	npm install -g medic-conf
-	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic
+	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
 ## Windows
 
 As Administrator:
 
 	npm install -g medic-conf
-	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.5#egg=pyxform-medic --upgrade
+	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic --upgrade
 
 ## Bash completion
 

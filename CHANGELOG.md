@@ -1,7 +1,14 @@
 # Changelog
 
+## v1.17.10
+* Bump pyxform-medic version to latest
+* Change switch statement formatting
+* Updates package to AGPL license
+* Creates AGPL license file
+
 ## v1.17.9
-* Add support for contacts and reports for all nools workflows
+* Releasing 1.17.9
+* Add support for contacts and reports for all nools workflows (#81)
 * Replaces the CouchDB port with default API port
 * Replaces the CouchDB port with default API port
 * Add tests for scheduled_tasks-based nools task generation
@@ -606,3 +613,4 @@
 ## v1.0.0
 * Add `-beta` suffix to package name before uploading to NPM
 * Allow setting of internalId field, but include deprecation warning
+

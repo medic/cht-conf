@@ -30,7 +30,7 @@
             <sex/>
             <geolocation/>
           </person>
-          <meta>
+          <meta tag="hidden">
             <instanceID/>
           </meta>
         </data>
