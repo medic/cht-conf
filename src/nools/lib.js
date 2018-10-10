@@ -21,7 +21,8 @@ if(tasks) {
   for(idx1=0; idx1<tasks.length; ++idx1) {
     var task = tasks[idx1];
     switch(task.appliesTo) {
-      case 'reports': case 'scheduled_tasks':
+      case 'reports':
+      case 'scheduled_tasks':
         for(idx2=0; idx2<c.reports.length; ++idx2) {
           r = c.reports[idx2];
           emitTasksForSchedule(c, task, r);
