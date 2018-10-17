@@ -79,6 +79,8 @@ function emitTasksForSchedule(c, schedule, r) {
         } else {
           dueDate = new Date(Utils.addDate(new Date(r.reported_date), event.days));
         }
+      } else if(c && !r && event.dueDate){
+          dueDate = event.dueDate(c.contact, event, scheduledTaskIdx);
       }
 
       if (!Utils.isTimely(dueDate, event)) {
