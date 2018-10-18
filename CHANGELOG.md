@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.18.0
+* Bump dependency versions to latest
+
 ## v1.17.14
 * Update to pouchdb version 7.0.0
 
