@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.17.13
+* Correctly split translations containing equals signs
+
 ## v1.17.12
 * Output error line number and column from minifyjs
 

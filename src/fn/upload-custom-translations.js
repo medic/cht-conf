@@ -37,7 +37,7 @@ function propertiesAsObject(path) {
   fs.read(path)
     .split('\n')
     .filter(line => line.includes('='))
-    .map(line => line.split('=', 2).map(it => it.trim()))
+    .map(line => line.split(/=(.*)/, 2).map(it => it.trim()))
     .map(([k, v]) => vals[k] = v);
   return vals;
 }

@@ -41,7 +41,20 @@ module.exports = {
     server.close();
     server = null;
     delete module.exports.couchUrl;
+
+    // empty DB.  For some reason this seems simpler than re-initialising it -
+    // probably due to express-pouchdb
+    const dbClear = module.exports.db
+      .allDocs()
+      .then(res => res.rows.map(r => r.id))
+      .then(ids => Promise.all(ids.map(id =>
+        module.exports.db
+          .get(id)
+          .then(doc => module.exports.db.remove(doc)))));
+
     mockMiddleware.reset();
+
+    return dbClear;
   },
 };
 
