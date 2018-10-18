@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.17.11
+* Fix --version flag
+
 ## v1.17.10
 * Bump pyxform-medic version to latest
 * Change switch statement formatting
