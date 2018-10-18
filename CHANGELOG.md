@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.17.14
+* Update to pouchdb version 7.0.0
+
 ## v1.17.13
 * Correctly split translations containing equals signs
 
