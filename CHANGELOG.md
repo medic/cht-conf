@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.18.3
+* Check for uncommitted files before releasing
+
 ## v1.18.2
 * [fetch-forms-from-google-drive] update for new googleapis
 
