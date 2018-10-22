@@ -1,5 +1,5 @@
 const fs = require('../lib/sync-fs');
-const google = require('googleapis');
+const google = require('googleapis').google;
 const googleAuth = require('../lib/google-auth');
 const info = require('../lib/log').info;
 

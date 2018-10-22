@@ -1,6 +1,6 @@
 const child_process = require('child_process');
 const fs = require('../lib/sync-fs');
-const google = require('googleapis');
+const google = require('googleapis').google;
 const info = require('../lib/log').info;
 const readline = require('readline-sync');
 const warn = require('../lib/log').warn;

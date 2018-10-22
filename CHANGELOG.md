@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.18.1
+* Update googleapis require statements
+* Update package-lock.json
+
 ## v1.18.0
 * Bump dependency versions to latest
 
