@@ -6,10 +6,7 @@ const info = require('../lib/log').info;
 module.exports = projectDir => {
   return googleAuth()
     .then(auth => {
-      const drive = google.drive({
-        version: 'v3',
-        auth: auth,
-      });
+      const drive = google.drive({ auth, version:'v3' });
 
       const forms = fs.readJson(`${projectDir}/forms-on-google-drive.json`);
 
@@ -22,7 +19,7 @@ module.exports = projectDir => {
             const remoteName = forms[localName];
 
             const fetchOpts = {
-              auth: auth,
+              auth,
               fileId: forms[localName],
               mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             };
@@ -33,13 +30,17 @@ module.exports = projectDir => {
 
             info(`Exporting ${remoteName} from google drive to ${target}…`);
 
-            drive.files.export(fetchOpts)
-              .on('end', () => {
-                  info(`Successfully wrote ${target}.`);
-                  resolve();
+            drive.files.export(fetchOpts, { responseType:'stream' })
+              .then(res => {
+                res.data
+                  .on('end', () => {
+                    info(`Successfully wrote ${target}.`);
+                    resolve();
+                  })
+                  .on('error', reject)
+                  .pipe(fs.fs.createWriteStream(target));
               })
-              .on('error', err => reject(err))
-              .pipe(fs.fs.createWriteStream(target));
+              .catch(reject);
           }));
       }
     });

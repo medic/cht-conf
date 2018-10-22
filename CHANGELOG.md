@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.18.2
+* [fetch-forms-from-google-drive] update for new googleapis
+
 ## v1.18.1
 * Update googleapis require statements
 * Update package-lock.json
