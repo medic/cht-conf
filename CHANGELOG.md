@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.18.5
+* Add explicit dependency on request
+
 ## v1.18.4
 * Support due date for contact-based tasks
 * Add FIXME for unnamed test

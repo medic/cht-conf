@@ -1,6 +1,6 @@
 {
   "name": "medic-conf",
-  "version": "1.18.4",
+  "version": "1.18.5",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "scripts": {
@@ -37,6 +37,7 @@
     "pouchdb-mapreduce": "^7.0.0",
     "readline-sync": "^1.4.9",
     "redact-basic-auth": "^1.0.0",
+    "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
     "semver": "^5.6.0",
     "svgo": "^1.1.1",
