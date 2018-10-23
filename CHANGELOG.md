@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.18.4
+* Support due date for contact-based tasks
+* Add FIXME for unnamed test
+
 ## v1.18.3
 * Check for uncommitted files before releasing
 

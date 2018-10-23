@@ -29,7 +29,7 @@ function test(relativeProjectDir) {
 
     .then(() => {
       // then
-      assert.equal(fs.read(`${testDir}/../app_settings.expected.json`),
-                   fs.read(`${testDir}/app_settings.json`));
+      assert.equal(fs.read(`${testDir}/app_settings.json`),
+                   fs.read(`${testDir}/../app_settings.expected.json`));
     });
 }

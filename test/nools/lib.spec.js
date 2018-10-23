@@ -3,6 +3,7 @@ const jsToString = require('../../src/lib/js-to-string');
 const parseJs = require('../../src/lib/simple-js-parser');
 
 const TEST_DATE = 1431143098575;
+const TEST_DAY = new Date(1431122400000);
 
 describe('nools lib', function() {
   let idCounter;
@@ -291,7 +292,7 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'task' },
+          { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -312,7 +313,7 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'task' },
+          { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -350,7 +351,7 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'task' },
+          { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -368,9 +369,9 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'task' },
-          { _type:'task' },
-          { _type:'task' },
+          { _type:'task', date:TEST_DAY },
+          { _type:'task', date:TEST_DAY },
+          { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -388,12 +389,12 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'task' },
-          { _type:'task' },
-          { _type:'task' },
-          { _type:'task' },
-          { _type:'task' },
-          { _type:'task' },
+          { _type:'task', date:TEST_DAY },
+          { _type:'task', date:TEST_DAY },
+          { _type:'task', date:TEST_DAY },
+          { _type:'task', date:TEST_DAY },
+          { _type:'task', date:TEST_DAY },
+          { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -414,11 +415,11 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'task' },
-          { _type:'task' },
-          { _type:'task' },
-          { _type:'task' },
-          { _type:'task' },
+          { _type:'task', date:TEST_DAY },
+          { _type:'task', date:TEST_DAY },
+          { _type:'task', date:TEST_DAY },
+          { _type:'task', date:TEST_DAY },
+          { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -454,14 +455,21 @@ describe('nools lib', function() {
           const tasks   = ${jsToString(tasks)};
           const emitted = [];
           const Utils = {
-            addDate: function() {},
+            addDate: function(date, days) {
+              const d = new Date(date.getTime());
+              d.setDate(d.getDate() + days);
+              d.setHours(0, 0, 0, 0);
+              return d;
+            },
             isTimely: function() { return true; },
           };
           class Target {};
-          class Task {};
-          function emit(type, task) {
-            task._type = type;
-            emitted.push(task);
+          const Task = function(props) {
+            this.date = props.date;
+          };
+          function emit(type, taskOrTarget) {
+            taskOrTarget._type = type;
+            emitted.push(taskOrTarget);
           };
           `,
       export: [ 'emitted' ],
@@ -543,14 +551,14 @@ describe('nools lib', function() {
 
   function aReport() {
     ++idCounter;
-    return { _id:`r-${idCounter}`, form:'F' };
+    return { _id:`r-${idCounter}`, form:'F', reported_date:TEST_DATE };
   }
 
   function aReportWithScheduledTasks(scheduledTaskCount) {
     ++idCounter;
 
     const scheduled_tasks = [];
-    while(scheduledTaskCount--) scheduled_tasks.push({});
+    while(scheduledTaskCount--) scheduled_tasks.push({ due:TEST_DATE });
 
     return { _id:`r-${idCounter}`, form:'F', scheduled_tasks };
   }
@@ -561,7 +569,7 @@ describe('nools lib', function() {
 
   function personWithReports(...reports) {
     ++idCounter;
-    return { contact:{ _id:`c-${idCounter}`, type:'person' }, reports };
+    return { contact:{ _id:`c-${idCounter}`, type:'person', reported_date:TEST_DATE }, reports };
   }
 
   function placeWithoutReports() {
@@ -570,6 +578,6 @@ describe('nools lib', function() {
 
   function placeWithReports(...reports) {
     ++idCounter;
-    return { contact:{ _id:`c-${idCounter}`, type:'clinic' }, reports };
+    return { contact:{ _id:`c-${idCounter}`, type:'clinic', reported_date:TEST_DATE }, reports };
   }
 });
