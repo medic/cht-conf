@@ -1,3 +1,5 @@
+const warn = require('../lib/log').warn;
+
 module.exports = (objects, props) => {
   return objects.map(original => {
     const filtered = {};
@@ -5,6 +7,13 @@ module.exports = (objects, props) => {
     if(props.required) props.required.forEach(prop => {
       if(!original.hasOwnProperty(prop)) {
         throw new Error(`missing required property: ${prop} in object:\n${prettyPrint(original)}`);
+      }
+      cp(original, filtered, prop);
+    });
+
+    if(props.recommended) props.recommended.forEach(prop => {
+      if(!original.hasOwnProperty(prop)) {
+        warn(`missing recommended property: ${prop} in object:\n${prettyPrint(original)}`);
       }
       cp(original, filtered, prop);
     });

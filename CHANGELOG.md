@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.18.7
+* Change target.icon field to recommended instead of required
+
 ## v1.18.6
 * Update node requirement in README
 
