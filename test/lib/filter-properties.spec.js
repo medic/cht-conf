@@ -2,7 +2,7 @@ const assert = require('chai').assert;
 
 const filterProperties = require('../../src/lib/filter-properties');
 
-describe.only('filter-properties', () => {
+describe('filter-properties', () => {
   // GOOD inputs
   [
     {

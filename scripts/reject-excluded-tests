@@ -1,0 +1,6 @@
+#!/bin/bash -eu
+if grep -Er '\.only\(' test; then
+	echo '!!!'
+	echo '!!! .only() call found in mocha test code'
+	echo '!!!'
+fi
