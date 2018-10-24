@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.18.10
+* Add pause after completing google drive export
+
 ## v1.18.9
 * Update project layout documentation
 * [reject-excluded-tests] update error message for consistency
