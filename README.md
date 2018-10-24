@@ -85,8 +85,9 @@ This tool expects a project to be sctructured as follows:
 		resources/
 			icon-one.png
 			…
-		rules.nools.js
-		targets.json
+		targets.js
+		tasks.js
+		nools-extras.js
 		task-schedules.json
 		forms/
 			app/

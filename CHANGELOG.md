@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.18.9
+* Update project layout documentation
+* [reject-excluded-tests] update error message for consistency
+
 ## v1.18.8
 * [compile-app-settings] reject double nools definitions
 * Fix test result ordering

@@ -21,8 +21,9 @@ describe('initialise-project-layout', () => {
     assertExists('forms/contact');
     assertExists('resources');
     assertExists('resources.json');
-    assertExists('rules.nools.js');
-    assertExists('targets.json');
+    assertExists('tasks.js');
+    assertExists('targets.js');
+    assertExists('nools-extras.js');
     assertExists('task-schedules.json');
     assertExists('translations');
 
