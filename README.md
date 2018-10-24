@@ -5,7 +5,7 @@ Medic Project Configurer
 
 # Requirements
 
-* nodejs 6
+* nodejs 6 or later
 * python 2.7
 
 

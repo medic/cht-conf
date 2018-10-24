@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.18.6
+* Update node requirement in README
+
 ## v1.18.5
 * Add explicit dependency on request
 
