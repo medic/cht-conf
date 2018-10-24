@@ -11,7 +11,13 @@ module.exports = projectDir => {
       const forms = fs.readJson(`${projectDir}/forms-on-google-drive.json`);
 
       return Object.keys(forms)
-        .reduce(fetchForm, Promise.resolve());
+        .reduce(fetchForm, Promise.resolve())
+        .then(() => new Promise(resolve => {
+          // Here we pause to avoid a suspected race condition when trying to
+          // access the last-written xlsx file.  Reported at
+          // https://github.com/medic/medic-conf/issues/88
+          setTimeout(resolve, 500);
+        }));
 
       function fetchForm(promiseChain, localName) {
         return promiseChain
