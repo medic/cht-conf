@@ -6,6 +6,8 @@ const minifyNools = require('./minify-nools');
 const parseTargets = require('./parse-targets');
 const templatedJs = require('./templated-js');
 
+const CURRENT_NOOLS_FILES = [ 'tasks.js', 'targets.js', 'nools-extras.js' ];
+
 function lint(code) {
   jshintWithReport('nools rules', code, {
     predef: [ 'c', 'console', 'emit', 'Contact', 'Target', 'Task', 'Utils' ],
@@ -76,17 +78,23 @@ function compileWithDefaultLayout(projectDir) {
 }
 
 function checkForRequiredFilesForDefaultLayout(projectDir) {
-  const required = [ 'nools-extras.js', 'targets.js', 'tasks.js' ];
+  const missing = CURRENT_NOOLS_FILES.filter(f => !fs.exists(`${projectDir}/${f}`));
 
-  const missing = required.map(f => `${projectDir}/${f}`)
-                          .filter(f => !fs.exists(f));
   if(missing.length) {
     throw new Error(`Missing required file(s): ${missing}`);
   }
 }
 
 module.exports = projectDir => {
-  const noolsPath = `${projectDir}/rules.nools.js`;
-  if(fs.exists(noolsPath)) return minifyNools(templatedJs.fromFile(projectDir, noolsPath));
-  else return compileWithDefaultLayout(projectDir);
+  const legacyNoolsPath = `${projectDir}/rules.nools.js`;
+
+  if(fs.exists(legacyNoolsPath)) {
+    if(CURRENT_NOOLS_FILES.some(f => fs.exists(`${projectDir}/${f}`))) {
+      throw new Error('Both legacy and current nools definitions found.  ' +
+          `You should either have ${legacyNoolsPath} or ${CURRENT_NOOLS_FILES} files.`);
+    }
+    return minifyNools(templatedJs.fromFile(projectDir, legacyNoolsPath));
+  } else {
+    return compileWithDefaultLayout(projectDir);
+  }
 };

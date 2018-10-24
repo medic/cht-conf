@@ -19,6 +19,9 @@ describe('compile-app-settings', () => {
   it('should handle config with combined targets.js definition', () =>
     test('targets.js/project'));
 
+  it('should reject a project with both old and new nools config', () =>
+    testFails('unexpected-legacy-nools-rules/project'));
+
 });
 
 function test(relativeProjectDir) {
@@ -31,5 +34,17 @@ function test(relativeProjectDir) {
       // then
       assert.equal(fs.read(`${testDir}/app_settings.json`),
                    fs.read(`${testDir}/../app_settings.expected.json`));
+    });
+}
+
+function testFails(relativeProjectDir) {
+  const testDir = `./data/compile-app-settings/${relativeProjectDir}`;
+
+  // when
+  return compileAppSettings(testDir)
+    .then(() => assert.fail('Expected compileAppSettings() to fail, but it didn\'t.'))
+    .catch(e => {
+      if(e.name === 'AssertionError') throw e;
+      assert.ok(e);
     });
 }

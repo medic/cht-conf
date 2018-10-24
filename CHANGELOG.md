@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.18.8
+* [compile-app-settings] reject double nools definitions
+* Fix test result ordering
+* Break release if tests are excluded accidentally
+
 ## v1.18.7
 * Change target.icon field to recommended instead of required
 
