@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.18.11
+* [travis] fix tests
+* Added license information for contributions
+
 ## v1.18.10
 * Add pause after completing google drive export
 
