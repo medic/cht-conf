@@ -272,3 +272,11 @@ To compress PNGs and SVGs in the current directory and its subdirectories, two c
 3. `npm run generate-changelog` to update `CHANGELOG.md`
 4. `npm run release`
 5. try to work out how you can commit the CHANGELOG including the change that includes the CHANGELOG update before you run the release script
+
+# Copyright
+
+Copyright 2013-2018 Medic Mobile, Inc. <hello@medicmobile.org>
+
+# License
+
+The software is provided under AGPL-3.0. Contributions to this project are accepted under the same license.
