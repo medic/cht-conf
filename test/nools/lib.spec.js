@@ -89,6 +89,50 @@ describe('nools lib', function() {
           { _type:'_complete', _id:true },
         ]);
       });
+      it('should allow "reported" as target date', function() {
+        // given
+        const target = aPersonBasedTarget();
+        target.date = 'reported';
+        // and
+        const reportedDate = aRandomTimestamp();
+        const contact = personWithoutReports();
+        contact.reported_date = reportedDate;
+        // and
+        const config = {
+          c: contact,
+          targets: [ target ],
+          tasks: [],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'target', date:reportedDate },
+          { _type:'_complete', _id:true },
+        ]);
+      });
+      it('should allow "now" as target date', function() {
+        // given
+        const target = aPersonBasedTarget();
+        target.date = 'now';
+        // and
+        const config = {
+          c: personWithoutReports(),
+          targets: [ target ],
+          tasks: [],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'target', date:TEST_DATE },
+          { _type:'_complete', _id:true },
+        ]);
+      });
     });
 
     describe('place-based', function() {
@@ -584,3 +628,7 @@ describe('nools lib', function() {
     return { contact:{ _id:`c-${idCounter}`, type:'clinic', reported_date:TEST_DATE }, reports };
   }
 });
+
+function aRandomTimestamp() {
+  return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+}

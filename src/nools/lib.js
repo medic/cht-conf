@@ -142,7 +142,15 @@ function emitContactBasedTargetFor(c, targetConfig) {
   var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c);
 
   var instance = createTargetInstance(targetConfig.id, c.contact, pass);
-  instance.date = targetConfig.date ? targetConfig.date(c) : now.getTime();
+  if(typeof targetConfig.date === 'function') {
+    instance.date = targetConfig.date(c);
+  } else if(targetConfig.date === undefined || targetConfig.date === 'now') {
+    instance.date = now.getTime();
+  } else if(targetConfig.date === 'reported') {
+    instance.date = c.reported_date;
+  } else {
+    throw new Error('Unrecognised value for target.date: ' + targetConfig.date);
+  }
   emitTargetInstance(instance);
 }
 

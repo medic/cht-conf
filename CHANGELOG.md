@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.18.12
+* [nools] extend date options for contact-based targets
+* [nools/lib] Add missing linebreak
+
 ## v1.18.11
 * [travis] fix tests
 * Added license information for contributions
