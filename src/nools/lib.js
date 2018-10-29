@@ -142,7 +142,8 @@ function emitContactBasedTargetFor(c, targetConfig) {
   var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c);
 
   var instance = createTargetInstance(targetConfig.id, c.contact, pass);
-  instance.date = targetConfig.date ? targetConfig.date(c) : now.getTime(); emitTargetInstance(instance);
+  instance.date = targetConfig.date ? targetConfig.date(c) : now.getTime();
+  emitTargetInstance(instance);
 }
 
 function emitReportBasedTargetFor(c, r, targetConf) {
