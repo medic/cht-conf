@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.18.13
+* [nools] allow custom action content for tasks
+
 ## v1.18.12
 * [nools] extend date options for contact-based targets
 * [nools/lib] Add missing linebreak

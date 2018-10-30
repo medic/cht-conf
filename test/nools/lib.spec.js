@@ -1,4 +1,7 @@
-const assert = require('chai').assert;
+const chai = require('chai');
+const assert = chai.assert;
+chai.use(require('chai-shallow-deep-equal'));
+
 const jsToString = require('../../src/lib/js-to-string');
 const parseJs = require('../../src/lib/simple-js-parser');
 
@@ -338,7 +341,7 @@ describe('nools lib', function() {
         const emitted = loadLibWith(config).emitted;
 
         // then
-        assert.deepEqual(emitted, [
+        assert.shallowDeepEqual(emitted, [
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
@@ -359,7 +362,7 @@ describe('nools lib', function() {
         const emitted = loadLibWith(config).emitted;
 
         // then
-        assert.deepEqual(emitted, [
+        assert.shallowDeepEqual(emitted, [
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
@@ -397,7 +400,7 @@ describe('nools lib', function() {
         const emitted = loadLibWith(config).emitted;
 
         // then
-        assert.deepEqual(emitted, [
+        assert.shallowDeepEqual(emitted, [
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
@@ -415,7 +418,7 @@ describe('nools lib', function() {
         const emitted = loadLibWith(config).emitted;
 
         // then
-        assert.deepEqual(emitted, [
+        assert.shallowDeepEqual(emitted, [
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
@@ -435,7 +438,7 @@ describe('nools lib', function() {
         const emitted = loadLibWith(config).emitted;
 
         // then
-        assert.deepEqual(emitted, [
+        assert.shallowDeepEqual(emitted, [
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
@@ -443,6 +446,46 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
+        ]);
+      });
+
+      it('should allow custom action content', function() {
+        // given
+        const task = aReportBasedTask();
+        task.actions.push({
+          form: 'test-form',
+          label: 'Fill a Test Form',
+          modifyContent: (r, content) => { content.report_id = r._id; },
+        });
+        // and
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ task ],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.shallowDeepEqual(emitted, [
+          {
+            actions:[
+              {
+                type: 'report',
+                form: 'test-form',
+                label: 'Fill a Test Form',
+                content: {
+                  source: 'task',
+                  source_id: 'r-2',
+                  contact: {
+                    _id: 'c-3',
+                  },
+                  report_id: 'r-2',
+                },
+              },
+            ]
+          },
         ]);
       });
 
@@ -461,7 +504,7 @@ describe('nools lib', function() {
         const emitted = loadLibWith(config).emitted;
 
         // then
-        assert.deepEqual(emitted, [
+        assert.shallowDeepEqual(emitted, [
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
@@ -513,6 +556,7 @@ describe('nools lib', function() {
           class Target {};
           const Task = function(props) {
             this.date = props.date;
+            this.actions = props.actions;
           };
           function emit(type, taskOrTarget) {
             taskOrTarget._type = type;

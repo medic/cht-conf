@@ -123,15 +123,19 @@ function emitTasksForSchedule(c, schedule, r) {
   }
 
   function initActions(def) {
+    var content = {
+      source: 'task',
+      source_id: r._id,
+      contact: c.contact,
+    };
+
+    if(def.modifyContent) def.modifyContent(r, content);
+
     return {
       type: 'report',
       form: def.form,
       label: def.label || 'Follow up',
-      content: {
-        source: 'task',
-        source_id: r._id,
-        contact: c.contact,
-      },
+      content: content,
     };
   }
 }
