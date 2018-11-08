@@ -44,7 +44,7 @@ describe('upload-custom-translations', () => {
       .then(doc => {
         assert.equal(doc.code, lang);
         assert.equal(doc.type, 'translations');
-        assert.deepEqual(doc.values, expectedTranslations);
+        assert.deepEqual(doc.custom, expectedTranslations);
       });
   }
 });
