@@ -102,7 +102,7 @@ function emitTasksForSchedule(c, schedule, r) {
         date: dueDate,
         title: schedule.title,
         resolved: r ? schedule.resolvedIf(c, r, event, dueDate, scheduledTaskIdx) : false,
-        actions: r ? schedule.actions.map(initActions) : [],
+        actions: schedule.actions.map(initActions)
       };
 
       if(scheduledTaskIdx !== undefined) {
@@ -125,10 +125,11 @@ function emitTasksForSchedule(c, schedule, r) {
   function initActions(def) {
     var content = {
       source: 'task',
-      source_id: r._id,
       contact: c.contact,
     };
 
+    if(r) content.source_id = r._id;
+    
     if(def.modifyContent) def.modifyContent(r, content);
 
     return {
