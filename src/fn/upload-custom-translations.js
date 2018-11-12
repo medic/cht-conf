@@ -43,7 +43,20 @@ function propertiesAsObject(path) {
 }
 
 function overwriteProperties(doc, props) {
-  doc.custom = props;
+  if(doc.default) {
+    // 3.4.0 translation structure
+    doc.custom = props;
+  } else {
+    // obsolete doc structure
+    if(!doc.values) {
+      doc.values = {};
+    }
+    for(const k in props) {
+      if(props.hasOwnProperty(k)) {
+        doc.values[k] = props[k];
+      }
+    }
+  }
 
   return doc;
 }
