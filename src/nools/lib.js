@@ -101,7 +101,7 @@ function emitTasksForSchedule(c, schedule, r) {
         icon: schedule.icon,
         date: dueDate,
         title: schedule.title,
-        resolved: r ? schedule.resolvedIf(c, r, event, dueDate, scheduledTaskIdx) : false,
+        resolved: schedule.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
         actions: schedule.actions.map(initActions)
       };
 
