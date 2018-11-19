@@ -25,7 +25,7 @@ module.exports = (projectDir, couchUrl) => {
               if(e.status === 404) return newDocFor(fileName);
               else throw e;
             })
-            .then(doc => mergeProperties(doc, translations))
+            .then(doc => overwriteProperties(doc, translations))
             .then(doc => db.put(doc));
         }));
     });
@@ -42,11 +42,20 @@ function propertiesAsObject(path) {
   return vals;
 }
 
-function mergeProperties(doc, props) {
-  if(!doc.values) doc.values = {};
-
-  for(const k in props) {
-    if(props.hasOwnProperty(k)) doc.values[k] = props[k];
+function overwriteProperties(doc, props) {
+  if(doc.default) {
+    // 3.4.0 translation structure
+    doc.custom = props;
+  } else {
+    // obsolete doc structure
+    if(!doc.values) {
+      doc.values = {};
+    }
+    for(const k in props) {
+      if(props.hasOwnProperty(k)) {
+        doc.values[k] = props[k];
+      }
+    }
   }
 
   return doc;
