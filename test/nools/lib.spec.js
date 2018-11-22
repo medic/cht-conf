@@ -342,8 +342,12 @@ describe('nools lib', function() {
 
         // then
         assert.shallowDeepEqual(emitted, [
-          { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id:true },
+          {
+            _type: 'task',
+            date: TEST_DAY,
+            resolved: false,
+            actions:[ { form:'example-form' } ]
+          },
         ]);
       });
     });
@@ -452,11 +456,8 @@ describe('nools lib', function() {
       it('should allow custom action content', function() {
         // given
         const task = aReportBasedTask();
-        task.actions.push({
-          form: 'test-form',
-          label: 'Fill a Test Form',
-          modifyContent: (r, content) => { content.report_id = r._id; },
-        });
+        task.actions[0].modifyContent =
+            (r, content) => { content.report_id = r._id; };
         // and
         const config = {
           c: personWithReports(aReport()),
@@ -473,8 +474,8 @@ describe('nools lib', function() {
             actions:[
               {
                 type: 'report',
-                form: 'test-form',
-                label: 'Fill a Test Form',
+                form: 'example-form',
+                label: 'Follow up',
                 content: {
                   source: 'task',
                   source_id: 'r-2',
@@ -555,8 +556,11 @@ describe('nools lib', function() {
           };
           class Target {};
           const Task = function(props) {
+            // Any property whose value you want to assert in tests needs to be
+            // copied from 'props' to 'this' here.
             this.date = props.date;
             this.actions = props.actions;
+            this.resolved = props.resolved;
           };
           function emit(type, taskOrTarget) {
             taskOrTarget._type = type;
@@ -589,7 +593,7 @@ describe('nools lib', function() {
       appliesTo: type,
       name: `task-${idCounter}`,
       title: [ { locale:'en', content:`Task ${idCounter}` } ],
-      actions: [],
+      actions: [ { form:'example-form' } ],
       events: [ {
         id: `task-${idCounter}`,
         days:0, start:0, end:1,

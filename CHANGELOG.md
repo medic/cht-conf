@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.18.16
+* Allow action and resolution of person-based tasks
+
 ## v1.18.15
 * Reject forms which do not have <instanceID>
 * [compile-contact-summary] make sure test fails when it should

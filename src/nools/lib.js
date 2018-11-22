@@ -81,7 +81,7 @@ function emitTasksForSchedule(c, schedule, r) {
         }
       } else {
         if(event.dueDate) {
-          dueDate = event.dueDate(c.contact, event);
+          dueDate = event.dueDate(c.contact, event, scheduledTaskIdx);
         } else {
           dueDate = new Date(Utils.addDate(new Date(c.contact.reported_date), event.days));
         }
@@ -101,8 +101,8 @@ function emitTasksForSchedule(c, schedule, r) {
         icon: schedule.icon,
         date: dueDate,
         title: schedule.title,
-        resolved: r ? schedule.resolvedIf(c, r, event, dueDate, scheduledTaskIdx) : false,
-        actions: r ? schedule.actions.map(initActions) : [],
+        resolved: schedule.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
+        actions: schedule.actions.map(initActions),
       };
 
       if(scheduledTaskIdx !== undefined) {
@@ -125,7 +125,7 @@ function emitTasksForSchedule(c, schedule, r) {
   function initActions(def) {
     var content = {
       source: 'task',
-      source_id: r._id,
+      source_id: r && r._id,
       contact: c.contact,
     };
 
