@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.18.14
+* [upload-custom-translations] Add tests for webapp v3.4.0's new doc layout
+* Change translations structure
+* backward compatible tests
+* Maintain backwards compatibility
+* Update tests
+* Overwrite custom properties
+* [travis] remove support for old odd-numbered node versions
+* [travis] add testing on node versions 9 & 10
+
 ## v1.18.13
 * [nools] allow custom action content for tasks
 

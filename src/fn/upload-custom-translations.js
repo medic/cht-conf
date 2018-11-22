@@ -47,7 +47,7 @@ function overwriteProperties(doc, props) {
     // 3.4.0 translation structure
     doc.custom = props;
   } else {
-    // obsolete doc structure
+    // pre-3.4.0 doc structure
     if(!doc.values) {
       doc.values = {};
     }
