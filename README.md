@@ -76,7 +76,7 @@ The list of available actions can be seen in [`supported-actions.js`](https://gi
 
 # Project Layout
 
-This tool expects a project to be sctructured as follows:
+This tool expects a project to be structured as follows:
 
 	example-project/
 		app_settings.json
@@ -108,7 +108,11 @@ This tool expects a project to be sctructured as follows:
 		translations/
 			messages-xx.properties
 			…
+			
+If you are starting from scratch you can initialise the file layout using the `initialise-project-layout` action:
 
+    medic-conf initialise-project-layout
+    
 ## Derived configs
 
 Configuration can be inherited from another project, and then modified.  This allows the `app_settings.json` and contained files (`task-schedules.json`, `targets.json` etc.) to be imported, and then modified.
