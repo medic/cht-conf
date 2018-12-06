@@ -243,7 +243,7 @@ CSV Using Reference
 
 This would create a structure such as:
 
-{
+```{
   "type": "health_center",
   //Parent Property with district_1 doc as the value
   "parent": {
@@ -265,7 +265,7 @@ This would create a structure such as:
   "reported_date": 1544031155715,
   "_id": "480d0cd0-c021-5d55-8c63-d86576d592fc"
 }
-
+```
 
 ## doc property references
 
@@ -302,7 +302,7 @@ CSV Using Reference
 
 This would create a structure such as:
 
-{
+```{
   "type": "health_center",
   //Parent property with the _id from district_1 as the value.
   "parent": "0c31056a-3a80-54dd-b136-46145d451a66",
@@ -314,6 +314,7 @@ This would create a structure such as:
   "reported_date": 1544031155715,
   "_id": "45293356-353c-5eb1-9a41-baa3427b4f69"
 }
+```
 
 
 Note the special string `COL_VAL` - this matches the CSV column value for the row being processed.
