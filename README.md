@@ -211,32 +211,110 @@ This can be useful if using a column for doc references.
 
 ## doc references
 
+In the reference example below. A `property` on the json doc will be populated with the `doc` that matches the `WHERE` statement.
+The CSV example below using the reference will find the `doc` with `district_1` and create a `parent` property with the value of the `district_1` doc
+
 To reference other docs, replace the type suffix with a matching clause:
 
-	GET location:place WHERE external_id=COL_VAL
+	parent:place WHERE reference_id=COL_VAL
+
+Refered to CSV Example:
+
+| reference_id:excluded | parent | is_name_generated | name | external_id | notes | geolocation | reported_date:timestamp |
+| --------------------- | ------ | ----------------- | ---- | ----------- | ----- | ----------- | ----------------------- |
+| district_1            |        | false             | D1   |             |       |             | 1544031155715           |
+| district_2            |        | false             | D2   |             |       |             | 1544031155715           |
+| district_3            |        | false             | D3   |             |       |             | 1544031155715           |
+
+CSV Using Reference 
+
+| reference_id:excluded | parent:place WHERE reference_id=COL_VAL | is_name_generated | name | external_id | notes | geolocation | reported_date:timestamp |
+| --------------------- | --------------------------------------- | ----------------- | ---- | ----------- | ----- | ----------- | ----------------------- |
+| health_center_1       | district_1                              | false             | HC1  |             |       |             | 1544031155715           |
+| health_center_2       | district_1                              | false             | HC2  |             |       |             | 1544031155715           |
+| health_center_3       | district_1                              | false             | HC3  |             |       |             | 1544031155715           |
+| health_center_4       | district_1                              | false             | HC4  |             |       |             | 1544031155715           |
+| health_center_5       | district_1                              | false             | HC5  |             |       |             | 1544031155715           |
+| health_center_6       | district_2                              | false             | HC6  |             |       |             | 1544031155715           |
+| health_center_7       | district_2                              | false             | HC7  |             |       |             | 1544031155715           |
+| health_center_8       | district_2                              | false             | HC8  |             |       |             | 1544031155715           |
+| health_center_9       | district_2                              | false             | HC9  |             |       |             | 1544031155715           |
+| health_center_10      | district_2                              | false             | HC10 |             |       |             | 1544031155715           |
 
 This would create a structure such as:
 
-	{
-		"_id": "09efb53f-9cd8-524c-9dfd-f62c242f1817",
-		"location": {
-		"_id": "7ac33d1f-10d8-5198-b39d-9d61595292f6"
-			"name": "some place"
-		}
-	}
+{
+  "type": "health_center",
+  //Parent Property with district_1 doc as the value
+  "parent": {
+    "type": "district_hospital",
+    "parent": "",
+    "is_name_generated": "false",
+    "name": "D2",
+    "external_id": "",
+    "notes": "",
+    "geolocation": "",
+    "reported_date": 1544031155715,
+    "_id": "f223f240-5d6a-5a7a-91d4-46d3c59de73e"
+  },
+  "is_name_generated": "false",
+  "name": "HC7",
+  "external_id": "",
+  "notes": "",
+  "geolocation": "",
+  "reported_date": 1544031155715,
+  "_id": "480d0cd0-c021-5d55-8c63-d86576d592fc"
+}
+
 
 ## doc property references
 
 To reference specific properties of other docs:
 
-	GET location:_id OF place WHERE external_id=COL_VAL
+	parent:GET _id OF place WHERE reference_id=COL_VAL
+
+In this example the `health_ccenter` doc will have a `property` of `parent` set to the `_id` of the refered to doc `district_1` property of `_id`
+
+NOTE: `_id` is a generated value that is inside the generated docs. 
+
+Refered to CSV Example:
+
+| reference_id:excluded | parent | is_name_generated | name | external_id | notes | geolocation | reported_date:timestamp |
+| --------------------- | ------ | ----------------- | ---- | ----------- | ----- | ----------- | ----------------------- |
+| district_1            |        | false             | D1   |             |       |             | 1544031155715           |
+| district_2            |        | false             | D2   |             |       |             | 1544031155715           |
+| district_3            |        | false             | D3   |             |       |             | 1544031155715           |
+
+CSV Using Reference 
+
+| reference_id:excluded | parent:GET _id OF place WHERE reference_id=COL_VAL | is_name_generated | name | external_id | notes | geolocation | reported_date:timestamp |
+| --------------------- | -------------------------------------------------- | ----------------- | ---- | ----------- | ----- | ----------- | ----------------------- |
+| health_center_1       | district_1                                         | false             | HC1  |             |       |             | 1544031155715           |
+| health_center_2       | district_1                                         | false             | HC2  |             |       |             | 1544031155715           |
+| health_center_3       | district_1                                         | false             | HC3  |             |       |             | 1544031155715           |
+| health_center_4       | district_1                                         | false             | HC4  |             |       |             | 1544031155715           |
+| health_center_5       | district_1                                         | false             | HC5  |             |       |             | 1544031155715           |
+| health_center_6       | district_2                                         | false             | HC6  |             |       |             | 1544031155715           |
+| health_center_7       | district_2                                         | false             | HC7  |             |       |             | 1544031155715           |
+| health_center_8       | district_2                                         | false             | HC8  |             |       |             | 1544031155715           |
+| health_center_9       | district_2                                         | false             | HC9  |             |       |             | 1544031155715           |
+| health_center_10      | district_2                                         | false             | HC10 |             |       |             | 1544031155715           |
 
 This would create a structure such as:
 
-	{
-		"_id": "09efb53f-9cd8-524c-9dfd-f62c242f1817",
-		"location": "7ac33d1f-10d8-5198-b39d-9d61595292f6"
-	}
+{
+  "type": "health_center",
+  //Parent property with the _id from district_1 as the value.
+  "parent": "0c31056a-3a80-54dd-b136-46145d451a66",
+  "is_name_generated": "false",
+  "name": "HC3",
+  "external_id": "",
+  "notes": "",
+  "geolocation": "",
+  "reported_date": 1544031155715,
+  "_id": "45293356-353c-5eb1-9a41-baa3427b4f69"
+}
+
 
 Note the special string `COL_VAL` - this matches the CSV column value for the row being processed.
 
