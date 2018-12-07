@@ -14,7 +14,8 @@ describe('compile-contact-summary', function() {
       assert.fail('Expected error to be thrown.');
 
     } catch(e) {
-      // expected :¬)
+      if(e.name === 'AssertionError') throw e;
+      // else expected :¬)
     }
   });
 
