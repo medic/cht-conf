@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.18.15
+* Reject forms which do not have <instanceID>
+* [compile-contact-summary] make sure test fails when it should
+* Update documentation for initialising project layout
+
 ## v1.18.14
 * [upload-custom-translations] Add tests for webapp v3.4.0's new doc layout
 * Change translations structure
