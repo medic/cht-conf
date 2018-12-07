@@ -7,6 +7,7 @@ const skipFn = require('../lib/skip-fn');
 const trace = require('../lib/log').trace;
 const warn = require('../lib/log').warn;
 const pouch = require('../lib/db');
+const abortPromiseChain = require('../lib/abort-promise-chain');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 
@@ -20,11 +21,11 @@ module.exports = (projectDir, couchUrl, subDirectory, options) => {
 
   const formsDir = `${projectDir}/forms/${subDirectory}`;
 
+
   if(!fs.exists(formsDir)) {
     warn(`Forms dir not found: ${formsDir}`);
     return Promise.resolve();
   }
-
   return fs.readdir(formsDir)
     .filter(name => name.endsWith('.xml'))
     .filter(name => !options.forms || options.forms.includes(fs.withoutExtension(name)))
@@ -39,6 +40,11 @@ module.exports = (projectDir, couchUrl, subDirectory, options) => {
       if(!fs.exists(mediaDir)) info(`No media directory found at ${mediaDir} for form ${xformPath}`);
 
       const xml = fs.read(xformPath);
+
+      if(!formHasInstanceId(xml)) {
+        return abortPromiseChain(promiseChain,
+            `Form at ${xformPath} appears to be missing <meta><instanceID/></meta> node.  This form will not work on medic-webapp.`);
+      }
 
       const internalId = readIdFrom(xml);
       if(internalId !== baseDocId) warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
@@ -93,3 +99,5 @@ const updateFromPropertiesFile = (doc, path) => {
     if(ignoredKeys.length) warn('Ignoring property keys', ignoredKeys, 'in', path);
   }
 };
+
+const formHasInstanceId = xml => xml.includes('<instanceID/>');
