@@ -13,6 +13,7 @@ module.exports = [
   'delete-forms',
   'delete-all-forms',
   'fetch-forms-from-google-drive',
+  'fetch-csvs-from-google-drive',
   'initialise-project-layout',
   'upload-app-forms',
   'upload-app-settings',

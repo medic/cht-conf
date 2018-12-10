@@ -1,5 +1,5 @@
 const fetchFiles = require('../lib/fetch-files-from-google');
 
 module.exports = projectDir => {
-  fetchFiles(projectDir,'forms-on-google-drive.json', 'forms');
+  fetchFiles(projectDir, 'csvs-on-google-drive.json', 'csv');
 };
