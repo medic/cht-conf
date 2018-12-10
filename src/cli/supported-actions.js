@@ -12,6 +12,7 @@ module.exports = [
   'csv-to-docs',
   'delete-forms',
   'delete-all-forms',
+  'fetch-csvs-from-google-drive',
   'fetch-forms-from-google-drive',
   'initialise-project-layout',
   'upload-app-forms',

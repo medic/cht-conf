@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.19.0
+* [fetch-csvs-from-google-drive] added function
+
 ## v1.18.16
 * Allow action and resolution of person-based tasks
 
