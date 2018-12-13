@@ -183,6 +183,14 @@ To create users on a remote server, use the `create-users` action.  The CSV file
 
 To convert CSV to JSON docs, use the `csv-to-docs` action.
 
+## csv file name
+
+The name of the file drives what the `type` (person,place, report) and the value. Some examples shown below.
+
+File named place.district_hospital.csv  adds the property `"type":"district_hospital"`<br/>
+File named person.clinic.csv add the property `"type":"person"`<br/>
+File named report.immunization_visit.csv add the property `"type":"report", "form":"immunization_visit"`<br/>
+
 ## property types
 
 By default, values are parsed as strings.  To parse a CSV column as a JSON type, suffix a data type to the column definition, e.g.
@@ -231,15 +239,9 @@ CSV Using Reference
 | reference_id:excluded | parent:place WHERE reference_id=COL_VAL | is_name_generated | name | external_id | notes | geolocation | reported_date:timestamp |
 | --------------------- | --------------------------------------- | ----------------- | ---- | ----------- | ----- | ----------- | ----------------------- |
 | health_center_1       | district_1                              | false             | HC1  |             |       |             | 1544031155715           |
-| health_center_2       | district_1                              | false             | HC2  |             |       |             | 1544031155715           |
-| health_center_3       | district_1                              | false             | HC3  |             |       |             | 1544031155715           |
-| health_center_4       | district_1                              | false             | HC4  |             |       |             | 1544031155715           |
-| health_center_5       | district_1                              | false             | HC5  |             |       |             | 1544031155715           |
-| health_center_6       | district_2                              | false             | HC6  |             |       |             | 1544031155715           |
-| health_center_7       | district_2                              | false             | HC7  |             |       |             | 1544031155715           |
-| health_center_8       | district_2                              | false             | HC8  |             |       |             | 1544031155715           |
-| health_center_9       | district_2                              | false             | HC9  |             |       |             | 1544031155715           |
-| health_center_10      | district_2                              | false             | HC10 |             |       |             | 1544031155715           |
+| health_center_2       | district_2                              | false             | HC2  |             |       |             | 1544031155715           |
+| health_center_3       | district_3                              | false             | HC3  |             |       |             | 1544031155715           |
+         |
 
 This would create a structure such as:
 
@@ -291,15 +293,9 @@ CSV Using Reference
 | reference_id:excluded | parent:GET _id OF place WHERE reference_id=COL_VAL | is_name_generated | name | external_id | notes | geolocation | reported_date:timestamp |
 | --------------------- | -------------------------------------------------- | ----------------- | ---- | ----------- | ----- | ----------- | ----------------------- |
 | health_center_1       | district_1                                         | false             | HC1  |             |       |             | 1544031155715           |
-| health_center_2       | district_1                                         | false             | HC2  |             |       |             | 1544031155715           |
-| health_center_3       | district_1                                         | false             | HC3  |             |       |             | 1544031155715           |
-| health_center_4       | district_1                                         | false             | HC4  |             |       |             | 1544031155715           |
-| health_center_5       | district_1                                         | false             | HC5  |             |       |             | 1544031155715           |
-| health_center_6       | district_2                                         | false             | HC6  |             |       |             | 1544031155715           |
-| health_center_7       | district_2                                         | false             | HC7  |             |       |             | 1544031155715           |
-| health_center_8       | district_2                                         | false             | HC8  |             |       |             | 1544031155715           |
-| health_center_9       | district_2                                         | false             | HC9  |             |       |             | 1544031155715           |
-| health_center_10      | district_2                                         | false             | HC10 |             |       |             | 1544031155715           |
+| health_center_2       | district_2                                         | false             | HC2  |             |       |             | 1544031155715           |
+| health_center_3       | district_3                                         | false             | HC3  |             |       |             | 1544031155715           |
+
 
 This would create a structure such as:
 
