@@ -189,6 +189,7 @@ _The name of the file determines the type of doc created for rows contained in t
 - `place.{place_type}.csv`:  where `{place_type}` is the type of place specified in the file, one of: `clinic`, `health_center`, `district_hospital`
 - `person.{parent_place_type}.csv`:  where `{parent_place_type}` is the parent for the person, one of: `clinic`, `health_center`, `district_hospital`
 - `report.{form_id}.csv`:  where `{form_id}` is the form ID for all the reports in the file. You will need one file per form ID
+
 Here are some examples:
 
 File named place.district_hospital.csv  adds the property `"type":"district_hospital"`<br/>
