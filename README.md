@@ -232,20 +232,19 @@ To reference other docs, replace the type suffix with a matching clause:
 
 Refered to CSV Example:
 
-| reference_id:excluded | parent | is_name_generated | name | external_id | notes | geolocation | reported_date:timestamp |
-| --------------------- | ------ | ----------------- | ---- | ----------- | ----- | ----------- | ----------------------- |
-| district_1            |        | false             | D1   |             |       |             | 1544031155715           |
-| district_2            |        | false             | D2   |             |       |             | 1544031155715           |
-| district_3            |        | false             | D3   |             |       |             | 1544031155715           |
+| reference_id:excluded | is_name_generated | name | reported_date:timestamp |
+| --------------------- | ----------------- | ---- | ----------------------- |
+| district_1            | false             | D1   | 1544031155715           |
+| district_2            | false             | D2   | 1544031155715           |
+| district_3            | false             | D3   | 1544031155715           |
 
-CSV Using Reference 
+### CSV Using Reference 
 
-| reference_id:excluded | parent:place WHERE reference_id=COL_VAL | is_name_generated | name | external_id | notes | geolocation | reported_date:timestamp |
-| --------------------- | --------------------------------------- | ----------------- | ---- | ----------- | ----- | ----------- | ----------------------- |
-| health_center_1       | district_1                              | false             | HC1  |             |       |             | 1544031155715           |
-| health_center_2       | district_2                              | false             | HC2  |             |       |             | 1544031155715           |
-| health_center_3       | district_3                              | false             | HC3  |             |       |             | 1544031155715           |
-         |
+| reference_id:excluded | parent:place WHERE reference_id=COL_VAL | is_name_generated | name | reported_date:timestamp |
+| --------------------- | --------------------------------------- | ----------------- | ---- | ----------------------- |
+| health_center_1       | district_1                              | false             | HC1  |  1544031155715           |
+| health_center_2       | district_2                              | false             | HC2  |  1544031155715           |
+| health_center_3       | district_3                              | false             | HC3  |  1544031155715           |
 
 This would create a structure such as:
 
@@ -286,19 +285,19 @@ NOTE: `_id` is a generated value that is inside the generated docs.
 
 Refered to CSV Example:
 
-| reference_id:excluded | parent | is_name_generated | name | external_id | notes | geolocation | reported_date:timestamp |
-| --------------------- | ------ | ----------------- | ---- | ----------- | ----- | ----------- | ----------------------- |
-| district_1            |        | false             | D1   |             |       |             | 1544031155715           |
-| district_2            |        | false             | D2   |             |       |             | 1544031155715           |
-| district_3            |        | false             | D3   |             |       |             | 1544031155715           |
+| reference_id:excluded | is_name_generated | name | reported_date:timestamp |
+| --------------------- | ----------------- | ---- | ----------------------- |
+| district_1            | false             | D1   | 1544031155715           |
+| district_2            | false             | D2   | 1544031155715           |
+| district_3            | false             | D3   | 1544031155715           |
 
 CSV Using Reference 
 
-| reference_id:excluded | parent:GET _id OF place WHERE reference_id=COL_VAL | is_name_generated | name | external_id | notes | geolocation | reported_date:timestamp |
-| --------------------- | -------------------------------------------------- | ----------------- | ---- | ----------- | ----- | ----------- | ----------------------- |
-| health_center_1       | district_1                                         | false             | HC1  |             |       |             | 1544031155715           |
-| health_center_2       | district_2                                         | false             | HC2  |             |       |             | 1544031155715           |
-| health_center_3       | district_3                                         | false             | HC3  |             |       |             | 1544031155715           |
+| reference_id:excluded | parent:GET _id OF place WHERE reference_id=COL_VAL | is_name_generated | name | reported_date:timestamp |
+| --------------------- | -------------------------------------------------- | ----------------- | ---- | ----------------------- |
+| health_center_1       | district_1                                         | false             | HC1  | 1544031155715           |
+| health_center_2       | district_2                                         | false             | HC2  | 1544031155715           |
+| health_center_3       | district_3                                         | false             | HC3  | 1544031155715           |
 
 
 This would create a structure such as:
