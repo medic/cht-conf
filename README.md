@@ -183,7 +183,20 @@ To create users on a remote server, use the `create-users` action.  The CSV file
 
 To convert CSV to JSON docs, use the `csv-to-docs` action.
 
-## property types
+### CSV File Name
+
+_The name of the file determines the type of doc created for rows contained in the file. The possible types are: `report`, `person`, and `place`. Each of these has a further specifier provided in the filename:_
+- `place.{place_type}.csv`:  where `{place_type}` is the type of place specified in the file, one of: `clinic`, `health_center`, `district_hospital`
+- `person.{parent_place_type}.csv`:  where `{parent_place_type}` is the parent for the person, one of: `clinic`, `health_center`, `district_hospital`
+- `report.{form_id}.csv`:  where `{form_id}` is the form ID for all the reports in the file. You will need one file per form ID
+
+Here are some examples:
+
+File named place.district_hospital.csv  adds the property `"type":"district_hospital"`<br/>
+File named person.clinic.csv add the property `"type":"person"`<br/>
+File named report.immunization_visit.csv add the property `"type":"report", "form":"immunization_visit"`<br/>
+
+### Property Types
 
 By default, values are parsed as strings.  To parse a CSV column as a JSON type, suffix a data type to the column definition, e.g.
 
@@ -201,7 +214,7 @@ This would create a structure such as:
 		"column_six": 1513255007072
 	}
 
-## excluded columns
+### Excluded Columns
 
 To exclude a column from the final object structure, give it the type `excluded`:
 
@@ -209,34 +222,102 @@ To exclude a column from the final object structure, give it the type `excluded`
 
 This can be useful if using a column for doc references.
 
-## doc references
+### Doc References
+
+In the reference example below. A property on the JSON doc will be populated with the doc that matches the `WHERE` statement.
+The CSV example below using the reference will find the doc with `district_1` and create a `parent` property with the value of the `district_1` doc
 
 To reference other docs, replace the type suffix with a matching clause:
 
-	GET location:place WHERE external_id=COL_VAL
+	parent:place WHERE reference_id=COL_VAL
+
+Refered to CSV Example:
+
+| reference_id:excluded | is_name_generated | name | reported_date:timestamp |
+| --------------------- | ----------------- | ---- | ----------------------- |
+| district_1            | false             | D1   | 1544031155715           |
+| district_2            | false             | D2   | 1544031155715           |
+| district_3            | false             | D3   | 1544031155715           |
+
+### CSV Using Reference 
+
+| reference_id:excluded | parent:place WHERE reference_id=COL_VAL | is_name_generated | name | reported_date:timestamp |
+| --------------------- | --------------------------------------- | ----------------- | ---- | ----------------------- |
+| health_center_1       | district_1                              | false             | HC1  |  1544031155715           |
+| health_center_2       | district_2                              | false             | HC2  |  1544031155715           |
+| health_center_3       | district_3                              | false             | HC3  |  1544031155715           |
 
 This would create a structure such as:
 
-	{
-		"_id": "09efb53f-9cd8-524c-9dfd-f62c242f1817",
-		"location": {
-		"_id": "7ac33d1f-10d8-5198-b39d-9d61595292f6"
-			"name": "some place"
-		}
-	}
+```
+{
+  "type": "health_center",
+  //Parent Property with district_1 doc as the value
+  "parent": {
+    "type": "district_hospital",
+    "parent": "",
+    "is_name_generated": "false",
+    "name": "D2",
+    "external_id": "",
+    "notes": "",
+    "geolocation": "",
+    "reported_date": 1544031155715,
+    "_id": "f223f240-5d6a-5a7a-91d4-46d3c59de73e"
+  },
+  "is_name_generated": "false",
+  "name": "HC7",
+  "external_id": "",
+  "notes": "",
+  "geolocation": "",
+  "reported_date": 1544031155715,
+  "_id": "480d0cd0-c021-5d55-8c63-d86576d592fc"
+}
+```
 
-## doc property references
+### Doc Property References
 
 To reference specific properties of other docs:
 
-	GET location:_id OF place WHERE external_id=COL_VAL
+	parent:GET _id OF place WHERE reference_id=COL_VAL
+
+In this example the `health_ccenter` doc will have a `property` of `parent` set to the `_id` of the refered to doc `district_1` property of `_id`
+
+NOTE: `_id` is a generated value that is inside the generated docs. 
+
+Refered to CSV Example:
+
+| reference_id:excluded | is_name_generated | name | reported_date:timestamp |
+| --------------------- | ----------------- | ---- | ----------------------- |
+| district_1            | false             | D1   | 1544031155715           |
+| district_2            | false             | D2   | 1544031155715           |
+| district_3            | false             | D3   | 1544031155715           |
+
+CSV Using Reference 
+
+| reference_id:excluded | parent:GET _id OF place WHERE reference_id=COL_VAL | is_name_generated | name | reported_date:timestamp |
+| --------------------- | -------------------------------------------------- | ----------------- | ---- | ----------------------- |
+| health_center_1       | district_1                                         | false             | HC1  | 1544031155715           |
+| health_center_2       | district_2                                         | false             | HC2  | 1544031155715           |
+| health_center_3       | district_3                                         | false             | HC3  | 1544031155715           |
+
 
 This would create a structure such as:
 
-	{
-		"_id": "09efb53f-9cd8-524c-9dfd-f62c242f1817",
-		"location": "7ac33d1f-10d8-5198-b39d-9d61595292f6"
-	}
+```
+{
+  "type": "health_center",
+  //Parent property with the _id from district_1 as the value.
+  "parent": "0c31056a-3a80-54dd-b136-46145d451a66",
+  "is_name_generated": "false",
+  "name": "HC3",
+  "external_id": "",
+  "notes": "",
+  "geolocation": "",
+  "reported_date": 1544031155715,
+  "_id": "45293356-353c-5eb1-9a41-baa3427b4f69"
+}
+```
+
 
 Note the special string `COL_VAL` - this matches the CSV column value for the row being processed.
 
