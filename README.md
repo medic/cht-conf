@@ -183,15 +183,19 @@ To create users on a remote server, use the `create-users` action.  The CSV file
 
 To convert CSV to JSON docs, use the `csv-to-docs` action.
 
-## csv file name
+### CSV File Name
 
-The name of the file drives what the `type` (person,place, report) and the value. Some examples shown below.
+_The name of the file determines the type of doc created for rows contained in the file. The possible types are: `report`, `person`, and `place`. Each of these has a further specifier provided in the filename:_
+- `place.{place_type}.csv`:  where `{place_type}` is the type of place specified in the file, one of: `clinic`, `health_center`, `district_hospital`
+- `person.{parent_place_type}.csv`:  where `{parent_place_type}` is the parent for the person, one of: `clinic`, `health_center`, `district_hospital`
+- `report.{form_id}.csv`:  where `{form_id}` is the form ID for all the reports in the file. You will need one file per form ID
+Here are some examples:
 
 File named place.district_hospital.csv  adds the property `"type":"district_hospital"`<br/>
 File named person.clinic.csv add the property `"type":"person"`<br/>
 File named report.immunization_visit.csv add the property `"type":"report", "form":"immunization_visit"`<br/>
 
-## property types
+### Property Types
 
 By default, values are parsed as strings.  To parse a CSV column as a JSON type, suffix a data type to the column definition, e.g.
 
@@ -209,7 +213,7 @@ This would create a structure such as:
 		"column_six": 1513255007072
 	}
 
-## excluded columns
+### Excluded Columns
 
 To exclude a column from the final object structure, give it the type `excluded`:
 
@@ -217,10 +221,10 @@ To exclude a column from the final object structure, give it the type `excluded`
 
 This can be useful if using a column for doc references.
 
-## doc references
+### Doc References
 
-In the reference example below. A `property` on the json doc will be populated with the `doc` that matches the `WHERE` statement.
-The CSV example below using the reference will find the `doc` with `district_1` and create a `parent` property with the value of the `district_1` doc
+In the reference example below. A property on the JSON doc will be populated with the doc that matches the `WHERE` statement.
+The CSV example below using the reference will find the doc with `district_1` and create a `parent` property with the value of the `district_1` doc
 
 To reference other docs, replace the type suffix with a matching clause:
 
@@ -270,7 +274,7 @@ This would create a structure such as:
 }
 ```
 
-## doc property references
+### Doc Property References
 
 To reference specific properties of other docs:
 
