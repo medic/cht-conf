@@ -7,9 +7,16 @@ Medic Project Configurer
 
 * nodejs 6 or later
 * python 2.7
+* or Docker
 
 
 # Installation
+
+## Docker
+
+   docker build -t medic-conf:v0 .
+   docker run medic-conf:v0
+   docker exec -it <container_name> /bin/bash
 
 ## Ubuntu
 
