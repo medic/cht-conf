@@ -31,7 +31,7 @@ module.exports = (options) => {
       if (options.nonFatal && err.cause && err.cause.code === 'ENOTFOUND') {
         warn('Could not check NPM for updates.  You may be offline.');
       } else {
-        warn(`Could not check NPM for updates. Error:${err.message}`);
+        warn(`Could not check NPM for updates. Error: ${err.message}`);
       }
     })
     ;
