@@ -8,13 +8,7 @@ const warn = require('../lib/log').warn;
 function parsePurgingFunction(root) {
   const purgeFnPath = `${root}/purging.js`;
   if (fs.exists(purgeFnPath)) {
-    let purgeFn = fs.read(purgeFnPath);
-
-    // Minor whitespace cleanup
-    purgeFn = purgeFn
-      .replace(/\n/g, '') //                So we're all on one line
-      .replace(/([{\[;])\s{2,}/g, `$1 `) // if {        blah      -> if { blah
-      .replace(/\s{2,}/g, ''); //           array      .push(foo) -> array.push(foo)
+    const purgeFn = fs.read(purgeFnPath);
 
     try {
       /* jshint -W061 */
