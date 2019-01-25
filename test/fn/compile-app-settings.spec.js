@@ -22,6 +22,11 @@ describe('compile-app-settings', () => {
   it('should reject a project with both old and new nools config', () =>
     testFails('unexpected-legacy-nools-rules/project'));
 
+  it('should handle a project with purging rules', () =>
+    test('purging-rules/project'));
+
+  it('should reject a project with an uncompilable purging function', () =>
+    testFails('invalid-purging-rules/project'));
 });
 
 function test(relativeProjectDir) {
