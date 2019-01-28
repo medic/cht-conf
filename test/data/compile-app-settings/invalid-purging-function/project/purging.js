@@ -4,3 +4,4 @@ function(userCtx, contact, reports) {
   return reports
     .filter(r => r.reported_date < old)
     .map(r => r_.id);
+//} <-- oh no we made an oopsie, I sure hope Medic Conf comes to the rescue...

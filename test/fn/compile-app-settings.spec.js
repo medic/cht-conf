@@ -22,11 +22,14 @@ describe('compile-app-settings', () => {
   it('should reject a project with both old and new nools config', () =>
     testFails('unexpected-legacy-nools-rules/project'));
 
-  it('should handle a project with purging rules', () =>
-    test('purging-rules/project'));
+  it('should handle a project with a purge function', () =>
+    test('purging-function/project'));
+
+  it('should handle a project with a perge function that need to be merged with other purge config', () =>
+    test('purging-function/project'));
 
   it('should reject a project with an uncompilable purging function', () =>
-    testFails('invalid-purging-rules/project'));
+    testFails('invalid-purging-function/project'));
 });
 
 function test(relativeProjectDir) {
