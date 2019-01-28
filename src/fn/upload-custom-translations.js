@@ -43,7 +43,7 @@ function propertiesAsObject(path) {
 }
 
 function overwriteProperties(doc, props) {
-  if(doc.default) {
+  if(doc.generic) {
     // 3.4.0 translation structure
     doc.custom = props;
   } else {

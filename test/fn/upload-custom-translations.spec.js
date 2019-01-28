@@ -9,27 +9,27 @@ describe('upload-custom-translations', () => {
   describe('medic-webapp v3.4.0 custom-translation structure', () => {
     it('should replace existing custom values', () =>
       translationDocExistsInDb('en', {
-        default: { from_default:'def' },
+        generic: { from_generic:'def' },
         custom: { from_custom:'should be overwritten' },
       })
         .then(() => uploadProject('medic-webapp-v3.4.0/with-customs'))
         .then(expectLangs('en'))
-        .then(expectDefaultTranslations('en', { from_default:'def' }))
+        .then(expectGenericTranslations('en', { from_generic:'def' }))
         .then(expectCustomTranslations('en', { from_custom:'overwritten' })));
 
     it('should delete existing custom values', () =>
       translationDocExistsInDb('en', {
-        default: { from_default:'def' },
+        generic: { from_generic:'def' },
         custom: { from_custom:'should be deleted' },
       })
         .then(() => uploadProject('medic-webapp-v3.4.0/no-customs'))
         .then(expectLangs('en'))
-        .then(expectDefaultTranslations('en', { from_default:'def' }))
+        .then(expectGenericTranslations('en', { from_generic:'def' }))
         .then(expectCustomTranslations('en', {})));
 
-    function expectDefaultTranslations(lang, expectedTranslations) {
+    function expectGenericTranslations(lang, expectedTranslations) {
       return () => getDocFor(lang)
-        .then(doc => assert.deepEqual(doc.default, expectedTranslations));
+        .then(doc => assert.deepEqual(doc.generic, expectedTranslations));
     }
 
     function expectCustomTranslations(lang, expectedTranslations) {
