@@ -5,6 +5,23 @@ const fs = require('../lib/sync-fs');
 const parseTargets = require('../lib/parse-targets');
 const warn = require('../lib/log').warn;
 
+function parsePurgingFunction(root) {
+  const purgeFnPath = `${root}/purging.js`;
+  if (fs.exists(purgeFnPath)) {
+    const purgeFn = fs.read(purgeFnPath);
+
+    try {
+      /* jshint -W061 */
+      eval(`(${purgeFn})`);
+    } catch(err) {
+      warn('Unable to parse purging.js', err);
+      throw err;
+    }
+
+    return purgeFn;
+  }
+}
+
 module.exports = (projectDir /*, couchUrl */) => {
 
   return Promise.resolve()
@@ -49,6 +66,7 @@ module.exports = (projectDir /*, couchUrl */) => {
       nools: compileNoolsRules(projectDir),
       targets: parseTargets.json(projectDir),
       tasks_schedules: readOptionalJson(taskSchedulesPath),
+      purging: parsePurgingFunction(projectDir)
     };
 
     const app_settings = files.app_settings;
@@ -60,6 +78,11 @@ module.exports = (projectDir /*, couchUrl */) => {
       schedules: files.tasks_schedules,
       targets: files.targets,
     };
+
+    if (files.purging) {
+      app_settings.purging = app_settings.purging || {};
+      app_settings.purging.fn = files.purging;
+    }
 
     return app_settings;
   }
