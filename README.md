@@ -14,9 +14,9 @@ Medic Project Configurer
 
 ## Docker
 
-        docker build -t medic-conf:v0 .
-        docker run medic-conf:v0
-        docker exec -it <container_name> /bin/bash
+	docker build -t medic-conf:v0 .
+	docker run medic-conf:v0
+	docker exec -it <container_name> /bin/bash
 
 ## Ubuntu
 
