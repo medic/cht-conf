@@ -8,8 +8,24 @@ changelog() {
 	local previous="$1"
 	local currentTree="$2"
 	local currentName="$3"
-	echo "## $currentName"
-	git log "${previous}..${currentTree}" --pretty=oneline | cut -d' ' -f2- | sed -E -e 's/^/* /'
+
+	if [[ "$currentName" == "$previous" ]]; then
+		local currentName="master"
+		local released=""
+	else
+		local released=`git log -1 --pretty=format:"%ad" --date=short $currentName 2> /dev/null`
+	fi
+
+	echo "## [\`$currentName\`](https://github.com/medic/medic-conf/tree/$currentName)"
+	echo
+	if [[ -z "$released" ]]; then
+		echo "...not yet released..."
+	else
+		echo "Released: $released"
+	fi
+	echo
+	git log "${previous}..${currentTree}" --pretty=oneline --abbrev-commit | sed -E -e \
+		's/^([a-z0-9]{7}) /* [\`\1\`](https:\/\/github.com\/medic\/medic-conf\/commit\/\1) /'
 	echo
 }
 
