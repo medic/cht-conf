@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.20.0
+* First-class purging function support (#125)
+* Allow medic conf to process wven when it does not have the latest update data
+* Add Docker container for easy setup
+* updated docs for csv-to-doc
+
 ## v1.19.0
 * [fetch-csvs-from-google-drive] added function
 
