@@ -50,6 +50,12 @@ ${bold('OPTIONS')}
 
 	--changelog
 		Display application changelog.
+
+	--no-check
+		Do not check for medic-conf updates.
+	
+	--db <database name>
+		Upload to a specific database. Defaults to ${bold('medic')}.
 `);
 
   process.exit(exitCode);
