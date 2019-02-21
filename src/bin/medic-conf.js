@@ -16,6 +16,7 @@ const warn = require('../lib/log').warn;
 
 let args = process.argv.slice(2);
 const shift = n => args = args.slice(n || 1);
+let dbName = 'medic';
 
 if(!args.length) {
   return checkForUpdates({ nonFatal:true })
@@ -84,8 +85,13 @@ if(args[0] === '--no-check') {
   shift();
 }
 
+if (args[0] === '--db') {
+  dbName = args[1];
+  shift(2);
+}
+
 const projectName = fs.path.basename(fs.path.resolve('.'));
-const couchUrl = instanceUrl && `${instanceUrl}/medic`;
+const couchUrl = instanceUrl && `${instanceUrl}/${dbName}`;
 
 if(instanceUrl) {
   if(instanceUrl.match('/medic$')) warn('Supplied URL ends in "/medic".  This is probably incorrect.');
