@@ -80,8 +80,8 @@ module.exports = (projectDir /*, couchUrl */) => {
     };
 
     if (files.purging) {
-      app_settings.purging = app_settings.purging || {};
-      app_settings.purging.fn = files.purging;
+      app_settings.purge = app_settings.purging || {};
+      app_settings.purge.fn = files.purging;
     }
 
     return app_settings;
