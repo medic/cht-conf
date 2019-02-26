@@ -3,6 +3,9 @@
   "version": "1.20.0",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
+  "engines": {
+    "node" : ">=8.9.0"
+  },
   "scripts": {
     "clean": "rm -rf ./build/",
     "generate-changelog": "echo 'Generating changelog...' && ./scripts/changelog > CHANGELOG.md && echo 'Changelog generated.'",
