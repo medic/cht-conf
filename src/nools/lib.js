@@ -81,7 +81,7 @@ function emitTasksForSchedule(c, schedule, r) {
         }
       } else {
         if(event.dueDate) {
-          dueDate = event.dueDate(c.contact, event, scheduledTaskIdx);
+          dueDate = event.dueDate(c, event, scheduledTaskIdx);
         } else {
           dueDate = new Date(Utils.addDate(new Date(c.contact.reported_date), event.days));
         }
@@ -129,7 +129,7 @@ function emitTasksForSchedule(c, schedule, r) {
       contact: c.contact,
     };
 
-    if(def.modifyContent) def.modifyContent(r, content);
+    if(def.modifyContent) def.modifyContent(r || c, content);
 
     return {
       type: 'report',

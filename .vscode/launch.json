@@ -1,0 +1,19 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Upload Standard Configuration",
+            "program": "${workspaceFolder}/src/bin/medic-conf",
+            "args": [ "--local" ],
+            "cwd": "/home/kenn/medic-webapp/config/standard",
+            "env": {
+                "COUCH_URL": ""
+            }
+        }
+    ]
+}

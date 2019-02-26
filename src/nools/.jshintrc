@@ -1,5 +1,5 @@
 {
-  "esversion": 5,
+  "esversion": 6,
   "globals": {
     "c": true,
     "emit": false,
@@ -15,5 +15,5 @@
     "Utils": false
   },
   "undef": true,
-  "unused": true
+  "unused": false,
 }

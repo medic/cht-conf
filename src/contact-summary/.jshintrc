@@ -8,5 +8,5 @@
     "reports": false
   },
   "undef": true,
-  "unused": true
+  "unused": false
 }
