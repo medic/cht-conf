@@ -6,8 +6,9 @@ const parseJs = require('./simple-js-parser');
 function getUnfilteredJs(projectDir) {
   const unfiltered = parseJs({
     jsFiles: [
+      `${projectDir}/shared.lib.js`,
+      `${projectDir}/targets.lib.js`,
       `${projectDir}/targets.js`,
-      `${projectDir}/nools-extras.js`,
     ],
     export: [
       'targets',

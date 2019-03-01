@@ -1,12 +1,14 @@
 const fs = require('./sync-fs');
 const jshintWithReport = require('./jshint-with-report');
+
+// This is causing some many scoping and closure related issues it's insanity
 const jsToString = require('./js-to-string');
 const minifyJs = require('./minify-js');
 const minifyNools = require('./minify-nools');
 const parseTargets = require('./parse-targets');
 const templatedJs = require('./templated-js');
 
-const CURRENT_NOOLS_FILES = [ 'tasks.js', 'targets.js', 'nools-extras.js' ];
+const CURRENT_NOOLS_FILES = [ 'tasks.js', 'targets.js' ];
 
 function lint(code) {
   jshintWithReport('nools rules', code, {
@@ -17,17 +19,25 @@ function lint(code) {
 function compileWithDefaultLayout(projectDir) {
   checkForRequiredFilesForDefaultLayout(projectDir);
 
-  const targets = parseTargets.js(projectDir);
-  const tasks = fs.read(`${projectDir}/tasks.js`);
-  const supportCode = fs.read(`${projectDir}/nools-extras.js`);
+  const loadLibFile = filename => {
+    const path = `${projectDir}/${filename}.js`;
+    if (!fs.exists(path)) {
+      console.warn(`Library file does not exist at ${path}`);
+      return '';
+    }
+
+    return fs.read(path);
+  };
   const noolsLib = fs.read(`${__dirname}/../nools/lib.js`);
 
   const jsCode = templatedJs.fromString(projectDir, `
     var idx1, idx2, r, target;
     var now = Utils.now();
-    ${supportCode}
-    var targets = ${jsToString(targets)};
-    var tasks = ${tasks};
+    ${loadLibFile('shared.lib')}
+    ${loadLibFile('tasks.lib')}
+    ${loadLibFile('targets.lib')}
+    ${loadLibFile('targets')}
+    var tasks = ${loadLibFile('tasks')};
 
     ${noolsLib}
   `);
