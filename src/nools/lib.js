@@ -94,7 +94,7 @@ function emitTasksForSchedule(c, schedule, r) {
       task = {
         // One task instance for each event per form that triggers a task, not per contact
         // Otherwise they collide when contact has multiple reports of the same form
-        _id: r ? (r._id + '-' + event.id) : (c.contact._id + '-' + schedule.id),
+        _id: `${r ? r._id : c.contact._id}-${schedule.id}-${event.id || i}`,
         deleted: !!((c.contact && c.contact.deleted) || r ? r.deleted : false),
         doc: c,
         contact: c.contact,
