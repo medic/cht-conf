@@ -59,7 +59,7 @@ function getUnfilteredJs(projectDir) {
       case 'contacts':
         break;
       default:
-        throw new Error(`No handling implemented in medic-conf for target: ${jsToString(t)}`);
+        throw new Error(`No handling implemented in medic-conf for target appliesTo: ${t.appliesTo}`);
     }
   });
 

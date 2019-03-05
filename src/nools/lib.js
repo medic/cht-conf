@@ -1,5 +1,45 @@
+function bindToContext(toBind, context) {
+  if (toBind && typeof toBind === 'function') {
+    toBind = toBind.bind(context);
+  }
+  return toBind;
+}
+function bindTargetToContext(target) {
+  // TODO: Deep copy
+  const context = { definition: Object.assign({}, target) };
+  ['passesIf', 'appliesIf', 'idType', 'emitCustom'].forEach(function (toBind) {
+    target[toBind] = bindToContext(target[toBind], context);
+  });
+  return target;
+}
+
+function bindTaskToContext(task) {
+  const context = { definition: Object.assign({}, task) };
+  ['appliesIf', 'resolvedIf' ].forEach(function (toBind) {
+    task[toBind] = bindToContext(task[toBind], context);
+  });
+
+  if (Array.isArray(task.events)) {
+    for (let event of task.events) {
+      if (event.dueDate) {
+        event.dueDate = bindToContext(event.dueDate, context); 
+      }
+    }
+  }
+
+  if (Array.isArray(task.actions)) {
+    for (let action of task.actions) {
+      if (action.modifyContent) {
+        action.modifyContent = bindToContext(action.modifyContent, context);
+      }
+    }
+  }
+  
+  return task;
+}
+
 for(idx1=0; idx1<targets.length; ++idx1) {
-  target = targets[idx1];
+  target = bindTargetToContext(targets[idx1]);
   switch(target.appliesTo) {
     case 'contacts':
       if(c.contact && (!target.appliesToType || target.appliesToType.indexOf(c.contact.type) !== -1)) {
@@ -15,13 +55,13 @@ for(idx1=0; idx1<targets.length; ++idx1) {
       }
       break;
     default:
-      throw new Error('unrecognised target type: ' + target.appliesTo);
+      throw new Error('Unrecognised appliesTo value: ' + target.appliesTo);
   }
 }
 
 if(tasks) {
   for(idx1=0; idx1<tasks.length; ++idx1) {
-    var task = tasks[idx1];
+    var task = bindTaskToContext(tasks[idx1]);
     switch(task.appliesTo) {
       case 'reports':
       case 'scheduled_tasks':
@@ -181,11 +221,15 @@ function emitReportBasedTargetFor(c, r, targetConf) {
 
   pass = !targetConf.passesIf || !!targetConf.passesIf(c, r);
   instance = createTargetInstance(targetConf.id, r, pass);
-  instance._id = (targetConf.idType === 'report' ? r._id : c.contact._id) + '-' + targetConf.id;
-  emitTargetInstance(instance);
-  switch(targetConf.date) {
-    case 'now': instance.date = now.getTime(); break;
+
+  const defaultId = typeof targetConf.idType === 'function' ?
+    targetConf.idType(c, r) :
+    targetConf.idType === 'report' ? r._id : c.contact._id;
+  instance._id = defaultId + '-' + targetConf.id;
+  if (targetConf.date === 'now') {
+    instance.date = now.getTime();
   }
+  emitTargetInstance(instance);
 }
 
 function createTargetInstance(type, doc, pass) {
