@@ -18,9 +18,8 @@ module.exports = (projectDir, couchUrl) => {
         const username = row[cols.indexOf('username')];
         const password = row[cols.indexOf('password')];
         const type     = row[cols.indexOf('type')];
-
+        const place    = cols.includes("place.") ? prefixedProperties(cols, row, 'place.'  ) : row[cols.findIndex(x => x === 'place')];
         const contact = prefixedProperties(cols, row, 'contact.');
-        const place =   prefixedProperties(cols, row, 'place.'  );
 
         const requestObject = { username, password, type, place, contact };
 
