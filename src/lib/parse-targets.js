@@ -99,7 +99,7 @@ module.exports = {
     return {
       enabled: true,
       items: filterProperties(targets, {
-        required: [ 'id', 'type', 'goal', 'translation_key', 'subtitle_translation_key' ],
+        required: [ 'id', 'type', 'goal', 'translation_key' ],
         recommended: [ 'icon' ],
         optional: [ 'context' ],
       }),
