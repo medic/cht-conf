@@ -51,7 +51,7 @@ module.exports = {
         module.exports.db
           .get(id)
           .then(doc => module.exports.db.remove(doc)))));
-
+    mockMiddleware.clearRequests();    
     mockMiddleware.reset();
 
     return dbClear;

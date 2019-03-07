@@ -8,6 +8,12 @@ module.exports = function() {
     }
   }
 
+  function clearRequests(){
+    while(this.requests.length > 0 ){
+      this.requests.pop();
+    }
+  }
+
   function requestHandler(req, res) {
     requests.push(req);
 
@@ -25,7 +31,7 @@ module.exports = function() {
     rr.forEach(r => responses.push(r));
   }
 
-  return { requests, requestHandler, reset, setResponses };
+  return { requests, clearRequests, requestHandler, reset, setResponses };
 };
 
 function error(req, res) {
