@@ -138,7 +138,7 @@ function emitTasksForSchedule(c, schedule, r) {
       task = {
         // One task instance for each event per form that triggers a task, not per contact
         // Otherwise they collide when contact has multiple reports of the same form
-        _id: `${r ? r._id : c.contact._id}-${schedule.id}-${event.id || i}`,
+        _id: `${r ? r._id : c && c.contact && c.contact._id}-${schedule.id}-${event.id || i}`,
         deleted: !!((c.contact && c.contact.deleted) || r ? r.deleted : false),
         doc: c,
         contact: c.contact,
@@ -190,11 +190,6 @@ function emitTasksForSchedule(c, schedule, r) {
 function emitContactBasedTargetFor(c, targetConfig) {
   if(targetConfig.appliesIf && !targetConfig.appliesIf(c)) return;
 
-  if(targetConfig.emitCustom) {
-    targetConfig.emitCustom(c);
-    return;
-  }
-
   var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c);
 
   var instance = createTargetInstance(targetConfig.id, c.contact, pass);
@@ -203,31 +198,38 @@ function emitContactBasedTargetFor(c, targetConfig) {
   } else if(targetConfig.date === undefined || targetConfig.date === 'now') {
     instance.date = now.getTime();
   } else if(targetConfig.date === 'reported') {
-    instance.date = c.reported_date;
+    instance.date = c.contact.reported_date;
   } else {
     throw new Error('Unrecognised value for target.date: ' + targetConfig.date);
   }
+  
+  if(targetConfig.emitCustom) {
+    targetConfig.emitCustom(c, instance);
+    return;
+  }
+
   emitTargetInstance(instance);
 }
 
 function emitReportBasedTargetFor(c, r, targetConf) {
-  var instance, pass;
   if(targetConf.appliesIf && !targetConf.appliesIf(c, r)) return;
 
-  if(targetConf.emitCustom) {
-    targetConf.emitCustom(c, r);
-    return;
-  }
+  const pass = !targetConf.passesIf || !!targetConf.passesIf(c, r);
+  const instance = createTargetInstance(targetConf.id, r, pass);
 
-  pass = !targetConf.passesIf || !!targetConf.passesIf(c, r);
-  instance = createTargetInstance(targetConf.id, r, pass);
-
-  const defaultId = typeof targetConf.idType === 'function' ?
-    targetConf.idType(c, r) :
-    targetConf.idType === 'report' ? r._id : c.contact._id;
-  instance._id = defaultId + '-' + targetConf.id;
+  const idPrefix =
+    typeof targetConf.idType === 'function' ? targetConf.idType(c, r) :
+    targetConf.idType === 'report' ? r._id :
+    !!c.contact ? c.contact._id :
+    'no-contact';
+  instance._id = idPrefix + '-' + targetConf.id;
   if (targetConf.date === 'now') {
     instance.date = now.getTime();
+  }
+
+  if(targetConf.emitCustom) {
+    targetConf.emitCustom(c, r, instance);
+    return;
   }
   emitTargetInstance(instance);
 }
