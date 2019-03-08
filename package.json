@@ -4,14 +4,14 @@
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "engines": {
-    "node" : ">=8.9.0"
+    "node": ">=8.9.0"
   },
   "scripts": {
     "clean": "rm -rf ./build/",
     "generate-changelog": "echo 'Generating changelog...' && ./scripts/changelog > CHANGELOG.md && echo 'Changelog generated.'",
     "jshint": "jshint --verbose src/**/*.js test/*.js test/**/*.js",
     "release": "./scripts/reject-excluded-tests && npm run --silent generate-changelog && ./scripts/dirty-repo-check && git push && git tag v$(jq -r .version package.json) && git push --tags && npm publish",
-    "test": "npm run jshint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js"
+    "test": "npm run jshint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js -R min"
   },
   "bin": {
     "medic-conf": "src/bin/medic-conf.js",
@@ -51,6 +51,7 @@
     "chai": "^4.2.0",
     "chai-exclude": "^1.0.10",
     "chai-shallow-deep-equal": "^1.4.6",
+    "eslint": "^5.15.1",
     "express-pouchdb": "^4.1.0",
     "lodash": "^4.17.11",
     "memdown": "^3.0.0",
