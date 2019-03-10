@@ -13,15 +13,17 @@ module.exports = (projectDir, couchUrl) => {
       if(!fs.exists(csvPath)) throw new Error(`User csv file not found at ${csvPath}`);
 
       const { cols, rows } = fs.readCsv(csvPath);
+      const usernameIndex = cols.indexOf('username');
+      const passwordIndex = cols.indexOf('password');
+      const typeIndex = cols.indexOf('type');
+      const placeIdIndex = cols.indexOf('place');
 
       return rows.reduce((promiseChain, row) => {
-        const username = row[cols.indexOf('username')];
-        const password = row[cols.indexOf('password')];
-        const type     = row[cols.indexOf('type')];
-
+        const username = row[usernameIndex];
+        const password = row[passwordIndex];
+        const type     = row[typeIndex];
         const contact = prefixedProperties(cols, row, 'contact.');
-        const place =   prefixedProperties(cols, row, 'place.'  );
-
+        const place = placeIdIndex === -1 ? prefixedProperties(cols, row, 'place.') : row[placeIdIndex];
         const requestObject = { username, password, type, place, contact };
 
         return promiseChain
@@ -38,11 +40,12 @@ module.exports = (projectDir, couchUrl) => {
     });
 };
 
-function prefixedProperties(cols, row, prefix) {
-  return cols
-    .filter(col => col.startsWith(prefix))
-    .reduce((obj, col) => {
-      obj[col.substring(prefix.length)] = row[cols.indexOf(col)];
-      return obj;
-    }, {});
+function prefixedProperties (cols, row, prefix) {
+  const indices = {};
+  cols.forEach(col => {
+    if (col.startsWith(prefix)) {
+      indices[col.substring(prefix.length)] = row[cols.indexOf(col)];
+    }
+  });
+  return indices;
 }
