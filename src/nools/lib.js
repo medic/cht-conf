@@ -20,6 +20,7 @@ for(idx1=0; idx1<targets.length; ++idx1) {
 if(tasks) {
   for(idx1=0; idx1<tasks.length; ++idx1) {
     var task = tasks[idx1];
+    task.index = idx1;
     switch(task.appliesTo) {
       case 'reports':
       case 'scheduled_tasks':
@@ -94,7 +95,7 @@ function emitTasksForSchedule(c, schedule, r) {
       task = {
         // One task instance for each event per form that triggers a task, not per contact
         // Otherwise they collide when contact has multiple reports of the same form
-        _id: r ? (r._id + '-' + event.id) : (c.contact._id + '-' + schedule.id),
+        _id: (r ? r._id : c.contact && c.contact._id) + '~' + (event.id || i) + '~' + (schedule.name || schedule.index),
         deleted: !!((c.contact && c.contact.deleted) || r ? r.deleted : false),
         doc: c,
         contact: c.contact,
