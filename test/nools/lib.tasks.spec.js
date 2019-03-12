@@ -220,9 +220,9 @@ describe('nools lib', function() {
       };
 
       config.tasks[0].appliesIf = function() {
-        emit('invoked', { _this: this });
+        emit('invoked', { _this: this }); // jshint ignore:line
         return false;
-      }
+      };
 
       // when
       const emitted = loadLibWith(config).emitted;

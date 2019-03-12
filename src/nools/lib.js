@@ -1,5 +1,7 @@
 function bindAllFunctionsToContext(obj, context) {
-  for (var key of Object.keys(obj)) {
+  var keys = Object.keys(obj);
+  for (var i in keys) {
+    var key = keys[i];
     switch(typeof obj[key]) {
       case 'object':
         bindAllFunctionsToContext(obj[key], context);
@@ -13,7 +15,9 @@ function bindAllFunctionsToContext(obj, context) {
 
 function deepCopy(obj) {
   var copy = Object.assign({}, obj);
-  for (var key of Object.keys(copy)) {
+  var keys = Object.keys(copy);
+  for (var i in keys) {
+    var key = keys[i];
     if (typeof copy[key] === 'object') {
       copy[key] = deepCopy(copy[key]);
     }
