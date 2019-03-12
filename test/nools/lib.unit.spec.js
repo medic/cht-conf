@@ -1,23 +1,17 @@
 const { expect } = require('chai');
 const rewire = require('rewire');
 
-global.targets = [];
-global.tasks = [];
-global.emit = () => {};
-const lib = rewire('../../src/nools/lib.js');
-
 describe('nools lib unit tests', () => {
-  // before(() => {
-  //   global.targets = [];
-  //   global.tasks = [];
-  //   global.emit = () => {};
-  //   lib = rewire('../../src/nools/lib.js');
-  // });
+  global.targets = [];
+  global.tasks = [];
+  global.emit = () => {};
+  const lib = rewire('../../src/nools/lib.js');
+  
   after(() => {
     delete global.targets;
     delete global.tasks;
     delete global.emit;
-  })
+  });
 
   describe('deep copy', () => {
     const deepCopy = lib.__get__('deepCopy');
