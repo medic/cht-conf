@@ -148,9 +148,7 @@ function emitTargetFor(targetConfig, c, r) {
   var instanceDoc = isEmittingForReport ? r : c.contact;
   var instance = createTargetInstance(targetConfig.id, instanceDoc, pass);
 
-  if (isEmittingForReport) {
-    instance._id = (targetConfig.idType === 'report' ? r && r._id : c.contact._id) + '~' + targetConfig.id;
-  }
+  instance._id = (targetConfig.idType === 'report' ? r && r._id : c.contact._id) + '~' + targetConfig.id;
 
   if(typeof targetConfig.date === 'function') {
     instance.date = targetConfig.date(c, r);
