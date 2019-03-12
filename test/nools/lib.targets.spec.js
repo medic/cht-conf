@@ -104,7 +104,6 @@ describe('nools lib', function() {
         const reportedDate = aRandomTimestamp();
         const contact = personWithoutReports();
         contact.reported_date = reportedDate;
-
         // and
         const config = {
           c: contact,
