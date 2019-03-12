@@ -73,7 +73,7 @@ function emitTasksForSchedule(c, schedule, r) {
 
       if(r) {
         if(event.dueDate) {
-          dueDate = event.dueDate(r, event, scheduledTaskIdx);
+          dueDate = event.dueDate(c, r, event, scheduledTaskIdx);
         } else if(scheduledTaskIdx !== undefined) {
           dueDate = new Date(Utils.addDate(new Date(r.scheduled_tasks[scheduledTaskIdx].due), event.days));
         } else {
@@ -81,7 +81,7 @@ function emitTasksForSchedule(c, schedule, r) {
         }
       } else {
         if(event.dueDate) {
-          dueDate = event.dueDate(c.contact, event, scheduledTaskIdx);
+          dueDate = event.dueDate(c, event, scheduledTaskIdx);
         } else {
           dueDate = new Date(Utils.addDate(new Date(c.contact.reported_date), event.days));
         }

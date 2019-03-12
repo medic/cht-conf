@@ -1,5 +1,5 @@
 const chai = require('chai');
-const assert = chai.assert;
+const { expect, assert } = chai;
 chai.use(require('chai-shallow-deep-equal'));
 const {
   TEST_DAY,
@@ -144,6 +144,33 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
+      });
+
+      it('dueDate function is invoked with expected data', function() {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aReportBasedTask() ],
+        };
+
+        const [event] = config.tasks[0].events;
+        delete event.days;
+        event.dueDate = (c, r, event, index) => {
+          emit('invoked', { c, r, event, index });
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        expect(emitted).to.have.property('length', 3);
+        const [invoked] = emitted;
+        expect(invoked).to.nested.include({
+          'event.id': 'task',
+          'c.contact._id': 'c-2',
+          'c.reports[0]._id': 'r-1',
+        });
       });
 
       it('should allow custom action content', function() {
