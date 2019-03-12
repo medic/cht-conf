@@ -136,13 +136,9 @@ function loadLibWith({ c, targets, tasks }) {
           },
           isTimely: function() { return true; },
         };
-<<<<<<< HEAD
         const Target = function(props) {
           this._id = props._id;
         };
-=======
-        class Target {};
->>>>>>> Some unit testing tweaks
         const Task = function(props) {
           // Any property whose value you want to assert in tests needs to be
           // copied from 'props' to 'this' here.
@@ -161,11 +157,7 @@ function loadLibWith({ c, targets, tasks }) {
 }
 
 module.exports = {
-<<<<<<< HEAD
   reset: () => { idCounter = 0; },
-=======
-  reset: () => idCounter = 0,
->>>>>>> Some unit testing tweaks
   TEST_DATE,
   TEST_DAY,
   aReportBasedTask,
