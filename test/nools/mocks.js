@@ -136,7 +136,9 @@ function loadLibWith({ c, targets, tasks }) {
           },
           isTimely: function() { return true; },
         };
-        class Target {};
+        const Target = function(props) {
+          this._id = props._id;
+        };
         const Task = function(props) {
           // Any property whose value you want to assert in tests needs to be
           // copied from 'props' to 'this' here.
@@ -155,7 +157,7 @@ function loadLibWith({ c, targets, tasks }) {
 }
 
 module.exports = {
-  reset: () => idCounter = 0,
+  reset: () => { idCounter = 0; },
   TEST_DATE,
   TEST_DAY,
   aReportBasedTask,

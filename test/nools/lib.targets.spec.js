@@ -58,7 +58,7 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'target', date:TEST_DATE },
+          { _id: 'c-1~pT-2', _type:'target', date: TEST_DATE },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -75,7 +75,7 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'target', date:TEST_DATE },
+          {_id: 'c-2~pT-3', _type:'target', date:TEST_DATE },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -92,7 +92,7 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'target', date:TEST_DATE },
+          { _id: 'c-4~pT-5', _type:'target', date:TEST_DATE },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -104,6 +104,7 @@ describe('nools lib', function() {
         const reportedDate = aRandomTimestamp();
         const contact = personWithoutReports();
         contact.reported_date = reportedDate;
+
         // and
         const config = {
           c: contact,
@@ -116,7 +117,7 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'target', date:reportedDate },
+          { _id: 'c-2~pT-1', _type:'target', date: reportedDate },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -136,7 +137,7 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'target', date:TEST_DATE },
+          { _id: 'c-2~pT-1', _type:'target', date:TEST_DATE },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -156,7 +157,7 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'target', date:TEST_DATE },
+          { _id: 'c-1~plT-2', _type:'target', date:TEST_DATE },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -173,7 +174,7 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'target', date:TEST_DATE },
+          { _id: 'c-2~plT-3', _type:'target', date:TEST_DATE },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -190,7 +191,7 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'target', date:TEST_DATE },
+          { _id: 'c-4~plT-5', _type:'target', date:TEST_DATE },
           { _type:'_complete', _id:true },
         ]);
       });
@@ -227,7 +228,7 @@ describe('nools lib', function() {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', _id:'c-2-rT-3' },
+            { _type:'target', _id:'c-2~rT-3' },
             { _type:'_complete', _id:true },
           ]);
         });
@@ -244,9 +245,9 @@ describe('nools lib', function() {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', _id:'c-4-rT-5' },
-            { _type:'target', _id:'c-4-rT-5' },
-            { _type:'target', _id:'c-4-rT-5' },
+            { _type:'target', _id:'c-4~rT-5' },
+            { _type:'target', _id:'c-4~rT-5' },
+            { _type:'target', _id:'c-4~rT-5' },
             { _type:'_complete', _id:true },
           ]);
         });
@@ -282,8 +283,8 @@ describe('nools lib', function() {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', _id:'c-2-rT-3' },
-            { _type:'target', _id:'c-2-rT-4' },
+            { _type:'target', _id:'c-2~rT-3' },
+            { _type:'target', _id:'c-2~rT-4' },
             { _type:'_complete', _id:true },
           ]);
         });
@@ -300,12 +301,12 @@ describe('nools lib', function() {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', _id:'c-4-rT-5' },
-            { _type:'target', _id:'c-4-rT-5' },
-            { _type:'target', _id:'c-4-rT-5' },
-            { _type:'target', _id:'c-4-rT-6' },
-            { _type:'target', _id:'c-4-rT-6' },
-            { _type:'target', _id:'c-4-rT-6' },
+            { _type:'target', _id:'c-4~rT-5' },
+            { _type:'target', _id:'c-4~rT-5' },
+            { _type:'target', _id:'c-4~rT-5' },
+            { _type:'target', _id:'c-4~rT-6' },
+            { _type:'target', _id:'c-4~rT-6' },
+            { _type:'target', _id:'c-4~rT-6' },
             { _type:'_complete', _id:true },
           ]);
         });
