@@ -108,9 +108,8 @@ module.exports = (projectDir)=> {
 
   function proccessUsers(csv){
     const { rows, cols } = fs.readCsv(csv);
-    var x =  rows
+    return rows
       .map(r => processCsv('user', cols, r));
-      return x;
   }
 
   function processCsv(docType, cols, row, baseDoc) {
