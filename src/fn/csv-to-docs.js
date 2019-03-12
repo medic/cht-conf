@@ -3,6 +3,7 @@ const info = require('../lib/log').info;
 const stringify = require('canonical-json/index2');
 const uuid5 = require('uuid/v5');
 const warn = require('../lib/log').warn;
+const generateCsv = require('../lib/generate-csv');
 
 const pretty = o => JSON.stringify(o, null, 2);
 
@@ -12,7 +13,7 @@ const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
 
 require('../lib/polyfill');
 
-module.exports = projectDir => {
+module.exports = (projectDir)=> {
   const couchUrlUuid = uuid5('http://medicmobile.org/configurer/csv-to-docs/permanent-hash', uuid5.URL);
 
   const csvDir = `${projectDir}/csv`;
@@ -55,6 +56,7 @@ module.exports = projectDir => {
               case 'person': return processPersons(csv);
               case 'place':  return processPlaces(csv);
               case 'report': return processReports(nameParts[1], csv);
+              case 'users' : return proccessUsers(csv);
               default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
             }
           })
@@ -63,7 +65,7 @@ module.exports = projectDir => {
 
     .then(() => model.references.forEach(updateRef))
     .then(() => model.exclusions.forEach(removeExcludedField))
-
+    .then(() => { if(model.user) { generateCsv(model.user,projectDir + '/users.csv'); }})
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));
 
 
@@ -102,6 +104,13 @@ module.exports = projectDir => {
     const { rows, cols } = fs.readCsv(csv);
     return rows
       .map(r => processCsv(contactType, cols, r));
+  }
+
+  function proccessUsers(csv){
+    const { rows, cols } = fs.readCsv(csv);
+    var x =  rows
+      .map(r => processCsv('user', cols, r));
+      return x;
   }
 
   function processCsv(docType, cols, row, baseDoc) {
