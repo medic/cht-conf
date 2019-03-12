@@ -1,5 +1,5 @@
 const chai = require('chai');
-const assert = chai.assert;
+const { expect, assert } = chai;
 chai.use(require('chai-shallow-deep-equal'));
 const {
   TEST_DATE,
@@ -121,6 +121,7 @@ describe('nools lib', function() {
           { _type:'_complete', _id:true },
         ]);
       });
+
       it('should allow "now" as target date', function() {
         // given
         const target = aPersonBasedTarget();
@@ -140,6 +141,24 @@ describe('nools lib', function() {
           { _id: 'c-2~pT-1', _type:'target', date:TEST_DATE },
           { _type:'_complete', _id:true },
         ]);
+      });
+
+      it('should not emit if appliesToType doesnt match', function() {
+        // given
+        const target = aPersonBasedTarget();
+        target.appliesToType = [ 'dne' ];
+
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [ target ],
+          tasks: [],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        expect(emitted).to.have.property('length', 1);
       });
     });
 
@@ -251,6 +270,24 @@ describe('nools lib', function() {
             { _type:'_complete', _id:true },
           ]);
         });
+
+        it('should not emit if appliesToType doesnt match', function() {
+          // given
+          const target = aReportBasedTarget();
+          target.appliesToType = [ 'dne' ];
+
+          const config = {
+            c: personWithReports(aReport()),
+            targets: [ target ],
+            tasks: [],
+          };
+
+          // when
+          const emitted = loadLibWith(config).emitted;
+
+          // then
+          expect(emitted).to.have.property('length', 1);
+        });
       });
 
       describe('with multiple targets', function() {
@@ -312,6 +349,28 @@ describe('nools lib', function() {
         });
       });
     });
+
+    it('appliesToType is optional', function() {
+      // given
+      const target = aPersonBasedTarget();
+      delete target.appliesToType;
+      
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [ target ],
+        tasks: [],
+      };
+
+      // when
+      const emitted = loadLibWith(config).emitted;
+
+      // then
+      assert.deepEqual(emitted, [
+        { _id: 'c-3~pT-1', _type:'target', date: TEST_DATE },
+        { _type:'_complete', _id:true },
+      ]);
+    });
+
     describe('invalid target type', function() {
       it('should throw error', function() {
         // given

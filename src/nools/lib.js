@@ -2,9 +2,7 @@ for(idx1=0; idx1<targets.length; ++idx1) {
   target = targets[idx1];
   switch(target.appliesTo) {
     case 'contacts':
-      if(c.contact && target.appliesToType.indexOf(c.contact.type) !== -1) {
-        emitContactBasedTargetFor(c, target);
-      }
+      emitContactBasedTargetFor(c, target);
       break;
     case 'reports':
       for(idx2=0; idx2<c.reports.length; ++idx2) {
@@ -141,7 +139,9 @@ function emitTasksForSchedule(c, schedule, r) {
 }
 
 function emitContactBasedTargetFor(c, targetConfig) {
-  if(targetConfig.appliesIf && !targetConfig.appliesIf(c)) return;
+  if (!c.contact) return;
+  if (targetConfig.appliesToType && targetConfig.appliesToType.indexOf(c.contact.type) < 0) return;
+  if (targetConfig.appliesIf && !targetConfig.appliesIf(c)) return;
 
   var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c);
 
@@ -160,7 +160,8 @@ function emitContactBasedTargetFor(c, targetConfig) {
 
 function emitReportBasedTargetFor(c, r, targetConf) {
   var instance, pass;
-  if(targetConf.appliesIf && !targetConf.appliesIf(c, r)) return;
+  if (targetConf.appliesIf && !targetConf.appliesIf(c, r)) return;
+  if (targetConf.appliesToType && targetConf.appliesToType.indexOf(r.form) < 0) return;
 
   if(targetConf.emitCustom) {
     targetConf.emitCustom(c, r);
