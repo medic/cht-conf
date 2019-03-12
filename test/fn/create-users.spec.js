@@ -12,7 +12,7 @@ describe('create-users', function() {
     const todd = {
       username: 'todd',
       password: 'Secret_1',
-      roles: ['district-manager'],
+      type: 'district-manager',
       place: 'place_uuid_here',
       contact: {
         c_prop: 'c_val_a'
@@ -38,7 +38,7 @@ describe('create-users', function() {
     const alice = {
       username: 'alice',
       password: 'Secret_1',
-      roles: ['district-manager'],
+      type: 'district-manager',
       contact: {
         c_prop: 'c_val_a'
       },
@@ -52,7 +52,7 @@ describe('create-users', function() {
     const bob = {
       username: 'bob',
       password: 'Secret_2',
-      roles: ['district-manager'],
+      type: 'district-manager',
       contact: {
         c_prop: 'c_val_b'
       },
