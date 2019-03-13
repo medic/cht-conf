@@ -1,26 +1,9 @@
+const path = require('path');
 const filterProperties = require('../lib/filter-properties');
 const fs = require('./sync-fs');
-const jsToString = require('./js-to-string');
-const parseJs = require('./simple-js-parser');
+const rewire = require('rewire');
 
-function getUnfilteredJs(projectDir) {
-  const unfiltered = parseJs({
-    jsFiles: [
-      `${projectDir}/targets.js`,
-      `${projectDir}/nools-extras.js`,
-    ],
-    export: [
-      'targets',
-    ],
-    header: `
-      var Utils = {
-        now: function() {},
-      }`,
-  }).targets;
-
-  // TODO not clear if we want to do this, as it restricts people from doing
-  // creative things in the future.  Maybe that's a good thing, though...
-  // Check for unexpected properties in target definitions:
+function warnOnUnexpectedProperties (targets) {
   const EXPECTED_KEYS = [
     // common properties
     'id',
@@ -42,45 +25,32 @@ function getUnfilteredJs(projectDir) {
     'subtitle_translation_key',
     'context',
   ];
-  unfiltered.forEach(t =>
-      Object.keys(t)
-        .filter(k => !EXPECTED_KEYS.includes(k))
-        .forEach(k => {
-          throw new Error(`Unexpected key found in target definition: ${k}`);
-        }));
-
-  // Validate required fields which are not used by all types of target:
-  unfiltered.forEach(t => {
-    switch(t.appliesTo) {
-      case 'reports':
-        checkForRequiredProperty(t, 'date');
-        break;
-      case 'contacts':
-        break;
-      default:
-        throw new Error(`No handling implemented in medic-conf for target: ${jsToString(t)}`);
-    }
+  targets.forEach((target, targetIndex) => {
+    Object.keys(target)
+      .filter(key => !EXPECTED_KEYS.includes(key))
+      .forEach(key => console.warn(`Unexpected key found on target "${target.id || targetIndex}": ${key}`));
   });
-
-  return unfiltered;
 }
 
-function checkForRequiredProperty(target, property) {
-  if(target.hasOwnProperty(property)) return;
+function getTargets(projectDir) {
+  const pathToTargetJs = path.join(projectDir, 'targets.js');
+  const targetsJs = rewire(pathToTargetJs);
+  const targets = targetsJs.__get__('targets');
 
-  throw new Error(`${target.appliesTo}-based target is missing required property: 'date': ${jsToString(target)}`);
+  warnOnUnexpectedProperties(targets);
+
+  return targets;
 }
-
 
 module.exports = {
-  js: projectDir => filterProperties(getUnfilteredJs(projectDir), {
+  js: projectDir => filterProperties(getTargets(projectDir), {
     required: [ 'id', 'appliesTo' ],
     optional: [ 'date', 'emitCustom', 'idType', 'passesIf', 'appliesToType', 'appliesIf' ],
   }),
 
   json: projectDir => {
-    const jsonPath = `${projectDir}/targets.json`;
-    const jsPath   = `${projectDir}/targets.js`;
+    const jsonPath = path.join(projectDir, 'targets.json');
+    const jsPath = path.join(projectDir, 'targets.js');
 
     const jsonExists = fs.exists(jsonPath);
     const jsExists   = fs.exists(jsPath);
@@ -92,7 +62,7 @@ module.exports = {
 
     if(jsonExists) return fs.readJson(jsonPath);
 
-    const targets = getUnfilteredJs(projectDir);
+    const targets = getTargets(projectDir);
     if(!targets) err(`No array named 'targets' was defined in ${jsPath}`);
 
     return {
