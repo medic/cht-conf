@@ -23,18 +23,23 @@ function compileWithDefaultLayout(projectDir) {
   const jsCode = templatedJs.fromString(projectDir, `
     var idx1, idx2, r, target;
     var now = Utils.now();
-    ${supportCode}
-    var loadTargets = function() {
-      ${targets}
-      return targets;
-    };
-    var targets = loadTargets();
+    var extras = (function() {
+      var module = {};
+      ${supportCode}
+      return module.exports;
+    })(); /*jshint unused:false*/
 
-    var loadTasks = function() {
+    var targets = (function() {
+      var module = {};
+      ${targets}
+      return module.exports;
+    })();
+
+    var tasks = (function() {
+      var module = {};
       ${tasks}
-      return tasks;
-    };
-    var tasks = loadTasks();
+      return module.exports;
+    })();
 
     ${noolsLib}
   `);
