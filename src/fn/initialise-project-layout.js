@@ -6,9 +6,9 @@ const LAYOUT = {
   'contact-summary.js': '',
   'resources.json': {},
   resources: {},
-  'targets.js': 'var targets = [];',
-  'tasks.js': 'var tasks = [];',
-  'nools-extras.js': '',
+  'targets.js': 'module.exports = [];',
+  'tasks.js': 'module.exports = [];',
+  'nools-extras.js': 'module.exports = {};',
   'task-schedules.json': {},
   forms: {
     app: {},

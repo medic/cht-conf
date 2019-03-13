@@ -1,1 +1,1 @@
-var targets = [];
+module.exports = [];

@@ -1,4 +1,4 @@
-var targets = [
+module.exports = [
   {
     id: 'active-pregnancies',
     appliesTo: 'reports',
