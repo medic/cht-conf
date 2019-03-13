@@ -46,7 +46,7 @@ function compileWithDefaultLayout(projectDir) {
 
   lint(jsCode);
 
-  const minifiedJs = minifyJs(jsCode);
+  const minifiedJs = jsCode; // minifyJs(jsCode);
 
   return minifyNools(`
     define Target {
