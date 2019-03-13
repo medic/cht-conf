@@ -34,17 +34,16 @@ function warnOnUnexpectedProperties (targets) {
 const evalInContext = (js, context) => (function(str) { return eval(str); }).call(context, ' with(this) { ' + js + ' }'); // jshint ignore:line
 const getTargets = (projectDir) => {
   const pathToNoolsExtras = path.join(projectDir, 'nools-extras.js');
-  const noolExtras = require(pathToNoolsExtras);
-
   const pathToTargetJs = path.join(projectDir, 'targets.js');
-  const targetJsContent = fs.read(pathToTargetJs);
-  const contentInClosure = `(function closure() {
-    var module = {};
-    ${targetJsContent}
-    return module.exports;
-  })();`;
+  
+  let targets;
+  try {
+    global.extras = require(pathToNoolsExtras);
+    targets = require(pathToTargetJs);  
+  } finally {
+    delete global.extras;
+  }
 
-  const targets = evalInContext(contentInClosure, { extras: noolExtras });
   warnOnUnexpectedProperties(targets);
 
   return targets;
