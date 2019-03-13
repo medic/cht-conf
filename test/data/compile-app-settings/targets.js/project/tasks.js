@@ -1,1 +1,1 @@
-var tasks = [];
+module.exports = [];

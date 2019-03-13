@@ -1,7 +1,6 @@
 const path = require('path');
 const filterProperties = require('../lib/filter-properties');
 const fs = require('./sync-fs');
-const rewire = require('rewire');
 
 function warnOnUnexpectedProperties (targets) {
   const EXPECTED_KEYS = [
@@ -32,15 +31,24 @@ function warnOnUnexpectedProperties (targets) {
   });
 }
 
-function getTargets(projectDir) {
-  const pathToTargetJs = path.join(projectDir, 'targets.js');
-  const targetsJs = rewire(pathToTargetJs);
-  const targets = targetsJs.__get__('targets');
+const evalInContext = (js, context) => (function(str) { return eval(str); }).call(context, ' with(this) { ' + js + ' }'); // jshint ignore:line
+const getTargets = (projectDir) => {
+  const pathToNoolsExtras = path.join(projectDir, 'nools-extras.js');
+  const noolExtras = require(pathToNoolsExtras);
 
+  const pathToTargetJs = path.join(projectDir, 'targets.js');
+  const targetJsContent = fs.read(pathToTargetJs);
+  const contentInClosure = `(function closure() {
+    var module = {};
+    ${targetJsContent}
+    return module.exports;
+  })();`;
+
+  const targets = evalInContext(contentInClosure, { extras: noolExtras });
   warnOnUnexpectedProperties(targets);
 
   return targets;
-}
+};
 
 module.exports = {
   js: projectDir => filterProperties(getTargets(projectDir), {
