@@ -17,12 +17,13 @@ module.exports = (projectDir, couchUrl) => {
       const passwordIndex = cols.indexOf('password');
       const rolesIndex = cols.indexOf('roles');
       const placeIdIndex = cols.indexOf('place');
+      const contactIndex = cols.indexOf('contact');
 
       return rows.reduce((promiseChain, row) => {
         const username = row[usernameIndex];
         const password = row[passwordIndex];
         const roles     = row[rolesIndex].split(':');
-        const contact = prefixedProperties(cols, row, 'contact.');
+        const contact = contactIndex === -1 ? prefixedProperties(cols, row, 'contact.') : row[contactIndex];
         const place = placeIdIndex === -1 ? prefixedProperties(cols, row, 'place.') : row[placeIdIndex];
         const requestObject = { username, password, roles, place, contact };
 
