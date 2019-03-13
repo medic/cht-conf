@@ -47,7 +47,7 @@ for(idx1=0; idx1<targets.length; ++idx1) {
       }
       break;
     default:
-      throw new Error('unrecognised target type: ' + target.appliesTo);
+      throw new Error('Unrecognised appliesTo value: ' + target.appliesTo);
   }
 }
 
@@ -104,7 +104,7 @@ function emitTasksForSchedule(c, schedule, r) {
   }
 
   function emitForEvents(scheduledTaskIdx) {
-    var i, dueDate = null, event, priority, task;
+    var i, dueDate = null, event, priority, task, emitted = 0;
     for (i = 0; i < schedule.events.length; i++) {
       event = schedule.events[i];
 
@@ -120,11 +120,13 @@ function emitTasksForSchedule(c, schedule, r) {
         if(event.dueDate) {
           dueDate = event.dueDate(event, c);
         } else {
+          // The default is the day the user was created?? That makes no sense.
           dueDate = new Date(Utils.addDate(new Date(c.contact.reported_date), event.days));
         }
       }
 
-      if (!Utils.isTimely(dueDate, event)) {
+      const isTimely = Utils.isTimely(dueDate, event);
+      if (!isTimely) {
         continue;
       }
 
@@ -138,7 +140,7 @@ function emitTasksForSchedule(c, schedule, r) {
         icon: schedule.icon,
         date: dueDate,
         title: schedule.title,
-        resolved: schedule.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
+        resolved: (!!schedule.maxVisibleTasks && emitted >= schedule.maxVisibleTasks) || schedule.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
         actions: schedule.actions.map(initActions),
       };
 
@@ -155,6 +157,9 @@ function emitTasksForSchedule(c, schedule, r) {
         task.priorityLabel = priority.label;
       }
 
+      if (!task.resolved) {
+        emitted++;
+      }
       emit('task', new Task(task));
     }
   }
@@ -211,7 +216,7 @@ function emitTargetFor(targetConfig, c, r) {
 
 function createTargetInstance(type, doc, pass) {
   return new Target({
-    _id: doc._id + '~' + type,
+    _id: doc._id + '-' + type,
     deleted: !!doc.deleted,
     type: type,
     pass: pass,

@@ -4,7 +4,7 @@ const withLineNumbers = require('./with-line-numbers');
 
 const DEFAULT_OPTS = {
   bitwise: true,
-  esversion: 5,
+  esversion: 6,
   eqeqeq: true,
   freeze: true,
   funcscope: true,
