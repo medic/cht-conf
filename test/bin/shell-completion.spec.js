@@ -1,3 +1,4 @@
+const path = require('path');
 const assert = require('chai').assert;
 
 describe('shell-completion', () => {
@@ -49,7 +50,8 @@ const execSync = require('child_process').execSync;
 function assertShellComplete(cliArgs, ...expectedResponses) {
   if(!Array.isArray(cliArgs)) cliArgs = [ cliArgs ];
 
-  return execPromise('../../src/bin/shell-completion.js', cliArgs.length, cliArgs[cliArgs.length-1])
+  const pathToBin = path.join(__dirname, '../..', 'src/bin/shell-completion.js');
+  return execPromise(pathToBin, cliArgs.length, cliArgs[cliArgs.length-1])
     .then(res => res.split(/\s/))
     .then(res => res.filter(s => s.trim()))
     .then(res => assert.deepEqual(res, expectedResponses));

@@ -1,3 +1,4 @@
+const path = require('path');
 const assert = require('chai').assert;
 const execSync = require('child_process').execSync;
 const mkdirp = require('mkdirp').sync;
@@ -20,14 +21,17 @@ describe('medic-conf cli', () => {
 });
 
 function medicConfCli(testName, ...args) {
-  const testDir = `medic-conf.spec/${testName}`;
-
+  const testDir = path.join(__dirname, '../../build', 'medic-conf.spec', testName);
   mkdirp(testDir);
-  args.unshift('../../../../src/bin/medic-conf.js');
+
+  const pathToBin = path.join(__dirname, '../..', 'src/bin/medic-conf.js');
+  args.unshift(pathToBin);
   try {
-    var buf = execSync(args.join(' '), { cwd:testDir });
+    const buf = execSync(args.join(' '), { cwd:testDir });
     return Promise.resolve(buf.toString());
   } catch(e) {
+    console.log('Failed while executing medic through CLI');
+    console.log(e.stdout.toString());
     return Promise.reject(e);
   }
 }

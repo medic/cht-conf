@@ -1,6 +1,8 @@
 const chai = require('chai');
 const { expect, assert } = chai;
 chai.use(require('chai-shallow-deep-equal'));
+
+const { evalNoolsLib } = require('../run-lib');
 const {
   TEST_DAY,
   reset,
@@ -13,7 +15,6 @@ const {
   personWithoutReports,
   personWithReports,
   placeWithoutReports,
-  loadLibWith,
 } = require('./mocks');
 
 describe('nools lib', function() {
@@ -31,7 +32,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = evalNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -56,7 +57,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = evalNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -77,7 +78,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = evalNoolsLib(config).emitted;
 
         // then
         assert.deepEqual(emitted, [
@@ -94,7 +95,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = evalNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -112,7 +113,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = evalNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -134,7 +135,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = evalNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -185,7 +186,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = evalNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -221,7 +222,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = evalNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -247,8 +248,7 @@ describe('nools lib', function() {
         };
 
         // should throw error
-        assert.throws(function() { loadLibWith(config); }, Error,
-          "Error: unrecognised task type: unknown");
+        assert.throws(function() { evalNoolsLib(config); }, Error, "unrecognised task type: unknown");
       });
     });
 

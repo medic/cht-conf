@@ -1,6 +1,8 @@
 const chai = require('chai');
 const { expect, assert } = chai;
 chai.use(require('chai-shallow-deep-equal'));
+
+const { runNoolsLib } = require('../run-lib');
 const {
   TEST_DATE,
   reset,
@@ -13,7 +15,6 @@ const {
   placeWithoutReports,
   placeWithReports,
   aRandomTimestamp,
-  loadLibWith,
 } = require('./mocks');
 
 describe('nools lib', function() {
@@ -25,7 +26,7 @@ describe('nools lib', function() {
       const emptyConfig = { c:{}, targets:[] };
 
       // when
-      const lib = loadLibWith(emptyConfig);
+      const lib = runNoolsLib(emptyConfig);
 
       // then
       assert.isNotNull(lib);
@@ -36,7 +37,7 @@ describe('nools lib', function() {
       const emptyConfig = { c:{}, targets:[] };
 
       // when
-      const emitted = loadLibWith(emptyConfig).emitted;
+      const emitted = runNoolsLib(emptyConfig).emitted;
 
       // then
       assert.deepEqual(emitted, [ { _type:'_complete', _id:true } ]);
@@ -54,7 +55,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.deepEqual(emitted, [
@@ -71,7 +72,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.deepEqual(emitted, [
@@ -88,7 +89,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.deepEqual(emitted, [
@@ -113,7 +114,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.deepEqual(emitted, [
@@ -133,7 +134,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.deepEqual(emitted, [
@@ -171,7 +172,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.deepEqual(emitted, [
@@ -188,7 +189,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.deepEqual(emitted, [
@@ -205,7 +206,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.deepEqual(emitted, [
@@ -226,7 +227,7 @@ describe('nools lib', function() {
           };
 
           // when
-          const emitted = loadLibWith(config).emitted;
+          const emitted = runNoolsLib(config).emitted;
 
           // then
           assert.deepEqual(emitted, [
@@ -242,7 +243,7 @@ describe('nools lib', function() {
           };
 
           // when
-          const emitted = loadLibWith(config).emitted;
+          const emitted = runNoolsLib(config).emitted;
 
           // then
           assert.deepEqual(emitted, [
@@ -259,7 +260,7 @@ describe('nools lib', function() {
           };
 
           // when
-          const emitted = loadLibWith(config).emitted;
+          const emitted = runNoolsLib(config).emitted;
 
           // then
           assert.deepEqual(emitted, [
@@ -299,7 +300,7 @@ describe('nools lib', function() {
           };
 
           // when
-          const emitted = loadLibWith(config).emitted;
+          const emitted = runNoolsLib(config).emitted;
 
           // then
           assert.deepEqual(emitted, [
@@ -315,7 +316,7 @@ describe('nools lib', function() {
           };
 
           // when
-          const emitted = loadLibWith(config).emitted;
+          const emitted = runNoolsLib(config).emitted;
 
           // then
           assert.deepEqual(emitted, [
@@ -333,7 +334,7 @@ describe('nools lib', function() {
           };
 
           // when
-          const emitted = loadLibWith(config).emitted;
+          const emitted = runNoolsLib(config).emitted;
 
           // then
           assert.deepEqual(emitted, [
@@ -383,8 +384,7 @@ describe('nools lib', function() {
         };
 
         // throws
-        assert.throws(function() { loadLibWith(config); }, Error,
-          "Error: unrecognised target type: unknown");
+        assert.throws(function() { runNoolsLib(config); }, Error, "unrecognised target type: unknown");
       });
     });
   });
