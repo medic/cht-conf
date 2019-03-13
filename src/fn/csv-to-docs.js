@@ -3,7 +3,7 @@ const info = require('../lib/log').info;
 const stringify = require('canonical-json/index2');
 const uuid5 = require('uuid/v5');
 const warn = require('../lib/log').warn;
-const generateCsv = require('../lib/generate-csv');
+const generateCsv = require('../lib/generate-users-csv');
 
 const pretty = o => JSON.stringify(o, null, 2);
 
