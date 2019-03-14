@@ -20,7 +20,7 @@ function compileWithDefaultLayout(projectDir) {
   const supportCode = fs.read(`${projectDir}/nools-extras.js`);
   const noolsLib = fs.read(`${__dirname}/../nools/lib.js`);
 
-  const jsCode = templatedJs.fromString(projectDir, `
+  const jsCode = `
     var idx1, idx2, r, target;
     var now = Utils.now();
     var extras = (function() {
@@ -42,7 +42,7 @@ function compileWithDefaultLayout(projectDir) {
     })();
 
     ${noolsLib}
-  `);
+  `;
 
   lint(jsCode);
 
