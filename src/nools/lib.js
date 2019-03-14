@@ -73,7 +73,7 @@ function emitTasksForSchedule(c, schedule, r) {
 
       if(r) {
         if(event.dueDate) {
-          dueDate = event.dueDate(c, r, event, scheduledTaskIdx);
+          dueDate = event.dueDate(event, c, r);
         } else if(scheduledTaskIdx !== undefined) {
           dueDate = new Date(Utils.addDate(new Date(r.scheduled_tasks[scheduledTaskIdx].due), event.days));
         } else {
