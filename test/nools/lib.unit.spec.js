@@ -32,6 +32,30 @@ describe('nools lib unit tests', () => {
       expect(original).to.deep.eq({ a: { foo: 'bar' } });
     });
 
+    it('shallow arrays are copied', () => {
+      const original = { a: ['b'] };
+      const copy = deepCopy(original);
+      expect(copy).to.deep.eq({ a: ['b'] });
+      copy.a.push('foo');
+      expect(original).to.deep.eq({ a: ['b'] });
+    });
+
+    it('deep arrays are copied', () => {
+      const original = { a: { b: ['c'] } };
+      const copy = deepCopy(original);
+      expect(copy).to.deep.eq({ a: { b: ['c'] } });
+      copy.a.b.push('foo');
+      expect(original).to.deep.eq({ a: { b: ['c'] } });
+    });
+
+    it('object within array is deep copied', () => {
+      const original = { a: [{ b: 'foo'}] };
+      const copy = deepCopy(original);
+      expect(copy).to.deep.eq({ a: [{ b: 'foo'}] });
+      copy.a[0].b = 'bar';
+      expect(original).to.deep.eq({ a: [{ b: 'foo'}] });
+    });
+
     it('functions are copied', done => {
       const original = { a: { foo: done } };
       const copy = deepCopy(original);

@@ -18,7 +18,14 @@ function deepCopy(obj) {
   var keys = Object.keys(copy);
   for (var i in keys) {
     var key = keys[i];
-    if (typeof copy[key] === 'object') {
+    if (Array.isArray(copy[key])) {
+      copy[key] = copy[key].slice(0);
+      for (var j = 0; j < copy[key].length; ++j) {
+        if (typeof copy[key][j] === 'object') {
+          copy[key][j] = deepCopy(copy[key][j]);
+        }
+      }
+    } else if (typeof copy[key] === 'object') {
       copy[key] = deepCopy(copy[key]);
     }
   }
