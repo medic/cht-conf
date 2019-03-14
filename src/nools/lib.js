@@ -141,7 +141,7 @@ function emitTasksForSchedule(c, schedule, r) {
 function emitTargetFor(targetConfig, c, r) {
   var isEmittingForReport = !!r;
   if (!c.contact) return;
-  const appliesToKey = isEmittingForReport ? r.form : c.contact.type;
+  var appliesToKey = isEmittingForReport ? r.form : c.contact.type;
   if (targetConfig.appliesToType && targetConfig.appliesToType.indexOf(appliesToKey) < 0) return;
   if (targetConfig.appliesIf && !targetConfig.appliesIf(c, r)) return;
 
