@@ -31,7 +31,6 @@ function warnOnUnexpectedProperties (targets) {
   });
 }
 
-const evalInContext = (js, context) => (function(str) { return eval(str); }).call(context, ' with(this) { ' + js + ' }'); // jshint ignore:line
 const getTargets = (projectDir) => {
   const pathToNoolsExtras = path.join(projectDir, 'nools-extras.js');
   const pathToTargetJs = path.join(projectDir, 'targets.js');
