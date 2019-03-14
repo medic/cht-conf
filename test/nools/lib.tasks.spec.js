@@ -156,8 +156,8 @@ describe('nools lib', function() {
 
         const [event] = config.tasks[0].events;
         delete event.days;
-        event.dueDate = (c, r, event, index) => {
-          emit('invoked', { c, r, event, index }); // jshint ignore:line
+        event.dueDate = (event, c, r) => {
+          emit('invoked', { event, c, r }); // jshint ignore:line
         };
 
         // when
