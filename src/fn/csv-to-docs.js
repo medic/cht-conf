@@ -56,7 +56,7 @@ module.exports = (projectDir)=> {
               case 'person': return processPersons(csv);
               case 'place':  return processPlaces(csv);
               case 'report': return processReports(nameParts[1], csv);
-              case 'users' : return proccessUsers(csv);
+              case 'users' : return processUsers(csv);
               default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
             }
           })
@@ -65,7 +65,11 @@ module.exports = (projectDir)=> {
 
     .then(() => model.references.forEach(updateRef))
     .then(() => model.exclusions.forEach(removeExcludedField))
-    .then(() => { if(model.user) { generateCsv(model.user,projectDir + '/users.csv'); }})
+    .then(() => { 
+      if(model.user) { 
+        generateCsv(model.user,projectDir + '/users.csv'); 
+      }
+    })
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));
 
 
@@ -106,7 +110,7 @@ module.exports = (projectDir)=> {
       .map(r => processCsv(contactType, cols, r));
   }
 
-  function proccessUsers(csv){
+  function processUsers(csv){
     const { rows, cols } = fs.readCsv(csv);
     return rows
       .map(r => processCsv('user', cols, r));
