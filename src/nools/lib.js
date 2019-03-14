@@ -2,9 +2,7 @@ for(idx1=0; idx1<targets.length; ++idx1) {
   target = targets[idx1];
   switch(target.appliesTo) {
     case 'contacts':
-      if(c.contact && target.appliesToType.indexOf(c.contact.type) !== -1) {
-        emitTargetFor(target, c);
-      }
+      emitTargetFor(target, c);
       break;
     case 'reports':
       for(idx2=0; idx2<c.reports.length; ++idx2) {
@@ -142,7 +140,10 @@ function emitTasksForSchedule(c, schedule, r) {
 
 function emitTargetFor(targetConfig, c, r) {
   var isEmittingForReport = !!r;
-  if(targetConfig.appliesIf && !targetConfig.appliesIf(c, r)) return;
+  if (!c.contact) return;
+  const appliesToKey = isEmittingForReport ? r.form : c.contact.type;
+  if (targetConfig.appliesToType && targetConfig.appliesToType.indexOf(appliesToKey) < 0) return;
+  if (targetConfig.appliesIf && !targetConfig.appliesIf(c, r)) return;
 
   var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c, r);
   var instanceDoc = isEmittingForReport ? r : c.contact;
