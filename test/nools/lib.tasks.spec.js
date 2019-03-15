@@ -178,7 +178,7 @@ describe('nools lib', function() {
         // given
         const task = aReportBasedTask();
         task.actions[0].modifyContent =
-            (r, content) => { content.report_id = r._id; };
+            (content, c, r) => { content.report_id = r._id; };
         // and
         const config = {
           c: personWithReports(aReport()),
@@ -204,6 +204,42 @@ describe('nools lib', function() {
                     _id: 'c-3',
                   },
                   report_id: 'r-2',
+                },
+              },
+            ]
+          },
+        ]);
+      });
+
+      it('modifyContent for appliesTo contacts', function() {
+        // given
+        const task = aPersonBasedTask();
+        task.actions[0].modifyContent = (content, c) => { content.report_id = c.contact._id; };
+        // and
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ task ],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.shallowDeepEqual(emitted, [
+          {
+            actions:[
+              {
+                type: 'report',
+                form: 'example-form',
+                label: 'Follow up',
+                content: {
+                  source: 'task',
+                  source_id: 'c-3',
+                  contact: {
+                    _id: 'c-3',
+                  },
+                  report_id: 'c-3',
                 },
               },
             ]
