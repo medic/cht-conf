@@ -53,5 +53,5 @@ ${contactSummaryLib}
 
   lint(code);
 
-  return minify(code);
+  return code; // minify(code);
 };
