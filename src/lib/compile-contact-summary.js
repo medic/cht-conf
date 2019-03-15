@@ -18,19 +18,23 @@ module.exports = projectDir => {
     code = templatedJs.fromFile(projectDir, freeformPath);
   } else if(fs.exists(structuredPath)) {
     const contactSummaryLib = fs.read(`${__dirname}/../contact-summary/lib.js`);
-    const templatedContactSummary = fs.read(`${__dirname}/contact-summary.templated.js`);
-    const contactSummaryExtrasPath = `${__dirname}/contact-summary-extras.js`;
+    const templatedContactSummary = fs.read(`${projectDir}/contact-summary.templated.js`);
+    const contactSummaryExtrasPath = `${projectDir}/contact-summary-extras.js`;
     const contactSummaryExtrasContent = fs.exists(contactSummaryExtrasPath) ? fs.read(contactSummaryExtrasPath) : '';
 
     code = `
-function contactSummaryClosure() {
-  var module = {};
+var extras = (function() {
+  var module = { exports: {} };
   ${contactSummaryExtrasContent}
+  return module.exports;
+})(); /*jshint unused:false*/
+
+var contactSummary = (function(extras) {
+  var module = { exports: {} };
   ${templatedContactSummary}
   return module.exports;
-}
+})(extras);
 
-var contactSummary = contactSummaryClosure();
 var fields = contactSummary.fields;
 var context = contactSummary.context;
 var cards = contactSummary.cards;
