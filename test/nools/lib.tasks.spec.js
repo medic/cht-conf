@@ -1,5 +1,5 @@
 const chai = require('chai');
-const assert = chai.assert;
+const { expect, assert} = chai;
 chai.use(require('chai-shallow-deep-equal'));
 
 const { runNoolsLib } = require('../run-lib');
@@ -184,6 +184,30 @@ describe('nools lib', function() {
         ]);
       });
 
+    });
+
+    it('functions have access to "this"', function() {
+      // given
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [],
+        tasks: [ aReportBasedTask() ],
+      };
+
+      config.tasks[0].appliesIf = function() {
+        emit('invoked', { _this: this }); // jshint ignore:line
+        return false;
+      };
+
+      // when
+      const emitted = loadLibWith(config).emitted;
+
+      // then
+      expect(emitted).to.have.property('length', 2);
+      expect(emitted[0]).to.nested.include({
+        '_this.definition.appliesTo': 'reports',
+        '_this.definition.name': 'task-3',
+      });
     });
 
     describe('scheduled-task based', function() {
