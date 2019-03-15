@@ -20,29 +20,29 @@ function compileWithDefaultLayout(projectDir) {
   const supportCode = fs.read(`${projectDir}/nools-extras.js`);
   const noolsLib = fs.read(`${__dirname}/../nools/lib.js`);
 
-  const jsCode = templatedJs.fromString(projectDir, `
+  const jsCode = `
     var idx1, idx2, r, target;
     var now = Utils.now();
     var extras = (function() {
-      var module = {};
+      var module = { exports: {} };
       ${supportCode}
       return module.exports;
     })(); /*jshint unused:false*/
 
-    var targets = (function() {
-      var module = {};
+    var targets = (function(extras) {
+      var module = { exports: {} };
       ${targets}
       return module.exports;
-    })();
+    })(extras);
 
-    var tasks = (function() {
+    var tasks = (function(extras) {
       var module = {};
       ${tasks}
       return module.exports;
-    })();
+    })(extras);
 
     ${noolsLib}
-  `);
+  `;
 
   lint(jsCode);
 
