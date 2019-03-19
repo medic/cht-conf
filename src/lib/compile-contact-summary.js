@@ -23,12 +23,11 @@ module.exports = projectDir => {
   if (freeformPathExists) {
     code = templatedJs.fromFile(projectDir, freeformPath);
   } else if (fs.exists(structuredPath)) {
-    const extrasPath = `${projectDir}/contact-summary-extras.js`;
-    const extrasExists = fs.exists(extrasPath);
-
     const contactSummaryLib = fs.read(`${__dirname}/../contact-summary/lib.js`);
     code = templatedJs.fromString(projectDir, `
-${extrasExists ? "__include_inline__('contact-summary-extras.js');" : ''}
+var context, fields, cards;
+
+__include_inline__('contact-summary-extras.js');
 __include_inline__('contact-summary.templated.js');
 
 ${contactSummaryLib}
