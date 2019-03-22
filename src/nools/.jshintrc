@@ -12,7 +12,8 @@
     "tasks": false,
     "Target": false,
     "Task": false,
-    "Utils": false
+    "Utils": false,
+    "persistentState": true
   },
   "undef": true,
   "unused": true
