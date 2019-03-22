@@ -8,7 +8,7 @@ const CURRENT_NOOLS_FILES = [ 'tasks.js', 'targets.js', 'nools-extras.js' ];
 
 function lint(code) {
   jshintWithReport('nools rules', code, {
-    predef: [ 'c', 'console', 'emit', 'Contact', 'Target', 'Task', 'Utils' ],
+    predef: [ 'c', 'console', 'emit', 'Contact', 'Target', 'Task', 'Utils', 'persistentState' ],
   });
 }
 
@@ -49,6 +49,8 @@ function compileWithDefaultLayout(projectDir) {
   const minifiedJs = jsCode; // minifyJs(jsCode);
 
   return minifyNools(`
+    global persistentState = {};
+
     define Target {
       _id: null,
       deleted: null,
