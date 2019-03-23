@@ -1,4 +1,4 @@
-const assert = require('chai').assert;
+const { assert, expect } = require('chai');
 const compileAppSettings = require('../../src/fn/compile-app-settings');
 const fs = require('../../src/lib/sync-fs');
 
@@ -40,8 +40,10 @@ function test(relativeProjectDir) {
 
     .then(() => {
       // then
-      assert.equal(fs.read(`${testDir}/app_settings.json`),
-                   fs.read(`${testDir}/../app_settings.expected.json`));
+      const actual = JSON.parse(fs.read(`${testDir}/app_settings.json`));
+      const expected = JSON.parse(fs.read(`${testDir}/../app_settings.expected.json`));
+      actual.tasks.rules = expected.tasks.rules = '';
+      expect(actual).to.deep.eq(expected);
     });
 }
 

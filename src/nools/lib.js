@@ -169,7 +169,7 @@ function emitReportBasedTargetFor(c, r, targetConf) {
 
   pass = !targetConf.passesIf || !!targetConf.passesIf(c, r);
   instance = createTargetInstance(targetConf.id, r, pass);
-  instance._id = (targetConf.idType === 'report' ? r._id : c.contact._id) + '-' + targetConf.id;
+  instance._id = (targetConf.idType === 'report' ? r._id : c.contact._id) + '~' + targetConf.id;
   emitTargetInstance(instance);
   switch(targetConf.date) {
     case 'now': instance.date = now.getTime(); break;
@@ -178,7 +178,7 @@ function emitReportBasedTargetFor(c, r, targetConf) {
 
 function createTargetInstance(type, doc, pass) {
   return new Target({
-    _id: doc._id + '-' + type,
+    _id: doc._id + '~' + type,
     deleted: !!doc.deleted,
     type: type,
     pass: pass,
