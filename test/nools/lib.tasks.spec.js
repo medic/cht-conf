@@ -1,8 +1,13 @@
 const chai = require('chai');
+<<<<<<< HEAD
 const { expect, assert } = chai;
 chai.use(require('chai-shallow-deep-equal'));
 
 const { runNoolsLib } = require('../run-lib');
+=======
+const assert = chai.assert;
+chai.use(require('chai-shallow-deep-equal'));
+>>>>>>> 5493-persist
 const {
   TEST_DAY,
   reset,
@@ -15,6 +20,10 @@ const {
   personWithoutReports,
   personWithReports,
   placeWithoutReports,
+<<<<<<< HEAD
+=======
+  loadLibWith,
+>>>>>>> 5493-persist
 } = require('./mocks');
 
 describe('nools lib', function() {
@@ -32,7 +41,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -57,7 +70,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -78,7 +95,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.deepEqual(emitted, [
@@ -95,7 +116,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -113,7 +138,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -122,8 +151,11 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
+<<<<<<< HEAD
 
         expectAllToHaveUniqueIds(emitted);
+=======
+>>>>>>> 5493-persist
       });
 
       it('should emit once per report per task', function() {
@@ -135,7 +167,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -147,6 +183,7 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
+<<<<<<< HEAD
 
         expectAllToHaveUniqueIds(emitted); // even with undefined name, the resulting ids are unique
       });
@@ -198,13 +235,19 @@ describe('nools lib', function() {
           'c.contact._id': 'c-2',
           'c.reports[0]._id': 'r-1',
         });
+=======
+>>>>>>> 5493-persist
       });
 
       it('should allow custom action content', function() {
         // given
         const task = aReportBasedTask();
         task.actions[0].modifyContent =
+<<<<<<< HEAD
             (content, c, r) => { content.report_id = r._id; };
+=======
+            (r, content) => { content.report_id = r._id; };
+>>>>>>> 5493-persist
         // and
         const config = {
           c: personWithReports(aReport()),
@@ -213,7 +256,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -237,6 +284,7 @@ describe('nools lib', function() {
         ]);
       });
 
+<<<<<<< HEAD
       it('modifyContent for appliesTo contacts', function() {
         // given
         const task = aPersonBasedTask();
@@ -297,6 +345,8 @@ describe('nools lib', function() {
         '_this.definition.appliesTo': 'reports',
         '_this.definition.name': 'task-3',
       });
+=======
+>>>>>>> 5493-persist
     });
 
     describe('scheduled-task based', function() {
@@ -309,7 +359,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -335,13 +389,21 @@ describe('nools lib', function() {
         };
 
         // should throw error
+<<<<<<< HEAD
         assert.throws(function() { runNoolsLib(config); }, Error, "unrecognised task type: unknown");
+=======
+        assert.throws(function() { loadLibWith(config); }, Error,
+          "Error: unrecognised task type: unknown");
+>>>>>>> 5493-persist
       });
     });
 
   });
 });
+<<<<<<< HEAD
 
 const expectAllToHaveUniqueIds = tasks => expect(
   new Set(tasks.map(task => task._id)).size
 ).to.eq(tasks.length);
+=======
+>>>>>>> 5493-persist

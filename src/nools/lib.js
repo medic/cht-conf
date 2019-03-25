@@ -216,7 +216,7 @@ function emitTargetFor(targetConfig, c, r) {
 
 function createTargetInstance(type, doc, pass) {
   return new Target({
-    _id: doc._id + '-' + type,
+    _id: doc._id + '~' + type,
     deleted: !!doc.deleted,
     type: type,
     pass: pass,

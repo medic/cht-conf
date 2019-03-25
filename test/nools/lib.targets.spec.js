@@ -1,8 +1,13 @@
 const chai = require('chai');
+<<<<<<< HEAD
 const { expect, assert } = chai;
 chai.use(require('chai-shallow-deep-equal'));
 
 const { runNoolsLib } = require('../run-lib');
+=======
+const assert = chai.assert;
+chai.use(require('chai-shallow-deep-equal'));
+>>>>>>> 5493-persist
 const {
   TEST_DATE,
   reset,
@@ -15,6 +20,10 @@ const {
   placeWithoutReports,
   placeWithReports,
   aRandomTimestamp,
+<<<<<<< HEAD
+=======
+  loadLibWith,
+>>>>>>> 5493-persist
 } = require('./mocks');
 
 describe('nools lib', function() {
@@ -26,7 +35,11 @@ describe('nools lib', function() {
       const emptyConfig = { c:{}, targets:[] };
 
       // when
+<<<<<<< HEAD
       const lib = runNoolsLib(emptyConfig);
+=======
+      const lib = loadLibWith(emptyConfig);
+>>>>>>> 5493-persist
 
       // then
       assert.isNotNull(lib);
@@ -37,7 +50,11 @@ describe('nools lib', function() {
       const emptyConfig = { c:{}, targets:[] };
 
       // when
+<<<<<<< HEAD
       const emitted = runNoolsLib(emptyConfig).emitted;
+=======
+      const emitted = loadLibWith(emptyConfig).emitted;
+>>>>>>> 5493-persist
 
       // then
       assert.deepEqual(emitted, [ { _type:'_complete', _id:true } ]);
@@ -55,7 +72,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.deepEqual(emitted, [
@@ -72,7 +93,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.deepEqual(emitted, [
@@ -89,7 +114,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.deepEqual(emitted, [
@@ -104,7 +133,11 @@ describe('nools lib', function() {
         // and
         const reportedDate = aRandomTimestamp();
         const contact = personWithoutReports();
+<<<<<<< HEAD
         contact.contact.reported_date = reportedDate;
+=======
+        contact.reported_date = reportedDate;
+>>>>>>> 5493-persist
 
         // and
         const config = {
@@ -114,7 +147,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.deepEqual(emitted, [
@@ -134,7 +171,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.deepEqual(emitted, [
@@ -142,6 +183,7 @@ describe('nools lib', function() {
           { _type:'_complete', _id:true },
         ]);
       });
+<<<<<<< HEAD
 
       it('should not emit if appliesToType doesnt match', function() {
         // given
@@ -160,6 +202,8 @@ describe('nools lib', function() {
          // then
         expect(emitted).to.have.property('length', 1);
       });
+=======
+>>>>>>> 5493-persist
     });
 
     describe('place-based', function() {
@@ -172,7 +216,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.deepEqual(emitted, [
@@ -189,7 +237,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.deepEqual(emitted, [
@@ -206,7 +258,11 @@ describe('nools lib', function() {
         };
 
         // when
+<<<<<<< HEAD
         const emitted = runNoolsLib(config).emitted;
+=======
+        const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
         // then
         assert.deepEqual(emitted, [
@@ -227,7 +283,11 @@ describe('nools lib', function() {
           };
 
           // when
+<<<<<<< HEAD
           const emitted = runNoolsLib(config).emitted;
+=======
+          const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
           // then
           assert.deepEqual(emitted, [
@@ -243,11 +303,19 @@ describe('nools lib', function() {
           };
 
           // when
+<<<<<<< HEAD
           const emitted = runNoolsLib(config).emitted;
 
           // then
           assert.deepEqual(emitted, [
             { _type:'target', _id:'c-2~rT-3', date: TEST_DATE },
+=======
+          const emitted = loadLibWith(config).emitted;
+
+          // then
+          assert.deepEqual(emitted, [
+            { _type:'target', _id:'c-2~rT-3' },
+>>>>>>> 5493-persist
             { _type:'_complete', _id:true },
           ]);
         });
@@ -260,6 +328,7 @@ describe('nools lib', function() {
           };
 
           // when
+<<<<<<< HEAD
           const emitted = runNoolsLib(config).emitted;
 
           // then
@@ -288,6 +357,18 @@ describe('nools lib', function() {
            // then
           expect(emitted).to.have.property('length', 1);
         });
+=======
+          const emitted = loadLibWith(config).emitted;
+
+          // then
+          assert.deepEqual(emitted, [
+            { _type:'target', _id:'c-4~rT-5' },
+            { _type:'target', _id:'c-4~rT-5' },
+            { _type:'target', _id:'c-4~rT-5' },
+            { _type:'_complete', _id:true },
+          ]);
+        });
+>>>>>>> 5493-persist
       });
 
       describe('with multiple targets', function() {
@@ -300,7 +381,11 @@ describe('nools lib', function() {
           };
 
           // when
+<<<<<<< HEAD
           const emitted = runNoolsLib(config).emitted;
+=======
+          const emitted = loadLibWith(config).emitted;
+>>>>>>> 5493-persist
 
           // then
           assert.deepEqual(emitted, [
@@ -316,12 +401,21 @@ describe('nools lib', function() {
           };
 
           // when
+<<<<<<< HEAD
           const emitted = runNoolsLib(config).emitted;
 
           // then
           assert.deepEqual(emitted, [
             { _type:'target', _id:'c-2~rT-3', date: TEST_DATE },
             { _type:'target', _id:'c-2~rT-4', date: TEST_DATE },
+=======
+          const emitted = loadLibWith(config).emitted;
+
+          // then
+          assert.deepEqual(emitted, [
+            { _type:'target', _id:'c-2~rT-3' },
+            { _type:'target', _id:'c-2~rT-4' },
+>>>>>>> 5493-persist
             { _type:'_complete', _id:true },
           ]);
         });
@@ -334,6 +428,7 @@ describe('nools lib', function() {
           };
 
           // when
+<<<<<<< HEAD
           const emitted = runNoolsLib(config).emitted;
 
           // then
@@ -344,11 +439,24 @@ describe('nools lib', function() {
             { _type:'target', _id:'c-4~rT-6', date: TEST_DATE },
             { _type:'target', _id:'c-4~rT-6', date: TEST_DATE },
             { _type:'target', _id:'c-4~rT-6', date: TEST_DATE },
+=======
+          const emitted = loadLibWith(config).emitted;
+
+          // then
+          assert.deepEqual(emitted, [
+            { _type:'target', _id:'c-4~rT-5' },
+            { _type:'target', _id:'c-4~rT-5' },
+            { _type:'target', _id:'c-4~rT-5' },
+            { _type:'target', _id:'c-4~rT-6' },
+            { _type:'target', _id:'c-4~rT-6' },
+            { _type:'target', _id:'c-4~rT-6' },
+>>>>>>> 5493-persist
             { _type:'_complete', _id:true },
           ]);
         });
       });
     });
+<<<<<<< HEAD
 
     it('appliesToType is optional', function() {
       // given
@@ -371,6 +479,8 @@ describe('nools lib', function() {
       ]);
     });
 
+=======
+>>>>>>> 5493-persist
     describe('invalid target type', function() {
       it('should throw error', function() {
         // given
@@ -384,7 +494,12 @@ describe('nools lib', function() {
         };
 
         // throws
+<<<<<<< HEAD
         assert.throws(function() { runNoolsLib(config); }, Error, "unrecognised target type: unknown");
+=======
+        assert.throws(function() { loadLibWith(config); }, Error,
+          "Error: unrecognised target type: unknown");
+>>>>>>> 5493-persist
       });
     });
   });
