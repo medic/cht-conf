@@ -85,6 +85,22 @@ describe('nools lib unit tests', () => {
       obj.foo();
     });
 
+    it('functions in objects in arrays are bound', done => {
+      const context = { foo: 'bar' };
+      const obj = {
+        events: [{
+          dueDate: function() {
+            expect(this.foo).to.eq('bar');
+            expect(this).to.eq(context);
+            done();
+          },
+        }],
+      };
+
+      bindAllFunctionsToContext(obj, context);
+      obj.events[0].dueDate();
+    });
+
     it('deep functions are bound', done => {
       const context = { foo: 'bar' };
       const obj = {
