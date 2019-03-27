@@ -34,8 +34,10 @@ function deepCopy(obj) {
 
 for(idx1=0; idx1<targets.length; ++idx1) {
   target = targets[idx1];
-  var targetContext = { definition: deepCopy(target) };
+  var targetContext = {};
   bindAllFunctionsToContext(target, targetContext);
+  targetContext.definition = deepCopy(target);
+
   switch(target.appliesTo) {
     case 'contacts':
       emitTargetFor(target, c);
@@ -54,9 +56,11 @@ for(idx1=0; idx1<targets.length; ++idx1) {
 if(tasks) {
   for(idx1=0; idx1<tasks.length; ++idx1) {
     var task = tasks[idx1];
-    var taskContext = { definition: deepCopy(task) };
-    bindAllFunctionsToContext(task, taskContext);
     task.index = idx1;
+    var taskContext = {};
+    bindAllFunctionsToContext(task, taskContext);
+    taskContext.definition = deepCopy(task);
+
     switch(task.appliesTo) {
       case 'reports':
       case 'scheduled_tasks':

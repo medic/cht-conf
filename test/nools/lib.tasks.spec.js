@@ -1,11 +1,15 @@
 const chai = require('chai');
 <<<<<<< HEAD
+<<<<<<< HEAD
 const { expect, assert } = chai;
 chai.use(require('chai-shallow-deep-equal'));
 
 const { runNoolsLib } = require('../run-lib');
 =======
 const assert = chai.assert;
+=======
+const { expect, assert } = chai;
+>>>>>>> 139-this
 chai.use(require('chai-shallow-deep-equal'));
 >>>>>>> 5493-persist
 const {
@@ -152,10 +156,15 @@ describe('nools lib', function() {
           { _type:'_complete', _id:true },
         ]);
 <<<<<<< HEAD
+<<<<<<< HEAD
 
         expectAllToHaveUniqueIds(emitted);
 =======
 >>>>>>> 5493-persist
+=======
+
+        expectAllToHaveUniqueIds(emitted);
+>>>>>>> 139-this
       });
 
       it('should emit once per report per task', function() {
@@ -184,6 +193,9 @@ describe('nools lib', function() {
           { _type:'_complete', _id:true },
         ]);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 139-this
 
         expectAllToHaveUniqueIds(emitted); // even with undefined name, the resulting ids are unique
       });
@@ -208,6 +220,7 @@ describe('nools lib', function() {
         // then
         expect(emitted).to.have.property('length', 4);
         expectAllToHaveUniqueIds(emitted);
+<<<<<<< HEAD
       });
 
       it('dueDate function is invoked with expected data', function() {
@@ -237,6 +250,8 @@ describe('nools lib', function() {
         });
 =======
 >>>>>>> 5493-persist
+=======
+>>>>>>> 139-this
       });
 
       it('should allow custom action content', function() {
@@ -349,6 +364,58 @@ describe('nools lib', function() {
 >>>>>>> 5493-persist
     });
 
+    it('functions have access to "this"', function() {
+      // given
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [],
+        tasks: [ aReportBasedTask() ],
+      };
+
+      config.tasks[0].appliesIf = function() {
+        emit('invoked', { _this: this }); // jshint ignore:line
+        return false;
+      };
+
+      // when
+      const emitted = loadLibWith(config).emitted;
+
+      // then
+      expect(emitted).to.have.property('length', 2);
+      expect(emitted[0]).to.nested.include({
+        '_this.definition.appliesTo': 'reports',
+        '_this.definition.name': 'task-3',
+      });
+    });
+
+    it('functions in "this.definition" have access to "this"', function() {
+      // given
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [],
+        tasks: [ aReportBasedTask() ],
+      };
+
+      config.tasks[0].appliesIf = function(isFirst) {
+        if (isFirst) {
+          return this.definition.appliesIf();
+        }
+
+        emit('invoked', { _this: this }); // jshint ignore:line
+        return false;
+      };
+
+      // when
+      const emitted = loadLibWith(config).emitted;
+
+      // then
+      expect(emitted).to.have.property('length', 2);
+      expect(emitted[0]).to.nested.include({
+        '_this.definition.appliesTo': 'reports',
+        '_this.definition.name': 'task-3',
+      });
+    });
+
     describe('scheduled-task based', function() {
       it('???', function() { // FIXME this test needs a proper name
         // given
@@ -401,9 +468,15 @@ describe('nools lib', function() {
   });
 });
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 139-this
 
 const expectAllToHaveUniqueIds = tasks => expect(
   new Set(tasks.map(task => task._id)).size
 ).to.eq(tasks.length);
+<<<<<<< HEAD
 =======
 >>>>>>> 5493-persist
+=======
+>>>>>>> 139-this
