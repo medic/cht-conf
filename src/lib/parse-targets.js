@@ -37,6 +37,7 @@ const getTargets = (projectDir) => {
   
   let targets;
   try {
+    global.persistentState = {};
     global.extras = require(pathToNoolsExtras);
     targets = require(pathToTargetJs);  
   } finally {
