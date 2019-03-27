@@ -235,6 +235,34 @@ describe('nools lib', function() {
       });
     });
 
+    it('functions in "this.definition" have access to "this"', function() {
+      // given
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [],
+        tasks: [ aReportBasedTask() ],
+      };
+
+      config.tasks[0].appliesIf = function(isFirst) {
+        if (isFirst) {
+          return this.definition.appliesIf();
+        }
+
+        emit('invoked', { _this: this }); // jshint ignore:line
+        return false;
+      };
+
+      // when
+      const emitted = loadLibWith(config).emitted;
+
+      // then
+      expect(emitted).to.have.property('length', 2);
+      expect(emitted[0]).to.nested.include({
+        '_this.definition.appliesTo': 'reports',
+        '_this.definition.name': 'task-3',
+      });
+    });
+
     describe('scheduled-task based', function() {
       it('???', function() { // FIXME this test needs a proper name
         // given
