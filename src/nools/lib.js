@@ -2,14 +2,12 @@ for(idx1=0; idx1<targets.length; ++idx1) {
   target = targets[idx1];
   switch(target.appliesTo) {
     case 'contacts':
-      if(c.contact && target.appliesToType.indexOf(c.contact.type) !== -1) {
-        emitContactBasedTargetFor(c, target);
-      }
+      emitTargetFor(target, c);
       break;
     case 'reports':
       for(idx2=0; idx2<c.reports.length; ++idx2) {
         r = c.reports[idx2];
-        emitReportBasedTargetFor(c, r, target);
+        emitTargetFor(target, c, r);
       }
       break;
     default:
@@ -141,40 +139,35 @@ function emitTasksForSchedule(c, schedule, r) {
   }
 }
 
-function emitContactBasedTargetFor(c, targetConfig) {
-  if(targetConfig.appliesIf && !targetConfig.appliesIf(c)) return;
+function emitTargetFor(targetConfig, c, r) {
+  var isEmittingForReport = !!r;
+  if (!c.contact) return;
+  var appliesToKey = isEmittingForReport ? r.form : c.contact.type;
+  if (targetConfig.appliesToType && targetConfig.appliesToType.indexOf(appliesToKey) < 0) return;
+  if (targetConfig.appliesIf && !targetConfig.appliesIf(c, r)) return;
 
-  var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c);
+  var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c, r);
+  var instanceDoc = isEmittingForReport ? r : c.contact;
+  var instance = createTargetInstance(targetConfig.id, instanceDoc, pass);
 
-  var instance = createTargetInstance(targetConfig.id, c.contact, pass);
+  instance._id = (targetConfig.idType === 'report' ? r && r._id : c.contact._id) + '~' + targetConfig.id;
+
   if(typeof targetConfig.date === 'function') {
-    instance.date = targetConfig.date(c);
+    instance.date = targetConfig.date(c, r);
   } else if(targetConfig.date === undefined || targetConfig.date === 'now') {
     instance.date = now.getTime();
   } else if(targetConfig.date === 'reported') {
-    instance.date = c.reported_date;
+    instance.date = isEmittingForReport ? r.reported_date : c.contact.reported_date;
   } else {
     throw new Error('Unrecognised value for target.date: ' + targetConfig.date);
   }
-  emitTargetInstance(instance);
-}
 
-function emitReportBasedTargetFor(c, r, targetConf) {
-  var instance, pass;
-  if(targetConf.appliesIf && !targetConf.appliesIf(c, r)) return;
-
-  if(targetConf.emitCustom) {
-    targetConf.emitCustom(c, r);
+  if(targetConfig.emitCustom) {
+    targetConfig.emitCustom(instance, c, r);
     return;
   }
 
-  pass = !targetConf.passesIf || !!targetConf.passesIf(c, r);
-  instance = createTargetInstance(targetConf.id, r, pass);
-  instance._id = (targetConf.idType === 'report' ? r._id : c.contact._id) + '~' + targetConf.id;
   emitTargetInstance(instance);
-  switch(targetConf.date) {
-    case 'now': instance.date = now.getTime(); break;
-  }
 }
 
 function createTargetInstance(type, doc, pass) {
