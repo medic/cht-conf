@@ -94,8 +94,8 @@ if(instanceUrl) {
   if(productionUrlMatch &&
       productionUrlMatch[1] !== projectName &&
       productionUrlMatch[1] !== 'alpha') {
-    warn(`Attempting to upload configuration for \x1b[31m${projectName}\x1b[33m`,
-        `to non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl)}\x1b[33m`);
+    warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
+        `against non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl)}\x1b[33m`);
     if(!readline.keyInYN()) {
       error('User failed to confirm action.');
       process.exit(1);
