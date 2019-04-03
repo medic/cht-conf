@@ -1,5 +1,5 @@
 const chai = require('chai');
-const assert = chai.assert;
+const { expect, assert } = chai;
 chai.use(require('chai-shallow-deep-equal'));
 const {
   TEST_DAY,
@@ -121,6 +121,8 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
+
+        expectAllToHaveUniqueIds(emitted);
       });
 
       it('should emit once per report per task', function() {
@@ -144,6 +146,30 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
+
+        expectAllToHaveUniqueIds(emitted); // even with undefined name, the resulting ids are unique
+      });
+
+      it('emitted events from tasks without name or id should be unique', function() {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aReportBasedTask(), aReportBasedTask() ],
+        };
+
+        config.tasks.forEach(task => delete task.name);
+
+        const [event] = config.tasks[0].events;
+        delete event.id;
+        config.tasks[0].events = [event, event];
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        expect(emitted).to.have.property('length', 4);
+        expectAllToHaveUniqueIds(emitted);
       });
 
       it('modifyContent for appliesTo reports', function() {
@@ -264,3 +290,7 @@ describe('nools lib', function() {
 
   });
 });
+
+const expectAllToHaveUniqueIds = tasks => expect(
+  new Set(tasks.map(task => task._id)).size
+).to.eq(tasks.length);
