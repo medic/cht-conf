@@ -22,7 +22,7 @@ module.exports = projectDir => {
   let code;
   if (freeformPathExists) {
     code = templatedJs.fromFile(projectDir, freeformPath);
-  } else if (fs.exists(structuredPath)) {
+  } else {
     const contactSummaryLib = fs.read(`${__dirname}/../contact-summary/lib.js`);
     code = templatedJs.fromString(projectDir, `
 var context, fields, cards;
