@@ -166,7 +166,7 @@ describe('nools lib', function() {
         config.tasks[0].events = [event, event];
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         expect(emitted).to.have.property('length', 4);

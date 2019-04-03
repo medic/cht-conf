@@ -155,7 +155,7 @@ describe('nools lib', function() {
         };
 
          // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
          // then
         expect(emitted).to.have.property('length', 1);
@@ -283,7 +283,7 @@ describe('nools lib', function() {
           };
 
            // when
-          const emitted = loadLibWith(config).emitted;
+          const emitted = runNoolsLib(config).emitted;
 
            // then
           expect(emitted).to.have.property('length', 1);
@@ -362,7 +362,7 @@ describe('nools lib', function() {
       };
 
        // when
-      const emitted = loadLibWith(config).emitted;
+      const emitted = runNoolsLib(config).emitted;
 
        // then
       assert.deepEqual(emitted, [
