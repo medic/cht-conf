@@ -122,13 +122,14 @@ function emitTasksForSchedule(c, schedule, r) {
   }
 
   function initActions(def) {
+    var appliesToReport = !!r;
     var content = {
       source: 'task',
-      source_id: r && r._id,
+      source_id: appliesToReport ? r._id : c.contact && c.contact._id,
       contact: c.contact,
     };
 
-    if(def.modifyContent) def.modifyContent(r, content);
+    if(def.modifyContent) def.modifyContent(content, c, r);
 
     return {
       type: 'report',
