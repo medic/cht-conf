@@ -121,6 +121,8 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
+
+        expectAllToHaveUniqueIds(emitted);
       });
 
       it('should emit once per report per task', function() {
@@ -144,6 +146,30 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
+
+        expectAllToHaveUniqueIds(emitted); // even with undefined name, the resulting ids are unique
+      });
+
+      it('emitted events from tasks without name or id should be unique', function() {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aReportBasedTask(), aReportBasedTask() ],
+        };
+
+        config.tasks.forEach(task => delete task.name);
+
+        const [event] = config.tasks[0].events;
+        delete event.id;
+        config.tasks[0].events = [event, event];
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        expect(emitted).to.have.property('length', 4);
+        expectAllToHaveUniqueIds(emitted);
       });
 
       it('dueDate function is invoked with expected data', function() {
@@ -177,7 +203,7 @@ describe('nools lib', function() {
         // given
         const task = aReportBasedTask();
         task.actions[0].modifyContent =
-            (r, content) => { content.report_id = r._id; };
+            (content, c, r) => { content.report_id = r._id; };
         // and
         const config = {
           c: personWithReports(aReport()),
@@ -210,6 +236,94 @@ describe('nools lib', function() {
         ]);
       });
 
+      it('modifyContent for appliesTo contacts', function() {
+        // given
+        const task = aPersonBasedTask();
+        task.actions[0].modifyContent = (content, c) => { content.report_id = c.contact._id; };
+        // and
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ task ],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.shallowDeepEqual(emitted, [
+          {
+            actions:[
+              {
+                type: 'report',
+                form: 'example-form',
+                label: 'Follow up',
+                content: {
+                  source: 'task',
+                  source_id: 'c-3',
+                  contact: {
+                    _id: 'c-3',
+                  },
+                  report_id: 'c-3',
+                },
+              },
+            ]
+          },
+        ]);
+      });
+
+    });
+
+    it('functions have access to "this"', function() {
+      // given
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [],
+        tasks: [ aReportBasedTask() ],
+      };
+
+      config.tasks[0].appliesIf = function() {
+        emit('invoked', { _this: this }); // jshint ignore:line
+        return false;
+      };
+
+      // when
+      const emitted = loadLibWith(config).emitted;
+
+      // then
+      expect(emitted).to.have.property('length', 2);
+      expect(emitted[0]).to.nested.include({
+        '_this.definition.appliesTo': 'reports',
+        '_this.definition.name': 'task-3',
+      });
+    });
+
+    it('functions in "this.definition" have access to "this"', function() {
+      // given
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [],
+        tasks: [ aReportBasedTask() ],
+      };
+
+      config.tasks[0].appliesIf = function(isFirst) {
+        if (isFirst) {
+          return this.definition.appliesIf();
+        }
+
+        emit('invoked', { _this: this }); // jshint ignore:line
+        return false;
+      };
+
+      // when
+      const emitted = loadLibWith(config).emitted;
+
+      // then
+      expect(emitted).to.have.property('length', 2);
+      expect(emitted[0]).to.nested.include({
+        '_this.definition.appliesTo': 'reports',
+        '_this.definition.name': 'task-3',
+      });
     });
 
     describe('scheduled-task based', function() {
@@ -255,3 +369,7 @@ describe('nools lib', function() {
 
   });
 });
+
+const expectAllToHaveUniqueIds = tasks => expect(
+  new Set(tasks.map(task => task._id)).size
+).to.eq(tasks.length);
