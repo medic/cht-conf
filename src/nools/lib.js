@@ -1,5 +1,43 @@
+function bindAllFunctionsToContext(obj, context) {
+  var keys = Object.keys(obj);
+  for (var i in keys) {
+    var key = keys[i];
+    switch(typeof obj[key]) {
+      case 'object':
+        bindAllFunctionsToContext(obj[key], context);
+        break;
+      case 'function':
+        obj[key] = obj[key].bind(context);
+        break;
+    }
+  }
+}
+
+function deepCopy(obj) {
+  var copy = Object.assign({}, obj);
+  var keys = Object.keys(copy);
+  for (var i in keys) {
+    var key = keys[i];
+    if (Array.isArray(copy[key])) {
+      copy[key] = copy[key].slice(0);
+      for (var j = 0; j < copy[key].length; ++j) {
+        if (typeof copy[key][j] === 'object') {
+          copy[key][j] = deepCopy(copy[key][j]);
+        }
+      }
+    } else if (typeof copy[key] === 'object') {
+      copy[key] = deepCopy(copy[key]);
+    }
+  }
+  return copy;
+}
+
 for(idx1=0; idx1<targets.length; ++idx1) {
   target = targets[idx1];
+  var targetContext = {};
+  bindAllFunctionsToContext(target, targetContext);
+  targetContext.definition = deepCopy(target);
+
   switch(target.appliesTo) {
     case 'contacts':
       emitTargetFor(target, c);
@@ -19,6 +57,10 @@ if(tasks) {
   for(idx1=0; idx1<tasks.length; ++idx1) {
     var task = tasks[idx1];
     task.index = idx1;
+    var taskContext = {};
+    bindAllFunctionsToContext(task, taskContext);
+    taskContext.definition = deepCopy(task);
+
     switch(task.appliesTo) {
       case 'reports':
       case 'scheduled_tasks':
@@ -70,17 +112,17 @@ function emitTasksForSchedule(c, schedule, r) {
     for (i = 0; i < schedule.events.length; i++) {
       event = schedule.events[i];
 
-      if(r) {
-        if(event.dueDate) {
-          dueDate = event.dueDate(r, event, scheduledTaskIdx);
-        } else if(scheduledTaskIdx !== undefined) {
+      if (event.dueDate) {
+        dueDate = event.dueDate(event, c, r, scheduledTaskIdx);
+      } else if(r) {
+        if (scheduledTaskIdx !== undefined) {
           dueDate = new Date(Utils.addDate(new Date(r.scheduled_tasks[scheduledTaskIdx].due), event.days));
         } else {
           dueDate = new Date(Utils.addDate(new Date(r.reported_date), event.days));
         }
       } else {
         if(event.dueDate) {
-          dueDate = event.dueDate(c.contact, event, scheduledTaskIdx);
+          dueDate = event.dueDate(event, c);
         } else {
           dueDate = new Date(Utils.addDate(new Date(c.contact.reported_date), event.days));
         }
@@ -122,13 +164,14 @@ function emitTasksForSchedule(c, schedule, r) {
   }
 
   function initActions(def) {
+    var appliesToReport = !!r;
     var content = {
       source: 'task',
-      source_id: r && r._id,
+      source_id: appliesToReport ? r._id : c.contact && c.contact._id,
       contact: c.contact,
     };
 
-    if(def.modifyContent) def.modifyContent(r, content);
+    if(def.modifyContent) def.modifyContent(content, c, r);
 
     return {
       type: 'report',

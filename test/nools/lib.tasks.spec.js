@@ -173,11 +173,38 @@ describe('nools lib', function() {
         expectAllToHaveUniqueIds(emitted);
       });
 
+      it('dueDate function is invoked with expected data', function() {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aReportBasedTask() ],
+        };
+
+        const [event] = config.tasks[0].events;
+        delete event.days;
+        event.dueDate = (event, c, r) => {
+          emit('invoked', { event, c, r }); // jshint ignore:line
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        expect(emitted).to.have.property('length', 3);
+        const [invoked] = emitted;
+        expect(invoked).to.nested.include({
+          'event.id': 'task',
+          'c.contact._id': 'c-2',
+          'c.reports[0]._id': 'r-1',
+        });
+      });
+
       it('should allow custom action content', function() {
         // given
         const task = aReportBasedTask();
         task.actions[0].modifyContent =
-            (r, content) => { content.report_id = r._id; };
+            (content, c, r) => { content.report_id = r._id; };
         // and
         const config = {
           c: personWithReports(aReport()),
@@ -210,6 +237,94 @@ describe('nools lib', function() {
         ]);
       });
 
+      it('modifyContent for appliesTo contacts', function() {
+        // given
+        const task = aPersonBasedTask();
+        task.actions[0].modifyContent = (content, c) => { content.report_id = c.contact._id; };
+        // and
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ task ],
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        assert.shallowDeepEqual(emitted, [
+          {
+            actions:[
+              {
+                type: 'report',
+                form: 'example-form',
+                label: 'Follow up',
+                content: {
+                  source: 'task',
+                  source_id: 'c-3',
+                  contact: {
+                    _id: 'c-3',
+                  },
+                  report_id: 'c-3',
+                },
+              },
+            ]
+          },
+        ]);
+      });
+
+    });
+
+    it('functions have access to "this"', function() {
+      // given
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [],
+        tasks: [ aReportBasedTask() ],
+      };
+
+      config.tasks[0].appliesIf = function() {
+        emit('invoked', { _this: this }); // jshint ignore:line
+        return false;
+      };
+
+      // when
+      const emitted = loadLibWith(config).emitted;
+
+      // then
+      expect(emitted).to.have.property('length', 2);
+      expect(emitted[0]).to.nested.include({
+        '_this.definition.appliesTo': 'reports',
+        '_this.definition.name': 'task-3',
+      });
+    });
+
+    it('functions in "this.definition" have access to "this"', function() {
+      // given
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [],
+        tasks: [ aReportBasedTask() ],
+      };
+
+      config.tasks[0].appliesIf = function(isFirst) {
+        if (isFirst) {
+          return this.definition.appliesIf();
+        }
+
+        emit('invoked', { _this: this }); // jshint ignore:line
+        return false;
+      };
+
+      // when
+      const emitted = loadLibWith(config).emitted;
+
+      // then
+      expect(emitted).to.have.property('length', 2);
+      expect(emitted[0]).to.nested.include({
+        '_this.definition.appliesTo': 'reports',
+        '_this.definition.name': 'task-3',
+      });
     });
 
     describe('scheduled-task based', function() {
