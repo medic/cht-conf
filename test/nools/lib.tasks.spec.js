@@ -172,7 +172,34 @@ describe('nools lib', function() {
         expectAllToHaveUniqueIds(emitted);
       });
 
-      it('modifyContent for appliesTo reports', function() {
+      it('dueDate function is invoked with expected data', function() {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aReportBasedTask() ],
+        };
+
+        const [event] = config.tasks[0].events;
+        delete event.days;
+        event.dueDate = (event, c, r) => {
+          emit('invoked', { event, c, r }); // jshint ignore:line
+        };
+
+        // when
+        const emitted = loadLibWith(config).emitted;
+
+        // then
+        expect(emitted).to.have.property('length', 3);
+        const [invoked] = emitted;
+        expect(invoked).to.nested.include({
+          'event.id': 'task',
+          'c.contact._id': 'c-2',
+          'c.reports[0]._id': 'r-1',
+        });
+      });
+
+      it('should allow custom action content', function() {
         // given
         const task = aReportBasedTask();
         task.actions[0].modifyContent =
