@@ -45,7 +45,7 @@ var fields = contactSummary.fields;
 var context = contactSummary.context;
 var cards = contactSummary.cards;
 ${contactSummaryLib}
-`);
+`;
   }
 
   lint(code);
