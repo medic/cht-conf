@@ -13,10 +13,16 @@ module.exports = projectDir => {
   const freeformPath = `${projectDir}/contact-summary.js`;
   const structuredPath = `${projectDir}/contact-summary.templated.js`;
 
+  const freeformPathExists = fs.exists(freeformPath);
+  const structuredPathExists = fs.exists(structuredPath);
+
+  if (!freeformPathExists && !structuredPathExists) throw new Error(`Could not find contact-summary javascript at either of ${freeformPath} or ${structuredPath}.  Please create one xor other of these files.`);
+  if (freeformPathExists && structuredPathExists) throw new Error(`Found contact-summary javascript at both ${freeformPath} and ${structuredPath}.  Only one of these files should exist.`);
+
   let code;
-  if(fs.exists(freeformPath)) {
+  if (freeformPathExists) {
     code = templatedJs.fromFile(projectDir, freeformPath);
-  } else if(fs.exists(structuredPath)) {
+  } else {
     const contactSummaryLib = fs.read(`${__dirname}/../contact-summary/lib.js`);
     code = templatedJs.fromString(projectDir, `
 var context, fields, cards;
@@ -26,7 +32,7 @@ __include_inline__('contact-summary.templated.js');
 
 ${contactSummaryLib}
 `);
-  } else throw new Error(`Could not find contact-summary javascript at either of ${freeformPath} or ${structuredPath}.  Please create one xor other of these files.`);
+  }
 
   lint(code);
 
