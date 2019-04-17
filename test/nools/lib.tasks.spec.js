@@ -1,6 +1,6 @@
 const chai = require('chai');
-const { expect, assert } = chai;
-chai.use(require('chai-shallow-deep-equal'));
+const { assert, expect } = chai;
+const sinon = require('sinon');
 
 const { runNoolsLib } = require('../run-lib');
 const {
@@ -183,20 +183,19 @@ describe('nools lib', function() {
 
         const [event] = config.tasks[0].events;
         delete event.days;
-        event.dueDate = (event, c, r) => {
-          emit('invoked', { event, c, r }); // jshint ignore:line
-        };
+        const spy = sinon.spy();
+        event.dueDate = spy;
 
         // when
         const emitted = runNoolsLib(config).emitted;
 
         // then
-        expect(emitted).to.have.property('length', 3);
-        const [invoked] = emitted;
-        expect(invoked).to.nested.include({
-          'event.id': 'task',
-          'c.contact._id': 'c-2',
-          'c.reports[0]._id': 'r-1',
+        expect(emitted).to.have.property('length', 2);
+        const [eventArg, c] = spy.args[0];
+        expect(eventArg).to.include({ id: 'task' });
+        expect(c).to.nested.include({
+          'contact._id': 'c-2',
+          'reports[0]._id': 'r-1',
         });
       });
 
@@ -283,8 +282,14 @@ describe('nools lib', function() {
         tasks: [ aReportBasedTask() ],
       };
 
+      let invoked = false;
       config.tasks[0].appliesIf = function() {
-        emit('invoked', { _this: this }); // jshint ignore:line
+        expect(this).to.nested.include({
+          'definition.appliesTo': 'reports',
+          'definition.name': 'task-3',  
+        });
+
+        invoked = true;
         return false;
       };
 
@@ -292,11 +297,8 @@ describe('nools lib', function() {
       const emitted = runNoolsLib(config).emitted;
 
       // then
-      expect(emitted).to.have.property('length', 2);
-      expect(emitted[0]).to.nested.include({
-        '_this.definition.appliesTo': 'reports',
-        '_this.definition.name': 'task-3',
-      });
+      expect(emitted).to.have.property('length', 1);
+      expect(invoked).to.be.true;
     });
 
     it('functions in "this.definition" have access to "this"', function() {
@@ -307,12 +309,17 @@ describe('nools lib', function() {
         tasks: [ aReportBasedTask() ],
       };
 
+      let invoked = false;
       config.tasks[0].appliesIf = function(isFirst) {
         if (isFirst) {
           return this.definition.appliesIf();
         }
 
-        emit('invoked', { _this: this }); // jshint ignore:line
+        invoked = true;
+        expect(this).to.nested.include({
+          'definition.appliesTo': 'reports',
+          'definition.name': 'task-3',  
+        });
         return false;
       };
 
@@ -320,11 +327,8 @@ describe('nools lib', function() {
       const emitted = runNoolsLib(config).emitted;
 
       // then
-      expect(emitted).to.have.property('length', 2);
-      expect(emitted[0]).to.nested.include({
-        '_this.definition.appliesTo': 'reports',
-        '_this.definition.name': 'task-3',
-      });
+      expect(emitted).to.have.property('length', 1);
+      expect(invoked).to.be.true;
     });
 
     describe('scheduled-task based', function() {
