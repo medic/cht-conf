@@ -1,3 +1,4 @@
+const path = require('path');
 const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
 const compileContactSummary = require('../lib/compile-contact-summary');
 const compileNoolsRules = require('../lib/compile-nools-rules');
@@ -23,7 +24,8 @@ function parsePurgingFunction(root) {
 }
 
 module.exports = (projectDir /*, couchUrl */) => {
-
+  projectDir = path.resolve(projectDir);
+  
   return Promise.resolve()
     .then(() => {
       checkMedicConfDependencyVersion(projectDir);

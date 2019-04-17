@@ -11,7 +11,7 @@
     "generate-changelog": "echo 'Generating changelog...' && ./scripts/changelog > CHANGELOG.md && echo 'Changelog generated.'",
     "jshint": "jshint --verbose src/**/*.js test/*.js test/**/*.js",
     "release": "./scripts/reject-excluded-tests && npm run --silent generate-changelog && ./scripts/dirty-repo-check && git push && git tag v$(jq -r .version package.json) && git push --tags && npm publish",
-    "test": "npm run jshint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js -R min"
+    "test": "npm run jshint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js"
   },
   "bin": {
     "medic-conf": "src/bin/medic-conf.js",
@@ -58,6 +58,7 @@
     "memdown": "^3.0.0",
     "mocha": "^5.2.0",
     "pouchdb": "^7.0.0",
-    "rewire": "^4.0.1"
+    "rewire": "^4.0.1",
+    "sinon": "^7.3.1"
   }
 }

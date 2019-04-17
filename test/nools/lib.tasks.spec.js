@@ -1,6 +1,8 @@
 const chai = require('chai');
-const { expect, assert } = chai;
-chai.use(require('chai-shallow-deep-equal'));
+const { assert, expect } = chai;
+const sinon = require('sinon');
+
+const { runNoolsLib } = require('../run-lib');
 const {
   TEST_DAY,
   reset,
@@ -13,7 +15,6 @@ const {
   personWithoutReports,
   personWithReports,
   placeWithoutReports,
-  loadLibWith,
 } = require('./mocks');
 
 describe('nools lib', function() {
@@ -31,7 +32,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -56,7 +57,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -77,7 +78,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.deepEqual(emitted, [
@@ -94,7 +95,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -112,7 +113,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -134,7 +135,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -165,7 +166,7 @@ describe('nools lib', function() {
         config.tasks[0].events = [event, event];
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         expect(emitted).to.have.property('length', 4);
@@ -182,20 +183,19 @@ describe('nools lib', function() {
 
         const [event] = config.tasks[0].events;
         delete event.days;
-        event.dueDate = (event, c, r) => {
-          emit('invoked', { event, c, r }); // jshint ignore:line
-        };
+        const spy = sinon.spy();
+        event.dueDate = spy;
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
-        expect(emitted).to.have.property('length', 3);
-        const [invoked] = emitted;
-        expect(invoked).to.nested.include({
-          'event.id': 'task',
-          'c.contact._id': 'c-2',
-          'c.reports[0]._id': 'r-1',
+        expect(emitted).to.have.property('length', 2);
+        const [eventArg, c] = spy.args[0];
+        expect(eventArg).to.include({ id: 'task' });
+        expect(c).to.nested.include({
+          'contact._id': 'c-2',
+          'reports[0]._id': 'r-1',
         });
       });
 
@@ -212,7 +212,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -248,7 +248,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -282,20 +282,23 @@ describe('nools lib', function() {
         tasks: [ aReportBasedTask() ],
       };
 
+      let invoked = false;
       config.tasks[0].appliesIf = function() {
-        emit('invoked', { _this: this }); // jshint ignore:line
+        expect(this).to.nested.include({
+          'definition.appliesTo': 'reports',
+          'definition.name': 'task-3',  
+        });
+
+        invoked = true;
         return false;
       };
 
       // when
-      const emitted = loadLibWith(config).emitted;
+      const emitted = runNoolsLib(config).emitted;
 
       // then
-      expect(emitted).to.have.property('length', 2);
-      expect(emitted[0]).to.nested.include({
-        '_this.definition.appliesTo': 'reports',
-        '_this.definition.name': 'task-3',
-      });
+      expect(emitted).to.have.property('length', 1);
+      expect(invoked).to.be.true; // jshint ignore:line
     });
 
     it('functions in "this.definition" have access to "this"', function() {
@@ -306,24 +309,26 @@ describe('nools lib', function() {
         tasks: [ aReportBasedTask() ],
       };
 
+      let invoked = false;
       config.tasks[0].appliesIf = function(isFirst) {
         if (isFirst) {
           return this.definition.appliesIf();
         }
 
-        emit('invoked', { _this: this }); // jshint ignore:line
+        invoked = true;
+        expect(this).to.nested.include({
+          'definition.appliesTo': 'reports',
+          'definition.name': 'task-3',  
+        });
         return false;
       };
 
       // when
-      const emitted = loadLibWith(config).emitted;
+      const emitted = runNoolsLib(config).emitted;
 
       // then
-      expect(emitted).to.have.property('length', 2);
-      expect(emitted[0]).to.nested.include({
-        '_this.definition.appliesTo': 'reports',
-        '_this.definition.name': 'task-3',
-      });
+      expect(emitted).to.have.property('length', 1);
+      expect(invoked).to.be.true; // jshint ignore:line
     });
 
     describe('scheduled-task based', function() {
@@ -336,7 +341,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = loadLibWith(config).emitted;
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -362,8 +367,7 @@ describe('nools lib', function() {
         };
 
         // should throw error
-        assert.throws(function() { loadLibWith(config); }, Error,
-          "Error: unrecognised task type: unknown");
+        assert.throws(function() { runNoolsLib(config); }, Error, "unrecognised task type: unknown");
       });
     });
 

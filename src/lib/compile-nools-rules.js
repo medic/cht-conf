@@ -1,9 +1,7 @@
 const fs = require('./sync-fs');
 const jshintWithReport = require('./jshint-with-report');
-const jsToString = require('./js-to-string');
 const minifyJs = require('./minify-js');
 const minifyNools = require('./minify-nools');
-const parseTargets = require('./parse-targets');
 const templatedJs = require('./templated-js');
 
 const CURRENT_NOOLS_FILES = [ 'tasks.js', 'targets.js', 'nools-extras.js' ];
@@ -17,20 +15,34 @@ function lint(code) {
 function compileWithDefaultLayout(projectDir) {
   checkForRequiredFilesForDefaultLayout(projectDir);
 
-  const targets = parseTargets.js(projectDir);
+  const targets = fs.read(`${projectDir}/targets.js`);
   const tasks = fs.read(`${projectDir}/tasks.js`);
   const supportCode = fs.read(`${projectDir}/nools-extras.js`);
   const noolsLib = fs.read(`${__dirname}/../nools/lib.js`);
 
-  const jsCode = templatedJs.fromString(projectDir, `
+  const jsCode = `
     var idx1, idx2, r, target;
     var now = Utils.now();
-    ${supportCode}
-    var targets = ${jsToString(targets)};
-    var tasks = ${tasks};
+    var extras = (function() {
+      var module = { exports: {} };
+      ${supportCode}
+      return module.exports;
+    })(); /*jshint unused:false*/
+
+    var targets = (function(extras) {
+      var module = { exports: {} };
+      ${targets}
+      return module.exports;
+    })(extras);
+
+    var tasks = (function(extras) {
+      var module = {};
+      ${tasks}
+      return module.exports;
+    })(extras);
 
     ${noolsLib}
-  `);
+  `;
 
   lint(jsCode);
 

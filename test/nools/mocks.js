@@ -5,9 +5,6 @@ const TEST_DATE = 1431143098575;
 const TEST_DAY = new Date(TEST_DATE);
 TEST_DAY.setHours(0, 0, 0, 0);
 
-const jsToString = require('../../src/lib/js-to-string');
-const parseJs = require('../../src/lib/simple-js-parser');
-
 function aReportBasedTask() {
   return aTask('reports');
 }
@@ -117,45 +114,6 @@ function aRandomTimestamp() {
   return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 }
 
-function loadLibWith({ c, targets, tasks }) {
-  return parseJs({
-    jsFiles: [ `${__dirname}/../../src/nools/lib.js` ],
-    header: `
-        let idx1, idx2, r, target;
-        const now     = new Date(${TEST_DATE});
-        const c       = ${jsToString(c)};
-        const targets = ${jsToString(targets)};
-        const tasks   = ${jsToString(tasks)};
-        const emitted = [];
-        const Utils = {
-          addDate: function(date, days) {
-            const d = new Date(date.getTime());
-            d.setDate(d.getDate() + days);
-            d.setHours(0, 0, 0, 0);
-            return d;
-          },
-          isTimely: function() { return true; },
-        };
-        const Target = function(props) {
-          this._id = props._id;
-        };
-        const Task = function(props) {
-          // Any property whose value you want to assert in tests needs to be
-          // copied from 'props' to 'this' here.
-          this._id = props._id;
-          this.date = props.date;
-          this.actions = props.actions;
-          this.resolved = props.resolved;
-        };
-        function emit(type, taskOrTarget) {
-          taskOrTarget._type = type;
-          emitted.push(taskOrTarget);
-        };
-        `,
-    export: [ 'emitted' ],
-  });
-}
-
 module.exports = {
   reset: () => { idCounter = 0; },
   TEST_DATE,
@@ -175,5 +133,4 @@ module.exports = {
   placeWithoutReports,
   placeWithReports,
   aRandomTimestamp,
-  loadLibWith,
 };
