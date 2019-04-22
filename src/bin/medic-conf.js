@@ -33,7 +33,7 @@ switch(args[0]) {
 const acceptSSL = '--accept-ssl';
 const index = args.indexOf(acceptSSL);
 if(index > -1){
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED=0;
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
   args.splice(index, 1);
 }
 
