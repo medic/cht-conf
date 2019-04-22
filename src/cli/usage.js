@@ -50,6 +50,9 @@ ${bold('OPTIONS')}
 
 	--changelog
 		Display application changelog.
+	
+	--accept-ssl
+		Allows node to accept self signed ssl connections.
 `);
 
   process.exit(exitCode);

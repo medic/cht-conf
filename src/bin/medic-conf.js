@@ -30,6 +30,13 @@ switch(args[0]) {
   default:          log.level = log.LEVEL_INFO;
 }
 
+const acceptSSL = '--accept-ssl';
+const index = args.indexOf(acceptSSL);
+if(index > -1){
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED=0;
+  args.splice(index, 1);
+}
+
 let instanceUsername = 'admin';
 switch(args[0]) {
 
