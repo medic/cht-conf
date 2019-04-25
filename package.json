@@ -35,6 +35,7 @@
     "googleapis": "^34.0.0",
     "jshint": "^2.9.6",
     "json2csv": "^4.3.5",
+    "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "pouchdb-adapter-http": "^7.0.0",
     "pouchdb-core": "^7.0.0",
