@@ -2,9 +2,8 @@
 
 ## [`v2.0.0`](https://github.com/medic/medic-conf/tree/v2.0.0)
 
-...not yet released...
+Released: 2019-04-28
 
-* [`b003126`](https://github.com/medic/medic-conf/commit/b003126) Commit changelog
 * [`8be3ae4`](https://github.com/medic/medic-conf/commit/8be3ae4) Version bump to 2.0!
 * [`01f4620`](https://github.com/medic/medic-conf/commit/01f4620) Use modules.exports instead of "simple-js-parser" (#160)
 * [`711019b`](https://github.com/medic/medic-conf/commit/711019b) Config with mix of declarative config files and legacy config files should assert (#163)
