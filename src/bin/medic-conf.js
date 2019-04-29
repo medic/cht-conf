@@ -14,6 +14,12 @@ const supportedActions = require('../cli/supported-actions');
 const usage = require('../cli/usage');
 const warn = require('../lib/log').warn;
 
+// No params at all
+if(process.argv.length === 2) {
+  return checkForUpdates({ nonFatal:true })
+      .then(() => usage(0));
+}
+
 const argv = require('minimist')(process.argv.slice(2), {
   boolean: true,
   '--': true
@@ -22,11 +28,6 @@ const argv = require('minimist')(process.argv.slice(2), {
 //
 // General single use actions
 //
-if(!Object.keys(argv).length) {
-  return checkForUpdates({ nonFatal:true })
-      .then(() => usage(0));
-}
-
 if (argv.help) {
   return usage(0);
 }
@@ -46,7 +47,7 @@ if (argv.version) {
 }
 
 if (argv.changelog) {
-  console.log(fs.read(`${__dirname}/../CHANGELOG.md`));
+  console.log(fs.read(`${__dirname}/../../CHANGELOG.md`));
   return process.exit(0);
 }
 

@@ -4,6 +4,14 @@ const execSync = require('child_process').execSync;
 const mkdirp = require('mkdirp').sync;
 
 describe('medic-conf cli', () => {
+  describe('with no parameters', () => {
+    it('should return help', () => {
+      medicConfCli('default')
+        .then(output => {
+          assert.match(output, /medic-conf - configurerize your Medic Mobile instances/);
+        });
+    });
+  });
 
   describe('with --version flag', () => {
     it('should return a valid version number', () =>
