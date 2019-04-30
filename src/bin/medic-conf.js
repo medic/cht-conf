@@ -13,86 +13,103 @@ const redactBasicAuth = require('redact-basic-auth');
 const supportedActions = require('../cli/supported-actions');
 const usage = require('../cli/usage');
 const warn = require('../lib/log').warn;
-
-let args = process.argv.slice(2);
-const shift = n => args = args.slice(n || 1);
-
-if(!args.length) {
-  return checkForUpdates({ nonFatal:true })
-      .then(() => usage(0));
-}
-
-let instanceUrl, skipCheckForUpdates;
-
-switch(args[0]) {
-  case '--silent':  log.level = log.LEVEL_NONE;  shift(); break;
-  case '--verbose': log.level = log.LEVEL_TRACE; shift(); break;
-  default:          log.level = log.LEVEL_INFO;
-}
-
-const acceptSSL = '--accept-ssl';
-const index = args.indexOf(acceptSSL);
-if(index > -1){
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
-  args.splice(index, 1);
-}
-
+const program = require('commander');
+const version = require('../../package').version;
 let instanceUsername = 'admin';
-switch(args[0]) {
+let instanceUrl;
 
-//> instance URL handling:
-  case '--user':
-    instanceUsername = args[1];
-    shift(2);
-    if(args[0] !== '--instance') throw new Error('The --user switch can only be used if followed by --instance');
-    /* falls through */
-  case '--instance':
-    const password = readline.question(`${emoji.key}  Password: `, { hideEchoBack:true });
-    const encodedPassword = encodeURIComponent(password);
-    instanceUrl = `https://${instanceUsername}:${encodedPassword}@${args[1]}.medicmobile.org`;
-    shift(2);
-    break;
-  case '--local':
-    if(process.env.COUCH_URL) {
-      if(!process.env.COUCH_URL.match(/localhost/)) {
-        throw new Error(`You asked to configure a local instance, but the COUCH_URL env var is set to '${process.env.COUCH_URL}'.  This may be a remote server.`);
-      }
-      instanceUrl = process.env.COUCH_URL
-        .replace(/\/medic$/, '') // strip off the database
-        .replace(/:5984/, ':5988'); // use api port instead of couchdb
+
+if (process.argv.length === 2) {
+  process.argv.push('-h')
+}
+
+program
+  .version(version)
+  .option('-assc, --accept-self-signed-certs', 'Allows medic-conf to work with self signed certs')
+  .option('--user <user>', 'Specify user name for uploading to your instance')
+  .option('--instance <instanceUrl>', 'Specify instance for uploading')
+  .option('--local', 'Used for running against a local instance of the applications')
+  .option('--url <url>', 'Specify the url to upload config to')
+  .option('--supported-actions', 'List supported actions by medic-conf')
+  .option('--changeLog', 'Show medic-conf changelog')
+  .option('--shell-completion <shell>', 'Show details on how to setup shell completion')
+  .option('--no-check', 'Skip update check')
+  .option('--actions <actions>', 'Space separated list of actions to perform')
+  
+log.level = log.LEVEL_INFO;
+program.command('logLevel [level]')
+  .action(function (logLevel) {
+    switch (logLevel){
+      case 'silent':
+        log.level = log.LEVEL_NONE;
+        break;
+      case 'verbose':
+        log.level = log.LEVEL_TRACE
+        break;
+    }
+  })
+program.on('--help', function(){
+  //TODO: Usage may go away once this is implemented.
+  checkForUpdates({ nonFatal:true })
+    .then(
+      () => {console.log('here')
+      usage(0)
+    }
+      ).catch((e)=> console.log(e));
+  });
+ 
+program.parse(process.argv)
+
+if(program.supportedActions){
+  console.log('Supported actions:\n ', supportedActions.join('\n  '));
+}
+if(program.changeLog){
+  console.log(fs.read(`${__dirname}/../../CHANGELOG.md`));
+}
+if(program.shellCompletion){
+  return require('../cli/shell-completion-setup')(program.shellCompletion);
+}
+
+if(program.acceptSelfSignedCerts){
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+}
+
+if(program.user && program.instance){
+  //TODO this isn't right. Need to break if one of the other doesn't exist.
+  if (!program.user) {
+    console.log('User is required when specifying instance');
+  }
+  if (!program.instance){
+    console.log('Instance is required when specifying user');
+  }
+  instanceUsername = program.user
+  const password = readline.question(`${emoji.key}  Password: `, { hideEchoBack:true });
+  const encodedPassword = encodeURIComponent(password);
+  instanceUrl = `https://${instanceUsername}:${encodedPassword}@${program.instance}.medicmobile.org`;  
+}
+
+if (program.local){
+  if(process.env.COUCH_URL) {
+    if(!process.env.COUCH_URL.match(/localhost/)) {
+      throw new Error(`You asked to configure a local instance, but the COUCH_URL env var is set to '${process.env.COUCH_URL}'.  This may be a remote server.`);
+    }
+    instanceUrl = process.env.COUCH_URL
+      .replace(/\/medic$/, '') // strip off the database
+      .replace(/:5984/, ':5988'); // use api port instead of couchdb
       info('Using instance URL from COUCH_URL environment variable.');
     } else {
       instanceUrl = 'http://admin:pass@localhost:5988';
     }
-    shift();
-    break;
-  case '--url':
-    instanceUrl = args[1];
-    shift(2);
-    break;
-
-//> general option handling:
-  case '--help': return usage(0);
-  case '--shell-completion':
-    return require('../cli/shell-completion-setup')(args[1]);
-  case '--supported-actions':
-    console.log('Supported actions:\n ', supportedActions.join('\n  '));
-    return process.exit(0);
-  case '--version':
-    console.log(require('../../package.json').version);
-    return process.exit(0);
-  case '--changelog':
-    console.log(fs.read(`${__dirname}/../CHANGELOG.md`));
-    return process.exit(0);
 }
 
-if(args[0] === '--no-check') {
-  skipCheckForUpdates = true;
-  shift();
+const skipCheckForUpdates = program.noCheck;
+if(program.url){
+  instanceUrl = program.url;
 }
 
 const projectName = fs.path.basename(fs.path.resolve('.'));
 const couchUrl = instanceUrl && `${instanceUrl}/medic`;
+
 
 if(instanceUrl) {
   if(instanceUrl.match('/medic$')) warn('Supplied URL ends in "/medic".  This is probably incorrect.');
@@ -110,15 +127,17 @@ if(instanceUrl) {
   }
 }
 
-let actions = args;
-let extraArgs;
-
-const argDivider = actions.indexOf('--');
-if(argDivider !== -1) {
-  extraArgs = actions.slice(argDivider + 1);
-  actions = actions.slice(0, argDivider);
+let splitActions, actions = [];
+if(program.actions){
+   splitActions = program.actions.split(' ');
+   const argDivider = splitActions.indexOf('--');
+  if(argDivider !== -1) {
+    extraArgs = actions.slice(argDivider + 1);
+    actions = actions.slice(0, argDivider);
+  }
 }
 
+let extraArgs;
 if(!actions.length) {
   actions = [
     'compile-app-settings',
