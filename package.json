@@ -31,6 +31,7 @@
   "homepage": "https://github.com/medic/medic-conf#readme",
   "dependencies": {
     "canonical-json": "0.0.4",
+    "commander": "^2.20.0",
     "csv-parse": "^3.1.3",
     "googleapis": "^34.0.0",
     "jshint": "^2.9.6",
