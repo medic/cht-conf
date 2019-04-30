@@ -5,3 +5,7 @@
 // }
 
 // sqls.forEach((sqlFile) => await pushPastSsh(sqlFile));
+
+module.exports = (projectDir, couchUrl) => {
+  console.log('You called upload-sql');
+};
