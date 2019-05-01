@@ -4,7 +4,7 @@
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "engines": {
-    "node": ">=8.15.1"
+    "node": ">=8.9.0"
   },
   "scripts": {
     "clean": "rm -rf ./build/",
@@ -45,7 +45,7 @@
     "request-promise-native": "^1.0.5",
     "semver": "^5.6.0",
     "svgo": "^1.1.1",
-    "uglify-js": "^3.4.9",
+    "uglify-js": "3.4.x",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
