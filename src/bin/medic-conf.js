@@ -65,7 +65,7 @@ if (argv.silent) {
 //
 // Update Check?
 //
-let skipCheckForUpdates = argv.check === false;
+const skipCheckForUpdates = argv.check === false;
 
 //
 // Compile instance information
@@ -74,7 +74,7 @@ if (argv.user && !argv.instance) {
   throw new Error('The --user switch can only be used if followed by --instance');
 }
 
-let instanceUsername = argv.user || 'admin';
+const instanceUsername = argv.user || 'admin';
 let instanceUrl;
 if (argv.local) {
   if(process.env.COUCH_URL) {
