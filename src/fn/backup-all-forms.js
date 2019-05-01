@@ -25,7 +25,12 @@ module.exports = (projectDir, couchUrl) => {
         const attachmentSaves = [];
         Object.keys(form._attachments).forEach(name => {
           const att = form._attachments[name];
-          fs.writeBinary(`${backupDir}/${name}`, att.data);
+          const destination = `${backupDir}/${name}`;
+
+          if (fs.path.dirname(destination) !== backupDir) {
+            fs.mkdir(fs.path.dirname(destination));
+          }
+          fs.writeBinary(destination, att.data);
         });
         return Promise.all(attachmentSaves);
       });
