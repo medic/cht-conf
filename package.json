@@ -1,7 +1,7 @@
 {
   "name": "medic-conf",
   "version": "2.0.2",
-  "description": "Medic Mobile command-line interface for managing configuration",
+  "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "engines": {
     "node": ">=8.15.1"
