@@ -25,7 +25,7 @@ module.exports = (projectDir, couchUrl) => {
         const attachmentSaves = [];
         Object.keys(form._attachments).forEach(name => {
           const att = form._attachments[name];
-          const destination = `${backupDir}/${name}`;
+          const destination = path.join(backupDir, name);
 
           if (fs.path.dirname(destination) !== backupDir) {
             fs.mkdir(fs.path.dirname(destination));
