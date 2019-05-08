@@ -50,6 +50,9 @@ ${bold('OPTIONS')}
 
 	--changelog
 		Display application changelog.
+	
+	--accept-self-signed-certs
+		Allows medic-conf to work with self signed certs by telling node to ignore the error 
 `);
 
   process.exit(exitCode);
