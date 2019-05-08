@@ -32,6 +32,10 @@ if (argv.help) {
   return usage(0);
 }
 
+if (argv['accept-self-signed-certs']) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+}
+
 if (argv['shell-completion']) {
   return require('../cli/shell-completion-setup')(argv['shell-completion']);
 }
