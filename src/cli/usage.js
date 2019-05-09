@@ -54,8 +54,6 @@ ${bold('OPTIONS')}
 	--accept-self-signed-certs
 		Allows medic-conf to work with self signed certs by telling node to ignore the error 
 `);
-
-  process.exit(exitCode);
 };
 
 const bold = text => `\x1b[1m${text}\x1b[0m`;
