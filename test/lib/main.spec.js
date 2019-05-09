@@ -20,7 +20,9 @@ describe('main', () => {
       info: sinon.stub(),
       warn: sinon.stub(),
       executeAction: sinon.stub(),
-
+      process: {
+        env: {}
+      },
       readline: {
         question: sinon.stub().returns('pwd'),
         keyInYN: sinon.stub().returns(true),
@@ -58,6 +60,12 @@ describe('main', () => {
     await main([...normalArgv, '--version'], {});
     expect(mocks.console.log.callCount).to.eq(1);
     expect(mocks.console.log.args[0]).to.match(/[0-9]+\.[0-9]+\.[0-9]/);
+  });
+
+  it('--local --accept-self-signed-certs', async () => {
+    await main([...normalArgv, '--local', '--accept-self-signed-certs'], {});
+    expect(mocks.executeAction.callCount).to.deep.eq(defaultActions.length);
+    expect(mocks.process.env.NODE_TLS_REJECT_UNAUTHORIZED).to.eq(0);
   });
 
   it('--local no COUCH_URL', async () => {

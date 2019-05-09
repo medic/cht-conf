@@ -70,6 +70,10 @@ module.exports = async (argv, env) => {
     return 0;
   }
 
+  if (cmdArgs['accept-self-signed-certs']) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+  }
+
   //
   // Logging
   //
@@ -115,7 +119,6 @@ module.exports = async (argv, env) => {
   }
 
   const projectName = fs.path.basename(fs.path.resolve('.'));
-  instanceUrl.path = 'medic';
 
   if (instanceUrl) {
     const productionUrlMatch = instanceUrl.href.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
