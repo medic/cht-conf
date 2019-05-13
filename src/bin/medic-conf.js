@@ -125,8 +125,6 @@ if(instanceUrl) {
 // Build up actions
 //
 let actions = argv._;
-let extraArgs = argv['--'];
-
 if(!actions.length) {
   actions = [
     'compile-app-settings',
@@ -145,6 +143,11 @@ if(!actions.length) {
     'csv-to-docs',
     'upload-docs',
   ];
+}
+
+let extraArgs = argv['--'];
+if (!extraArgs.length) {
+  extraArgs = undefined;
 }
 
 const unsupported = actions.filter(a => !supportedActions.includes(a));
