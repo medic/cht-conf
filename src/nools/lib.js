@@ -1,3 +1,4 @@
+
 function bindAllFunctionsToContext(obj, context) {
   var keys = Object.keys(obj);
   for (var i in keys) {
@@ -32,7 +33,7 @@ function deepCopy(obj) {
   return copy;
 }
 
-for(idx1=0; idx1<targets.length; ++idx1) {
+for(idx1 = 0; idx1 < targets.length; ++idx1) {
   target = targets[idx1];
   var targetContext = {};
   bindAllFunctionsToContext(target, targetContext);
@@ -43,7 +44,7 @@ for(idx1=0; idx1<targets.length; ++idx1) {
       emitTargetFor(target, c);
       break;
     case 'reports':
-      for(idx2=0; idx2<c.reports.length; ++idx2) {
+      for (idx2 = 0; idx2 < c.reports.length; ++idx2) {
         r = c.reports[idx2];
         emitTargetFor(target, c, r);
       }
@@ -53,8 +54,8 @@ for(idx1=0; idx1<targets.length; ++idx1) {
   }
 }
 
-if(tasks) {
-  for(idx1=0; idx1<tasks.length; ++idx1) {
+if (tasks) {
+  for(idx1 = 0; idx1 < tasks.length; ++idx1) {
     var task = tasks[idx1];
     task.index = idx1;
     var taskContext = {};

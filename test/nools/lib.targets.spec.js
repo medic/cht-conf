@@ -384,7 +384,7 @@ describe('nools lib', function() {
         };
 
         // throws
-        assert.throws(function() { runNoolsLib(config); }, Error, "unrecognised target type: unknown");
+        assert.throws(() => runNoolsLib(config), Error, 'unrecognised target type: unknown');
       });
     });
   });

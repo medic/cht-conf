@@ -20,10 +20,10 @@ describe('upload-sms-from-csv', function() {
       .then(() => {
 
           // then
-	  const expected = fs.readJson(`${testDir}/expected.json`);
+    const expected = fs.readJson(`${testDir}/expected.json`);
           assert.deepEqualExcludingEvery(
-	      api.gatewayRequests, expected,
-	      ['id', 'sms_sent', 'sms_received']);
+        api.gatewayRequests, expected,
+        ['id', 'sms_sent', 'sms_received']);
 
       });
 

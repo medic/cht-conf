@@ -6,7 +6,7 @@ module.exports = (data, csvPath) => {
   const fields = ['username', 'password', 'roles', 'contact', 'phone', 'place'];
   const json2csvParser = new Json2csvParser({
     fields,
-    doubleQuote: "'",
+    doubleQuote: '\'',
     flatten: true
   });
   data.forEach(function(user) {

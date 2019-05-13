@@ -3,7 +3,7 @@ module.exports = function() {
   const responses = [];
 
   function reset() {
-    if(responses.length != 0) {
+    if(responses.length !== 0) {
       throw new Error(`Unused responses (${responses.length})!`);
     }
   }
