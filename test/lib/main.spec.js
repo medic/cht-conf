@@ -26,7 +26,13 @@ describe('main', () => {
       readline: {
         question: sinon.stub().returns('pwd'),
         keyInYN: sinon.stub().returns(true),
-      }
+      },
+      fs: {
+        path: {
+          basename: () => 'basename',
+          resolve: () => 'resolved',
+        },
+      },
     };
 
     for (let attr of Object.keys(mocks)) {
@@ -91,10 +97,10 @@ describe('main', () => {
 
   it('--instance production warning', async () => {
     mocks.readline.keyInYN.returns(false);
-    const exit = await main([...normalArgv, '--instance=test.app', '--user=foo'], {});
+    const exit = await main([...normalArgv, '--instance=resolved.app', '--user=foo'], {});
     expect(mocks.readline.question.calledOnce).to.be.true; // prompt for password
     expect(mocks.readline.keyInYN.calledOnce).to.be.true; // prompted with warning
-    expect(mocks.warn.args[0][1]).to.include('https://foo:****@test.app.medicmobile.org');
+    expect(mocks.warn.args[0][1]).to.include('https://foo:****@resolved.app.medicmobile.org');
     expect(exit).to.eq(-1);
   });
 
