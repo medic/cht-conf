@@ -48,11 +48,10 @@ ${bold('OPTIONS')}
 	--changelog
 		Display application changelog.
 	
-	--accept-self-signed-certs
+  --accept-self-signed-certs
     Allows medic-conf to work with self signed certs by telling node to ignore the error
     
 ${bold('SUPPORTED ACTIONS')}
-  Include a list of supported actions after '--':
 
 	* ${supportedActions.join('\n	* ')}
 `);
