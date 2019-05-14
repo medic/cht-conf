@@ -17,4 +17,3 @@ const runMedicConf = require('../lib/main');
     process.exit(returnCode);
   }
 })();
-

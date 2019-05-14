@@ -59,27 +59,27 @@ To upgrade to the latest version
 
 ### To a specific Medic instance
 
-	medic-conf --instance instance-name.dev
+	medic-conf --instance=instance-name.dev
 
 Username `admin` is used.  A prompt is shown for entering password.
 
 If a different username is required, add the `--user` switch:
 
-	--user user-name --instance instance-name.dev
+	--user user-name --instance=instance-name.dev
 
 ### To an arbitrary URL
 
-	medic-conf --url https://username:password@example.com:12345
+	medic-conf --url=https://username:password@example.com:12345
 
 ## Perform specific action(s)
 
-	medic-conf <--local|--instance instance-name|--url url> <...action>
+	medic-conf <--local|--instance=instance-name|--url=url> <...action>
 
 The list of available actions can be seen in [`supported-actions.js`](https://github.com/medic/medic-conf/blob/master/src/cli/supported-actions.js).
 
 ## Perform actions for specific forms
 
-	medic-conf <--local|--instance instance-name|--url url> <...action> -- <...form>
+	medic-conf <--local|--instance=instance-name|--url=url> <...action> -- <...form>
 
 # Project Layout
 
