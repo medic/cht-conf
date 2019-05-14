@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const opn = require('opn');
+
 require('../cli/check-node-version');
 
 const checkForUpdates = require('../lib/check-for-updates');
@@ -51,7 +53,7 @@ if (argv.version) {
 }
 
 if (argv.changelog) {
-  console.log(fs.read(`${__dirname}/../../CHANGELOG.md`));
+  opn('https://github.com/medic/medic-conf/releases');
   return process.exit(0);
 }
 

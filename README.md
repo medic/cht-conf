@@ -359,11 +359,9 @@ To compress PNGs and SVGs in the current directory and its subdirectories, two c
 
 # Releasing
 
-1. bump version number in `package.json`
-2. `npm install` to update `package-lock.json`
-3. `npm run generate-changelog` to update `CHANGELOG.md`
-4. `npm run release`
-5. try to work out how you can commit the CHANGELOG including the change that includes the CHANGELOG update before you run the release script
+1. Bump the version using `npm version minor` or `npm version major` as appropriate.
+1. Refresh `package-lock.json` via `npm install`.
+1. `npm run release`.
 
 # Copyright
 
