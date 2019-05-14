@@ -19,11 +19,11 @@ module.exports = (options) => {
       } else {
         warn(`New version available!
 
-    ${current} -> ${latest}
+        ${current} -> ${latest}
 
      To install:
 
-    npm install -g medic-conf
+       npm install -g medic-conf
   `);
       }
     })

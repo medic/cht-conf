@@ -15,22 +15,22 @@ module.exports = (projectDir, couchUrl, extras) => {
       const raw = fs.readCsv(csvFile);
 
       const messages = raw.rows.map(row => {
-  const valueOf = column => row[raw.cols.indexOf(column)];
+      const valueOf = column => row[raw.cols.indexOf(column)];
 
-  return {
-    id:           uuid(),
-    from:         valueOf('from'),
-    content:      valueOf('message'),
-    sms_sent:     valueOf('sent_timestamp') || Date.now(),
-    sms_received: Date.now(),
-  };
-      });
+      return {
+        id:           uuid(),
+        from:         valueOf('from'),
+        content:      valueOf('message'),
+        sms_sent:     valueOf('sent_timestamp') || Date.now(),
+        sms_received: Date.now(),
+      };
+    });
 
-      return request({
-  uri: `${instanceUrl}/api/sms`,
-  method: 'POST',
-  json: true,
-  body: { messages },
-      });
-    }, Promise.resolve());
+    return request({
+      uri: `${instanceUrl}/api/sms`,
+      method: 'POST',
+      json: true,
+      body: { messages },
+    });
+  }, Promise.resolve());
 };

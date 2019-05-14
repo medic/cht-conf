@@ -34,7 +34,7 @@ module.exports = (projectDir)=> {
     exclusions: [],
   };
   const addToModel = (csvFile, docs) => {
-    csvFile = csvFile.match(/^(?:.*[/\\])?csv[/\\](.*)\.csv$/)[1];
+    csvFile = csvFile.match(/^(?:.*[\/\\])?csv[\/\\](.*)\.csv$/)[1]; // eslint-disable-line no-useless-escape
     model.csvFiles[csvFile] = docs;
     docs.forEach(doc => {
       model.docs[doc._id] = doc;
