@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const opn = require('opn');
 const readline = require('readline-sync');
 const redactBasicAuth = require('redact-basic-auth');
 const url = require('url');
@@ -66,8 +67,8 @@ module.exports = async (argv, env) => {
   }
 
   if (cmdArgs.changelog) {
-    console.log(fs.read(`${__dirname}/../../CHANGELOG.md`));
-    return 0;
+      opn('https://github.com/medic/medic-conf/releases');
+      return process.exit(0);
   }
 
   if (cmdArgs['accept-self-signed-certs']) {
