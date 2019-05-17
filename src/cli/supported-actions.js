@@ -23,4 +23,5 @@ module.exports = [
   'upload-docs',
   'upload-resources',
   'upload-sms-from-csv',
+  'upload-sql'
 ];
