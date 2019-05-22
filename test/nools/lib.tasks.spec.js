@@ -367,7 +367,7 @@ describe('nools lib', function() {
         };
 
         // should throw error
-        assert.throws(function() { runNoolsLib(config); }, Error, "unrecognised task type: unknown");
+        assert.throws(function() { runNoolsLib(config); }, Error, 'unrecognised task type: unknown');
       });
     });
 

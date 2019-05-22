@@ -18,13 +18,8 @@ describe('upload-sms-from-csv', function() {
     // when
     return csvToSms(testDir, api.couchUrl)
       .then(() => {
-
-          // then
-	  const expected = fs.readJson(`${testDir}/expected.json`);
-          assert.deepEqualExcludingEvery(
-	      api.gatewayRequests, expected,
-	      ['id', 'sms_sent', 'sms_received']);
-
+        const expected = fs.readJson(`${testDir}/expected.json`);
+        assert.deepEqualExcludingEvery(api.gatewayRequests, expected, ['id', 'sms_sent', 'sms_received']);
       });
 
   });

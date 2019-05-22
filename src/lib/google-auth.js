@@ -55,6 +55,7 @@ function oauthClient() {
   const redirectUri = process.env.GOOGLE_REDIRECT_URI ||
       (configFile.redirect_uris && configFile.redirect_uris[0]);
 
+  /* eslint-disable no-bitwise */
   const missingConfig =
       checkRequired(clientId, 'client_id', 'GOOGLE_CLIENT_ID') |
       checkRequired(clientSecret, 'client_secret', 'GOOGLE_CLIENT_SECRET') |

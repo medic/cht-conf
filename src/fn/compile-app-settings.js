@@ -103,7 +103,7 @@ function applyTransforms(app_settings, inherited) {
 }
 
 function doDelete(target, rules) {
-  if(!Array.isArray(rules)) throw new Error(".delete should be an array");
+  if(!Array.isArray(rules)) throw new Error('.delete should be an array');
 
   rules.forEach(k => {
     const parts = k.split('.');
@@ -117,7 +117,7 @@ function doDelete(target, rules) {
 }
 
 function doReplace(target, rules) {
-  if(typeof rules !== 'object') throw new Error(".replace should be an object");
+  if(typeof rules !== 'object') throw new Error('.replace should be an object');
 
   Object.keys(rules)
     .forEach(k => {
@@ -141,7 +141,7 @@ function doMerge(target, source) {
 }
 
 function doFilter(target, rules) {
-  if(typeof rules !== 'object') throw new Error(".filter should be an object");
+  if(typeof rules !== 'object') throw new Error('.filter should be an object');
 
   Object.keys(rules)
     .forEach(k => {
