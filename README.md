@@ -359,8 +359,9 @@ To compress PNGs and SVGs in the current directory and its subdirectories, two c
 
 # Releasing
 
-1. Run `npm version minor` or `npm version major` as appropriate.
-1. `npm run release`.
+1. Create a pull request. Get it reviewed and approved.
+1. Run `npm version patch`, `npm version minor`, or `npm version major` as appropriate.
+1. Merge the pull request.
 
 # Copyright
 
