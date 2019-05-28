@@ -1,4 +1,6 @@
 const path = require('path');
+const minimist = require('minimist');
+const readline = require('readline-sync');
 
 const fs = require('../lib/sync-fs');
 const pouch = require('../lib/db');
@@ -6,17 +8,19 @@ const progressBar = require('../lib/progress-bar');
 const skipFn = require('../lib/skip-fn');
 
 const log = require('../lib/log');
-const { info, trace, warn } = log;
+const { info, trace, warn, error } = log;
 
 const FILE_EXTENSION = '.doc.json';
 const INITIAL_BATCH_SIZE = 100;
 
-module.exports = async (projectDir, couchUrl) => {
+module.exports = async (projectDir, couchUrl, extraArgs) => {
+  const args = minimist(extraArgs, { boolean: true });
+
   if(!couchUrl) {
     return skipFn('no couch URL set');
   }
 
-  const docDir = path.join(projectDir, 'json_docs');
+  const docDir = path.resolve(projectDir, args.docDirectoryPath || 'json_docs');
   if(!fs.exists(docDir)) {
     warn(`No docs directory found at ${docDir}.`);
     return Promise.resolve();
@@ -26,7 +30,13 @@ module.exports = async (projectDir, couchUrl) => {
   filesToUpload.forEach(ensureDocumentIdMatchesFilename);
 
   const totalCount = filesToUpload.length;
-  info(`Uploading ${totalCount} docs.  This may take some time to start…`);
+  if (totalCount > 0) {
+    warn(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
+    if(!readline.keyInYN()) {
+      error('User failed to confirm action.');
+      process.exit(1);
+    }
+  }
 
   const db = pouch(couchUrl);
   const results = { ok:[], failed:{} };
