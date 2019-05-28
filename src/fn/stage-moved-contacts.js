@@ -35,7 +35,7 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     if (parentId === HIERARCHY_ROOT) {
       return undefined;
     }
-    
+
     const parentDoc = await db.get(parentId);
     return { _id: parentDoc._id, parent: parentDoc.parent };
   };
@@ -123,26 +123,23 @@ ${bold('USAGE')}
 medic-conf --local move-contact -- contact_id --parent=parent_id
 
 ${bold('OPTIONS')}
---parent=parent_id
+--parent=<parent_id>
   Specifies the ID of the new parent. Use '${HIERARCHY_ROOT}' to identify the top of the hierarchy (no parent).
 
---dryRun
-  Will report the number of affected users and documents but will not commit any changes.
-
 --docDirectoryPath=<path to stage docs>
-  
+  Specifies the folder used to store the documents representing the changes in hierarchy.
 `);
 };
 
 /*
 Given a doc, replace the lineage information therein with "replacementLineage"
 
-startingFromIdInLineage (optional) - Will result in a partial replacement of the lineage. The part of the lineage "after" the parent with _id=startingFromIdInLineage
-will be replaced by "replacementLineage"
+startingFromIdInLineage (optional) - Will result in a partial replacement of the lineage. Only he part of the lineage "after" the parent 
+with _id=startingFromIdInLineage will be replaced by "replacementLineage"
 */
 const replaceLineage = (doc, replacementLineage, startingFromIdInLineage) => {
   const lineageAttributeName = doc.type === 'data_record' ? 'contact' : 'parent';
-  const doReplacement = (replaceInDoc, docAttr, replaceWith) => {
+  const handleReplacement = (replaceInDoc, docAttr, replaceWith) => {
     if (!replaceWith) {
       const lineageWasDeleted = !!replaceInDoc[docAttr];
       replaceInDoc[docAttr] = undefined;
@@ -159,14 +156,14 @@ const replaceLineage = (doc, replacementLineage, startingFromIdInLineage) => {
 
   // Replace the full lineage
   if (!startingFromIdInLineage || doc._id === startingFromIdInLineage) {
-    return doReplacement(doc, lineageAttributeName, replacementLineage);
+    return handleReplacement(doc, lineageAttributeName, replacementLineage);
   }
 
   // Replace part of the lineage
   let currentParent = doc[lineageAttributeName];
   do {
     if (currentParent._id === startingFromIdInLineage) {
-      return doReplacement(currentParent, 'parent', replacementLineage);
+      return handleReplacement(currentParent, 'parent', replacementLineage);
     }
     currentParent = currentParent.parent;
   } while (currentParent);
