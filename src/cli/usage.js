@@ -19,7 +19,7 @@ ${bold('DESCRIPTION')}
   properly-structured projects.
 
 ${bold('SUPPORTED ACTIONS')}
-  * ${supportedActions.join('\n	* ')}
+  * ${supportedActions.join('\n  * ')}
 
 ${bold('SPECIFYING URL')}
   --local
