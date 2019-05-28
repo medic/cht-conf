@@ -6,13 +6,13 @@ PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 PouchDB.plugin(require('pouchdb-find'));
 
-const moveContactModule = rewire('../../src/fn/stage-moved-contacts');
-const updateLineagesAndStage = moveContactModule.__get__('updateLineagesAndStage');
+const stageMovedContactsModule = rewire('../../src/fn/stage-moved-contacts');
+const updateLineagesAndStage = stageMovedContactsModule.__get__('updateLineagesAndStage');
 const { mockReport, mockHierarchy, parentsToLineage } = require('./mock-hierarchies');
 const log = require('../../src/lib/log');
 log.level = log.LEVEL_TRACE;
 
-describe('stage-moved-contacts action', () => {
+describe('stage-moved-contacts integration tests', () => {
 
   let pouchDb, scenarioCount = 0;
   const writtenDocs = [];
@@ -60,7 +60,7 @@ describe('stage-moved-contacts action', () => {
       },
     });
 
-    moveContactModule.__set__('writeDocumentToDisk', (docDirectoryPath, doc) => writtenDocs.push(doc));
+    stageMovedContactsModule.__set__('writeDocumentToDisk', (docDirectoryPath, doc) => writtenDocs.push(doc));
     writtenDocs.length = 0;
   });
 
@@ -155,6 +155,53 @@ describe('stage-moved-contacts action', () => {
       form: 'foo',
       type: 'data_record',
       contact: parentsToLineage('health_center_1_contact', 'health_center_1'),
+    });
+  });
+
+  it('move district_1 from root', async () => {
+    await updateLineagesAndStage({
+      contactIds: ['district_1'], 
+      parentId: 'district_2',
+    }, pouchDb);
+
+    expect(await getWrittenDoc('district_1')).to.deep.eq({
+      _id: 'district_1',
+      type: 'district_hospital',
+      contact: { _id: 'district_1_contact' },
+      parent: parentsToLineage('district_2'),
+    });
+
+    expect(await getWrittenDoc('health_center_1_contact')).to.deep.eq({
+      _id: 'health_center_1_contact',
+      type: 'person',
+      parent: parentsToLineage('health_center_1', 'district_1', 'district_2'),
+    });
+
+    expect(await getWrittenDoc('health_center_1')).to.deep.eq({
+      _id: 'health_center_1',
+      type: 'health_center',
+      contact: { _id: 'health_center_1_contact' },
+      parent: parentsToLineage('district_1', 'district_2'),
+    });
+
+    expect(await getWrittenDoc('clinic_1')).to.deep.eq({
+      _id: 'clinic_1',
+      type: 'clinic',
+      contact: { _id: 'clinic_1_contact' },
+      parent: parentsToLineage('health_center_1', 'district_1', 'district_2'),
+    });
+
+    expect(await getWrittenDoc('patient_1')).to.deep.eq({
+      _id: 'patient_1',
+      type: 'person',
+      parent: parentsToLineage('clinic_1', 'health_center_1', 'district_1', 'district_2'),
+    });
+
+    expect(await getWrittenDoc('report_1')).to.deep.eq({
+      _id: 'report_1',
+      form: 'foo',
+      type: 'data_record',
+      contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1', 'district_2'),
     });
   });
 });
