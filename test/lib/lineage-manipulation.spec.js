@@ -1,15 +1,12 @@
 const { expect } = require('chai');
-const rewire = require('rewire');
-const stageMovedContactsModule = rewire('../../src/fn/stage-moved-contacts');
+const { replaceLineage } = require('../../src/lib/lineage-manipulation');
 const log = require('../../src/lib/log');
 log.level = log.LEVEL_TRACE;
 
-const { parentsToLineage } = require('./mock-hierarchies');
+const { parentsToLineage } = require('../mock-hierarchies');
 
 describe('stage-moved-contacts', () => {
   describe('replaceLineage', () => {
-    const replaceLineage = stageMovedContactsModule.__get__('replaceLineage');
-
     const mockReport = data => Object.assign({ _id: 'r', type: 'data_record', contact: parentsToLineage('parent', 'grandparent') }, data);
     const mockContact = data => Object.assign({ _id: 'c', type: 'person', parent: parentsToLineage('parent', 'grandparent') }, data);
 

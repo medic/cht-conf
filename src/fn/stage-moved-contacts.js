@@ -5,6 +5,7 @@ const readline = require('readline-sync');
 const fs = require('../lib/sync-fs');
 const log = require('../lib/log');
 const pouch = require('../lib/db');
+const { replaceLineages } = require('../lib/lineage-manipulation');
 
 const { warn, trace, info, error } = log;
 
@@ -41,18 +42,6 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
   };
 
   const replacementLineage = await constructNewLineage();
-  const replaceLineagesForDocumentSet = (docs, contactId) => {
-    let replacementCount = 0;
-    for (let doc of docs) {
-      if (replaceLineage(doc, replacementLineage, contactId)) {
-        writeDocumentToDisk(docDirectoryPath, doc);
-        replacementCount++;
-      }
-    }
-
-    return replacementCount;
-  };
-
   let affectedContactCount = 0, affectedReportCount = 0;
   for (let contactId of contactIds) {
     const contactDoc = await db.get(contactId);
@@ -60,13 +49,22 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     trace(`${descendantContacts.length} descendant(s) of contact '${contactDoc.name}' (${contactDoc._id}) will update`);
     
     const descendantsAndSelf = [contactDoc, ...descendantContacts];
-    replaceLineagesForDocumentSet(descendantsAndSelf, contactId);
-    affectedContactCount += descendantsAndSelf.length;
+    const updatedContacts = replaceLineages(descendantsAndSelf, replacementLineage, contactId);
+    affectedContactCount += updatedContacts.length;
 
+    let updatedReports = [];
     for (let descendantDoc of descendantsAndSelf) {
       const reportsCreatedByDescendant = await fetchReportsCreatedBy(descendantDoc._id);
       trace(`${reportsCreatedByDescendant.length} report(s) created by '${descendantDoc.name}' (${descendantDoc._id}) will update`);
-      affectedReportCount += replaceLineagesForDocumentSet(reportsCreatedByDescendant, contactId);
+      updatedReports = [
+        ...updatedReports,
+        ...replaceLineages(reportsCreatedByDescendant, replacementLineage, contactId)
+      ];
+    }
+    affectedReportCount += updatedReports.length;
+
+    for (let updatedDoc of [...updatedContacts, ...updatedReports]) {
+      writeDocumentToDisk(docDirectoryPath, updatedDoc);
     }
   }
 
@@ -129,46 +127,6 @@ ${bold('OPTIONS')}
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
 `);
-};
-
-/*
-Given a doc, replace the lineage information therein with "replacementLineage"
-
-startingFromIdInLineage (optional) - Will result in a partial replacement of the lineage. Only he part of the lineage "after" the parent 
-with _id=startingFromIdInLineage will be replaced by "replacementLineage"
-*/
-const replaceLineage = (doc, replacementLineage, startingFromIdInLineage) => {
-  const lineageAttributeName = doc.type === 'data_record' ? 'contact' : 'parent';
-  const handleReplacement = (replaceInDoc, docAttr, replaceWith) => {
-    if (!replaceWith) {
-      const lineageWasDeleted = !!replaceInDoc[docAttr];
-      replaceInDoc[docAttr] = undefined;
-      return lineageWasDeleted;
-    } else if (replaceInDoc[docAttr]) {
-      replaceInDoc[docAttr]._id = replaceWith._id;
-      replaceInDoc[docAttr].parent = replaceWith.parent;
-    } else {
-      replaceInDoc[docAttr] = replaceWith;
-    }
-  
-    return true;
-  };
-
-  // Replace the full lineage
-  if (!startingFromIdInLineage || doc._id === startingFromIdInLineage) {
-    return handleReplacement(doc, lineageAttributeName, replacementLineage);
-  }
-
-  // Replace part of the lineage
-  let currentParent = doc[lineageAttributeName];
-  do {
-    if (currentParent._id === startingFromIdInLineage) {
-      return handleReplacement(currentParent, 'parent', replacementLineage);
-    }
-    currentParent = currentParent.parent;
-  } while (currentParent);
-
-  return false;
 };
 
 const writeDocumentToDisk = (docDirectoryPath, doc) => {

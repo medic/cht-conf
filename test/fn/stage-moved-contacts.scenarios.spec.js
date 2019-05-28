@@ -8,7 +8,7 @@ PouchDB.plugin(require('pouchdb-find'));
 
 const stageMovedContactsModule = rewire('../../src/fn/stage-moved-contacts');
 const updateLineagesAndStage = stageMovedContactsModule.__get__('updateLineagesAndStage');
-const { mockReport, mockHierarchy, parentsToLineage } = require('./mock-hierarchies');
+const { mockReport, mockHierarchy, parentsToLineage } = require('../mock-hierarchies');
 const log = require('../../src/lib/log');
 log.level = log.LEVEL_TRACE;
 
