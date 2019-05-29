@@ -19,6 +19,7 @@ module.exports = (projectDir, couchUrl, extraArgs) => {
   return updateLineagesAndStage(args, db);
 };
 
+const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
 const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }, db) => {
   trace(`Fetching contact details for parent: ${parentId}`);
  
@@ -49,11 +50,11 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     const contactDoc = await db.get(contactId);
     const hierarchyError = detectHierarchyErrors(contactDoc, parentDoc);
     if (hierarchyError) {
-      throw Error(hierarchyError);
+      throw Error(`Configurable Hierarchy: ${hierarchyError}`);
     }
 
     const descendantContacts = await fetchDescendantsFrom(contactId);
-    trace(`${descendantContacts.length} descendant(s) of contact '${contactDoc.name}' (${contactDoc._id}) will update`);
+    trace(`${descendantContacts.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)} will update`);
     
     const descendantsAndSelf = [contactDoc, ...descendantContacts];
     const updatedContacts = replaceLineages(descendantsAndSelf, replacementLineage, contactId);
@@ -62,7 +63,7 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     const updatedReports = [];
     for (let descendantDoc of descendantsAndSelf) {
       const reportsCreatedByDescendant = await fetchReportsCreatedBy(descendantDoc._id);
-      trace(`${reportsCreatedByDescendant.length} report(s) created by '${descendantDoc.name}' (${descendantDoc._id}) will update`);
+      trace(`${reportsCreatedByDescendant.length} report(s) created by ${prettyPrintDocument(descendantDoc)} will update`);
       updatedReports.push(...replaceLineages(reportsCreatedByDescendant, replacementLineage, contactId));
     }
     affectedReportCount += updatedReports.length;
@@ -71,7 +72,7 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
       writeDocumentToDisk(docDirectoryPath, updatedDoc);
     }
 
-    info(`Staged move of contact '${contactDoc.name}' (${contactDoc._id}). ${updatedContacts.length} contact(s) and ${updatedReports.length} report(s) will be updated.`);
+    info(`Staged move of contact ${prettyPrintDocument(contactDoc)}. ${updatedContacts.length} contact(s) and ${updatedReports.length} report(s) will be updated.`);
   }
 
   info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);

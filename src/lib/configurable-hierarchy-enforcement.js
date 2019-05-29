@@ -21,11 +21,11 @@ const enforceRules = (allowedList, contactDoc, parentDoc) => {
   
   const { type: contactType } = contactDoc;
   const { type: parentType } = parentDoc;
-  if (!contactType) return 'Contact required attribute "type" is undefined';
-  if (parentDoc && !parentType) return 'Parent required attribute "type" is undefined';
+  if (!contactType) return 'contact required attribute "type" is undefined';
+  if (parentDoc && !parentType) return 'parent required attribute "type" is undefined';
 
-  if (!allowedList[contactType]) return `Configurable hierarchy contact_types does not define rules for type ${contactType}`;
-  if (!allowedList[contactType].includes(parentType)) return `Configurable hierarchy contact_types does not allow parent of type ${parentType} for contact of type ${contactType}`;
+  if (!allowedList[contactType]) return `contact_types does not define rules for type ${contactType}`;
+  if (!allowedList[contactType].includes(parentType)) return `contact_types does not allow parent of type ${parentType} for contact of type ${contactType}`;
 };
 
 module.exports = configurableHierarchyEnforcement;
