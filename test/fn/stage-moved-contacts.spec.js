@@ -40,6 +40,8 @@ describe('stage-moved-contacts integration tests', () => {
       district_2: {},
     });
 
+    await pouchDb.put({ _id: 'settings', settings: {} });
+
     await mockReport(pouchDb, {
       id: 'report_1',
       creatorId: 'health_center_1_contact',
@@ -66,18 +68,6 @@ describe('stage-moved-contacts integration tests', () => {
 
   afterEach(async () => pouchDb.destroy());
 
-  it('throw if parent does not exist', async () => {
-    try {
-      await updateLineagesAndStage({
-        contactIds: ['clinic_1'], 
-        parentId: 'dne_parent_id'
-      }, pouchDb);
-      assert.fail('should throw when parent is not defined');
-    } catch (err) {
-      expect(err.name).to.eq('not_found');
-    }
-  });
-  
   it('move health_center_1 to district_2', async () => {
     await updateLineagesAndStage({
       contactIds: ['health_center_1'], 
@@ -203,5 +193,42 @@ describe('stage-moved-contacts integration tests', () => {
       type: 'data_record',
       contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1', 'district_2'),
     });
+  });
+
+  it('throw if parent does not exist', async () => {
+    try {
+      await updateLineagesAndStage({
+        contactIds: ['clinic_1'], 
+        parentId: 'dne_parent_id'
+      }, pouchDb);
+      assert.fail('should throw when parent is not defined');
+    } catch (err) {
+      expect(err.name).to.eq('not_found');
+    }
+  });
+
+  it('throw when moving place to unconfigurable parent', async () => {
+    const { _rev } = await pouchDb.get('settings');
+    await pouchDb.put({
+      _id: 'settings',
+      _rev,
+      settings: {
+        contact_types: [{
+          id: 'district_hospital',
+          parents: [],
+        }]
+      },
+    });
+
+    try {
+      await updateLineagesAndStage({
+        contactIds: ['district_1'], 
+        parentId: 'district_2',
+      }, pouchDb);
+
+      assert.fail('Expected error');
+    } catch (err) {
+      expect(err.message).to.include('does not allow parent');
+    }
   });
 });

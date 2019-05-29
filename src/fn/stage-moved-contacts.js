@@ -6,6 +6,7 @@ const fs = require('../lib/sync-fs');
 const log = require('../lib/log');
 const pouch = require('../lib/db');
 const { replaceLineages } = require('../lib/lineage-manipulation');
+const confHierarchyEnforcement = require('../lib/configurable-hierarchy-enforcement');
 
 const { warn, trace, info, error } = log;
 
@@ -32,19 +33,25 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     include_docs: true,
   })).rows.map(row => row.doc);
 
+  const parentDoc = parentId === HIERARCHY_ROOT ? undefined : await db.get(parentId);
   const constructNewLineage = async () => {
-    if (parentId === HIERARCHY_ROOT) {
+    if (!parentDoc) {
       return undefined;
     }
 
-    const parentDoc = await db.get(parentId);
     return { _id: parentDoc._id, parent: parentDoc.parent };
   };
 
   const replacementLineage = await constructNewLineage();
   let affectedContactCount = 0, affectedReportCount = 0;
+  const detectHierarchyErrors = await confHierarchyEnforcement(db);
   for (let contactId of contactIds) {
     const contactDoc = await db.get(contactId);
+    const hierarchyError = detectHierarchyErrors(contactDoc, parentDoc);
+    if (hierarchyError) {
+      throw Error(hierarchyError);
+    }
+
     const descendantContacts = await fetchDescendantsFrom(contactId);
     trace(`${descendantContacts.length} descendant(s) of contact '${contactDoc.name}' (${contactDoc._id}) will update`);
     
@@ -52,20 +59,19 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     const updatedContacts = replaceLineages(descendantsAndSelf, replacementLineage, contactId);
     affectedContactCount += updatedContacts.length;
 
-    let updatedReports = [];
+    const updatedReports = [];
     for (let descendantDoc of descendantsAndSelf) {
       const reportsCreatedByDescendant = await fetchReportsCreatedBy(descendantDoc._id);
       trace(`${reportsCreatedByDescendant.length} report(s) created by '${descendantDoc.name}' (${descendantDoc._id}) will update`);
-      updatedReports = [
-        ...updatedReports,
-        ...replaceLineages(reportsCreatedByDescendant, replacementLineage, contactId)
-      ];
+      updatedReports.push(...replaceLineages(reportsCreatedByDescendant, replacementLineage, contactId));
     }
     affectedReportCount += updatedReports.length;
 
     for (let updatedDoc of [...updatedContacts, ...updatedReports]) {
       writeDocumentToDisk(docDirectoryPath, updatedDoc);
     }
+
+    info(`Staged move of contact '${contactDoc.name}' (${contactDoc._id}). ${updatedContacts.length} contact(s) and ${updatedReports.length} report(s) will be updated.`);
   }
 
   info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);

@@ -5,7 +5,7 @@ log.level = log.LEVEL_TRACE;
 
 const { parentsToLineage } = require('../mock-hierarchies');
 
-describe('stage-moved-contacts', () => {
+describe('lineage manipulation', () => {
   describe('replaceLineage', () => {
     const mockReport = data => Object.assign({ _id: 'r', type: 'data_record', contact: parentsToLineage('parent', 'grandparent') }, data);
     const mockContact = data => Object.assign({ _id: 'c', type: 'person', parent: parentsToLineage('parent', 'grandparent') }, data);
