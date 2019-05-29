@@ -3,7 +3,6 @@ const rewire = require('rewire');
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
-PouchDB.plugin(require('pouchdb-find'));
 
 const { mockHierarchy } = require('../mock-hierarchies');
 

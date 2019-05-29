@@ -1,7 +1,6 @@
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
-PouchDB.plugin(require('pouchdb-find'));
 
 module.exports = url => {
   const db = new PouchDB(url, { ajax: { timeout: 60000 } });

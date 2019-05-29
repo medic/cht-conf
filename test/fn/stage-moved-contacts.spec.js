@@ -4,7 +4,6 @@ const rewire = require('rewire');
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
-PouchDB.plugin(require('pouchdb-find'));
 
 const stageMovedContactsModule = rewire('../../src/fn/stage-moved-contacts');
 const updateLineagesAndStage = stageMovedContactsModule.__get__('updateLineagesAndStage');
