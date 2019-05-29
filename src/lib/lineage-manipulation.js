@@ -38,7 +38,7 @@ const replaceLineage = (doc, replaceWith, startingFromIdInLineage) => {
     return handleReplacement(doc, lineageAttributeName, replaceWith);
   }
 
-  // Replace part of the lineage
+  // Replace part of a lineage
   let currentParent = doc[lineageAttributeName];
   do {
     if (currentParent._id === startingFromIdInLineage) {
@@ -50,7 +50,23 @@ const replaceLineage = (doc, replaceWith, startingFromIdInLineage) => {
   return false;
 };
 
+/*
+Given a lineage, return the ids therein
+*/
+const pluckIdsFromLineage = lineage => {
+  const result = [];
+
+  let current = lineage;
+  while (current) {
+    result.push(current._id);
+    current = current.parent;
+  }
+
+  return result;
+};
+
 module.exports = {
+  pluckIdsFromLineage,
   replaceLineages,
   replaceLineage,
 };

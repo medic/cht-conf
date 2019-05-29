@@ -207,6 +207,19 @@ describe('stage-moved-contacts integration tests', () => {
     }
   });
 
+  it('throw if moving primary contact of parent', async () => {
+    try {
+      await updateLineagesAndStage({
+        contactIds: ['clinic_1_contact'], 
+        parentId: 'district_1'
+      }, pouchDb);
+
+      assert.fail('should throw');
+    } catch (err) {
+      expect(err.message).to.include('primary contact');
+    }
+  });
+
   it('throw when moving place to unconfigurable parent', async () => {
     const { _rev } = await pouchDb.get('settings');
     await pouchDb.put({

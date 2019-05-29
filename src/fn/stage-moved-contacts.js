@@ -6,7 +6,7 @@ const fs = require('../lib/sync-fs');
 const log = require('../lib/log');
 const pouch = require('../lib/db');
 const { replaceLineages } = require('../lib/lineage-manipulation');
-const confHierarchyEnforcement = require('../lib/configurable-hierarchy-enforcement');
+const lineageConstraints = require('../lib/lineage-constraints');
 
 const { warn, trace, info, error } = log;
 
@@ -43,12 +43,12 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     return { _id: parentDoc._id, parent: parentDoc.parent };
   };
 
-  const replacementLineage = await constructNewLineage();
   let affectedContactCount = 0, affectedReportCount = 0;
-  const detectHierarchyErrors = await confHierarchyEnforcement(db);
+  const replacementLineage = await constructNewLineage();
+  const { getConfigurableHierarchyErrors, getPrimaryContactViolations } = await lineageConstraints(db, parentDoc);
   for (let contactId of contactIds) {
     const contactDoc = await db.get(contactId);
-    const hierarchyError = detectHierarchyErrors(contactDoc, parentDoc);
+    const hierarchyError = getConfigurableHierarchyErrors(contactDoc);
     if (hierarchyError) {
       throw Error(`Configurable Hierarchy: ${hierarchyError}`);
     }
@@ -57,6 +57,11 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     trace(`${descendantContacts.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)} will update`);
     
     const descendantsAndSelf = [contactDoc, ...descendantContacts];
+    const invalidPrimaryContactDoc = await getPrimaryContactViolations(contactDoc, descendantsAndSelf);
+    if (invalidPrimaryContactDoc) {
+      throw Error(`Cannot remove primary contact ${prettyPrintDocument(invalidPrimaryContactDoc)} from hierarchy.`);
+    }
+
     const updatedContacts = replaceLineages(descendantsAndSelf, replacementLineage, contactId);
     affectedContactCount += updatedContacts.length;
 

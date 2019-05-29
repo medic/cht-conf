@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { replaceLineage } = require('../../src/lib/lineage-manipulation');
+const { replaceLineage, pluckIdsFromLineage } = require('../../src/lib/lineage-manipulation');
 const log = require('../../src/lib/log');
 log.level = log.LEVEL_TRACE;
 
@@ -82,5 +82,10 @@ describe('lineage manipulation', () => {
         contact: parentsToLineage('new_parent'),
       });
     });
+  });
+
+  describe('pluckIdsFromLineage', () => {
+    it('empty', () => expect(pluckIdsFromLineage(parentsToLineage())).to.deep.eq([]));
+    it('nominal', () => expect(pluckIdsFromLineage(parentsToLineage('1', '2', '3'))).to.deep.eq(['1', '2', '3']));
   });
 });
