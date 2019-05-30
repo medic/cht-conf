@@ -15,7 +15,7 @@ module.exports = [
   'fetch-csvs-from-google-drive',
   'fetch-forms-from-google-drive',
   'initialise-project-layout',
-  'stage-moved-contacts',
+  'move-contacts',
   'upload-app-forms',
   'upload-app-settings',
   'upload-collect-forms',

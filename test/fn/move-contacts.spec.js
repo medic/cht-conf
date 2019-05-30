@@ -5,8 +5,8 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const stageMovedContactsModule = rewire('../../src/fn/stage-moved-contacts');
-const updateLineagesAndStage = stageMovedContactsModule.__get__('updateLineagesAndStage');
+const moveContactsModule = rewire('../../src/fn/move-contacts');
+const updateLineagesAndStage = moveContactsModule.__get__('updateLineagesAndStage');
 const { mockReport, mockHierarchy, parentsToLineage } = require('../mock-hierarchies');
 
 // contacts_by_place is new in v3.0
@@ -26,7 +26,7 @@ const reports_by_freetext = {
   map: "function(doc) {\n  var skip = [ '_id', '_rev', 'type', 'refid', 'content' ];\n\n  var usedKeys = [];\n  var emitMaybe = function(key, value) {\n    if (usedKeys.indexOf(key) === -1 && // Not already used\n        key.length > 2 // Not too short\n    ) {\n      usedKeys.push(key);\n      emit([key], value);\n    }\n  };\n\n  var emitField = function(key, value, reportedDate) {\n    if (!key || !value) {\n      return;\n    }\n    key = key.toLowerCase();\n    if (skip.indexOf(key) !== -1 || /_date$/.test(key)) {\n      return;\n    }\n    if (typeof value === 'string') {\n      value = value.toLowerCase();\n      value.split(/\\s+/).forEach(function(word) {\n        emitMaybe(word, reportedDate);\n      });\n    }\n    if (typeof value === 'number' || typeof value === 'string') {\n      emitMaybe(key + ':' + value, reportedDate);\n    }\n  };\n\n  if (doc.type === 'data_record' && doc.form) {\n    Object.keys(doc).forEach(function(key) {\n      emitField(key, doc[key], doc.reported_date);\n    });\n    if (doc.fields) {\n      Object.keys(doc.fields).forEach(function(key) {\n        emitField(key, doc.fields[key], doc.reported_date);\n      });\n    }\n    if (doc.contact && doc.contact._id) {\n      emitMaybe('contact:' + doc.contact._id.toLowerCase(), doc.reported_date);\n    }\n  }\n}"
 };
 
-describe('stage-moved-contacts integration tests', () => {
+describe('move-contacts integration tests', () => {
 
   let pouchDb, scenarioCount = 0;
   const writtenDocs = [];
@@ -77,7 +77,7 @@ describe('stage-moved-contacts integration tests', () => {
           views,
         });
 
-        stageMovedContactsModule.__set__('writeDocumentToDisk', (docDirectoryPath, doc) => writtenDocs.push(doc));
+        moveContactsModule.__set__('writeDocumentToDisk', (docDirectoryPath, doc) => writtenDocs.push(doc));
         writtenDocs.length = 0;
       });
 

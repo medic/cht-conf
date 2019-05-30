@@ -76,12 +76,12 @@ const parseExtraArgs = (projectDir, extraArgs) => {
   
   if (args._.length === 0) {
     usage();
-    throw Error('Action "move-contact" is missing required list of contact_id to be moved');
+    throw Error('Action "move-contacts" is missing required list of contact_id to be moved');
   }
 
   if (!args.parent) {
     usage();
-    throw Error('Action "move-contact" is missing required parameter parent');
+    throw Error('Action "move-contacts" is missing required parameter parent');
   }
 
   return {
@@ -93,7 +93,7 @@ const parseExtraArgs = (projectDir, extraArgs) => {
 
 const connectToDatabase = couchUrl => {
   if (!couchUrl) {
-    throw ('Action "move-contact" is missing the required couchUrl information');
+    throw ('Action "move-contacts" is missing the required couchUrl information');
   }
   return pouch(couchUrl);
 };
@@ -113,11 +113,11 @@ const prepareDocumentDirectory = docDirectoryPath => {
 const usage = () => {
   const bold = text => `\x1b[1m${text}\x1b[0m`;
   console.log(`
-${bold('medic-conf\'s stage-moved-contacts action')}
+${bold('medic-conf\'s move-contacts action')}
 When combined with 'upload-docs' this action effectively moves a contact from one place in the hierarchy to another.
 
 ${bold('USAGE')}
-medic-conf --local move-contact -- contact_id --parent=parent_id
+medic-conf --local move-contacts -- <id1> <id2> --parent=<parent_id>
 
 ${bold('OPTIONS')}
 --parent=<parent_id>

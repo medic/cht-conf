@@ -5,7 +5,7 @@ Medic Project Configurer
 
 # Requirements
 
-* nodejs 6 or later
+* nodejs 8 or later
 * python 2.7
 * or Docker
 
@@ -47,17 +47,17 @@ To upgrade to the latest version
 
 	npm install -g medic-conf
 
-# Use
+# Usage
 
 `medic-conf` will upload the configuration **_from your current directory_**.
 
-## Upload all config
+## Specifying the server to configure
 
-### To localhost
+### localhost
 
 	medic-conf --local
 
-### To a specific Medic instance
+### A specific Medic instance
 
 	medic-conf --instance=instance-name.dev
 
@@ -67,7 +67,7 @@ If a different username is required, add the `--user` switch:
 
 	--user user-name --instance=instance-name.dev
 
-### To an arbitrary URL
+### An arbitrary URL
 
 	medic-conf --url=https://username:password@example.com:12345
 
@@ -75,82 +75,11 @@ If a different username is required, add the `--user` switch:
 
 	medic-conf <--local|--instance=instance-name|--url=url> <...action>
 
-The list of available actions can be seen in [`supported-actions.js`](https://github.com/medic/medic-conf/blob/master/src/cli/supported-actions.js).
+The list of available actions can be seen via `medic-conf --help`.
 
 ## Perform actions for specific forms
 
 	medic-conf <--local|--instance=instance-name|--url=url> <...action> -- <...form>
-
-# Project Layout
-
-This tool expects a project to be structured as follows:
-
-	example-project/
-		app_settings.json
-		contact-summary.js
-		resources.json
-		resources/
-			icon-one.png
-			…
-		targets.js
-		tasks.js
-		nools-extras.js
-		task-schedules.json
-		forms/
-			app/
-				my_project_form.xlsx
-				my_project_form.xml
-				my_project_form.properties.json
-				my_project_form-media/
-					[extra files]
-					…
-			contact/
-				person-create.xlsx
-				person-create.xml
-				person-create-media/
-					[extra files]
-					…
-			…
-			…
-		translations/
-			messages-xx.properties
-			…
-			
-If you are starting from scratch you can initialise the file layout using the `initialise-project-layout` action:
-
-    medic-conf initialise-project-layout
-    
-## Derived configs
-
-Configuration can be inherited from another project, and then modified.  This allows the `app_settings.json` and contained files (`task-schedules.json`, `targets.json` etc.) to be imported, and then modified.
-
-To achieve this, create a file called `settings.inherit.json` in your project's root directory with the following format:
-
-	{
-		"inherit": "../path/to/other/project",
-		"replace": {
-			"keys.to.replace": "value-to-replace-it-with"
-		},
-		"merge": {
-			"complex.objects": {
-				"will_be_merged": true
-			}
-		},
-		"delete": [
-			"all.keys.listed.here",
-			"will.be.deleted"
-		],
-		"filter": {
-			"object.at.this.key": [
-				"will",
-				"keep",
-				"only",
-				"these",
-				"properties"
-			]
-		}
-	}
-
 
 # Currently supported
 
@@ -325,8 +254,103 @@ This would create a structure such as:
 }
 ```
 
-
 Note the special string `COL_VAL` - this matches the CSV column value for the row being processed.
+
+## Moving Contacts within the Hierarchy
+
+Contacts are organized into a hierarchy. It is not straight-forward to move contacts from one position in the hierarchy to another because many copies of this hierarchy exist. Use the `move-contacts` action to assign a new parent to contacts, effectively moving these contacts within the hierarchy. This action will download the documents that need to be updated, update the lineages within those documents, and then save the updated documents on your local disk. To commit those changes to the database, run the `upload-docs` action.
+
+Some constraints when moving contacts:
+
+* **Configurable Hierarchy** - When moving contacts on WebApp >v3.7, your chosen parent must be listed as a valid parent for the contact as defined in the [configuration for place hierarchy](https://github.com/medic/medic-docs/blob/master/configuration/app-settings.md#configuring-place-hierarchy).
+* **Primary Contacts** - Primary contacts must be a descendant of the place for which they are the primary contact. You may need to select a new primary contact for a place through the WebApp if you'd like to move a primary contact to a new place in the hierarchy.
+
+Parameter | Description | Required 
+-- | -- | --
+list of ids | Space-delimited list of contact IDs which will be moved | Yes
+parent | ID of the new parent which will be assigned to the provided contacts | Yes
+docDirectoryPath | This action outputs files to local disk at this destination | No. Default `json-docs`
+
+### Examples
+Move the contacts with the id `contact_1` and `contact_2` to have the parent `parent_id`. The changes will be in the local folder `my_folder` only for review. Run the second command to upload the changes after review.
+
+    medic-conf --instance= move-contacts -- contact_1 contact_2 --parent=parent_id --docDirectoryPath=my_folder
+    medic-conf --local upload-docs -- --docDirectoryPath=my_folder
+
+Move the contact with the id `contact_1` to the top of the hierarchy (no parent).
+
+    medic-conf --local move-contacts upload-docs -- contact_1 --parent=root
+
+
+# Project Layout
+
+This tool expects a project to be structured as follows:
+
+	example-project/
+		app_settings.json
+		contact-summary.js
+		resources.json
+		resources/
+			icon-one.png
+			…
+		targets.js
+		tasks.js
+		nools-extras.js
+		task-schedules.json
+		forms/
+			app/
+				my_project_form.xlsx
+				my_project_form.xml
+				my_project_form.properties.json
+				my_project_form-media/
+					[extra files]
+					…
+			contact/
+				person-create.xlsx
+				person-create.xml
+				person-create-media/
+					[extra files]
+					…
+			…
+			…
+		translations/
+			messages-xx.properties
+			…
+			
+If you are starting from scratch you can initialise the file layout using the `initialise-project-layout` action:
+
+    medic-conf initialise-project-layout
+    
+## Derived configs
+
+Configuration can be inherited from another project, and then modified.  This allows the `app_settings.json` and contained files (`task-schedules.json`, `targets.json` etc.) to be imported, and then modified.
+
+To achieve this, create a file called `settings.inherit.json` in your project's root directory with the following format:
+
+	{
+		"inherit": "../path/to/other/project",
+		"replace": {
+			"keys.to.replace": "value-to-replace-it-with"
+		},
+		"merge": {
+			"complex.objects": {
+				"will_be_merged": true
+			}
+		},
+		"delete": [
+			"all.keys.listed.here",
+			"will.be.deleted"
+		],
+		"filter": {
+			"object.at.this.key": [
+				"will",
+				"keep",
+				"only",
+				"these",
+				"properties"
+			]
+		}
+	}
 
 # `medic-logs`
 
