@@ -6,9 +6,9 @@ ${bold('NAME')}
   medic-conf - configurerize your Medic Mobile instances
 
 ${bold('SYNOPSIS')}
-  medic-conf <--local|--instance instance-name|--url url>
+  medic-conf <--local|--instance=instance-name|--url=url>
 Or:
-  medic-conf <--local|--instance instance-name|--url url> <action>
+  medic-conf <--local|--instance=instance-name|--url=url> <actions> -- <params>
 
 ${bold('DESCRIPTION')}
   This script will update and upload all of a particular project
@@ -25,13 +25,13 @@ ${bold('SPECIFYING URL')}
   --local
     Upload to http://admin:pass@localhost:5988
 
-  --instance <instance-name>
+  --instance=<instance-name>
     Upload to https://admin:<password>@<instance-name>.medicmobile.org
 
-  --user <user-name> --instance <instance-name>
+  --user=<user-name> --instance <instance-name>
     Upload to https://<user-name>:<password>@<instance-name>.medicmobile.org
 
-  --url <url>
+  --url=<url>
     Upload to URL specified.
 
 ${bold('OPTIONS')}
