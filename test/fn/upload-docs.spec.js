@@ -4,6 +4,7 @@ const sinon = require('sinon');
 
 const api = require('../api-stub');
 const uploadDocs = rewire('../../src/fn/upload-docs');
+uploadDocs.__set__('readline', { keyInYN: () => true });
 
 describe('upload-docs', function() {
   let fs;

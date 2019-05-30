@@ -14,7 +14,7 @@ const FILE_EXTENSION = '.doc.json';
 const INITIAL_BATCH_SIZE = 100;
 
 module.exports = async (projectDir, couchUrl, extraArgs) => {
-  const args = minimist(extraArgs, { boolean: true });
+  const args = minimist(extraArgs || [], { boolean: true });
 
   if(!couchUrl) {
     return skipFn('no couch URL set');
