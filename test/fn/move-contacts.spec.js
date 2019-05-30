@@ -26,7 +26,7 @@ const reports_by_freetext = {
   map: "function(doc) {\n  var skip = [ '_id', '_rev', 'type', 'refid', 'content' ];\n\n  var usedKeys = [];\n  var emitMaybe = function(key, value) {\n    if (usedKeys.indexOf(key) === -1 && // Not already used\n        key.length > 2 // Not too short\n    ) {\n      usedKeys.push(key);\n      emit([key], value);\n    }\n  };\n\n  var emitField = function(key, value, reportedDate) {\n    if (!key || !value) {\n      return;\n    }\n    key = key.toLowerCase();\n    if (skip.indexOf(key) !== -1 || /_date$/.test(key)) {\n      return;\n    }\n    if (typeof value === 'string') {\n      value = value.toLowerCase();\n      value.split(/\\s+/).forEach(function(word) {\n        emitMaybe(word, reportedDate);\n      });\n    }\n    if (typeof value === 'number' || typeof value === 'string') {\n      emitMaybe(key + ':' + value, reportedDate);\n    }\n  };\n\n  if (doc.type === 'data_record' && doc.form) {\n    Object.keys(doc).forEach(function(key) {\n      emitField(key, doc[key], doc.reported_date);\n    });\n    if (doc.fields) {\n      Object.keys(doc.fields).forEach(function(key) {\n        emitField(key, doc.fields[key], doc.reported_date);\n      });\n    }\n    if (doc.contact && doc.contact._id) {\n      emitMaybe('contact:' + doc.contact._id.toLowerCase(), doc.reported_date);\n    }\n  }\n}"
 };
 
-describe('move-contacts integration tests', () => {
+describe('move-contacts', () => {
 
   let pouchDb, scenarioCount = 0;
   const writtenDocs = [];
@@ -35,7 +35,8 @@ describe('move-contacts integration tests', () => {
     if (!result) {
       return undefined;
     }
-    
+
+    // Remove _rev because it makes expectations harder to write
     delete result._rev;
     return result;
   };
@@ -85,7 +86,7 @@ describe('move-contacts integration tests', () => {
 
       it('move health_center_1 to district_2', async () => {
         await updateLineagesAndStage({
-          contactIds: ['health_center_1'], 
+          contactIds: ['health_center_1'],
           parentId: 'district_2',
         }, pouchDb);
 
@@ -125,7 +126,7 @@ describe('move-contacts integration tests', () => {
 
       it('move health_center_1 to root', async () => {
         await updateLineagesAndStage({
-          contactIds: ['health_center_1'], 
+          contactIds: ['health_center_1'],
           parentId: 'root',
         }, pouchDb);
 
@@ -165,7 +166,7 @@ describe('move-contacts integration tests', () => {
 
       it('move district_1 from root', async () => {
         await updateLineagesAndStage({
-          contactIds: ['district_1'], 
+          contactIds: ['district_1'],
           parentId: 'district_2',
         }, pouchDb);
 
@@ -213,7 +214,7 @@ describe('move-contacts integration tests', () => {
       it('throw if parent does not exist', async () => {
         try {
           await updateLineagesAndStage({
-            contactIds: ['clinic_1'], 
+            contactIds: ['clinic_1'],
             parentId: 'dne_parent_id'
           }, pouchDb);
           assert.fail('should throw when parent is not defined');
@@ -225,7 +226,7 @@ describe('move-contacts integration tests', () => {
       it('throw if moving primary contact of parent', async () => {
         try {
           await updateLineagesAndStage({
-            contactIds: ['clinic_1_contact'], 
+            contactIds: ['clinic_1_contact'],
             parentId: 'district_1'
           }, pouchDb);
 
@@ -235,7 +236,7 @@ describe('move-contacts integration tests', () => {
         }
       });
 
-      it('throw when moving place to unconfigurable parent', async () => {
+      it('throw when moving place to unconfigured parent', async () => {
         const { _rev } = await pouchDb.get('settings');
         await pouchDb.put({
           _id: 'settings',
@@ -250,7 +251,7 @@ describe('move-contacts integration tests', () => {
 
         try {
           await updateLineagesAndStage({
-            contactIds: ['district_1'], 
+            contactIds: ['district_1'],
             parentId: 'district_2',
           }, pouchDb);
 

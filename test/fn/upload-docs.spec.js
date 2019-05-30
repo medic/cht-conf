@@ -20,7 +20,7 @@ describe('upload-docs', function() {
     uploadDocs.__set__('fs', fs);
   });
   afterEach(api.stop);
-  
+
   it('should upload docs to pouch', async () => {
     await assertDbEmpty();
     await uploadDocs('', api.couchUrl);

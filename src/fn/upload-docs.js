@@ -45,24 +45,24 @@ module.exports = async (projectDir, couchUrl, extraArgs) => {
     const now = new Date();
     if(!docFiles.length) {
       if(progress) progress.done();
-  
+
       const reportFile = `upload-docs.${now}.log.json`;
       fs.writeJson(reportFile, results);
       info(`Summary: ${results.ok.length} of ${totalCount} docs uploaded OK.  Full report written to: ${reportFile}`);
-  
+
       return;
     }
-  
+
     const docs = docFiles.slice(0, batchSize)
         .map(file => {
           const doc = fs.readJson(file);
           doc.imported_date = now.getTime();
           return doc;
         });
-  
+
     trace('');
     trace(`Attempting to upload batch of ${docs.length} docs…`);
-  
+
     try {
       const uploadResult = await db.bulkDocs(docs);
       if(progress) {

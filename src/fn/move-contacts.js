@@ -24,7 +24,7 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
   trace(`Fetching contact details for parent: ${parentId}`);
 
   const parentDoc = parentId === HIERARCHY_ROOT ? undefined : await db.get(parentId);
-  const constructNewLineage = async () => {
+  const buildLineageOfParent = () => {
     if (!parentDoc) {
       return undefined;
     }
@@ -33,7 +33,7 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
   };
 
   let affectedContactCount = 0, affectedReportCount = 0;
-  const replacementLineage = await constructNewLineage();
+  const replacementLineage = buildLineageOfParent();
   const { getConfigurableHierarchyErrors, getPrimaryContactViolations } = await lineageConstraints(db, parentDoc);
   for (let contactId of contactIds) {
     const contactDoc = await db.get(contactId);
@@ -44,7 +44,7 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
 
     const descendantContacts = await fetchDescendantsOf(db, contactId);
     trace(`${descendantContacts.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)} will update`);
-    
+
     const descendantsAndSelf = [contactDoc, ...descendantContacts];
     const invalidPrimaryContactDoc = await getPrimaryContactViolations(contactDoc, descendantsAndSelf);
     if (invalidPrimaryContactDoc) {
@@ -52,19 +52,18 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     }
 
     const updatedContacts = replaceLineages(descendantsAndSelf, replacementLineage, contactId);
-    affectedContactCount += updatedContacts.length;
 
     const updatedReports = [];
     const reportsCreatedByDescendants = await fetchReportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
     trace(`${reportsCreatedByDescendants.length} report(s) created by these affected contact(s) will update`);
     updatedReports.push(...replaceLineages(reportsCreatedByDescendants, replacementLineage, contactId));
+
+    [...updatedContacts, ...updatedReports].forEach(updatedDoc => writeDocumentToDisk(docDirectoryPath, updatedDoc));
+
+    affectedContactCount += updatedContacts.length;
     affectedReportCount += updatedReports.length;
 
-    for (let updatedDoc of [...updatedContacts, ...updatedReports]) {
-      writeDocumentToDisk(docDirectoryPath, updatedDoc);
-    }
-
-    info(`Staged move of contact ${prettyPrintDocument(contactDoc)}. ${updatedContacts.length} contact(s) and ${updatedReports.length} report(s) will be updated.`);
+    info(`Staged updates to ${prettyPrintDocument(contactDoc)}. ${updatedContacts.length} contact(s) and ${updatedReports.length} report(s).`);
   }
 
   info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);
@@ -73,7 +72,7 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
 // Parses extraArgs and asserts if required parameters are not present
 const parseExtraArgs = (projectDir, extraArgs) => {
   const args = minimist(extraArgs, { boolean: true });
-  
+
   if (args._.length === 0) {
     usage();
     throw Error('Action "move-contacts" is missing required list of contact_id to be moved');

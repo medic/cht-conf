@@ -36,7 +36,7 @@ describe('mocks', () => {
         }
       });
     });
-  
+
     it('district_1', async () => expect(await get('district_1')).to.deep.eq({
       _id: 'district_1',
       type: 'district_hospital',
@@ -49,7 +49,7 @@ describe('mocks', () => {
       contact: { _id: 'health_center_1_contact' },
       parent: { _id: 'district_1' },
     }));
-    
+
     it('patient_2', async () => expect(await get('patient_2')).to.deep.eq({
       _id: 'patient_2',
       type: 'person',
@@ -63,7 +63,7 @@ describe('mocks', () => {
     }));
   });
 
-  describe('mockHierarchy', () => {
+  describe('mockReport', () => {
     before(async () => {
       await mockReport(pouchDb, {
         id: 'report_1',

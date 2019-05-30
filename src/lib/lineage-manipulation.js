@@ -2,7 +2,7 @@
 /*
 Given a doc, replace the lineage information therein with "replaceWith"
 
-startingFromIdInLineage (optional) - Will result in a partial replacement of the lineage. Only he part of the lineage "after" the parent 
+startingFromIdInLineage (optional) - Will result in a partial replacement of the lineage. Only the part of the lineage "after" the parent
 with _id=startingFromIdInLineage will be replaced by "replaceWith"
 */
 const replaceLineage = (doc, replaceWith, startingFromIdInLineage) => {
@@ -18,7 +18,7 @@ const replaceLineage = (doc, replaceWith, startingFromIdInLineage) => {
     } else {
       replaceInDoc[docAttr] = replaceWith;
     }
-  
+
     return true;
   };
 

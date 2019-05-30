@@ -19,10 +19,11 @@ describe('lineage constriants', () => {
     };
 
     it('no defined rules yields no error', async () => expect(await scenario(undefined, 'person', 'health_center')).to.be.undefined);
-    
+
     it('no defined rules yields not defined', async () => expect(await scenario([], 'person', 'health_center')).to.include('not define'));
+
     it('no valid parent yields not defined', async () => expect(await scenario([undefined], 'person', 'health_center')).to.include('not define'));
-    
+
     it('valid parent yields no error', async () => {
       const actual = await scenario([{
         id: 'person',
@@ -33,6 +34,7 @@ describe('lineage constriants', () => {
     });
 
     it('no contact type yields undefined error', async () => expect(await scenario([])).to.include('undefined'));
+
     it('no parent type yields undefined error', async () => expect(await scenario([], 'person')).to.include('undefined'));
 
     it('no valid parents yields not defined', async () => expect(await scenario([{

@@ -33,7 +33,7 @@ describe('lineage manipulation', () => {
     it('replace an empty lineage', () => {
       const mock = mockContact();
       delete mock.parent;
-      
+
       expect(replaceLineage(mock, parentsToLineage('new_parent'))).to.be.true;
       expect(mock).to.deep.eq({
         _id: 'c',
