@@ -22,17 +22,6 @@ module.exports = (projectDir, couchUrl, extraArgs) => {
 const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
 const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }, db) => {
   trace(`Fetching contact details for parent: ${parentId}`);
- 
-  const fetchDescendantsFrom = async contactId => (await db.query('medic-client/contacts_by_place', {
-    startkey: [contactId],
-    endkey: [contactId + '\ufff0'],
-    include_docs: true,
-  })).rows.map(row => row.doc);
-
-  const fetchReportsCreatedBy = async contactId => (await db.query('medic-client/reports_by_freetext', {
-    key: [`contact:${contactId}`],
-    include_docs: true,
-  })).rows.map(row => row.doc);
 
   const parentDoc = parentId === HIERARCHY_ROOT ? undefined : await db.get(parentId);
   const constructNewLineage = async () => {
@@ -53,7 +42,7 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
       throw Error(`Configurable Hierarchy: ${hierarchyError}`);
     }
 
-    const descendantContacts = await fetchDescendantsFrom(contactId);
+    const descendantContacts = await fetchDescendantsOf(db, contactId);
     trace(`${descendantContacts.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)} will update`);
     
     const descendantsAndSelf = [contactDoc, ...descendantContacts];
@@ -66,8 +55,11 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     affectedContactCount += updatedContacts.length;
 
     const updatedReports = [];
+    // const reportsCreatedByDescendants = await fetchReportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
+    // trace(`${reportsCreatedByDescendants.length} report(s) created by these affected contact(s) will update`);
+    // updatedReports.push(...replaceLineages(reportsCreatedByDescendants, replacementLineage, contactId));
     for (let descendantDoc of descendantsAndSelf) {
-      const reportsCreatedByDescendant = await fetchReportsCreatedBy(descendantDoc._id);
+      const reportsCreatedByDescendant = await fetchReportsCreatedBy(db, descendantDoc._id);
       trace(`${reportsCreatedByDescendant.length} report(s) created by ${prettyPrintDocument(descendantDoc)} will update`);
       updatedReports.push(...replaceLineages(reportsCreatedByDescendant, replacementLineage, contactId));
     }
@@ -140,6 +132,54 @@ ${bold('OPTIONS')}
   Specifies the folder used to store the documents representing the changes in hierarchy.
 `);
 };
+
+/*
+Given a contact's id, obtain the documents of all descendant contacts
+*/
+const fetchDescendantsOf = async (db, contactId) => {
+  try {
+    // For v3.x, use the contacts_by_place view to get all descendants in one query
+    const descendantDocs = await db.query('medic-client/contacts_by_place', {
+      key: [contactId],
+      include_docs: true,
+    });
+
+    return descendantDocs.rows.map(row => row.doc);
+  } catch (err) {
+    if (err.name !== 'not_found') {
+      throw err;
+    }
+
+    // For v2.x, use the contacts_by_parent view to get all descendants one level at a time
+    const fetchChildren = contactIds => db.query('medic-client/contacts_by_parent', {
+      keys: contactIds,
+      include_docs: true,
+    });
+
+    const descendantDocs = [];
+    let idsFoundOnPreviousIteration = [contactId];
+    do {
+      const childrenDocs = await fetchChildren(idsFoundOnPreviousIteration);
+      idsFoundOnPreviousIteration = childrenDocs.rows.map(row => row.doc._id);
+      descendantDocs.push(...childrenDocs.rows.map(row => row.doc));
+    } while (idsFoundOnPreviousIteration.length > 0);
+
+    return descendantDocs;
+  }
+};
+
+// const fetchReportsCreatedBy = async (db, contactIds) => {
+//   const reports = await db.query('medic-client/reports_by_freetext', {
+//     keys: contactIds.map(id => `contact:${id}`),
+//     include_docs: true,
+//   });
+
+//   return reports.rows.map(row => row.doc);
+// };
+const fetchReportsCreatedBy = async (db, contactId) => (await db.query('medic-client/reports_by_freetext', {
+  key: [`contact:${contactId}`],
+  include_docs: true,
+})).rows.map(row => row.doc);
 
 const writeDocumentToDisk = (docDirectoryPath, doc) => {
   const destinationPath = path.join(docDirectoryPath, `${doc._id}.doc.json`);

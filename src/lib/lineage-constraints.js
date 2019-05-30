@@ -4,15 +4,23 @@ const { trace } = log;
 const { pluckIdsFromLineage } = require('./lineage-manipulation');
 
 const lineageConstraints = async (db, parentDoc) => {
-  const { settings } = await db.get('settings');
-  const { contact_types } = settings;
-  
   let mapTypeToAllowedParents;
-  if (Array.isArray(contact_types)) {
-    mapTypeToAllowedParents = contact_types
-      .filter(rule => rule)
-      .reduce((agg, curr) => Object.assign(agg, { [curr.id]: curr.parents }), {});
-    trace('Found app_settings.contact_types. Configurable hierarchy constraints will be enforced.');
+  try {
+    const { settings } = await db.get('settings');
+    const { contact_types } = settings;
+    
+    if (Array.isArray(contact_types)) {
+      mapTypeToAllowedParents = contact_types
+        .filter(rule => rule)
+        .reduce((agg, curr) => Object.assign(agg, { [curr.id]: curr.parents }), {});
+      trace('Found app_settings.contact_types. Configurable hierarchy constraints will be enforced.');
+    }
+  } catch (err) {
+    if (err.name !== 'not_found') {
+      throw err;
+    }
+    
+    // passthrough with mapTypeToAllowedParents=undefined
   }
 
   return {

@@ -39,6 +39,13 @@ describe('lineage constriants', () => {
       id: 'person',
       parents: ['district_hospital'],
     }], 'person', 'health_center')).to.include('does not allow parent'));
+
+    it('no settings doc yields not defined', async () => {
+      const mockDb = { get: () => { throw { name: 'not_found' }; } };
+      const { getConfigurableHierarchyErrors } = await lineageConstraints(mockDb, { type: 'parent' });
+      const actual = getConfigurableHierarchyErrors({ type: 'contact' });
+      expect(actual).to.be.undefined;
+    });
   });
 
   describe('getPrimaryContactViolations', () => {
