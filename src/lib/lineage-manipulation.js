@@ -1,15 +1,4 @@
 
-const replaceLineages = (docs, replacementLineage, startingFromIdInLineage) => {
-  const result = [];
-  for (let doc of docs) {
-    if (replaceLineage(doc, replacementLineage, startingFromIdInLineage)) {
-      result.push(doc);
-    }
-  }
-
-  return result;
-};
-
 /*
 Given a doc, replace the lineage information therein with "replaceWith"
 
@@ -49,6 +38,17 @@ const replaceLineage = (doc, replaceWith, startingFromIdInLineage) => {
 
   return false;
 };
+
+
+/*
+Runs replaceLineage for an array of docs. Aggregates truthy results
+*/
+const replaceLineages = (docs, replacementLineage, startingFromIdInLineage) => docs.reduce((agg, doc) => {
+  if (replaceLineage(doc, replacementLineage, startingFromIdInLineage)) {
+    agg.push(doc);
+  }
+  return agg;
+}, []);
 
 /*
 Given a lineage, return the ids therein

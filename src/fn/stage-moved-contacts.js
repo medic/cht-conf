@@ -55,14 +55,9 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     affectedContactCount += updatedContacts.length;
 
     const updatedReports = [];
-    // const reportsCreatedByDescendants = await fetchReportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
-    // trace(`${reportsCreatedByDescendants.length} report(s) created by these affected contact(s) will update`);
-    // updatedReports.push(...replaceLineages(reportsCreatedByDescendants, replacementLineage, contactId));
-    for (let descendantDoc of descendantsAndSelf) {
-      const reportsCreatedByDescendant = await fetchReportsCreatedBy(db, descendantDoc._id);
-      trace(`${reportsCreatedByDescendant.length} report(s) created by ${prettyPrintDocument(descendantDoc)} will update`);
-      updatedReports.push(...replaceLineages(reportsCreatedByDescendant, replacementLineage, contactId));
-    }
+    const reportsCreatedByDescendants = await fetchReportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
+    trace(`${reportsCreatedByDescendants.length} report(s) created by these affected contact(s) will update`);
+    updatedReports.push(...replaceLineages(reportsCreatedByDescendants, replacementLineage, contactId));
     affectedReportCount += updatedReports.length;
 
     for (let updatedDoc of [...updatedContacts, ...updatedReports]) {
@@ -168,18 +163,14 @@ const fetchDescendantsOf = async (db, contactId) => {
   }
 };
 
-// const fetchReportsCreatedBy = async (db, contactIds) => {
-//   const reports = await db.query('medic-client/reports_by_freetext', {
-//     keys: contactIds.map(id => `contact:${id}`),
-//     include_docs: true,
-//   });
+const fetchReportsCreatedBy = async (db, contactIds) => {
+  const reports = await db.query('medic-client/reports_by_freetext', {
+    keys: contactIds.map(id => [`contact:${id}`]),
+    include_docs: true,
+  });
 
-//   return reports.rows.map(row => row.doc);
-// };
-const fetchReportsCreatedBy = async (db, contactId) => (await db.query('medic-client/reports_by_freetext', {
-  key: [`contact:${contactId}`],
-  include_docs: true,
-})).rows.map(row => row.doc);
+  return reports.rows.map(row => row.doc);
+};
 
 const writeDocumentToDisk = (docDirectoryPath, doc) => {
   const destinationPath = path.join(docDirectoryPath, `${doc._id}.doc.json`);
