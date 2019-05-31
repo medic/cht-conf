@@ -32,6 +32,8 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
     return { _id: parentDoc._id, parent: parentDoc.parent };
   };
 
+  confirmParentIsNotSelf(contactIds,parentId);
+
   let affectedContactCount = 0, affectedReportCount = 0;
   const replacementLineage = buildLineageOfParent();
   const { getConfigurableHierarchyErrors, getPrimaryContactViolations } = await lineageConstraints(db, parentDoc);
@@ -126,6 +128,13 @@ ${bold('OPTIONS')}
   Specifies the folder used to store the documents representing the changes in hierarchy.
 `);
 };
+
+const confirmParentIsNotSelf = (contactIds, parentId) => {
+  const invalid = contactIds.find(id => parentId === id);
+  if (invalid) {
+    throw Error(`Cannot set contact's parent to be self ${prettyPrintDocument(invalid)}.`);
+  }
+}
 
 /*
 Given a contact's id, obtain the documents of all descendant contacts

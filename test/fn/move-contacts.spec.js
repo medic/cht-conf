@@ -223,6 +223,30 @@ describe('move-contacts', () => {
         }
       });
 
+      it('throw if contact_id does not exist', async () => {
+        try {
+          await updateLineagesAndStage({
+            contactIds: ['dne'],
+            parentId: 'clinic_1'
+          }, pouchDb);
+          assert.fail('should throw');
+        } catch (err) {
+          expect(err.name).to.eq('not_found');
+        }
+      });
+
+      it('throw if contact_id is not a contact', async () => {
+        try {
+          await updateLineagesAndStage({
+            contactIds: ['report_1'],
+            parentId: 'clinic_1'
+          }, pouchDb);
+          assert.fail('should throw');
+        } catch (err) {
+          expect(err.message).to.include('not a contact');
+        }
+      });
+
       it('throw if moving primary contact of parent', async () => {
         try {
           await updateLineagesAndStage({
@@ -233,6 +257,19 @@ describe('move-contacts', () => {
           assert.fail('should throw');
         } catch (err) {
           expect(err.message).to.include('primary contact');
+        }
+      });
+
+      it('throw if setting parent to self', async () => {
+        try {
+          await updateLineagesAndStage({
+            contactIds: ['clinic_1'],
+            parentId: 'clinic_1'
+          }, pouchDb);
+
+          assert.fail('should throw');
+        } catch (err) {
+          expect(err.message).to.include('self');
         }
       });
 

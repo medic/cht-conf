@@ -42,10 +42,24 @@ describe('lineage constriants', () => {
       parents: ['district_hospital'],
     }], 'person', 'health_center')).to.include('does not allow parent'));
 
+    it('no settings doc requires valid parent type', async () => {
+      const mockDb = { get: () => { throw { name: 'not_found' }; } };
+      const { getConfigurableHierarchyErrors } = await lineageConstraints(mockDb, { type: 'dne' });
+      const actual = getConfigurableHierarchyErrors({ type: 'person' });
+      expect(actual).to.include('is not a contact');
+    });
+
+    it('no settings doc requires valid contact type', async () => {
+      const mockDb = { get: () => { throw { name: 'not_found' }; } };
+      const { getConfigurableHierarchyErrors } = await lineageConstraints(mockDb, { type: 'clinic' });
+      const actual = getConfigurableHierarchyErrors({ type: 'dne' });
+      expect(actual).to.include('is not a contact');
+    });
+
     it('no settings doc yields not defined', async () => {
       const mockDb = { get: () => { throw { name: 'not_found' }; } };
-      const { getConfigurableHierarchyErrors } = await lineageConstraints(mockDb, { type: 'parent' });
-      const actual = getConfigurableHierarchyErrors({ type: 'contact' });
+      const { getConfigurableHierarchyErrors } = await lineageConstraints(mockDb, { type: 'clinic' });
+      const actual = getConfigurableHierarchyErrors({ type: 'person' });
       expect(actual).to.be.undefined;
     });
   });

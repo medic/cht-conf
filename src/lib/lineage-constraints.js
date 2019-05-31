@@ -33,12 +33,24 @@ const lineageConstraints = async (db, parentDoc) => {
 Enforce the whitelist of allowed parents for each contact type as defined in settings.contact_types attribute
 */
 const getConfigurableHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) => {
-  if (!mapTypeToAllowedParents) return;
-
   const { type: contactType } = contactDoc;
-  const { type: parentType } = parentDoc;
+  const { type: parentType } = parentDoc || {};
   if (!contactType) return 'contact required attribute "type" is undefined';
   if (parentDoc && !parentType) return 'parent required attribute "type" is undefined';
+
+  if (!mapTypeToAllowedParents) {
+    const allowedTypes = [ 'person', 'clinic', 'health_center', 'district_hospital'];
+    let error;
+    if (!allowedTypes.includes(contactType)) {
+      error = `document with id '${contactDoc._id}' is not a contact and cannot be moved`;
+    }
+
+    if (parentDoc && !allowedTypes.includes(parentType)) {
+      error = `parent document with id '${parentDoc._id}' is not a contact and cannot be moved`
+    }
+    
+    return error;
+  }
 
   if (!mapTypeToAllowedParents[contactType]) return `contact_types does not define rules for type ${contactType}`;
   if (!mapTypeToAllowedParents[contactType].includes(parentType)) return `contact_types does not allow parent of type ${parentType} for contact of type ${contactType}`;
