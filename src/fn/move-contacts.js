@@ -134,7 +134,7 @@ const confirmParentIsNotSelf = (contactIds, parentId) => {
   if (invalid) {
     throw Error(`Cannot set contact's parent to be self ${prettyPrintDocument(invalid)}.`);
   }
-}
+};
 
 /*
 Given a contact's id, obtain the documents of all descendant contacts

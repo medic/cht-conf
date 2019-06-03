@@ -46,7 +46,7 @@ const getConfigurableHierarchyViolations = (mapTypeToAllowedParents, contactDoc,
     }
 
     if (parentDoc && !allowedTypes.includes(parentType)) {
-      error = `parent document with id '${parentDoc._id}' is not a contact and cannot be moved`
+      error = `parent document with id '${parentDoc._id}' is not a contact and cannot be moved`;
     }
     
     return error;
