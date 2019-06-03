@@ -2,6 +2,7 @@ const fs = require('../lib/sync-fs');
 const skipFn = require('../lib/skip-fn');
 const warn = require('../lib/log').warn;
 const pouch = require('../lib/db');
+const request = require('request-promise-native');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
@@ -11,8 +12,8 @@ module.exports = (projectDir, couchUrl) => {
   const dir = `${projectDir}/translations`;
   const db = pouch(couchUrl);
 
-  return Promise.resolve()
-    .then(() => {
+  return getMedicVersion()
+    .then(version => {
       if(!fs.exists(dir)) return warn('Could not find custom translations dir:', dir);
 
       return Promise.all(fs.readdir(dir)
@@ -25,7 +26,7 @@ module.exports = (projectDir, couchUrl) => {
               if(e.status === 404) return newDocFor(fileName);
               else throw e;
             })
-            .then(doc => overwriteProperties(doc, translations))
+            .then(doc => overwriteProperties(doc, translations, version))
             .then(doc => db.put(doc));
         }));
     });
@@ -42,9 +43,13 @@ function propertiesAsObject(path) {
   return vals;
 }
 
-function overwriteProperties(doc, props) {
-  if(doc.generic) {
-    // 3.4.0 translation structure
+function overwriteProperties(doc, props, version) {
+  if((version.major === 3 && version.minor >= 4) || version.major > 3 ) {
+    // TODO: link to how the translation layout changed in git
+    if (!doc.generic) {
+      doc.generic = {};
+    }
+
     doc.custom = props;
   } else {
     // pre-3.4.0 doc structure
@@ -61,6 +66,7 @@ function overwriteProperties(doc, props) {
   return doc;
 }
 
+// TODO?: pass version and add empty generic for >=3.4.0
 function newDocFor(fileName) {
   const id = idFor(fileName);
 
@@ -75,4 +81,18 @@ function newDocFor(fileName) {
 
 function idFor(fileName) {
   return fileName.substring(0, fileName.length - 11);
+}
+
+function getMedicVersion(){
+  return  request.get({
+    url: couchUrl + '/api/info',
+    json: true
+  }).then(result => {
+    var versionArray = result.version.split('.');
+    const version = {};
+    version.major = versionArray[0];
+    version.minor = versionArray[1];
+    version.patch = versionArray[2];
+    return version;
+  });
 }
