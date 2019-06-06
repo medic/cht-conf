@@ -75,6 +75,31 @@ describe('upload-custom-translations', () => {
           assert(!messagesEn.custom);
         });
     });
+
+    it('should work correctly when falling back to testing messages-en', () => {
+      return api.db
+        .put({
+          _id: 'messages-en',
+          code: 'en',
+          name: 'English',
+          type: 'translations',
+          values: { a: 'first' }
+        })
+        .then(() => uploadCustomTranslations(`${testProjectDir}custom-lang`, api.couchUrl))
+        .then(() => expectTranslationDocs('en', 'fr'))
+        .then(() => getTranslationDoc('en'))
+        .then(messagesEn => {
+          assert.deepEqual(messagesEn.values, { a:'first' });
+          assert(!messagesEn.generic);
+          assert(!messagesEn.custom);
+        })
+        .then(() => getTranslationDoc('fr'))
+        .then(messagesFr => {
+          assert.deepEqual(messagesFr.values, { one: 'un(e)' });
+          assert(!messagesFr.generic);
+          assert(!messagesFr.custom);
+        });
+    });
   });
 
   describe('medic-3.x', () => {
@@ -147,7 +172,6 @@ describe('upload-custom-translations', () => {
             assert(!messagesEn.custom);
           });
       });
-
 
       it('should crash for malformed translation files', () => {
         return api.db
@@ -252,6 +276,39 @@ describe('upload-custom-translations', () => {
             assert.deepEqual(messagesEn.generic, { a: 'first' });
             assert.deepEqual(messagesEn.custom, { });
             assert(!messagesEn.values);
+          });
+      });
+
+      it('should work correctly when falling back to testing messages-en', () => {
+        // api/deploy-info endpoint doesn't exist
+        api.giveResponses({ status: 404, body: { error: 'not_found' } });
+        // for *some* reason, medic-client doesn't have deploy-info
+        return api.db
+          .get('_design/medic-client')
+          .then(ddoc => {
+            delete ddoc.deploy_info;
+            return api.db.put(ddoc);
+          })
+          .then(() => api.db.put({
+            _id: 'messages-en',
+            code: 'en',
+            name: 'English',
+            type: 'translations',
+            generic: { a: 'first' }
+          }))
+          .then(() => uploadCustomTranslations(`${testProjectDir}custom-lang`, api.couchUrl))
+          .then(() => expectTranslationDocs('en', 'fr'))
+          .then(() => getTranslationDoc('en'))
+          .then(messagesEn => {
+            assert.deepEqual(messagesEn.generic, { a:'first' });
+            assert(!messagesEn.custom);
+            assert(!messagesEn.values);
+          })
+          .then(() => getTranslationDoc('fr'))
+          .then(messagesFr => {
+            assert.deepEqual(messagesFr.custom, { one: 'un(e)' });
+            assert.deepEqual(messagesFr.generic, {});
+            assert(!messagesFr.values);
           });
       });
     });
