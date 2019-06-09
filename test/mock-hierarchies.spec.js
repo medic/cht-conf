@@ -40,13 +40,22 @@ describe('mocks', () => {
     it('district_1', async () => expect(await get('district_1')).to.deep.eq({
       _id: 'district_1',
       type: 'district_hospital',
-      contact: { _id: 'district_1_contact' },
+      contact: {
+        _id: 'district_1_contact',
+        parent: { _id: 'district_1' },
+      },
     }));
 
     it('health_center_1', async () => expect(await get('health_center_1')).to.deep.eq({
       _id: 'health_center_1',
       type: 'health_center',
-      contact: { _id: 'health_center_1_contact' },
+      contact: {
+        _id: 'health_center_1_contact',
+        parent: {
+          _id: 'health_center_1',
+          parent: { _id: 'district_1' },
+        },
+      },    
       parent: { _id: 'district_1' },
     }));
 

@@ -27,7 +27,10 @@ module.exports = async (projectDir, couchUrl, extraArgs) => {
   }
 
   const filesToUpload = fs.recurseFiles(docDir).filter(name => name.endsWith(FILE_EXTENSION));
-  filesToUpload.forEach(ensureDocumentIdMatchesFilename);
+  const docIdErrors = getErrorsWhereDocIdDiffersFromFilename(filesToUpload);
+  if (docIdErrors.length > 0) {
+    throw new Error(`upload-docs: ${docIdErrors.join('\n')}`);
+  }
 
   const totalCount = filesToUpload.length;
   if (totalCount > 0) {
@@ -36,6 +39,8 @@ module.exports = async (projectDir, couchUrl, extraArgs) => {
       error('User failed to confirm action.');
       process.exit(1);
     }
+  } else {
+    return; // nothing to upload
   }
 
   const db = pouch(couchUrl);
@@ -46,7 +51,7 @@ module.exports = async (projectDir, couchUrl, extraArgs) => {
     if(!docFiles.length) {
       if(progress) progress.done();
 
-      const reportFile = `upload-docs.${now}.log.json`;
+      const reportFile = `upload-docs.${now.getTime()}.log.json`;
       fs.writeJson(reportFile, results);
       info(`Summary: ${results.ok.length} of ${totalCount} docs uploaded OK.  Full report written to: ${reportFile}`);
 
@@ -56,7 +61,7 @@ module.exports = async (projectDir, couchUrl, extraArgs) => {
     const docs = docFiles.slice(0, batchSize)
         .map(file => {
           const doc = fs.readJson(file);
-          doc.imported_date = now.getTime();
+          doc.imported_date = now.toISOString();
           return doc;
         });
 
@@ -97,11 +102,14 @@ module.exports = async (projectDir, couchUrl, extraArgs) => {
   return processNextBatch(filesToUpload, INITIAL_BATCH_SIZE);
 };
 
-function ensureDocumentIdMatchesFilename(pathToDoc) {
-  const json = fs.readJson(pathToDoc);
-  const idFromFilename = path.basename(pathToDoc, FILE_EXTENSION);
+const getErrorsWhereDocIdDiffersFromFilename = filePaths =>
+  filePaths
+    .map(filePath => {
+      const json = fs.readJson(filePath);
+      const idFromFilename = path.basename(filePath, FILE_EXTENSION);
 
-  if(json._id !== idFromFilename) {
-    throw new Error(`upload-docs: File '${pathToDoc}' sets _id:'${json._id}' but the expected _id is '${idFromFilename}'.`);
-  }
-}
+      if (json._id !== idFromFilename) {
+        return `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.`;      
+      }
+    })
+    .filter(err => err);

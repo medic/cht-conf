@@ -10,21 +10,29 @@ const lineageConstraints = async (db, parentDoc) => {
     const { contact_types } = settings;
 
     if (Array.isArray(contact_types)) {
+      trace('Found app_settings.contact_types. Configurable hierarchy constraints will be enforced.');
       mapTypeToAllowedParents = contact_types
         .filter(rule => rule)
         .reduce((agg, curr) => Object.assign(agg, { [curr.id]: curr.parents }), {});
-      trace('Found app_settings.contact_types. Configurable hierarchy constraints will be enforced.');
     }
   } catch (err) {
     if (err.name !== 'not_found') {
       throw err;
     }
+  }
 
-    // passthrough with mapTypeToAllowedParents=undefined
+  if (!mapTypeToAllowedParents) {
+    trace('Default hierarchy constraints will be enforced.');
+    mapTypeToAllowedParents = {
+      district_hospital: [],
+      health_center: ['district_hospital'],
+      clinic: ['health_center'],
+      person: ['district_hospital', 'health_center', 'clinic'],
+    }
   }
 
   return {
-    getConfigurableHierarchyErrors: contactDoc => getConfigurableHierarchyViolations(mapTypeToAllowedParents, contactDoc, parentDoc),
+    getHierarchyErrors: contactDoc => getHierarchyViolations(mapTypeToAllowedParents, contactDoc, parentDoc),
     getPrimaryContactViolations: (contactDoc, descendantDocs) => getPrimaryContactViolations(db, contactDoc, parentDoc, descendantDocs),
   };
 };
@@ -32,28 +40,18 @@ const lineageConstraints = async (db, parentDoc) => {
 /*
 Enforce the whitelist of allowed parents for each contact type as defined in settings.contact_types attribute
 */
-const getConfigurableHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) => {
+const getHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) => {
   const { type: contactType } = contactDoc;
   const { type: parentType } = parentDoc || {};
   if (!contactType) return 'contact required attribute "type" is undefined';
   if (parentDoc && !parentType) return 'parent required attribute "type" is undefined';
+  if (!mapTypeToAllowedParents) return 'hierarchy constraints are undefined';
 
-  if (!mapTypeToAllowedParents) {
-    const allowedTypes = [ 'person', 'clinic', 'health_center', 'district_hospital'];
-    let error;
-    if (!allowedTypes.includes(contactType)) {
-      error = `document with id '${contactDoc._id}' is not a contact and cannot be moved`;
-    }
+  const rulesForContact = mapTypeToAllowedParents[contactType];
+  if (!rulesForContact) return `cannot move contact with unknown type '${contactType}'`;
 
-    if (parentDoc && !allowedTypes.includes(parentType)) {
-      error = `parent document with id '${parentDoc._id}' is not a contact and cannot be moved`;
-    }
-    
-    return error;
-  }
-
-  if (!mapTypeToAllowedParents[contactType]) return `contact_types does not define rules for type ${contactType}`;
-  if (!mapTypeToAllowedParents[contactType].includes(parentType)) return `contact_types does not allow parent of type ${parentType} for contact of type ${contactType}`;
+  const isPermittedMoveToRoot = !parentDoc && rulesForContact.length === 0;
+  if (!isPermittedMoveToRoot && !rulesForContact.includes(parentType)) return `contacts of type '${contactType}' cannot have parent of type '${parentType}'`;
 };
 
 /*
@@ -71,8 +69,16 @@ const getPrimaryContactViolations = async (db, contactDoc, parentDoc, descendant
     parentsLineageIds.push(parentDoc._id);
   }
 
-  const docsRemovedFromContactLineage = await Promise.all(contactsLineageIds.filter(value => !parentsLineageIds.includes(value)).map(id => db.get(id)));
-  const primaryContactIds = docsRemovedFromContactLineage.map(place => place.contact && place.contact._id).filter(id => id);
+  const docIdsRemovedFromContactLineage = contactsLineageIds.filter(value => !parentsLineageIds.includes(value));
+  const docsRemovedFromContactLineage = await db.allDocs({
+    keys: docIdsRemovedFromContactLineage,
+    include_docs: true,
+  });
+
+  const primaryContactIds = docsRemovedFromContactLineage.rows
+    .map(row => row.doc && row.doc.contact && row.doc.contact._id)
+    .filter(id => id);
+  
   return descendantDocs.find(descendant => primaryContactIds.some(primaryId => descendant._id === primaryId));
 };
 

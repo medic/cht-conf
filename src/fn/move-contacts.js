@@ -5,7 +5,7 @@ const readline = require('readline-sync');
 const fs = require('../lib/sync-fs');
 const log = require('../lib/log');
 const pouch = require('../lib/db');
-const { replaceLineages } = require('../lib/lineage-manipulation');
+const { replaceLineage, minifyLineagesInDoc, createLineageFromDoc } = require('../lib/lineage-manipulation');
 const lineageConstraints = require('../lib/lineage-constraints');
 
 const { warn, trace, info, error } = log;
@@ -23,25 +23,31 @@ const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
 const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }, db) => {
   trace(`Fetching contact details for parent: ${parentId}`);
 
-  const parentDoc = parentId === HIERARCHY_ROOT ? undefined : await db.get(parentId);
-  const buildLineageOfParent = () => {
-    if (!parentDoc) {
-      return undefined;
-    }
+  const fetchContact = async id => {
+    try {
+      return await db.get(id);
+    } catch (err) {
+      if (err.name !== 'not_found') {
+        throw err;
+      }
 
-    return { _id: parentDoc._id, parent: parentDoc.parent };
+      throw Error(`Contact with id '${id}' could not be found`);
+    }
   };
 
-  confirmParentIsNotSelf(contactIds,parentId);
+  const parentDoc = parentId === HIERARCHY_ROOT ? undefined : await fetchContact(parentId);
+  minifyLineagesInDoc(parentDoc);
+
+  confirmParentIsNotSelf(contactIds, parentId);
 
   let affectedContactCount = 0, affectedReportCount = 0;
-  const replacementLineage = buildLineageOfParent();
-  const { getConfigurableHierarchyErrors, getPrimaryContactViolations } = await lineageConstraints(db, parentDoc);
+  const replacementLineage = createLineageFromDoc(parentDoc);
+  const { getHierarchyErrors, getPrimaryContactViolations } = await lineageConstraints(db, parentDoc);
   for (let contactId of contactIds) {
-    const contactDoc = await db.get(contactId);
-    const hierarchyError = getConfigurableHierarchyErrors(contactDoc);
+    const contactDoc = await fetchContact(contactId);
+    const hierarchyError = getHierarchyErrors(contactDoc);
     if (hierarchyError) {
-      throw Error(`Configurable Hierarchy: ${hierarchyError}`);
+      throw Error(`Hierarchy Constraints: ${hierarchyError}`);
     }
 
     const descendantContacts = await fetchDescendantsOf(db, contactId);
@@ -53,14 +59,29 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
       throw Error(`Cannot remove primary contact ${prettyPrintDocument(invalidPrimaryContactDoc)} from hierarchy.`);
     }
 
-    const updatedContacts = replaceLineages(descendantsAndSelf, replacementLineage, contactId);
+    const updatedContacts = descendantsAndSelf.reduce((agg, doc) => {
+      const startingFromIdInLineage = doc._id === contactId ? undefined : contactId;
+      const parentWasUpdated = replaceLineage(doc, 'parent', replacementLineage, startingFromIdInLineage);
+      const contactWasUpdated = replaceLineage(doc, 'contact', replacementLineage, contactId);
+      if (parentWasUpdated || contactWasUpdated) {
+        agg.push(doc);
+      }
+      return agg;
+    }, []);
 
-    const updatedReports = [];
     const reportsCreatedByDescendants = await fetchReportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
     trace(`${reportsCreatedByDescendants.length} report(s) created by these affected contact(s) will update`);
-    updatedReports.push(...replaceLineages(reportsCreatedByDescendants, replacementLineage, contactId));
-
-    [...updatedContacts, ...updatedReports].forEach(updatedDoc => writeDocumentToDisk(docDirectoryPath, updatedDoc));
+    const updatedReports = reportsCreatedByDescendants.reduce((agg, doc) => {
+      if (replaceLineage(doc, 'contact', replacementLineage, contactId)) {
+        agg.push(doc);
+      }
+      return agg;
+    }, []);
+    
+    [...updatedContacts, ...updatedReports].forEach(updatedDoc => {
+      minifyLineagesInDoc(updatedDoc)
+      writeDocumentToDisk(docDirectoryPath, updatedDoc);
+    });
 
     affectedContactCount += updatedContacts.length;
     affectedReportCount += updatedReports.length;
@@ -72,10 +93,14 @@ const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }
 };
 
 // Parses extraArgs and asserts if required parameters are not present
-const parseExtraArgs = (projectDir, extraArgs) => {
+const parseExtraArgs = (projectDir, extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
 
-  if (args._.length === 0) {
+  const contactIds = (args.contacts || args.contact || '')
+    .split(',')
+    .filter(id => id);
+
+  if (contactIds.length === 0) {
     usage();
     throw Error('Action "move-contacts" is missing required list of contact_id to be moved');
   }
@@ -87,7 +112,7 @@ const parseExtraArgs = (projectDir, extraArgs) => {
 
   return {
     parentId: args.parent,
-    contactIds: args._,
+    contactIds,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
   };
 };

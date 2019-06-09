@@ -6,6 +6,8 @@ PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const moveContactsModule = rewire('../../src/fn/move-contacts');
+moveContactsModule.__set__('prepareDocumentDirectory', () => {});
+moveContactsModule.__set__('console', { log: () => {} });
 const updateLineagesAndStage = moveContactsModule.__get__('updateLineagesAndStage');
 const { mockReport, mockHierarchy, parentsToLineage } = require('../mock-hierarchies');
 
@@ -40,6 +42,15 @@ describe('move-contacts', () => {
     delete result._rev;
     return result;
   };
+
+  const upsert = async (id, content) => {
+    const { _rev } = await pouchDb.get(id);
+    await pouchDb.put(Object.assign({
+      _id: id,
+      _rev,
+    }, content));
+  }
+  const updateHierarchyRules = contact_types => upsert('settings', { settings: { contact_types } });
 
   for (let webappVersion of [2, 3]) {
     describe(`webapp views for v${webappVersion}.x`, () => {
@@ -99,14 +110,14 @@ describe('move-contacts', () => {
         expect(await getWrittenDoc('health_center_1')).to.deep.eq({
           _id: 'health_center_1',
           type: 'health_center',
-          contact: { _id: 'health_center_1_contact' },
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
           parent: parentsToLineage('district_2'),
         });
 
         expect(await getWrittenDoc('clinic_1')).to.deep.eq({
           _id: 'clinic_1',
           type: 'clinic',
-          contact: { _id: 'clinic_1_contact' },
+          contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_2'),
           parent: parentsToLineage('health_center_1', 'district_2'),
         });
 
@@ -125,6 +136,11 @@ describe('move-contacts', () => {
       });
 
       it('move health_center_1 to root', async () => {
+        await updateHierarchyRules([{
+          id: 'health_center',
+          parents: [],
+        }]);
+
         await updateLineagesAndStage({
           contactIds: ['health_center_1'],
           parentId: 'root',
@@ -139,14 +155,14 @@ describe('move-contacts', () => {
         expect(await getWrittenDoc('health_center_1')).to.deep.eq({
           _id: 'health_center_1',
           type: 'health_center',
-          contact: { _id: 'health_center_1_contact' },
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1'),
           parent: parentsToLineage(),
         });
 
         expect(await getWrittenDoc('clinic_1')).to.deep.eq({
           _id: 'clinic_1',
           type: 'clinic',
-          contact: { _id: 'clinic_1_contact' },
+          contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1'),
           parent: parentsToLineage('health_center_1'),
         });
 
@@ -165,6 +181,11 @@ describe('move-contacts', () => {
       });
 
       it('move district_1 from root', async () => {
+        await updateHierarchyRules([{
+          id: 'district_hospital',
+          parents: ['district_hospital'],
+        }]);
+
         await updateLineagesAndStage({
           contactIds: ['district_1'],
           parentId: 'district_2',
@@ -173,7 +194,7 @@ describe('move-contacts', () => {
         expect(await getWrittenDoc('district_1')).to.deep.eq({
           _id: 'district_1',
           type: 'district_hospital',
-          contact: { _id: 'district_1_contact' },
+          contact: parentsToLineage('district_1_contact', 'district_1', 'district_2'),
           parent: parentsToLineage('district_2'),
         });
 
@@ -186,14 +207,14 @@ describe('move-contacts', () => {
         expect(await getWrittenDoc('health_center_1')).to.deep.eq({
           _id: 'health_center_1',
           type: 'health_center',
-          contact: { _id: 'health_center_1_contact' },
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1', 'district_2'),
           parent: parentsToLineage('district_1', 'district_2'),
         });
 
         expect(await getWrittenDoc('clinic_1')).to.deep.eq({
           _id: 'clinic_1',
           type: 'clinic',
-          contact: { _id: 'clinic_1_contact' },
+          contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_1', 'district_2'),
           parent: parentsToLineage('health_center_1', 'district_1', 'district_2'),
         });
 
@@ -211,6 +232,22 @@ describe('move-contacts', () => {
         });
       });
 
+      // We don't want lineage { id, parent: '' } to result from district_hospitals which have parent: ''
+      it('district_hospital with empty string parent is not preserved', async () => {
+        await upsert('district_2', { parent: '', type: 'district_hospital' });
+        await updateLineagesAndStage({
+          contactIds: ['health_center_1'],
+          parentId: 'district_2',
+        }, pouchDb);
+
+        expect(await getWrittenDoc('health_center_1')).to.deep.eq({
+          _id: 'health_center_1',
+          type: 'health_center',
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+          parent: parentsToLineage('district_2'),
+        });
+      });
+
       it('throw if parent does not exist', async () => {
         try {
           await updateLineagesAndStage({
@@ -219,7 +256,7 @@ describe('move-contacts', () => {
           }, pouchDb);
           assert.fail('should throw when parent is not defined');
         } catch (err) {
-          expect(err.name).to.eq('not_found');
+          expect(err.message).to.include('could not be found');
         }
       });
 
@@ -231,7 +268,7 @@ describe('move-contacts', () => {
           }, pouchDb);
           assert.fail('should throw');
         } catch (err) {
-          expect(err.name).to.eq('not_found');
+          expect(err.message).to.include('could not be found');
         }
       });
 
@@ -243,7 +280,7 @@ describe('move-contacts', () => {
           }, pouchDb);
           assert.fail('should throw');
         } catch (err) {
-          expect(err.message).to.include('not a contact');
+          expect(err.message).to.include('unknown type');
         }
       });
 
@@ -274,17 +311,10 @@ describe('move-contacts', () => {
       });
 
       it('throw when moving place to unconfigured parent', async () => {
-        const { _rev } = await pouchDb.get('settings');
-        await pouchDb.put({
-          _id: 'settings',
-          _rev,
-          settings: {
-            contact_types: [{
-              id: 'district_hospital',
-              parents: [],
-            }]
-          },
-        });
+        await updateHierarchyRules([{
+          id: 'district_hospital',
+          parents: [],
+        }]);
 
         try {
           await updateLineagesAndStage({
@@ -294,9 +324,33 @@ describe('move-contacts', () => {
 
           assert.fail('Expected error');
         } catch (err) {
-          expect(err.message).to.include('does not allow parent');
+          expect(err.message).to.include('parent of type');
         }
       });
     });
   }
+
+  describe('parseExtraArgs', () => {
+    const parseExtraArgs = moveContactsModule.__get__('parseExtraArgs');
+    it('undefined arguments', () => {
+      expect(() => parseExtraArgs(__dirname, undefined)).to.throw('required list of contact_id');
+    });
+
+    it('empty arguments', () => {
+      expect(() => parseExtraArgs(__dirname, [])).to.throw('required list of contact_id');
+    });
+
+    it('contacts only', () => {
+      expect(() => parseExtraArgs(__dirname, ['--contacts=a'])).to.throw('required parameter parent');
+    });
+
+    it('contacts and parents', () => {
+      const args = ['--contacts=food,is,tasty', '--parent=bar', '--docDirectoryPath=/'];
+      expect(parseExtraArgs(__dirname, args)).to.deep.eq({
+        contactIds: ['food', 'is', 'tasty'],
+        parentId: 'bar',
+        docDirectoryPath: '/',
+      });
+    });
+  });
 });

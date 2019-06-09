@@ -1,4 +1,4 @@
-const buildLineage = (id, parent) => ({ _id: id, parent });
+const buildLineage = (id, parent = undefined) => ({ _id: id, parent });
 
 const parentsToLineage = (...parentIds) => parentIds.reverse().reduce((arr, parentId) => ({
   _id: parentId,
@@ -22,7 +22,10 @@ const mockHierarchy = async (db, hierarchy, existingLineage, depth = 0) => {
     };
 
     if (depth < 3) {
-      contactDoc.contact = { _id: `${contactId}_contact` };
+      contactDoc.contact = {
+        _id: `${contactId}_contact`,
+        parent: nextLineage(contactId),
+      };
     }
 
     await db.put(contactDoc);
