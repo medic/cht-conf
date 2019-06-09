@@ -58,7 +58,7 @@ describe('upload-docs', function() {
 
   it('should retry in batches', async () => {
     const bulkDocs = sinon.stub()
-      .onCall(0).throws({ code: 'ESOCKETTIMEDOUT' })
+      .onCall(0).throws({ error: 'timeout' })
       .returns(Promise.resolve([{}]));
     fs.recurseFiles = () => new Array(10).fill('').map((x, i) => `${i}.doc.json`);
     sinon.useFakeTimers(0);

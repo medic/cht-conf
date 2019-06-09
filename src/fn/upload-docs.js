@@ -84,7 +84,7 @@ module.exports = async (projectDir, couchUrl, extraArgs) => {
 
       return processNextBatch(docFiles.slice(batchSize), batchSize);
     } catch (err) {
-      if (err.code === 'ESOCKETTIMEDOUT') {
+      if (err.error === 'timeout') {
         if (batchSize > 1) {
           trace('');
           trace('Server connection timed out.  Decreasing batch size…');
