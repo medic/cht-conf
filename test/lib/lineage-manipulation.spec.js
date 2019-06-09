@@ -123,7 +123,7 @@ describe('lineage manipulation', () => {
     it('only truthy parents are preserved', () => {
       const parentDoc = {
         _id: 'parent_id',
-        parent: "",
+        parent: '',
       };
       minifyLineagesInDoc(parentDoc);
       expect(parentDoc).to.deep.eq({

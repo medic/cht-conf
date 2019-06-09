@@ -1,4 +1,4 @@
-const buildLineage = (id, parent = undefined) => ({ _id: id, parent });
+const buildLineage = (id, parent) => ({ _id: id, parent });
 
 const parentsToLineage = (...parentIds) => parentIds.reverse().reduce((arr, parentId) => ({
   _id: parentId,

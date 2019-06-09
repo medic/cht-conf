@@ -51,7 +51,7 @@ describe('upload-docs', function() {
         await uploadDocs('', api.couchUrl);
         expect.fail('should throw');
       } catch (err) {
-        expect(err.message).to.include('expected _id is')
+        expect(err.message).to.include('expected _id is');
       }
     });
   });

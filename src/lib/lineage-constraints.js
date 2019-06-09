@@ -28,7 +28,7 @@ const lineageConstraints = async (db, parentDoc) => {
       health_center: ['district_hospital'],
       clinic: ['health_center'],
       person: ['district_hospital', 'health_center', 'clinic'],
-    }
+    };
   }
 
   return {
@@ -38,7 +38,8 @@ const lineageConstraints = async (db, parentDoc) => {
 };
 
 /*
-Enforce the whitelist of allowed parents for each contact type as defined in settings.contact_types attribute
+Enforce the whitelist of allowed parents for each contact type
+Ensure we are not creating a circular hierarchy
 */
 const getHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) => {
   const { type: contactType } = contactDoc;
@@ -52,12 +53,19 @@ const getHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) 
 
   const isPermittedMoveToRoot = !parentDoc && rulesForContact.length === 0;
   if (!isPermittedMoveToRoot && !rulesForContact.includes(parentType)) return `contacts of type '${contactType}' cannot have parent of type '${parentType}'`;
+
+  if (parentDoc && contactDoc._id) {
+    const parentAncestory = [parentDoc._id, ...pluckIdsFromLineage(parentDoc.parent)];
+    if (parentAncestory.includes(contactDoc._id)) {
+      return `Circular hierarchy: Cannot set parent of contact '${contactDoc._id}' as it would create a circular hierarchy.`;
+    }
+  }
 };
 
 /*
 A place's primary contact must be a descendant of that place.
 
-1. Check to see which part of the contact's lineage will change.
+1. Check to see which part of the contact's lineage will be removed
 2. For each removed part of the contact's lineage, confirm that place's primary contact isn't being removed.
 */
 const getPrimaryContactViolations = async (db, contactDoc, parentDoc, descendantDocs) => {

@@ -82,7 +82,7 @@ const createLineageFromDoc = doc => {
     _id: doc._id,
     parent: doc.parent || undefined,
   };
-}
+};
 
 /*
 Given a lineage, return the ids therein
