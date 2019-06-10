@@ -89,6 +89,7 @@ module.exports = {
   readCsv: readCsv,
   readJson: readJson,
   recurseFiles: recurseFiles,
+  deleteFilesInFolder: folderPath => recurseFiles(folderPath).forEach(filePath => fs.unlinkSync(filePath)),
   readdir: fs.readdirSync,
   withoutExtension: withoutExtension,
   write: (path, content) => fs.writeFileSync(path, content, 'utf8'),

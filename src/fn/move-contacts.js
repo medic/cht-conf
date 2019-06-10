@@ -15,45 +15,50 @@ const HIERARCHY_ROOT = 'root';
 module.exports = (projectDir, couchUrl, extraArgs) => {
   const args = parseExtraArgs(projectDir, extraArgs);
   const db = connectToDatabase(couchUrl);
-  prepareDocumentDirectory(args.docDirectoryPath);
+  prepareDocumentDirectory(args);
   return updateLineagesAndStage(args, db);
 };
 
 const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
-const updateLineagesAndStage = async ({ contactIds, parentId, docDirectoryPath }, db) => {
-  trace(`Fetching contact details for parent: ${parentId}`);
+const updateLineagesAndStage = async (options, db) => {
+  trace(`Fetching contact details for parent: ${options.parentId}`);
+  const parentDoc = await fetchContact(db, options.parentId);
 
-  const parentDoc = await fetchContact(db, parentId);
   const constraints = await lineageConstraints(db, parentDoc);
-  const { contactDocs, contactIdsSortedByDepth } = await preprocessContacts(db, contactIds, constraints);
+  const { contactDocs, contactIdsSortedByDepth } = await preprocessContacts(db, options.contactIds, constraints);
 
   let affectedContactCount = 0, affectedReportCount = 0;
   const replacementLineage = lineageManipulation.createLineageFromDoc(parentDoc);
   for (let contactId of contactIdsSortedByDepth) {
     const contactDoc = contactDocs[contactId];
     const descendantsAndSelf = await fetchDescendantsOf(db, contactId);
-    trace(`${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)} will be considered`);
-
+    
     // Check that primary contact is not removed from areas where they are required
     const invalidPrimaryContactDoc = await constraints.getPrimaryContactViolations(contactDoc, descendantsAndSelf);
     if (invalidPrimaryContactDoc) {
-      throw Error(`Cannot remove primary contact ${prettyPrintDocument(invalidPrimaryContactDoc)} from hierarchy.`);
+      throw Error(`Cannot remove contact ${prettyPrintDocument(invalidPrimaryContactDoc)} from the hierarchy for which he is a primary contact.`);
     }
 
-    const updatedContacts = replaceLineageInContacts(descendantsAndSelf, replacementLineage, contactId);
+    trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)}.`);
+    const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, contactId);
+    
+    const ancestors = await fetchAncestorsOf(db, contactDoc);
+    trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
+    const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
+
     const reportsCreatedByDescendants = await fetchReportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
     trace(`${reportsCreatedByDescendants.length} report(s) created by these affected contact(s) will update`);
     const updatedReports = replaceLineageInReports(reportsCreatedByDescendants, replacementLineage, contactId);
     
-    [...updatedContacts, ...updatedReports].forEach(updatedDoc => {
+    [...updatedDescendants, ...updatedReports, ...updatedAncestors].forEach(updatedDoc => {
       lineageManipulation.minifyLineagesInDoc(updatedDoc);
-      writeDocumentToDisk(docDirectoryPath, updatedDoc);
+      writeDocumentToDisk(options, updatedDoc);
     });
 
-    affectedContactCount += updatedContacts.length;
+    affectedContactCount += updatedDescendants.length + updatedAncestors.length;
     affectedReportCount += updatedReports.length;
 
-    info(`Staged updates to ${prettyPrintDocument(contactDoc)}. ${updatedContacts.length} contact(s) and ${updatedReports.length} report(s).`);
+    info(`Staged updates to ${prettyPrintDocument(contactDoc)}. ${updatedDescendants.length} contact(s) and ${updatedReports.length} report(s).`);
   }
 
   info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);
@@ -133,6 +138,7 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
     parentId: args.parent,
     contactIds,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
+    force: !!args.force,
   };
 };
 
@@ -143,12 +149,14 @@ const connectToDatabase = couchUrl => {
   return pouch(couchUrl);
 };
 
-const prepareDocumentDirectory = docDirectoryPath => {
+const prepareDocumentDirectory = ({ docDirectoryPath, force }) => {
   if (!fs.exists(docDirectoryPath)) {
     fs.mkdir(docDirectoryPath);
-  } else if (fs.recurseFiles(docDirectoryPath).length > 0) {
-    warn(`The document folder '${docDirectoryPath}' already contains files. It is recommended you start with a clean folder. Do you wish to continue?`);
-    if(!readline.keyInYN()) {
+  } else if (!force && fs.recurseFiles(docDirectoryPath).length > 0) {
+    warn(`The document folder '${docDirectoryPath}' already contains files. It is recommended you start with a clean folder. Do you clear this folder and continue?`);
+    if(readline.keyInYN()) {
+      fs.deleteFilesInFolder(docDirectoryPath);
+    } else {
       error('User failed to confirm action.');
       process.exit(-1);
     }
@@ -162,9 +170,12 @@ ${bold('medic-conf\'s move-contacts action')}
 When combined with 'upload-docs' this action effectively moves a contact from one place in the hierarchy to another.
 
 ${bold('USAGE')}
-medic-conf --local move-contacts -- <id1> <id2> --parent=<parent_id>
+medic-conf --local move-contacts -- --contactIds=<id1>,<id2> --parent=<parent_id>
 
 ${bold('OPTIONS')}
+--contactIds=<id1>,<id2>
+  A comma delimited list of ids of ocntacts to be moved.
+
 --parent=<parent_id>
   Specifies the ID of the new parent. Use '${HIERARCHY_ROOT}' to identify the top of the hierarchy (no parent).
 
@@ -177,21 +188,15 @@ ${bold('OPTIONS')}
 Given a contact's id, obtain the documents of all descendant contacts
 */
 const fetchDescendantsOf = async (db, contactId) => {
-  try {
-    const descendantDocs = await db.query('medic/contacts_by_depth', {
-      key: [contactId],
-      include_docs: true,
-    });
+  const descendantDocs = await db.query('medic/contacts_by_depth', {
+    key: [contactId],
+    include_docs: true,
+  });
 
-    return descendantDocs.rows
-      .map(row => row.doc)
-      /* We should not move or update tombstone documents */
-      .filter(doc => doc && doc.type !== 'tombstone');
-  } catch (err) {
-    if (err.name !== 'not_found') {
-      throw Error(`Failed to fetch descendents of ${contactId}`, err);
-    }
-  }
+  return descendantDocs.rows
+    .map(row => row.doc)
+    /* We should not move or update tombstone documents */
+    .filter(doc => doc && doc.type !== 'tombstone');
 };
 
 const fetchReportsCreatedBy = async (db, contactIds) => {
@@ -203,8 +208,28 @@ const fetchReportsCreatedBy = async (db, contactIds) => {
   return reports.rows.map(row => row.doc);
 };
 
-const writeDocumentToDisk = (docDirectoryPath, doc) => {
+const fetchAncestorsOf = async (db, contactDoc) => {
+  const ancestorIds = lineageManipulation.pluckIdsFromLineage(contactDoc.parent);
+  const ancestors = await db.allDocs({
+    keys: ancestorIds,
+    include_docs: true,
+  });
+
+  const ancestorIdsNotFound = ancestors.rows.filter(ancestor => !ancestor.doc).map(ancestor => ancestor.key);
+  if (ancestorIdsNotFound.length > 0) {
+    throw Error(`Contact '${prettyPrintDocument(contactDoc)} has parent id(s) '${ancestorIdsNotFound.join(',')}' which could not be found.`);
+  }
+
+  return ancestors.rows.map(ancestor => ancestor.doc);
+};
+
+const writeDocumentToDisk = ({ docDirectoryPath, force }, doc) => {
   const destinationPath = path.join(docDirectoryPath, `${doc._id}.doc.json`);
+  if (fs.exists(destinationPath)) {
+    const method = force ? warn : msg => { throw Error(msg); };
+    method(`File at ${destinationPath} already exists and is being re-written. This may overwrite previously staged changes.`);
+  }
+
   trace(`Writing updated document to ${destinationPath}`);
   fs.writeJson(destinationPath, doc);
 };
@@ -224,4 +249,15 @@ const replaceLineageInContacts = (descendantsAndSelf, replacementLineage, contac
     agg.push(doc);
   }
   return agg;
+}, []);
+
+const replaceLineageInAncestors = (descendantsAndSelf, ancestors) => ancestors.reduce((agg, ancestor) => {
+  let result = agg;
+  const primaryContact = descendantsAndSelf.find(descendant => ancestor.contact && descendant._id === ancestor.contact._id);
+  if (primaryContact) {
+    ancestor.contact = lineageManipulation.createLineageFromDoc(primaryContact);
+    result = [ancestor, ...result];
+  }
+
+  return result;
 }, []);

@@ -9,12 +9,6 @@ const mockHierarchy = async (db, hierarchy, existingLineage, depth = 0) => {
   const contactTypeByDepth = ['district_hospital', 'health_center', 'clinic', 'person'];
   const nextLineage = id => buildLineage(id, existingLineage);
   for (let contactId of Object.keys(hierarchy)) {
-    await db.put({
-      _id: `${contactId}_contact`,
-      type: 'person',
-      parent: nextLineage(contactId),
-    });
-
     const contactDoc = {
       _id: contactId,
       parent: existingLineage,
@@ -22,6 +16,12 @@ const mockHierarchy = async (db, hierarchy, existingLineage, depth = 0) => {
     };
 
     if (depth < 3) {
+      await db.put({
+        _id: `${contactId}_contact`,
+        type: 'person',
+        parent: nextLineage(contactId),
+      });
+      
       contactDoc.contact = {
         _id: `${contactId}_contact`,
         parent: nextLineage(contactId),

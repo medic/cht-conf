@@ -36,6 +36,7 @@ describe('move-contacts', () => {
     delete result._rev;
     return result;
   };
+  const expectWrittenDocs = expected => expect(writtenDocs.map(doc => doc._id)).to.deep.eq(expected);
 
   const upsert = async (id, content) => {
     const { _rev } = await pouchDb.get(id);
@@ -214,6 +215,54 @@ describe('move-contacts', () => {
     });
   });
 
+  it('moving primary contact updates parents', async () => {
+    await mockHierarchy(pouchDb, {
+      t_district_1: {
+        t_health_center_1: {
+          t_clinic_1: {
+            t_patient_1: {},
+          },
+          t_clinic_2: {
+            t_patient_2: {},
+          }
+        },
+      },
+    });
+
+    const patient1Lineage = parentsToLineage('t_patient_1', 't_clinic_1', 't_health_center_1', 't_district_1');
+    await upsert('t_health_center_1', {
+      type: 'health_center',
+      contact: patient1Lineage,
+      parent: parentsToLineage('t_district_1'),
+    });
+
+    await upsert('t_district_1', {
+      type: 'district_hospital',
+      contact: patient1Lineage,
+      parent: parentsToLineage(),
+    });
+
+    await updateLineagesAndStage({
+      contactIds: ['t_patient_1'],
+      parentId: 't_clinic_2',
+    }, pouchDb);
+
+    expect(await getWrittenDoc('t_health_center_1')).to.deep.eq({
+      _id: 't_health_center_1',
+      type: 'health_center',
+      contact: parentsToLineage('t_patient_1', 't_clinic_2', 't_health_center_1', 't_district_1'),
+      parent: parentsToLineage('t_district_1'),
+    });
+
+    expect(await getWrittenDoc('t_district_1')).to.deep.eq({
+      _id: 't_district_1',
+      type: 'district_hospital',
+      contact: parentsToLineage('t_patient_1', 't_clinic_2', 't_health_center_1', 't_district_1'),
+    });
+
+    expectWrittenDocs(['t_patient_1', 't_district_1', 't_health_center_1']);
+  });
+
   // We don't want lineage { id, parent: '' } to result from district_hospitals which have parent: ''
   it('district_hospital with empty string parent is not preserved', async () => {
     await upsert('district_2', { parent: '', type: 'district_hospital' });
@@ -230,7 +279,7 @@ describe('move-contacts', () => {
     });
   });
 
-  it('contacts are processed in order of depth', async () => {
+  it('processed in order of depth', async () => {
     await updateLineagesAndStage({
       contactIds: ['patient_1', 'health_center_1'],
       parentId: 'district_2',
@@ -403,19 +452,16 @@ describe('move-contacts', () => {
       expect(() => parseExtraArgs(__dirname, undefined)).to.throw('required list of contact_id');
     });
 
-    it('empty arguments', () => {
-      expect(() => parseExtraArgs(__dirname, [])).to.throw('required list of contact_id');
-    });
+    it('empty arguments', () => expect(() => parseExtraArgs(__dirname, [])).to.throw('required list of contact_id'));
 
-    it('contacts only', () => {
-      expect(() => parseExtraArgs(__dirname, ['--contacts=a'])).to.throw('required parameter parent');
-    });
+    it('contacts only', () => expect(() => parseExtraArgs(__dirname, ['--contacts=a'])).to.throw('required parameter parent'));
 
     it('contacts and parents', () => {
-      const args = ['--contacts=food,is,tasty', '--parent=bar', '--docDirectoryPath=/'];
+      const args = ['--contacts=food,is,tasty', '--parent=bar', '--docDirectoryPath=/', '--force=hi'];
       expect(parseExtraArgs(__dirname, args)).to.deep.eq({
         contactIds: ['food', 'is', 'tasty'],
         parentId: 'bar',
+        force: true,
         docDirectoryPath: '/',
       });
     });

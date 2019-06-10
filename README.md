@@ -270,8 +270,10 @@ docDirectoryPath | This action outputs files to local disk at this destination |
 
 Some constraints when moving contacts:
 
-* **Configurable Hierarchy** - When moving contacts on WebApp >v3.7, your chosen parent must be listed as a valid parent for the contact as defined in the [configuration for place hierarchy](https://github.com/medic/medic-docs/blob/master/configuration/app-settings.md#configuring-place-hierarchy).
+* **Allowed Parents** - When moving contacts on WebApp &gt;v3.7, your chosen parent must be listed as a valid parent for the contact as defined in the [configuration for place hierarchy](https://github.com/medic/medic-docs/blob/master/configuration/app-settings.md#configuring-place-hierarchy). For WebApp &lt;v3.7, the default hierarchy is enforced.
+* **Circular Hierarchy** - Nobody's parent can ever be themself or their child.
 * **Primary Contacts** - Primary contacts must be a descendant of the place for which they are the primary contact. You may need to select a new primary contact for a place through the WebApp if you'd like to move a primary contact to a new place in the hierarchy.
+* **Minification** - Due to contact "minification" (#2635) which was implemented in v2.13, this script should not be used for versions prior to v2.13.
 
 ### Examples
 Move the contacts with the id `contact_1` and `contact_2` to have the parent `parent_id`. The changes will be in the local folder `my_folder` only for review. Run the second command to upload the changes after review.
