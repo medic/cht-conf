@@ -11,7 +11,7 @@ const mockMiddleware = new ExpressSpy();
 const opts = {
   inMemoryConfig: true,
   logPath: 'express-pouchdb.log',
-  mode: 'fullCouchDB',
+  mode: 'minimumForPouchDB'
 };
 const app = express();
 app.use(bodyParser.json());
