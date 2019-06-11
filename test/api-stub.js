@@ -1,5 +1,6 @@
-const memdown = require('memdown');
-const memPouch = require('pouchdb').defaults({ db:memdown });
+const PouchDB = require('pouchdb-core');
+PouchDB.plugin(require('pouchdb-adapter-memory'));
+
 const express = require('express');
 const expressPouch = require('express-pouchdb');
 const ExpressSpy = require('./express-spy');
@@ -10,7 +11,7 @@ const mockMiddleware = new ExpressSpy();
 const opts = {
   inMemoryConfig: true,
   logPath: 'express-pouchdb.log',
-  mode: 'fullCouchDB',
+  mode: 'minimumForPouchDB'
 };
 const app = express();
 app.use(bodyParser.json());
@@ -20,12 +21,12 @@ app.post('/api/sms', (req, res) => {
   res.end();
 });
 app.all('/api/*', mockMiddleware.requestHandler);
-app.use('/', stripAuth, expressPouch(memPouch, opts));
+app.use('/', stripAuth, expressPouch(PouchDB, opts));
 
 let server;
 
 module.exports = {
-  db: new memPouch('medic'),
+  db: new PouchDB('medic', { adapter: 'memory' }),
   giveResponses: mockMiddleware.setResponses,
   requestLog: () => mockMiddleware.requests.map(r => ({ method:r.method, url:r.originalUrl, body:r.body })),
   start: () => {

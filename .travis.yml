@@ -1,21 +1,8 @@
 language: node_js
 node_js:
+  - 12
   - 10
   - 8
-env:
-  - TZ=GMT
-  - TZ='Pacific/Kiritimati'
-  - TZ='Etc/GMT+12'
-matrix:
-  exclude:
-    - node_js: 8
-      env: TZ='Pacific/Kiritimati'
-    - node_js: 8
-      env: TZ='Etc/GMT+12'
-    - node_js: 10
-      env: TZ='Pacific/Kiritimati'
-    - node_js: 10
-      env: TZ='Etc/GMT+12'
 install:
   - "pip install --user -U pip"
   - "pip install --user git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic"
