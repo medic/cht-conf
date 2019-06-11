@@ -87,7 +87,7 @@ const preprocessContacts = async (contactDocs, constraints) => {
       const parentIdsOfDoc = (doc.parent && lineageManipulation.pluckIdsFromLineage(doc.parent)) || [];
       const violatingParentId = parentIdsOfDoc.find(parentId => contactIds.includes(parentId));
       if (violatingParentId) {
-        throw Error(`This tool is unable to move two documents from the same lineage: ${prettyPrintDocument(doc._id)} and ${prettyPrintDocument(violatingParentId)}`);
+        throw Error(`Unable to move two documents from the same lineage: ${prettyPrintDocument(doc._id)} and ${prettyPrintDocument(violatingParentId)}`);
       }
     });
 };
@@ -160,11 +160,10 @@ ${bold('OPTIONS')}
 `);
 };
 
-const writeDocumentToDisk = ({ docDirectoryPath, force }, doc) => {
+const writeDocumentToDisk = ({ docDirectoryPath }, doc) => {
   const destinationPath = path.join(docDirectoryPath, `${doc._id}.doc.json`);
   if (fs.exists(destinationPath)) {
-    const method = force ? warn : msg => { throw Error(msg); };
-    method(`File at ${destinationPath} already exists and is being re-written. This may overwrite previously staged changes.`);
+    warn(`File at ${destinationPath} already exists and is being overwritten.`);
   }
 
   trace(`Writing updated document to ${destinationPath}`);

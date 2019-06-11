@@ -344,6 +344,18 @@ describe('move-contacts', () => {
     }
   });
 
+  it('throw when altering same lineage', async () => {
+    try {
+      await updateLineagesAndStage({
+        contactIds: ['patient_1', 'health_center_1'],
+        parentId: 'district_2',
+      }, pouchDb);
+      assert.fail('should throw');
+    } catch (err) {
+      expect(err.message).to.include('same lineage');
+    }
+  });
+
   it('throw if contact_id does not exist', async () => {
     try {
       await updateLineagesAndStage({
