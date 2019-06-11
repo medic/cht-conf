@@ -21,7 +21,7 @@ app.post('/api/sms', (req, res) => {
   res.end();
 });
 app.all('/api/*', mockMiddleware.requestHandler);
-// app.use('/', stripAuth, expressPouch(PouchDB, opts));
+app.use('/', stripAuth, expressPouch(PouchDB, opts));
 
 let server;
 
