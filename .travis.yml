@@ -3,8 +3,6 @@ node_js:
   - 12
   - 10
   - 8
-env:
-  - TZ=GMT
 install:
   - "pip install --user -U pip"
   - "pip install --user git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic"
