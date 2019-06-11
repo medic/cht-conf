@@ -2,6 +2,8 @@ const fs = require('../lib/sync-fs');
 const skipFn = require('../lib/skip-fn');
 const warn = require('../lib/log').warn;
 const pouch = require('../lib/db');
+const request = require('request-promise-native');
+const semver = require('semver');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
@@ -10,6 +12,7 @@ module.exports = (projectDir, couchUrl) => {
 
   const dir = `${projectDir}/translations`;
   const db = pouch(couchUrl);
+  const instanceUrl = couchUrl.replace(/\/medic$/, '');
 
   return Promise.resolve()
     .then(() => {
@@ -22,7 +25,7 @@ module.exports = (projectDir, couchUrl) => {
 
           return db.get(idFor(fileName))
             .catch(e => {
-              if(e.status === 404) return newDocFor(fileName);
+              if(e.status === 404) return newDocFor(fileName, instanceUrl, db);
               else throw e;
             })
             .then(doc => overwriteProperties(doc, translations))
@@ -46,33 +49,61 @@ function overwriteProperties(doc, props) {
   if(doc.generic) {
     // 3.4.0 translation structure
     doc.custom = props;
-  } else {
+  } else if (doc.values) {
     // pre-3.4.0 doc structure
-    if(!doc.values) {
-      doc.values = {};
-    }
     for(const k in props) {
       if(props.hasOwnProperty(k)) {
         doc.values[k] = props[k];
       }
     }
+  } else {
+    throw new Error(`Existent translation doc ${doc._id} is malformed`);
   }
 
   return doc;
 }
 
-function newDocFor(fileName) {
+function newDocFor(fileName, instanceUrl, db) {
   const id = idFor(fileName);
 
-  return {
+  const doc = {
     _id: id,
     type: 'translations',
     code: id.substring(id.indexOf('-') + 1),
     name: 'TODO: please ask admin to set this in settings UI',
     enabled: true,
   };
+
+  return genericTranslationsStructure(instanceUrl, db).then(useGenericTranslations => {
+    if (useGenericTranslations) {
+      doc.generic = {};
+    } else {
+      doc.values = {};
+    }
+
+    return doc;
+  });
 }
 
 function idFor(fileName) {
   return fileName.substring(0, fileName.length - 11);
 }
+
+const getVersion = (instanceUrl, db) => {
+  return request({ uri: `${instanceUrl}/api/deploy-info`, method: 'GET', json: true }) // endpoint added in 3.5
+    .catch(() => db.get('_design/medic-client').then(doc => doc.deploy_info)) // since 3.0.0
+    .then(deploy_info => deploy_info && deploy_info.version);
+};
+
+const genericTranslationsStructure = (instanceUrl, db) => {
+  return getVersion(instanceUrl, db).then(version => {
+    if (semver.valid(version)) {
+      return semver.gte(version, '3.4.0');
+    }
+
+    return db
+      .get('messages-en')
+      .then(doc => doc.generic)
+      .catch(() => false);
+  });
+};
