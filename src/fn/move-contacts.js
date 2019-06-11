@@ -22,16 +22,17 @@ module.exports = (projectDir, couchUrl, extraArgs) => {
 const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
 const updateLineagesAndStage = async (options, db) => {
   trace(`Fetching contact details for parent: ${options.parentId}`);
-  const parentDoc = await fetchContact(db, options.parentId);
+  const parentDoc = await fetch.contact(db, options.parentId);
 
   const constraints = await lineageConstraints(db, parentDoc);
-  const { contactDocs, contactIdsSortedByDepth } = await preprocessContacts(db, options.contactIds, constraints);
+  const contactDocs = await fetch.contactList(db, options.contactIds);
+  await preprocessContacts(contactDocs, constraints);
 
   let affectedContactCount = 0, affectedReportCount = 0;
   const replacementLineage = lineageManipulation.createLineageFromDoc(parentDoc);
-  for (let contactId of contactIdsSortedByDepth) {
+  for (let contactId of options.contactIds) {
     const contactDoc = contactDocs[contactId];
-    const descendantsAndSelf = await fetchDescendantsOf(db, contactId);
+    const descendantsAndSelf = await fetch.descendantsOf(db, contactId);
     
     // Check that primary contact is not removed from areas where they are required
     const invalidPrimaryContactDoc = await constraints.getPrimaryContactViolations(contactDoc, descendantsAndSelf);
@@ -42,11 +43,11 @@ const updateLineagesAndStage = async (options, db) => {
     trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)}.`);
     const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, contactId);
     
-    const ancestors = await fetchAncestorsOf(db, contactDoc);
+    const ancestors = await fetch.ancestorsOf(db, contactDoc);
     trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
     const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
 
-    const reportsCreatedByDescendants = await fetchReportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
+    const reportsCreatedByDescendants = await fetch.reportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
     trace(`${reportsCreatedByDescendants.length} report(s) created by these affected contact(s) will update`);
     const updatedReports = replaceLineageInReports(reportsCreatedByDescendants, replacementLineage, contactId);
     
@@ -65,23 +66,11 @@ const updateLineagesAndStage = async (options, db) => {
 };
 
 /*
-Fetches all of the documents associated with the "contactIds" and confirms they exist.
 Checks for any errors which this will create in the hierarchy (hierarchy schema, circular hierarchies)
 Sorts the contact id by their "depth" in the hierarchy
 */
-const preprocessContacts = async (db, contactIds, constraints) => {
-  const contactDocs = await db.allDocs({
-    keys: contactIds,
-    include_docs: true,
-  });
-
-  const missingContactErrors = contactDocs.rows.filter(row => !row.doc).map(row => `Contact with id '${row.key}' could not be found.`);
-  if (missingContactErrors.length > 0) {
-    throw Error(missingContactErrors);
-  }
-
-  const contactDocsById = contactDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
-  Object.values(contactDocsById).forEach(doc => {
+const preprocessContacts = async (contactDocs, constraints) => {
+  Object.values(contactDocs).forEach(doc => {
     const hierarchyError = constraints.getHierarchyErrors(doc);
     if (hierarchyError) {
       throw Error(`Hierarchy Constraints: ${hierarchyError}`);
@@ -89,31 +78,18 @@ const preprocessContacts = async (db, contactIds, constraints) => {
   });
 
   /*
-  Given two documents which are at different levels of the hierarchy, the order in which they are processed should not result in different outputs
-  Sort the given list of contacts by their "depth" in the hierarchy as contacts should be processed "from the top"
+  It is nice that the tool can move lists of contacts as one operation, but strange things happen when two contactIds are in the same lineage.
+  For example, moving a district_hospital and moving a contact under that distrcit_hospital to a new clinic causes multiple colliding writes to the same json file.
   */
-  const contactDepth = id => contactDocsById[id] && lineageManipulation.pluckIdsFromLineage(contactDocsById[id].parent).length || 0;
-  contactIds.sort((a, b) => contactDepth(a) - contactDepth(b));
-  return {
-    contactIdsSortedByDepth: contactIds,
-    contactDocs: contactDocsById,
-  };
-};
-
-const fetchContact = async (db, id) => {
-  try {
-    if (id === HIERARCHY_ROOT) {
-      return undefined;
-    }
-
-    return await db.get(id);
-  } catch (err) {
-    if (err.name !== 'not_found') {
-      throw err;
-    }
-
-    throw Error(`Contact with id '${id}' could not be found`);
-  }
+  const contactIds = Object.keys(contactDocs);
+  Object.values(contactDocs)
+    .forEach(doc => {
+      const parentIdsOfDoc = (doc.parent && lineageManipulation.pluckIdsFromLineage(doc.parent)) || [];
+      const violatingParentId = parentIdsOfDoc.find(parentId => contactIds.includes(parentId));
+      if (violatingParentId) {
+        throw Error(`This tool is unable to move two documents from the same lineage: ${prettyPrintDocument(doc._id)} and ${prettyPrintDocument(violatingParentId)}`);
+      }
+    });
 };
 
 // Parses extraArgs and asserts if required parameters are not present
@@ -184,45 +160,6 @@ ${bold('OPTIONS')}
 `);
 };
 
-/*
-Given a contact's id, obtain the documents of all descendant contacts
-*/
-const fetchDescendantsOf = async (db, contactId) => {
-  const descendantDocs = await db.query('medic/contacts_by_depth', {
-    key: [contactId],
-    include_docs: true,
-  });
-
-  return descendantDocs.rows
-    .map(row => row.doc)
-    /* We should not move or update tombstone documents */
-    .filter(doc => doc && doc.type !== 'tombstone');
-};
-
-const fetchReportsCreatedBy = async (db, contactIds) => {
-  const reports = await db.query('medic-client/reports_by_freetext', {
-    keys: contactIds.map(id => [`contact:${id}`]),
-    include_docs: true,
-  });
-
-  return reports.rows.map(row => row.doc);
-};
-
-const fetchAncestorsOf = async (db, contactDoc) => {
-  const ancestorIds = lineageManipulation.pluckIdsFromLineage(contactDoc.parent);
-  const ancestors = await db.allDocs({
-    keys: ancestorIds,
-    include_docs: true,
-  });
-
-  const ancestorIdsNotFound = ancestors.rows.filter(ancestor => !ancestor.doc).map(ancestor => ancestor.key);
-  if (ancestorIdsNotFound.length > 0) {
-    throw Error(`Contact '${prettyPrintDocument(contactDoc)} has parent id(s) '${ancestorIdsNotFound.join(',')}' which could not be found.`);
-  }
-
-  return ancestors.rows.map(ancestor => ancestor.doc);
-};
-
 const writeDocumentToDisk = ({ docDirectoryPath, force }, doc) => {
   const destinationPath = path.join(docDirectoryPath, `${doc._id}.doc.json`);
   if (fs.exists(destinationPath)) {
@@ -232,6 +169,80 @@ const writeDocumentToDisk = ({ docDirectoryPath, force }, doc) => {
 
   trace(`Writing updated document to ${destinationPath}`);
   fs.writeJson(destinationPath, doc);
+};
+
+const fetch = {
+  /*
+  Fetches all of the documents associated with the "contactIds" and confirms they exist.
+  */
+  contactList: async (db, ids) => {
+    const contactDocs = await db.allDocs({
+      keys: ids,
+      include_docs: true,
+    });
+
+    const missingContactErrors = contactDocs.rows.filter(row => !row.doc).map(row => `Contact with id '${row.key}' could not be found.`);
+    if (missingContactErrors.length > 0) {
+      throw Error(missingContactErrors);
+    }
+
+    return contactDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
+  },
+
+  contact: async (db, id) => {
+    try {
+      if (id === HIERARCHY_ROOT) {
+        return undefined;
+      }
+  
+      return await db.get(id);
+    } catch (err) {
+      if (err.name !== 'not_found') {
+        throw err;
+      }
+  
+      throw Error(`Contact with id '${id}' could not be found`);
+    }
+  },
+
+  /*
+  Given a contact's id, obtain the documents of all descendant contacts
+  */
+  descendantsOf: async (db, contactId) => {
+    const descendantDocs = await db.query('medic/contacts_by_depth', {
+      key: [contactId],
+      include_docs: true,
+    });
+
+    return descendantDocs.rows
+      .map(row => row.doc)
+      /* We should not move or update tombstone documents */
+      .filter(doc => doc && doc.type !== 'tombstone');
+  },
+
+  reportsCreatedBy: async (db, contactIds) => {
+    const reports = await db.query('medic-client/reports_by_freetext', {
+      keys: contactIds.map(id => [`contact:${id}`]),
+      include_docs: true,
+    });
+
+    return reports.rows.map(row => row.doc);
+  },
+
+  ancestorsOf: async (db, contactDoc) => {
+    const ancestorIds = lineageManipulation.pluckIdsFromLineage(contactDoc.parent);
+    const ancestors = await db.allDocs({
+      keys: ancestorIds,
+      include_docs: true,
+    });
+
+    const ancestorIdsNotFound = ancestors.rows.filter(ancestor => !ancestor.doc).map(ancestor => ancestor.key);
+    if (ancestorIdsNotFound.length > 0) {
+      throw Error(`Contact '${prettyPrintDocument(contactDoc)} has parent id(s) '${ancestorIdsNotFound.join(',')}' which could not be found.`);
+    }
+
+    return ancestors.rows.map(ancestor => ancestor.doc);
+  },
 };
 
 const replaceLineageInReports = (reportsCreatedByDescendants, replaceWith, startingFromIdInLineage) => reportsCreatedByDescendants.reduce((agg, doc) => {

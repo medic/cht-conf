@@ -279,26 +279,6 @@ describe('move-contacts', () => {
     });
   });
 
-  it('processed in order of depth', async () => {
-    await updateLineagesAndStage({
-      contactIds: ['patient_1', 'health_center_1'],
-      parentId: 'district_2',
-    }, pouchDb);
-
-    expect(await getWrittenDoc('health_center_1')).to.deep.eq({
-      _id: 'health_center_1',
-      type: 'health_center',
-      contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
-      parent: parentsToLineage('district_2'),
-    });
-
-    expect(await getWrittenDoc('patient_1')).to.deep.eq({
-      _id: 'patient_1',
-      type: 'person',
-      parent: parentsToLineage('district_2'),
-    });
-  });
-
   it('documents should be minified', async () => {
     await updateHierarchyRules([{ id: 'clinic', parents: ['district_hospital'] }]);
     const patient = {
@@ -335,22 +315,6 @@ describe('move-contacts', () => {
       important: true,
       parent: parentsToLineage('clinic_1', 'district_2'),
     });
-  });
-
-  it('output is independent by parameter order when moving contacts in same hierarchy', async () => {
-    await updateLineagesAndStage({
-      contactIds: ['patient_1', 'health_center_1'],
-      parentId: 'district_2',
-    }, pouchDb);
-    const firstResult = [...writtenDocs];
-    writtenDocs.length = 0;
-
-    await updateLineagesAndStage({
-      contactIds: ['health_center_1', 'patient_1'],
-      parentId: 'district_2',
-    }, pouchDb);
-    const secondResult = [...writtenDocs];
-    expect(firstResult).to.deep.eq(secondResult);
   });
 
   it('cannot create circular hierarchy', async () => {
