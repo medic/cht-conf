@@ -55,8 +55,8 @@ const getHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) 
   if (!isPermittedMoveToRoot && !rulesForContact.includes(parentType)) return `contacts of type '${contactType}' cannot have parent of type '${parentType}'`;
 
   if (parentDoc && contactDoc._id) {
-    const parentAncestory = [parentDoc._id, ...pluckIdsFromLineage(parentDoc.parent)];
-    if (parentAncestory.includes(contactDoc._id)) {
+    const parentAncestry = [parentDoc._id, ...pluckIdsFromLineage(parentDoc.parent)];
+    if (parentAncestry.includes(contactDoc._id)) {
       return `Circular hierarchy: Cannot set parent of contact '${contactDoc._id}' as it would create a circular hierarchy.`;
     }
   }

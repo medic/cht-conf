@@ -33,14 +33,14 @@ module.exports = async (projectDir, couchUrl, extraArgs) => {
   }
 
   const totalCount = filesToUpload.length;
-  if (totalCount > 0) {
-    warn(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
-    if(!readline.keyInYN()) {
-      error('User failed to confirm action.');
-      process.exit(1);
-    }
-  } else {
+  if (totalCount === 0) {
     return; // nothing to upload
+  }
+
+  warn(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
+  if(!readline.keyInYN()) {
+    error('User failed to confirm action.');
+    process.exit(1);
   }
 
   const db = pouch(couchUrl);

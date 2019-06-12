@@ -26,7 +26,7 @@ const updateLineagesAndStage = async (options, db) => {
 
   const constraints = await lineageConstraints(db, parentDoc);
   const contactDocs = await fetch.contactList(db, options.contactIds);
-  await preprocessContacts(contactDocs, constraints);
+  await validateContacts(contactDocs, constraints);
 
   let affectedContactCount = 0, affectedReportCount = 0;
   const replacementLineage = lineageManipulation.createLineageFromDoc(parentDoc);
@@ -67,9 +67,9 @@ const updateLineagesAndStage = async (options, db) => {
 
 /*
 Checks for any errors which this will create in the hierarchy (hierarchy schema, circular hierarchies)
-Sorts the contact id by their "depth" in the hierarchy
+Confirms the list of contacts are possible to move
 */
-const preprocessContacts = async (contactDocs, constraints) => {
+const validateContacts = async (contactDocs, constraints) => {
   Object.values(contactDocs).forEach(doc => {
     const hierarchyError = constraints.getHierarchyErrors(doc);
     if (hierarchyError) {
@@ -79,7 +79,7 @@ const preprocessContacts = async (contactDocs, constraints) => {
 
   /*
   It is nice that the tool can move lists of contacts as one operation, but strange things happen when two contactIds are in the same lineage.
-  For example, moving a district_hospital and moving a contact under that distrcit_hospital to a new clinic causes multiple colliding writes to the same json file.
+  For example, moving a district_hospital and moving a contact under that district_hospital to a new clinic causes multiple colliding writes to the same json file.
   */
   const contactIds = Object.keys(contactDocs);
   Object.values(contactDocs)
@@ -87,7 +87,7 @@ const preprocessContacts = async (contactDocs, constraints) => {
       const parentIdsOfDoc = (doc.parent && lineageManipulation.pluckIdsFromLineage(doc.parent)) || [];
       const violatingParentId = parentIdsOfDoc.find(parentId => contactIds.includes(parentId));
       if (violatingParentId) {
-        throw Error(`Unable to move two documents from the same lineage: ${prettyPrintDocument(doc._id)} and ${prettyPrintDocument(violatingParentId)}`);
+        throw Error(`Unable to move two documents from the same lineage: '${doc._id}' and '${violatingParentId}'`);
       }
     });
 };

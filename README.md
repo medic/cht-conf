@@ -264,7 +264,7 @@ Contacts are organized into a hierarchy. It is not straight-forward to move cont
 
 Parameter | Description | Required 
 -- | -- | --
-list of ids | Space-delimited list of contact IDs which will be moved | Yes
+contacts | Comma delimited list of contact IDs which will be moved | Yes
 parent | ID of the new parent which will be assigned to the provided contacts | Yes
 docDirectoryPath | This action outputs files to local disk at this destination | No. Default `json-docs`
 
