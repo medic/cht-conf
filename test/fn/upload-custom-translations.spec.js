@@ -28,7 +28,10 @@ const expectTranslationDocs = (...expectedLangs) => {
 };
 
 describe('upload-custom-translations', () => {
-  beforeEach(api.start);
+  beforeEach(() => {
+    readline.keyInYN = () => true;
+    return api.start();
+  });
   afterEach(api.stop);
 
   describe('medic-2.x', () => {
