@@ -37,8 +37,7 @@ const preUpload = async (projectDir, db, doc, couchUrl) => {
   }
 
   if (localDoc._attachments) {
-    const keys = Object.keys(localDoc._attachments);
-    for (let key of keys) {
+    for (let key in localDoc._attachments) {
       localDoc._attachments[key] = {
         'content_type': doc._attachments[key].content_type, 
         'revpos': localRev ? parseInt(localRev.split('-')[0]) : 0, 
