@@ -72,17 +72,21 @@ const preUpload = async (projectDir, db, doc, couchUrl) => {
       }
     }
   }
+
+  return doc;
 };
 
-const postUpload = async (projectDir, db, localDoc, couchUrl) => {
+const postUpload = async (projectDir, db, doc, couchUrl) => {
   const md5 = crypto.createHash('md5').update(couchUrl).digest('hex');
-  const remoteDoc = await db.get(localDoc._id);
+  const remoteDoc = await db.get(doc._id);
 
   const dir = `${projectDir}/._revs/${md5}`;
   if (!fs.exists(dir)){
     fs.mkdir(dir);
   }
-  fs.write(`${dir}/${localDoc._id}`, remoteDoc._rev);
+  fs.write(`${dir}/${doc._id}`, remoteDoc._rev);
+
+  return doc;
 };
 
 module.exports = {
