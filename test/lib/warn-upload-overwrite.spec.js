@@ -33,8 +33,9 @@ describe('prompts when attempting to overwrite', () => {
     };
     fs.read = () => 'y';
     const localDoc = { _rev: 'y' };
+    const couchUrl = 'http://x';
 
-    return warnUploadOverwrite.preUpload('/tmp', api.db, localDoc)
+    return warnUploadOverwrite.preUpload('/tmp', api.db, localDoc, couchUrl)
     .then(() => {
       assert.equal(calls.length, 1);
       assert.equal(calls[0][0], ' {\n\u001b[31m-  _rev: "x"\u001b[39m\n\u001b[32m+  _rev: "y"\u001b[39m\n }\n');
@@ -50,8 +51,9 @@ describe('prompts when attempting to overwrite', () => {
     };
     fs.read = () => 'y';
     const localDoc = { _rev: 'y' };
+    const couchUrl = 'http://x';
 
-    return warnUploadOverwrite.preUpload('/tmp', api.db, localDoc)
+    return warnUploadOverwrite.preUpload('/tmp', api.db, localDoc, couchUrl)
     .catch(e => {
       assert.equal('configuration modified', e.message);
     });

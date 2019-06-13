@@ -1,6 +1,7 @@
 const fs = require('./sync-fs');
 const jsonDiff = require('json-diff');
 const readline = require('readline-sync');
+const crypto = require('crypto');
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -9,7 +10,8 @@ const responseChoicesWithoutDiff = [
 ];
 const responseChoicesWithDiff = responseChoicesWithoutDiff.concat([ 'View diff' ]);
 
-const preUpload = async (projectDir, db, localDoc) => {
+const preUpload = async (projectDir, db, doc, couchUrl) => {
+  let localDoc = JSON.parse(JSON.stringify(doc));
 
   // Pull remote _rev
   let remoteRev;
@@ -24,26 +26,41 @@ const preUpload = async (projectDir, db, localDoc) => {
   // Pull local _rev
   let localRev;
   try {
-    localRev = fs.read(`${projectDir}/._revs/${localDoc._id}`);
+    const md5 = crypto.createHash('md5').update(couchUrl).digest('hex');
+    localRev = fs.read(`${projectDir}/._revs/${md5}/${localDoc._id}`).trim();
   } catch (e) {
     // continue regardless of error
   }
 
-  // Compare _revs
-  // If _revs are different, show prompt
-  if (!localRev) {
-    if (!readline.keyInYN(`We can't determine if you're going to overwrite someone else's changes or not. Would you like to proceed?`)) {
-      throw new Error('configuration modified');
-    }
-  } else if (localRev !== remoteRev) {
-    let diff; 
-    if (localDoc.settings && remoteDoc.settings) {
-      diff = jsonDiff.diffString(remoteDoc.settings, localDoc.settings);
-    } else {
-      diff = jsonDiff.diffString(remoteDoc, localDoc);
-    }
+  if (localRev) {
+    localDoc._rev = localRev;
+  }
 
-    if (diff) {
+  if (localDoc._attachments) {
+    const keys = Object.keys(localDoc._attachments);
+    for (let key of keys) {
+      localDoc._attachments[key] = {
+        'content_type': doc._attachments[key].content_type, 
+        'revpos': localRev ? parseInt(localRev.split('-')[0]) : 0, 
+        'length': doc._attachments[key].data.length,
+        'digest': `md5-${crypto.createHash('md5').update(doc._attachments[key].data, 'binary').digest('base64')}`,
+        'stub': true
+      };
+    }
+  }
+
+  let diff; 
+  if (localDoc._id === 'settings' && remoteDoc._id === 'settings') {
+    diff = jsonDiff.diffString(remoteDoc.settings, localDoc.settings);
+  } else {
+    diff = jsonDiff.diffString(remoteDoc, localDoc);
+  }
+  if (diff) {  
+    if (!localRev) {
+      if (!readline.keyInYN(`We can't determine if you're going to overwrite someone else's changes or not. Would you like to proceed?`)) {
+        throw new Error('configuration modified');
+      }
+    } else if (localRev !== remoteRev) {
       let index = readline.keyInSelect(responseChoicesWithDiff, question);
       if (index === 2) { // diff
         console.log(diff);
@@ -57,10 +74,11 @@ const preUpload = async (projectDir, db, localDoc) => {
   }
 };
 
-const postUpload = async (projectDir, db, localDoc) => {
+const postUpload = async (projectDir, db, localDoc, couchUrl) => {
+  const md5 = crypto.createHash('md5').update(couchUrl).digest('hex');
   const remoteDoc = await db.get(localDoc._id);
 
-  const dir = `${projectDir}/._revs`;
+  const dir = `${projectDir}/._revs/${md5}`;
   if (!fs.exists(dir)){
     fs.mkdir(dir);
   }
