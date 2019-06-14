@@ -1,7 +1,8 @@
 const fs = require('../lib/sync-fs');
+const supported_shells = ['bash'];
 
 module.exports = shell => {
-  if(!shell) shell = 'bash';
+  if(!supported_shells.includes(shell)) shell = 'bash';
 
   const completionFile = `${__dirname}/shell-completion.${shell}`;
 
