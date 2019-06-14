@@ -26,8 +26,7 @@ const preUpload = async (projectDir, db, doc, couchUrl) => {
   // Pull local _rev
   let localRev;
   try {
-    const md5 = crypto.createHash('md5').update(couchUrl).digest('hex');
-    localRev = fs.read(`${projectDir}/._revs/${md5}/${localDoc._id}`).trim();
+    localRev = JSON.parse(fs.read(`${projectDir}/._revs/${localDoc._id}.json`).trim())[couchUrl];
   } catch (e) {
     // continue regardless of error
   }
@@ -76,14 +75,22 @@ const preUpload = async (projectDir, db, doc, couchUrl) => {
 };
 
 const postUpload = async (projectDir, db, doc, couchUrl) => {
-  const md5 = crypto.createHash('md5').update(couchUrl).digest('hex');
   const remoteDoc = await db.get(doc._id);
 
-  const dir = `${projectDir}/._revs/${md5}`;
-  if (!fs.exists(dir)){
-    fs.mkdir(dir);
+  const revsDir = `${projectDir}/._revs`;
+  if (!fs.exists(revsDir)){
+    fs.mkdir(revsDir);
   }
-  fs.write(`${dir}/${doc._id}`, remoteDoc._rev);
+
+  let revs = {};
+
+  const revsFile = `${revsDir}/${doc._id}.json`;
+  if (fs.exists(revsFile)) {
+    Object.assign(revs, JSON.parse(fs.read(revsFile).trim()));
+  }
+  revs[couchUrl] = remoteDoc._rev;
+
+  fs.write(revsFile, JSON.stringify(revs));
 
   return doc;
 };
