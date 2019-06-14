@@ -31,7 +31,7 @@ describe('prompts when attempting to overwrite', () => {
       const remoteDoc = { _rev: 'x' };
       return remoteDoc;
     };
-    fs.read = () => 'y';
+    fs.read = () => '{"http://x":"y"}';
     const localDoc = { _rev: 'y' };
     const couchUrl = 'http://x';
 
@@ -49,7 +49,7 @@ describe('prompts when attempting to overwrite', () => {
       const remoteDoc = { _rev: 'x' };
       return remoteDoc;
     };
-    fs.read = () => 'y';
+    fs.read = () => '{"http://x":"y"}';
     const localDoc = { _rev: 'y' };
     const couchUrl = 'http://x';
 
