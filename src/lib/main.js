@@ -53,7 +53,12 @@ module.exports = async (argv, env) => {
   }
 
   if (cmdArgs['shell-completion']) {
-    return shellCompletionSetup(cmdArgs['shell-completion']);
+    if (cmdArgs['shell-completion'] === true){
+      console.log('# ERROR shell type argument not provided e.g. --shell-completion=bash');
+      return 0;
+    } else {
+      return shellCompletionSetup(cmdArgs['shell-completion']);
+    }
   }
 
   if (cmdArgs['supported-actions']) {
@@ -99,7 +104,7 @@ module.exports = async (argv, env) => {
     const { COUCH_URL } = env;
     if (COUCH_URL) {
       instanceUrl = parseCouchUrl(COUCH_URL);
-      
+
       info('Using local url from COUCH_URL environment variable');
       info(instanceUrl);
       if (instanceUrl.hostname !== 'localhost') {
@@ -185,4 +190,3 @@ const parseCouchUrl = COUCH_URL => {
 };
 
 const executeAction = (action, instanceUrl, extraArgs) => require(`../fn/${action}`)('.', instanceUrl, extraArgs);
-
