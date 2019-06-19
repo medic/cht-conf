@@ -31,9 +31,9 @@ describe('prompts when attempting to overwrite', () => {
       const remoteDoc = { _rev: 'x' };
       return remoteDoc;
     };
-    fs.read = () => '{"http://x":"y"}';
+    fs.read = () => '{"x/m":"y"}';
     const localDoc = { _rev: 'y' };
-    const couchUrl = 'http://x';
+    const couchUrl = 'http://x/m';
 
     return warnUploadOverwrite.preUpload('/tmp', api.db, localDoc, couchUrl)
     .then(() => {
@@ -49,9 +49,9 @@ describe('prompts when attempting to overwrite', () => {
       const remoteDoc = { _rev: 'x' };
       return remoteDoc;
     };
-    fs.read = () => '{"http://x":"y"}';
+    fs.read = () => '{"x/m":"y"}';
     const localDoc = { _rev: 'y' };
-    const couchUrl = 'http://x';
+    const couchUrl = 'http://x/m';
 
     return warnUploadOverwrite.preUpload('/tmp', api.db, localDoc, couchUrl)
     .catch(e => {
