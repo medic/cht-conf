@@ -2,6 +2,7 @@ const fs = require('./sync-fs');
 const jsonDiff = require('json-diff');
 const readline = require('readline-sync');
 const crypto = require('crypto');
+const url = require('url');
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -9,6 +10,12 @@ const responseChoicesWithoutDiff = [
   'Abort so that you can update the configuration'
 ];
 const responseChoicesWithDiff = responseChoicesWithoutDiff.concat([ 'View diff' ]);
+
+const getRevsDocKey = (couchUrl) => {
+  const parsed = url.parse(couchUrl);
+  const key = `${parsed.hostname}${parsed.pathname || 'medic'}`;
+  return key;
+};
 
 const preUpload = async (projectDir, db, doc, couchUrl) => {
   let localDoc = JSON.parse(JSON.stringify(doc));
@@ -26,7 +33,7 @@ const preUpload = async (projectDir, db, doc, couchUrl) => {
   // Pull local _rev
   let localRev;
   try {
-    localRev = JSON.parse(fs.read(`${projectDir}/._revs/${localDoc._id}.json`).trim())[couchUrl];
+    localRev = JSON.parse(fs.read(`${projectDir}/._revs/${localDoc._id}.json`).trim())[getRevsDocKey(couchUrl)];
   } catch (e) {
     // continue regardless of error
   }
@@ -88,7 +95,7 @@ const postUpload = async (projectDir, db, doc, couchUrl) => {
   if (fs.exists(revsFile)) {
     Object.assign(revs, JSON.parse(fs.read(revsFile).trim()));
   }
-  revs[couchUrl] = remoteDoc._rev;
+  revs[getRevsDocKey(couchUrl)] = remoteDoc._rev;
 
   fs.write(revsFile, JSON.stringify(revs));
 
