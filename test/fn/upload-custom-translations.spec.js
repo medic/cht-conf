@@ -128,8 +128,12 @@ describe('upload-custom-translations', () => {
 
   describe('medic-3.x', () => {
     describe('3.0.0', () => {
-      beforeEach(() => api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.0.0' } }));
-
+      beforeEach(() => {
+        readline.keyInYN = () => true;
+        readline.keyInSelect = () => 0;
+        return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.0.0' } });
+      });
+      
       it('should upload simple translations', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });

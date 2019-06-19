@@ -66,11 +66,11 @@ const preUpload = async (projectDir, db, doc, couchUrl) => {
         throw new Error('configuration modified');
       }
     } else if (localRev !== remoteRev) {
-      let index = readline.keyInSelect(responseChoicesWithDiff, question);
+      let index = readline.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
       if (index === 2) { // diff
         console.log(diff);
 
-        index = readline.keyInSelect(responseChoicesWithoutDiff, question);
+        index = readline.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
       }
       if (index === 1) { // abort
         throw new Error('configuration modified');
