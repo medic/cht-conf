@@ -3,6 +3,7 @@ const assert = require('chai').assert;
 const fs = require('../../src/lib/sync-fs');
 const readline = require('readline-sync');
 const warnUploadOverwrite = require('../../src/lib/warn-upload-overwrite');
+const log = require('../../src/lib/log');
 
 describe('prompts when attempting to overwrite', () => {
   beforeEach(api.start);
@@ -18,11 +19,9 @@ describe('prompts when attempting to overwrite', () => {
   });
 
   it('shows diff when local rev is different from remote rev and the user requests a diff', () => {
-    const originalLog = console.log;
     const calls = [];
-    console.log = (...args) => {
+    log.info = (...args) => {
       calls.push(args);
-      originalLog(...args);
     };
 
     readline.keyInYN = () => true;

@@ -3,8 +3,7 @@ const jsonDiff = require('json-diff');
 const readline = require('readline-sync');
 const crypto = require('crypto');
 const url = require('url');
-const info = require('./log').info;
-const trace = require('./log').trace;
+const log = require('./log');
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -30,7 +29,7 @@ const preUpload = async (projectDir, db, doc, couchUrl) => {
     remoteRev = remoteDoc._rev;
   } catch (e) {
     // continue regardless of error
-    trace('Trying to fetch remote _rev', e);
+    log.trace('Trying to fetch remote _rev', e);
   }
 
   // Pull local _rev
@@ -39,7 +38,7 @@ const preUpload = async (projectDir, db, doc, couchUrl) => {
     localRev = JSON.parse(fs.read(`${projectDir}/._revs/${localDoc._id}.json`).trim())[getRevsDocKey(couchUrl)];
   } catch (e) {
     // continue regardless of error
-    trace('Trying to fetch local _rev', e);
+    log.trace('Trying to fetch local _rev', e);
   }
 
   if (localRev) {
@@ -72,7 +71,7 @@ const preUpload = async (projectDir, db, doc, couchUrl) => {
     } else if (localRev !== remoteRev) {
       let index = readline.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
       if (index === 2) { // diff
-        info(diff);
+        log.info(diff);
 
         index = readline.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
       }
