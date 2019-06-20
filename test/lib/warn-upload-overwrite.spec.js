@@ -57,6 +57,26 @@ describe('prompts when attempting to overwrite', () => {
     .catch(e => {
       assert.equal('configuration modified', e.message);
     });
+  });
 
+  it('removes username and passoword from couchUrl before writing', () => {
+    api.db.get = () => {
+      const remoteDoc = { _rev: 'y-23' };
+      return remoteDoc;
+    };
+    const calls = [];
+    fs.write = (...args) => {
+      calls.push(args);
+    };
+    fs.exists = () => true;
+    fs.read = () => '{"y/m":"a-12"}';
+    const localDoc = { _id: 'x' };
+    const couchUrl = 'http://username:password@x/m';
+
+    return warnUploadOverwrite.postUpload('/tmp', api.db, localDoc, couchUrl)
+    .then(() => {console.log(calls);
+      assert.equal(calls.length, 1);
+      assert.equal(calls[0][1], '{"y/m":"a-12","x/m":"y-23"}');
+    });
   });
 });
