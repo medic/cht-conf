@@ -1,4 +1,3 @@
-const path = require('path');
 const assert = require('chai').assert;
 const { execSync } = require('child_process');
 
@@ -6,7 +5,6 @@ describe('shell-completion', () => {
 
   it('should complete a partial command', () => {
 
-    let completion_file = path.join(__dirname, '../..', 'src/cli/shell-completion.bash');
     let partial = 'comp';
     let bin = 'medic-conf';
     let input = bin + ' ' + partial;
