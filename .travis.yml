@@ -9,6 +9,6 @@ install:
 before_script:
   - "! grep -Fq '.only(' test/**/*.spec.js"
   - npm ci
-  - source src/cli/shell-completion.bash
+  - npm i -g medic-conf
 env:
   - SH=bash
