@@ -9,3 +9,5 @@ install:
 before_script:
   - "! grep -Fq '.only(' test/**/*.spec.js"
   - npm ci
+env:
+  - SH=bash
