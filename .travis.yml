@@ -10,6 +10,5 @@ before_script:
   - "! grep -Fq '.only(' test/**/*.spec.js"
   - npm ci
   - npm i -g medic-conf
-  - source /etc/bash_completion
   - echo 'eval "$(medic-conf --shell-completion=bash)"' >> ~/.bashrc
   - source ~/.bashrc
