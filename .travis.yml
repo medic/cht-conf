@@ -11,5 +11,5 @@ before_script:
   - npm ci
   - npm i -g medic-conf
   - echo 'eval "$(medic-conf --shell-completion=bash)"' >> ~/.bashrc
-  - source /etc/bash_completion
+  - apt install bash-completion
   - source ~/.bashrc
