@@ -1,67 +1,22 @@
 const path = require('path');
 const assert = require('chai').assert;
+const { execSync } = require('child_process');
 
 describe('shell-completion', () => {
 
-  it('should supply --options and actions', () => {
+  it('should complete a partial command', () => {
 
-    // expect
-    return assertShellComplete('',
-        '--instance',
-        '--local',
-        '--url',
+    let completion_file = path.join(__dirname, '../..', 'src/cli/shell-completion.bash');
+    let partial = 'comp';
+    let bin = 'medic-conf';
+    let input = bin + ' ' + partial;
 
-        '--help',
-        '--shell-completion',
-        '--supported-actions',
-        '--version',
+    let cmd = `bash -i -c '$(source ${completion_file}); COMP_LINE="${input}"; COMP_WORDS=(${input}); COMP_CWORD=1; COMP_POINT=${input.length}; $(complete -p medic-conf | sed "s/.*-F \\([^ ]*\\) .*/\\1/") && echo \$\{COMPREPLY[*]\}'`; // eslint-disable-line no-useless-escape
 
-        'backup-app-settings',
-        'backup-all-forms',
-        'check-for-updates',
-        'compile-app-settings',
-        'compress-pngs',
-        'compress-svgs',
-        'convert-app-forms',
-        'convert-collect-forms',
-        'convert-contact-forms',
-        'create-users',
-        'csv-to-docs',
-        'delete-forms',
-        'delete-all-forms',
-        'fetch-csvs-from-google-drive',
-        'fetch-forms-from-google-drive',
-        'initialise-project-layout',
-        'upload-app-forms',
-        'upload-app-settings',
-        'upload-collect-forms',
-        'upload-contact-forms',
-        'upload-custom-translations',
-        'upload-docs',
-        'upload-resources',
-        'upload-sms-from-csv');
+    let output = execSync(cmd, { encoding: 'utf8' });
+
+    assert.equal(output, 'compile-app-settings compress-pngs compress-svgs\n');
 
   });
 
 });
-
-const execSync = require('child_process').execSync;
-
-function assertShellComplete(cliArgs, ...expectedResponses) {
-  if(!Array.isArray(cliArgs)) cliArgs = [ cliArgs ];
-
-  const pathToBin = path.join(__dirname, '../..', 'src/bin/shell-completion.js');
-  return execPromise(pathToBin, cliArgs.length, cliArgs[cliArgs.length-1])
-    .then(res => res.split(/\s/))
-    .then(res => res.filter(s => s.trim()))
-    .then(res => assert.deepEqual(res, expectedResponses));
-}
-
-function execPromise(...args) {
-  try {
-    var buf = execSync(args.join(' '));
-    return Promise.resolve(buf.toString());
-  } catch(e) {
-    return Promise.reject(e);
-  }
-}
