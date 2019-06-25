@@ -9,5 +9,6 @@ install:
 before_script:
   - "! grep -Fq '.only(' test/**/*.spec.js"
   - npm ci
+  - source src/cli/shell-completion.bash
 env:
   - SH=bash
