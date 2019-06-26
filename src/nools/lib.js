@@ -190,11 +190,18 @@ function emitTargetFor(targetConfig, c, r) {
   if (targetConfig.appliesToType && targetConfig.appliesToType.indexOf(appliesToKey) < 0) return;
   if (targetConfig.appliesIf && !targetConfig.appliesIf(c, r)) return;
 
-  var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c, r);
+  var instanceId;
+  if (typeof targetConfig.idType === 'function') {
+    instanceId = targetConfig.idType(c, r);
+  } else if (targetConfig.idType === 'report') {
+    instanceId = r && r._id;
+  } else {
+    instanceId = c.contact && c.contact._id;
+  }
+  
   var instanceDoc = isEmittingForReport ? r : c.contact;
-  var instance = createTargetInstance(targetConfig.id, instanceDoc, pass);
-
-  instance._id = (targetConfig.idType === 'report' ? r && r._id : c.contact._id) + '~' + targetConfig.id;
+  var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c, r);
+  var instance = createTargetInstance(instanceId, targetConfig.id, instanceDoc, pass);
 
   if(typeof targetConfig.date === 'function') {
     instance.date = targetConfig.date(c, r);
@@ -214,9 +221,9 @@ function emitTargetFor(targetConfig, c, r) {
   emitTargetInstance(instance);
 }
 
-function createTargetInstance(type, doc, pass) {
+function createTargetInstance(id, type, doc, pass) {
   return new Target({
-    _id: doc._id + '~' + type,
+    _id: id + '~' + type,
     deleted: !!doc.deleted,
     type: type,
     pass: pass,
