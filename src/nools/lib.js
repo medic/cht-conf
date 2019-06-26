@@ -201,7 +201,7 @@ function emitTargetFor(targetConfig, c, r) {
   
   var instanceDoc = isEmittingForReport ? r : c.contact;
   var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c, r);
-  var instance = createTargetInstance(instanceId, instanceDoc, pass);
+  var instance = createTargetInstance(instanceId, targetConfig.id, instanceDoc, pass);
 
   if(typeof targetConfig.date === 'function') {
     instance.date = targetConfig.date(c, r);
@@ -221,9 +221,9 @@ function emitTargetFor(targetConfig, c, r) {
   emitTargetInstance(instance);
 }
 
-function createTargetInstance(type, doc, pass) {
+function createTargetInstance(id, type, doc, pass) {
   return new Target({
-    _id: doc._id + '~' + type,
+    _id: id + '~' + type,
     deleted: !!doc.deleted,
     type: type,
     pass: pass,
