@@ -4,9 +4,9 @@
 
 Medic-conf v2.2 includes:
 
-* New action `move-contact` which facilitates the moving of contacts and places within a project's hierarchy. [Full documentation](https://github.com/medic/medic-conf#moving-contacts-within-the-hierarchy). [#172](https://github.com/medic/medic-conf/issues/172)
-* Updates to the `upload-custom-translations` to support custom locales (for WebApp projects >v3.4.0). [#199](https://github.com/medic/medic-conf/issues/199)
-* Declarative Configuration - [Target schema](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#target-schema)'s idType attribute can now be a function. [#145](https://github.com/medic/medic-conf/issues/145)
+* New action `move-contact` facilitates the moving of contacts and places within a project's hierarchy. [Documentation](https://github.com/medic/medic-conf#moving-contacts-within-the-hierarchy). [#172](https://github.com/medic/medic-conf/issues/172)
+* Updates the `upload-custom-translations` action to support custom locales (for WebApp projects >v3.4.0). [#199](https://github.com/medic/medic-conf/issues/199)
+* The declarative configuration [target schema](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#target-schema) has been updated. The idType attribute can now be a function. [#145](https://github.com/medic/medic-conf/issues/145)
 * Support for Node 12, refactoring, and code cleanup.
 
 ## 2.0
