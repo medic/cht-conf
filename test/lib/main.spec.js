@@ -86,6 +86,14 @@ describe('main', () => {
     expect(mocks.executeAction.args[0]).to.deep.eq(['compile-app-settings', 'http://user:pwd@localhost:5988/medic', undefined]);
   });
 
+  it('--local with COUCH_URL respects db', async () => {
+    const COUCH_URL = 'http://user:pwd@localhost:5988/not_medic';
+    await main([...normalArgv, '--local'], { COUCH_URL });
+    
+    expect(mocks.executeAction.callCount).to.deep.eq(defaultActions.length);
+    expect(mocks.executeAction.args[0]).to.deep.eq(['compile-app-settings', 'http://user:pwd@localhost:5988/not_medic', undefined]);
+  });
+
   it('--local with COUCH_URL to non-localhost yields error', async () => {
     const COUCH_URL = 'http://user:pwd@host:5988/medic';
     await main([...normalArgv, '--local'], { COUCH_URL });
@@ -123,12 +131,12 @@ describe('main', () => {
   describe('parseCouchUrl', () => {
     const parseCouchUrl = main.__get__('parseCouchUrl');
     it('basic', () =>
-      expect(parseCouchUrl('http://admin:pass@localhost:5988/medic').href).to.eq('http://admin:pass@localhost:5988/'));
+      expect(parseCouchUrl('http://admin:pass@localhost:5988/medic').href).to.eq('http://admin:pass@localhost:5988/medic'));
     
     it('updates port', () =>
-      expect(parseCouchUrl('http://admin:pass@localhost:5984/medic').href).to.eq('http://admin:pass@localhost:5988/'));
+      expect(parseCouchUrl('http://admin:pass@localhost:5984/medic').href).to.eq('http://admin:pass@localhost:5988/medic'));
 
-    it('ignores path', () =>
-      expect(parseCouchUrl('http://admin:pass@localhost:5984/foo').href).to.eq('http://admin:pass@localhost:5988/'));
+    it('keeps path', () =>
+      expect(parseCouchUrl('http://admin:pass@localhost:5984/foo').href).to.eq('http://admin:pass@localhost:5988/foo'));
   });
 });

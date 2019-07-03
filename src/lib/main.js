@@ -107,14 +107,14 @@ module.exports = async (argv, env) => {
         return -1;
       }
     } else {
-      instanceUrl = url.parse('http://admin:pass@localhost:5988');
+      instanceUrl = url.parse('http://admin:pass@localhost:5988/medic');
       info('Using default local url');
     }
   } else if (cmdArgs.instance) {
     const password = readline.question(`${emoji.key}  Password: `, { hideEchoBack: true });
     const instanceUsername = cmdArgs.user || 'admin';
     const encodedPassword = encodeURIComponent(password);
-    instanceUrl = url.parse(`https://${instanceUsername}:${encodedPassword}@${cmdArgs.instance}.medicmobile.org`);
+    instanceUrl = url.parse(`https://${instanceUsername}:${encodedPassword}@${cmdArgs.instance}.medicmobile.org/medic`);
   } else if (cmdArgs.url) {
     instanceUrl = url.parse(cmdArgs.url);
   } else {
@@ -123,20 +123,17 @@ module.exports = async (argv, env) => {
     return -1;
   }
 
-  const projectName = fs.path.basename(fs.path.resolve('.'));
-
-  if (instanceUrl) {
-    const productionUrlMatch = instanceUrl.href.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
-    if (productionUrlMatch &&
-        productionUrlMatch[1] !== projectName &&
-        productionUrlMatch[1] !== 'alpha') {
-      warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
-          `against non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl.href)}\x1b[33m`);
-      if(!readline.keyInYN()) {
-        error('User failed to confirm action.');
-        return -1;
+  const currentFolderName = fs.path.basename(fs.path.resolve('.'));
+  if (instanceUrl && instanceUrl.hostname.endsWith('.medicmobile.org')) {
+      const [urlProjectName] = instanceUrl.hostname.split('.', 1);
+      if (urlProjectName !== currentFolderName && urlProjectName !== 'alpha') {
+        warn(`Attempting to use project for \x1b[31m${currentFolderName}\x1b[33m`,
+            `against non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl.href)}\x1b[33m`);
+        if(!readline.keyInYN()) {
+          error('User failed to confirm action.');
+          return -1;
+        }
       }
-    }
   }
 
   //
@@ -161,7 +158,7 @@ module.exports = async (argv, env) => {
   //
   // GO GO GO
   //
-  info(`Processing config in ${projectName} for ${instanceUrl.href}.`);
+  info(`Processing config in ${currentFolderName} for ${redactBasicAuth(instanceUrl.href)}.`);
   info('Actions:\n     -', actions.join('\n     - '));
   info('Extra args:', extraArgs);
 
@@ -172,7 +169,7 @@ module.exports = async (argv, env) => {
 
   for (let action of actions) {
     info(`Starting action: ${action}…`);
-    await executeAction(action, `${instanceUrl.href}medic`, extraArgs);
+    await executeAction(action, instanceUrl.href, extraArgs);
     info(`${action} complete.`);
   }
 
@@ -183,7 +180,6 @@ module.exports = async (argv, env) => {
 
 const parseCouchUrl = COUCH_URL => {
   const parsed = url.parse(COUCH_URL);
-  parsed.path = parsed.pathname = '';
   parsed.host = `${parsed.hostname}:5988`;
   return url.parse(url.format(parsed));
 };
