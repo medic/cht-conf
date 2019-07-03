@@ -1,8 +1,8 @@
 # Release Notes
 
-## 2.1
+## 2.2
 
-Medic-conf v2.1 includes:
+Medic-conf v2.2 includes:
 
 * New action `move-contact` which facilitates the moving of contacts and places within a project's hierarchy. [Full documentation](https://github.com/medic/medic-conf#moving-contacts-within-the-hierarchy). [#172](https://github.com/medic/medic-conf/issues/172)
 * Updates to the `upload-custom-translations` to support custom locales (for WebApp projects >v3.4.0). [#199](https://github.com/medic/medic-conf/issues/199)
