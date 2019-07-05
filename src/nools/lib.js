@@ -32,6 +32,21 @@ function deepCopy(obj) {
   return copy;
 }
 
+function obtainContactFromSchedule(schedule, c, r) {
+  var contact;
+  if (typeof schedule.contact === 'function') {
+    contact = schedule.contact(c, r);
+  } else {
+    contact = schedule.contact || c.contact;
+  }
+
+  if (typeof contact === 'string') {
+    contact = { name: contact };
+  }
+
+  return contact;
+}
+
 for(idx1=0; idx1<targets.length; ++idx1) {
   target = targets[idx1];
   var targetContext = {};
@@ -70,7 +85,8 @@ if(tasks) {
         }
         break;
       case 'contacts':
-        if(c.contact && task.appliesToType.indexOf(c.contact.type) !== -1) {
+        var appliesToType = !task.appliesToType || (c.contact && task.appliesToType.indexOf(c.contact.type) !== -1);
+        if(appliesToType) {
           emitTasksForSchedule(c, task);
         }
         break;
@@ -125,7 +141,8 @@ function emitTasksForSchedule(c, schedule, r) {
           dueDate = event.dueDate(event, c);
         } else {
           // The default is the day the user was created?? That makes no sense.
-          dueDate = new Date(Utils.addDate(new Date(c.contact.reported_date), event.days));
+          const defaultDueDate = c.contact && c.contact.reported_date ? new Date(c.contact.reported_date) : new Date();
+          dueDate = new Date(Utils.addDate(defaultDueDate, event.days));
         }
       }
 
@@ -140,7 +157,7 @@ function emitTasksForSchedule(c, schedule, r) {
         _id: (r ? r._id : c.contact && c.contact._id) + '~' + (event.id || i) + '~' + (schedule.name || schedule.index),
         deleted: !!((c.contact && c.contact.deleted) || r ? r.deleted : false),
         doc: c,
-        contact: c.contact,
+        contact: obtainContactFromSchedule(schedule, c, r),
         icon: schedule.icon,
         date: dueDate,
         title: schedule.title,
@@ -176,7 +193,7 @@ function emitTasksForSchedule(c, schedule, r) {
       contact: c.contact,
     };
 
-    if(def.modifyContent) def.modifyContent(content, c, r);
+    if (def.modifyContent) def.modifyContent(content, c, r);
 
     return {
       type: 'report',

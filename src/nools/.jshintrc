@@ -11,6 +11,7 @@
     "targets": false,
     "tasks": false,
     "Target": false,
+    "user": true,
     "Task": false,
     "Utils": false,
     "persistentState": true
