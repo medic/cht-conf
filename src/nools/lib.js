@@ -87,7 +87,7 @@ function emitTasksForSchedule(c, schedule, r) {
   if (schedule.appliesToType) {
     var contactType = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
     var shouldApply = schedule.appliesTo === 'contacts' ?
-      c.contact && schedule.appliesToType.indexOf(contactType) !== -1 :
+      schedule.appliesToType.indexOf(contactType) !== -1 :
       r && schedule.appliesToType.indexOf(r.form) !== -1;
     
     if (!shouldApply) {
