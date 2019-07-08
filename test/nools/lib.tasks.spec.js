@@ -17,13 +17,13 @@ const {
   placeWithoutReports,
 } = require('./mocks');
 
-describe('nools lib', function() {
+describe('nools lib', () => {
   beforeEach(() => reset());
 
-  describe('tasks', function() {
-    describe('person-based', function() {
+  describe('tasks', () => {
+    describe('person-based', () => {
 
-      it('should emit once for a person based task', function() {
+      it('should emit once for a person based task', () => {
         // given
         const config = {
           c: personWithoutReports(),
@@ -32,7 +32,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -44,11 +44,30 @@ describe('nools lib', function() {
           },
         ]);
       });
+
+      it('given contact without reported_date, dueDate defaults to now', () => {
+        sinon.useFakeTimers(1);
+
+         // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+        delete config.c.contact.reported_date;
+
+         // when
+        const { emitted } = runNoolsLib(config);
+
+         // then
+        expect(emitted[0]).to.nested.include({ 'contact._id': 'c-2' });
+        expect(emitted[0].date.getTime()).to.eq(-57600000); // start of day
+      });
     });
 
-    describe('place-based', function() {
+    describe('place-based', () => {
 
-      it('should emit once for a place based task', function() {
+      it('should emit once for a place based task', () => {
         // given
         const config = {
           c: placeWithoutReports(),
@@ -57,7 +76,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -67,9 +86,9 @@ describe('nools lib', function() {
       });
     });
 
-    describe('report-based', function() {
+    describe('report-based', () => {
 
-      it('should not emit if contact has no reports', function() {
+      it('should not emit if contact has no reports', () => {
         // given
         const config = {
           c: personWithoutReports(),
@@ -78,7 +97,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.deepEqual(emitted, [
@@ -86,7 +105,7 @@ describe('nools lib', function() {
         ]);
       });
 
-      it('should emit once for a single report', function() {
+      it('should emit once for a single report', () => {
         // given
         const config = {
           c: personWithReports(aReport()),
@@ -95,7 +114,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -104,7 +123,7 @@ describe('nools lib', function() {
         ]);
       });
 
-      it('should emit once per report', function() {
+      it('should emit once per report', () => {
         // given
         const config = {
           c: personWithReports(aReport(), aReport(), aReport()),
@@ -113,7 +132,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -126,7 +145,7 @@ describe('nools lib', function() {
         expectAllToHaveUniqueIds(emitted);
       });
 
-      it('should emit once per report per task', function() {
+      it('should emit once per report per task', () => {
         // given
         const config = {
           c: personWithReports(aReport(), aReport(), aReport()),
@@ -135,7 +154,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -151,7 +170,7 @@ describe('nools lib', function() {
         expectAllToHaveUniqueIds(emitted); // even with undefined name, the resulting ids are unique
       });
 
-      it('emitted events from tasks without name or id should be unique', function() {
+      it('emitted events from tasks without name or id should be unique', () => {
         // given
         const config = {
           c: personWithReports(aReport()),
@@ -166,14 +185,14 @@ describe('nools lib', function() {
         config.tasks[0].events = [event, event];
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         expect(emitted).to.have.property('length', 4);
         expectAllToHaveUniqueIds(emitted);
       });
 
-      it('dueDate function is invoked with expected data', function() {
+      it('dueDate function is invoked with expected data', () => {
         // given
         const config = {
           c: personWithReports(aReport()),
@@ -187,7 +206,7 @@ describe('nools lib', function() {
         event.dueDate = spy;
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         expect(emitted).to.have.property('length', 2);
@@ -199,7 +218,7 @@ describe('nools lib', function() {
         });
       });
 
-      it('should allow custom action content', function() {
+      it('should allow custom action content', () => {
         // given
         const task = aReportBasedTask();
         task.actions[0].modifyContent =
@@ -212,7 +231,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -236,7 +255,7 @@ describe('nools lib', function() {
         ]);
       });
 
-      it('modifyContent for appliesTo contacts', function() {
+      it('modifyContent for appliesTo contacts', () => {
         // given
         const task = aPersonBasedTask();
         task.actions[0].modifyContent = (content, c) => { content.report_id = c.contact._id; };
@@ -248,7 +267,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -362,7 +381,7 @@ describe('nools lib', function() {
       };
 
       // when
-      const emitted = runNoolsLib(config).emitted;
+      const { emitted } = runNoolsLib(config);
 
       // then
       expect(emitted).to.have.property('length', 1);
@@ -392,15 +411,15 @@ describe('nools lib', function() {
       };
 
       // when
-      const emitted = runNoolsLib(config).emitted;
+      const { emitted } = runNoolsLib(config);
 
       // then
       expect(emitted).to.have.property('length', 1);
       expect(invoked).to.be.true; // jshint ignore:line
     });
 
-    describe('scheduled-task based', function() {
-      it('???', function() { // FIXME this test needs a proper name
+    describe('scheduled-task based', () => {
+      it('???', () => { // FIXME this test needs a proper name
         // given
         const config = {
           c: personWithReports(aReportWithScheduledTasks(5)),
@@ -409,7 +428,7 @@ describe('nools lib', function() {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -423,8 +442,8 @@ describe('nools lib', function() {
       });
     });
 
-    describe('invalid task type', function() {
-      it('should throw error', function() {
+    describe('invalid task type', () => {
+      it('should throw error', () => {
         // given
         const invalidTask = aScheduledTaskBasedTask();
         invalidTask.appliesTo = 'unknown';
@@ -435,7 +454,7 @@ describe('nools lib', function() {
         };
 
         // should throw error
-        assert.throws(function() { runNoolsLib(config); }, Error, 'unrecognised task type: unknown');
+        assert.throws(() => { runNoolsLib(config); }, Error, 'unrecognised task type: unknown');
       });
     });
 
