@@ -370,7 +370,7 @@ describe('task-emitter', () => {
 
         // then
         expect(emitted[0]).to.nested.include({ 'contact._id': 'c-2' });
-        expect(emitted[0].date.toISOString()).to.include('1969-12-31');
+        expect(emitted[0].date.getTime()).to.be.lt(24 * 60 * 60 * 1000);
       });
 
       it('dueDate function is invoked with expected data', () => {
