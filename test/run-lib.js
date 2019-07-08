@@ -35,6 +35,7 @@ const runNoolsLib = ({ c, targets, tasks }) => {
       this._id = props._id;
       this.date = props.date;
       this.actions = props.actions;
+      this.contact = props.contact;
       this.resolved = props.resolved;
     },
     emit(type, taskOrTarget) {
