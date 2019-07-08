@@ -354,6 +354,25 @@ describe('task-emitter', () => {
         expectAllToHaveUniqueIds(emitted);
       });
 
+      it('given contact without reported_date, dueDate defaults to now', () => {
+        sinon.useFakeTimers(1);
+
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+        delete config.c.contact.reported_date;
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted[0]).to.nested.include({ 'contact._id': 'c-2' });
+        expect(emitted[0].date.toISOString()).to.include('1969-12-31');
+      });
+
       it('dueDate function is invoked with expected data', () => {
         // given
         const config = {
