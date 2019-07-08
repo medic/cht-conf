@@ -74,7 +74,6 @@ describe('nools lib', function() {
         const { emitted } = runNoolsLib(config);
 
         // then
-        console.log(JSON.stringify(emitted, null, 2));
         expect(emitted[0]).to.nested.include({
           'actions[0].content.source_id': 'c-2',
           resolved: false,
@@ -169,7 +168,6 @@ describe('nools lib', function() {
         const { emitted } = runNoolsLib(config);
 
         // then
-        console.log(JSON.stringify(emitted, null, 2));
         expect(emitted[0]).to.nested.include({
           'actions[0].content.source_id': 'r-1',
           resolved: false,

@@ -71,7 +71,9 @@ if (tasks) {
         }
         break;
       case 'contacts':
-        emitTasksForSchedule(c, task);
+        if (c.contact) {
+          emitTasksForSchedule(c, task);
+        }
         break;
       default:
         throw new Error('unrecognised task type: ' + task.appliesTo);
