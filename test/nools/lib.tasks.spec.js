@@ -272,6 +272,74 @@ describe('nools lib', function() {
         ]);
       });
 
+      describe('contact attribute', () => {
+        const mockContactReturnString = sinon.stub().returns('foo');
+        const mockContactReturnContact = sinon.stub().returns({ _id: 'foo', name: 'bar' });
+        const scenarios = [
+          {
+            name: 'as function returning string',
+            contactValue: mockContactReturnString,
+            expectations: (config, emitted) => {
+              expect(emitted[0]).to.nested.include({
+                'contact.name': 'foo',
+              });
+              expect(mockContactReturnString.calledOnce).to.be.true;
+              expect(mockContactReturnString.args[0]).to.deep.eq([config.c, config.c.reports[0]]);
+            }
+          },
+
+           {
+            name: 'as function returning object',
+            contactValue: mockContactReturnContact,
+            expectations: (config, emitted) => {
+              expect(emitted[0]).to.nested.include({
+                'contact._id': 'foo',
+                'contact.name': 'bar',
+              });
+              expect(mockContactReturnContact.calledOnce).to.be.true;
+              expect(mockContactReturnContact.args[0]).to.deep.eq([config.c, config.c.reports[0]]);
+            }
+          },
+
+           {
+            name: 'as string',
+            contactValue: 'foo',
+            expectations: (config, emitted) => expect(emitted[0]).to.nested.include({ 'contact.name': 'foo' }),
+          },
+
+           {
+            name: 'as object',
+            contactValue: { _id: 'bar', name: 'foo' },
+            expectations: (config, emitted) => expect(emitted[0]).to.nested.include({
+              'contact._id': 'bar',
+              'contact.name': 'foo',
+            }),
+          },
+        ];
+
+         for (let scenario of scenarios) {
+          it(scenario.name, () => {
+            // given
+            const config = {
+              c: personWithReports(aReport()),
+              targets: [],
+              tasks: [ aReportBasedTask() ],
+            };
+            config.tasks[0].contact = scenario.contactValue;
+
+             // when
+            const { emitted } = runNoolsLib(config);
+
+             // then
+            expect(emitted[0]).to.nested.include({
+              _type: 'task',
+              'actions[0].content.contact._id': 'c-2',
+            });
+            scenario.expectations(config, emitted);
+          });
+        }
+      });
+
     });
 
     it('functions have access to "this"', function() {
