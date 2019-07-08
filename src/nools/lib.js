@@ -85,10 +85,7 @@ if(tasks) {
         }
         break;
       case 'contacts':
-        var appliesToType = !task.appliesToType || (c.contact && task.appliesToType.indexOf(c.contact.type) !== -1);
-        if(appliesToType) {
-          emitTasksForSchedule(c, task);
-        }
+        emitTasksForSchedule(c, task);
         break;
       default:
         throw new Error('unrecognised task type: ' + task.appliesTo);
@@ -99,8 +96,14 @@ if(tasks) {
 function emitTasksForSchedule(c, schedule, r) {
   var i;
 
-  if(r && schedule.appliesToType && schedule.appliesToType.indexOf(r.form) === -1) {
-    return;
+  if (schedule.appliesToType) {
+    var shouldApply = schedule.appliesTo === 'contacts' ?
+      c.contact && schedule.appliesToType.indexOf(c.contact.type) !== -1 :
+      r && schedule.appliesToType.indexOf(r.form) !== -1;
+
+     if (!shouldApply) {
+      return;
+    }
   }
 
   if(schedule.appliesTo !== 'scheduled_tasks' &&
