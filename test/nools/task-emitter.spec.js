@@ -164,32 +164,18 @@ describe('task-emitter', () => {
         ]);
       });
 
-      describe('contact attribute', () => {
-        const mockContactReturnString = sinon.stub().returns('foo');
-        const mockContactReturnContact = sinon.stub().returns({ _id: 'foo', name: 'bar' });
+      describe('heading attribute', () => {
+        const mockHeading = sinon.stub().returns('foo');
         const scenarios = [
           {
             name: 'as function returning string',
-            contactValue: mockContactReturnString,
+            contactValue: mockHeading,
             expectations: (config, emitted) => {
               expect(emitted[0]).to.nested.include({
                 'contact.name': 'foo',
               });
-              expect(mockContactReturnString.calledOnce).to.be.true;
-              expect(mockContactReturnString.args[0]).to.deep.eq([config.c, config.c.reports[0]]);
-            }
-          },
-
-          {
-            name: 'as function returning object',
-            contactValue: mockContactReturnContact,
-            expectations: (config, emitted) => {
-              expect(emitted[0]).to.nested.include({
-                'contact._id': 'foo',
-                'contact.name': 'bar',
-              });
-              expect(mockContactReturnContact.calledOnce).to.be.true;
-              expect(mockContactReturnContact.args[0]).to.deep.eq([config.c, config.c.reports[0]]);
+              expect(mockHeading.calledOnce).to.be.true;
+              expect(mockHeading.args[0]).to.deep.eq([config.c, config.c.reports[0]]);
             }
           },
 
@@ -200,12 +186,9 @@ describe('task-emitter', () => {
           },
 
           {
-            name: 'as object',
-            contactValue: { _id: 'bar', name: 'foo' },
-            expectations: (config, emitted) => expect(emitted[0]).to.nested.include({
-              'contact._id': 'bar',
-              'contact.name': 'foo',
-            }),
+            name: 'undefined',
+            contactValue: undefined,
+            expectations: (config, emitted) => expect(emitted[0]).to.nested.include({ 'contact.type': 'person' }),
           },
         ];
 
@@ -217,7 +200,7 @@ describe('task-emitter', () => {
               targets: [],
               tasks: [ aReportBasedTask() ],
             };
-            config.tasks[0].contact = scenario.contactValue;
+            config.tasks[0].heading = scenario.contactValue;
             
             // when
             const { emitted } = runNoolsLib(config);
@@ -355,7 +338,7 @@ describe('task-emitter', () => {
       });
 
       it('given contact without reported_date, dueDate defaults to now', () => {
-        sinon.useFakeTimers(1);
+        sinon.useFakeTimers();
 
         // given
         const config = {
@@ -369,8 +352,9 @@ describe('task-emitter', () => {
         const { emitted } = runNoolsLib(config);
 
         // then
-        expect(emitted[0]).to.nested.include({ 'contact._id': 'c-2' });
-        expect(emitted[0].date.getTime()).to.be.lt(24 * 60 * 60 * 1000);
+        const expected = new Date();
+        expected.setHours(0, 0, 0, 0);
+        expect(emitted[0].date.getTime()).to.eq(expected.getTime());
       });
 
       it('dueDate function is invoked with expected data', () => {
