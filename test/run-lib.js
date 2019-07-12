@@ -7,7 +7,7 @@ const pathToContactSummaryLib = path.join(srcPath, 'contact-summary/lib.js');
 const noolsLibContent = fs.readFileSync(pathToNoolsLib).toString();
 const contactSummaryLibContent = fs.readFileSync(pathToContactSummaryLib).toString();
 
-const evalString = function(str) { return eval(str); }; // jshint ignore:line
+const evalString = function(str) { return eval(str); };
 const evalInContext = (js, context) => evalString.call(context, ' with(this) { ' + js + ' }');
 
 const { TEST_DATE } = require('./nools/mocks.js');

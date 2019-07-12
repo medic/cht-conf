@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const { error } = require('../lib/log');
 require('../cli/check-node-version');
 
 const runMedicConf = require('../lib/main');
@@ -10,7 +11,7 @@ const runMedicConf = require('../lib/main');
     returnCode = await runMedicConf(process.argv, process.env);
   }
   catch (e) {
-    console.error(e);
+    error(e);
     returnCode = -1;
   }
   finally {

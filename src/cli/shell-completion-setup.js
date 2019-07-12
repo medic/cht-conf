@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const fs = require('../lib/sync-fs');
 
 module.exports = shell => {
@@ -9,7 +10,7 @@ module.exports = shell => {
     console.log(fs.read(completionFile));
     process.exit(0);
   } else {
-    console.log('# ERROR medic-conf shell completion not yet supported for', shell);
+    console.error('shell completion not yet supported for', shell);
     process.exit(1);
   }
 };
