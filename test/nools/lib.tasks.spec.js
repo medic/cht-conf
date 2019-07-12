@@ -367,7 +367,7 @@ describe('nools lib', function() {
 
       // then
       expect(emitted).to.have.property('length', 1);
-      expect(invoked).to.be.true; // jshint ignore:line
+      expect(invoked).to.be.true;
     });
 
     it('functions in "this.definition" have access to "this"', function() {
@@ -397,7 +397,7 @@ describe('nools lib', function() {
 
       // then
       expect(emitted).to.have.property('length', 1);
-      expect(invoked).to.be.true; // jshint ignore:line
+      expect(invoked).to.be.true;
     });
 
     describe('scheduled-task based', function() {

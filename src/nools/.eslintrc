@@ -1,13 +1,24 @@
 {
-  "env": {
-    "es6": false,
-    "node": true
-  },
-  "extends": "eslint:recommended",
   "parserOptions": {
     "ecmaVersion": 5
   },
   "rules": {
-    "no-undef": "off"
+    "no-console": "off",
+    "no-debugger": "off"
+  },
+  "globals": {
+    "idx1": true,
+    "idx2": true,
+    "c": true,
+    "emit": true,
+    "now": true,
+    "r": true,
+    "Task": true,
+    "Target": true,
+    "tasks": true,
+    "target": true,
+    "targets": true,
+    "user": true,
+    "Utils": true
   }
 }

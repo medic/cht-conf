@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const supportedActions = require('./supported-actions');
 
 module.exports = () => {

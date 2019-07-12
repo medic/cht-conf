@@ -18,9 +18,10 @@ module.exports = projectDir => {
 
   const theirPackageVersion = readRequestedVersion(projectDir);
   if(!theirPackageVersion) {
-    warn('Project has no dependency on medic-conf.  It may not have any tests.');
+    warn('Project has no dependency on medic-conf.');
     return;
   }
+
   if(!semver.satisfies(myVersion, theirPackageVersion)) {
     throw new Error(`medic-conf version ${myVersion} does not match the project's required version: ${theirPackageVersion}`);
   }

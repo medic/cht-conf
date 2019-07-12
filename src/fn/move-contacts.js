@@ -141,7 +141,7 @@ const prepareDocumentDirectory = ({ docDirectoryPath, force }) => {
 
 const usage = () => {
   const bold = text => `\x1b[1m${text}\x1b[0m`;
-  console.log(`
+  info(`
 ${bold('medic-conf\'s move-contacts action')}
 When combined with 'upload-docs' this action effectively moves a contact from one place in the hierarchy to another.
 

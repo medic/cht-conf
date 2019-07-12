@@ -57,12 +57,12 @@ module.exports = async (argv, env) => {
   }
 
   if (cmdArgs['supported-actions']) {
-    console.log('Supported actions:\n', supportedActions.join('\n  '));
+    info('Supported actions:\n', supportedActions.join('\n  '));
     return 0;
   }
 
   if (cmdArgs.version) {
-    console.log(require('../../package.json').version);
+    info(require('../../package.json').version);
     return 0;
   }
 
