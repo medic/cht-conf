@@ -48,7 +48,7 @@
     "request-promise-native": "^1.0.5",
     "semver": "^5.6.0",
     "svgo": "^1.1.1",
-    "uglify-js": "^3.5.0",
+    "terser": "^4.1.2",
     "uuid": "^3.3.2"
   },
   "devDependencies": {

@@ -1,13 +1,19 @@
 {
-  "env": {
-    "es6": false,
-    "node": true
-  },
-  "extends": "eslint:recommended",
   "parserOptions": {
     "ecmaVersion": 5
   },
   "rules": {
-    "no-undef": "off"
+    "no-console": "off",
+    "no-debugger": "off"
+  },
+  "globals": {
+    "cards": true,
+    "contact": true,
+    "contactSummary": true,
+    "context": true,
+    "extras": true,
+    "fields": true,
+    "lineage": true,
+    "reports": true
   }
 }

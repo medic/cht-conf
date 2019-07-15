@@ -59,6 +59,7 @@ const compileAppSettingsForProject = (projectDir, options) => {
   const readOptionalJson = path => fs.exists(path) ? fs.readJson(path) : undefined;
   const appSettings = fs.readJson(path.join(projectDir, 'app_settings.json'));
   options.eslint = appSettings.eslint;
+  options.ecmaVersion = appSettings.eslint && appSettings.eslint.parserOptions && appSettings.eslint.parserOptions.ecmaVersion || 5;
 
   appSettings.contact_summary = compileContactSummary(projectDir, options);
   appSettings.tasks = {
@@ -146,7 +147,9 @@ function applyTransforms(app_settings, inherited) {
 const parseExtraArgs = (extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
   return {
-    warnOnLintMessage: !!args.debug,
+    minifyScripts: !args.debug,
+    haltOnMinifyWarning: !args.debug,
+    haltOnLintMessage: !args.debug,
     includeSourceMap: !!args.debug,
   };
 };

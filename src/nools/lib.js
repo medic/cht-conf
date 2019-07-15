@@ -1,3 +1,6 @@
+var now = Utils.now();
+var targets = require('targets.js');
+var tasks = require('tasks.js');
 
 function bindAllFunctionsToContext(obj, context) {
   var keys = Object.keys(obj);
@@ -33,6 +36,7 @@ function deepCopy(obj) {
   return copy;
 }
 
+var idx1, target;
 for(idx1 = 0; idx1 < targets.length; ++idx1) {
   target = targets[idx1];
   var targetContext = {};
@@ -44,7 +48,7 @@ for(idx1 = 0; idx1 < targets.length; ++idx1) {
       emitTargetFor(target, c);
       break;
     case 'reports':
-      for (idx2 = 0; idx2 < c.reports.length; ++idx2) {
+      for (var idx2 = 0; idx2 < c.reports.length; ++idx2) {
         r = c.reports[idx2];
         emitTargetFor(target, c, r);
       }

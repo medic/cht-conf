@@ -1,3 +1,9 @@
+var contactSummary = require('contact-summary.templated.js');
+
+var fields = contactSummary.fields;
+var context = contactSummary.context;
+var cards = contactSummary.cards;
+
 function isReportValid(report) {
   // valid XForms won't have .errors field
   // valid JSON forms will have empty array errors:[]

@@ -7,17 +7,11 @@
     "no-debugger": "off"
   },
   "globals": {
-    "idx1": true,
-    "idx2": true,
     "c": true,
     "emit": true,
-    "now": true,
     "r": true,
     "Task": true,
     "Target": true,
-    "tasks": true,
-    "target": true,
-    "targets": true,
     "user": true,
     "Utils": true
   }
