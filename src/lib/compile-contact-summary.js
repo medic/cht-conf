@@ -1,15 +1,9 @@
+const path = require('path');
 const fs = require('./sync-fs');
-const jshintWithReport = require('./jshint-with-report');
+const lint = require('./lint-with-linenumbers');
 const minify = require('../lib/minify-js');
-const templatedJs = require('../lib/templated-js');
 
-function lint(code) {
-  jshintWithReport('contact-summary', code, {
-    predef: [ 'console', 'contact', 'lineage', 'reports' ],
-  });
-}
-
-module.exports = projectDir => {
+module.exports = (projectDir, options) => {
   const freeformPath = `${projectDir}/contact-summary.js`;
   const structuredPath = `${projectDir}/contact-summary.templated.js`;
 
@@ -20,35 +14,13 @@ module.exports = projectDir => {
   if (freeformPathExists && structuredPathExists) throw new Error(`Found contact-summary javascript at both ${freeformPath} and ${structuredPath}.  Only one of these files should exist.`);
 
   let code;
+  const pathToContactSummaryLib = path.join(__dirname, '../contact-summary/lib.js');
   if (freeformPathExists) {
-    code = templatedJs.fromFile(projectDir, freeformPath);
+    code = fs.read(projectDir, freeformPath);
   } else {
-    const contactSummaryLib = fs.read(`${__dirname}/../contact-summary/lib.js`);
-    const templatedContactSummary = fs.read(`${projectDir}/contact-summary.templated.js`);
-    const contactSummaryExtrasPath = `${projectDir}/contact-summary-extras.js`;
-    const contactSummaryExtrasContent = fs.exists(contactSummaryExtrasPath) ? fs.read(contactSummaryExtrasPath) : '';
-
-    code = `
-var extras = (function() {
-  var module = { exports: {} };
-  ${contactSummaryExtrasContent}
-  return module.exports;
-})(); /*jshint unused:false*/
-
-var contactSummary = (function(extras) {
-  var module = { exports: {} };
-  ${templatedContactSummary}
-  return module.exports;
-})(extras);
-
-var fields = contactSummary.fields;
-var context = contactSummary.context;
-var cards = contactSummary.cards;
-${contactSummaryLib}
-`;
+    const contactSummaryLib = fs.read(pathToContactSummaryLib);
   }
 
-  lint(code);
-
-  return minify(code);
+  lint(code, pathToContactSummaryLib, options);
+  return minify(code, options).code;
 };

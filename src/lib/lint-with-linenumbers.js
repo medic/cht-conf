@@ -18,10 +18,10 @@ module.exports = (code, lintConfigPath, options = {}) => {
   if(messages.length) {
     info(`Generated code:`);
     info(withLineNumbers(code));
-    const logLevel = options.warnOnLintMessage ? warn : error;
+    const logLevel = options.haltOnLintMessage ? error : warn;
     logLevel(messages.map(message => `ruleId: '${message.ruleId}' message: '${message.message}' line: '${message.line}' column: '${message.column}'`));
 
-    if (!options.warnOnLintMessage) {
+    if (options.haltOnLintMessage) {
       throw new Error(`eslint violations found (""\\(',.,')/"")`);
     }
   }

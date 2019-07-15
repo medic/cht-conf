@@ -1,112 +1,64 @@
+const path = require('path');
+
 const fs = require('./sync-fs');
-const jshintWithReport = require('./jshint-with-report');
+const lint = require('./lint-with-linenumbers');
 const minifyJs = require('./minify-js');
-const minifyNools = require('./minify-nools');
-const templatedJs = require('./templated-js');
 
-const CURRENT_NOOLS_FILES = [ 'tasks.js', 'targets.js', 'nools-extras.js' ];
+const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js', 'nools-extras.js' ];
 
-function lint(code) {
-  jshintWithReport('nools rules', code, {
-    predef: [ 'c', 'console', 'emit', 'Contact', 'Target', 'Task', 'user', 'Utils' ],
-  });
-}
+const compileNoolsRules = (projectDir, options) => {
+  const tryLoadLegacyRules = legacyNoolsFilePath => {
+    let result;
+    if (fs.exists(legacyNoolsFilePath)) {
+      result = fs.read(legacyNoolsFilePath);
+    }
+  
+    return result;
+  };
 
-function compileWithDefaultLayout(projectDir) {
-  checkForRequiredFilesForDefaultLayout(projectDir);
+  const legacyNoolsFilePath = path.join(projectDir, 'rules.nools.js');
+  const legacyRules = tryLoadLegacyRules(legacyNoolsFilePath);
+  
+  if (legacyRules) {
+    if (findMissingDeclarativeFiles(projectDir).length !== DECLARATIVE_NOOLS_FILES.length) {
+      throw new Error(`Both legacy and current nools definitions found. You should either have ${legacyNoolsFilePath} xor ${DECLARATIVE_NOOLS_FILES} files.`);
+    }
 
-  const targets = fs.read(`${projectDir}/targets.js`);
-  const tasks = fs.read(`${projectDir}/tasks.js`);
+    return legacyRules;
+  } else {
+    return compileDeclarativeFiles(projectDir, options);
+  }
+};
+
+const findMissingDeclarativeFiles = projectDir => DECLARATIVE_NOOLS_FILES.filter(filename => {
+  const filePath = path.join(projectDir, filename);
+  return !fs.exists(filePath);
+});
+
+const compileDeclarativeFiles = (projectDir, options) => {
+  const missingFiles = findMissingDeclarativeFiles(projectDir);
+  if (missingFiles.length > 0) {
+    throw new Error(`Missing required declarative configuration file(s): ${missingFiles}`);
+  }
+
+  const targetsCode = fs.read(`${projectDir}/targets.js`);
+  const tasksCode = fs.read(`${projectDir}/tasks.js`);
   const supportCode = fs.read(`${projectDir}/nools-extras.js`);
   const noolsLib = fs.read(`${__dirname}/../nools/lib.js`);
 
-  const jsCode = `
-    var idx1, idx2, r, target;
-    var now = Utils.now();
-    var extras = (function() {
-      var module = { exports: {} };
-      ${supportCode}
-      return module.exports;
-    })(); /*jshint unused:false*/
 
-    var targets = (function(extras) {
-      var module = { exports: {} };
-      ${targets}
-      return module.exports;
-    })(extras);
+  lint(jsCode, path.join(__dirname, '../nools/lib.js'), options);
 
-    var tasks = (function(extras) {
-      var module = {};
-      ${tasks}
-      return module.exports;
-    })(extras);
+  const minified = minifyJs(jsCode, options);
 
-    ${noolsLib}
-  `;
-
-  lint(jsCode);
-
-  const minifiedJs = minifyJs(jsCode);
-
-  return minifyNools(`
-    define Target {
-      _id: null,
-      deleted: null,
-      type: null,
-      pass: null,
-      date: null
-    }
-
-    define Contact {
-      contact: null,
-      reports: null
-    }
-
-    define Task {
-      _id: null,
-      deleted: null,
-      doc: null,
-      contact: null,
-      icon: null,
-      date: null,
-      title: null,
-      fields: null,
-      resolved: null,
-      priority: null,
-      priorityLabel: null,
-      reports: null,
-      actions: null
-    }
-
-    rule GenerateEvents {
-      when {
-        c: Contact
-      }
-      then {
-        ${minifiedJs}
-      }
-    }
-  `);
-}
-
-function checkForRequiredFilesForDefaultLayout(projectDir) {
-  const missing = CURRENT_NOOLS_FILES.filter(f => !fs.exists(`${projectDir}/${f}`));
-
-  if(missing.length) {
-    throw new Error(`Missing required file(s): ${missing}`);
-  }
-}
-
-module.exports = projectDir => {
-  const legacyNoolsPath = `${projectDir}/rules.nools.js`;
-
-  if(fs.exists(legacyNoolsPath)) {
-    if(CURRENT_NOOLS_FILES.some(f => fs.exists(`${projectDir}/${f}`))) {
-      throw new Error('Both legacy and current nools definitions found.  ' +
-          `You should either have ${legacyNoolsPath} or ${CURRENT_NOOLS_FILES} files.`);
-    }
-    return minifyNools(templatedJs.fromFile(projectDir, legacyNoolsPath));
-  } else {
-    return compileWithDefaultLayout(projectDir);
-  }
+  // const to_base64 = str => Buffer.from(str).toString('base64');
+  // const sourceMapLine = options.includeSourceMap ? '//# sourceMappingURL=data:application/json;charset=utf-8;base64,' + to_base64(minified.map) : '';
+  return `define Target { _id: null, deleted: null, type: null, pass: null, date: null }
+define Contact { contact: null, reports: null }
+define Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }
+rule GenerateEvents {
+  when { c: Contact } then { ${minified.code} }
+}`;
 };
+
+module.exports = compileNoolsRules;
