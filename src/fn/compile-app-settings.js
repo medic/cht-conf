@@ -18,16 +18,16 @@ const compileAppSettings = async (projectDir, couchUrl, extraArgs) => {
   const inheritedPath = path.join(projectDir, 'settings.inherit.json');
   if(fs.exists(inheritedPath)) {
     const inherited = fs.readJson(inheritedPath);
-    appSettings = compileAppSettingsForProject(path.join(projectDir, inherited.inherit), options);
+    appSettings = await compileAppSettingsForProject(path.join(projectDir, inherited.inherit), options);
     applyTransforms(appSettings, inherited);
   } else {
-    appSettings = compileAppSettingsForProject(projectDir, options);
+    appSettings = await compileAppSettingsForProject(projectDir, options);
   }
 
   fs.writeJson(path.join(projectDir, 'app_settings.json'), appSettings);
 };
 
-const compileAppSettingsForProject = (projectDir, options) => {
+const compileAppSettingsForProject = async (projectDir, options) => {
   const parsePurgingFunction = root => {
     const purgeFnPath = path.join(root, 'purging.js');
     if (fs.exists(purgeFnPath)) {
@@ -58,12 +58,9 @@ const compileAppSettingsForProject = (projectDir, options) => {
 
   const readOptionalJson = path => fs.exists(path) ? fs.readJson(path) : undefined;
   const appSettings = fs.readJson(path.join(projectDir, 'app_settings.json'));
-  options.eslint = appSettings.eslint;
-  options.ecmaVersion = appSettings.eslint && appSettings.eslint.parserOptions && appSettings.eslint.parserOptions.ecmaVersion || 5;
-
-  appSettings.contact_summary = compileContactSummary(projectDir, options);
+  appSettings.contact_summary = await compileContactSummary(projectDir, options);
   appSettings.tasks = {
-    rules: compileNoolsRules(projectDir, options),
+    rules: await compileNoolsRules(projectDir, options),
     schedules: readOptionalJson(taskSchedulesPath),
     targets: parseTargets.json(projectDir),
   };

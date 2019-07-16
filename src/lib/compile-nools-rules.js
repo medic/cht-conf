@@ -1,10 +1,9 @@
 const path = require('path');
 
 const fs = require('./sync-fs');
-const lint = require('./lint-with-linenumbers');
-const minifyJs = require('./minify-js');
+const pack = require('./pack-lib');
 
-const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js', 'nools-extras.js' ];
+const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js' ];
 
 const compileNoolsRules = (projectDir, options) => {
   const tryLoadLegacyRules = legacyNoolsFilePath => {
@@ -35,29 +34,20 @@ const findMissingDeclarativeFiles = projectDir => DECLARATIVE_NOOLS_FILES.filter
   return !fs.exists(filePath);
 });
 
-const compileDeclarativeFiles = (projectDir, options) => {
+const compileDeclarativeFiles = async (projectDir, options) => {
   const missingFiles = findMissingDeclarativeFiles(projectDir);
   if (missingFiles.length > 0) {
     throw new Error(`Missing required declarative configuration file(s): ${missingFiles}`);
   }
 
-  const targetsCode = fs.read(`${projectDir}/targets.js`);
-  const tasksCode = fs.read(`${projectDir}/tasks.js`);
-  const supportCode = fs.read(`${projectDir}/nools-extras.js`);
-  const noolsLib = fs.read(`${__dirname}/../nools/lib.js`);
+  const pathToNoolsDirectory = path.join(__dirname, '../nools');
 
-
-  lint(jsCode, path.join(__dirname, '../nools/lib.js'), options);
-
-  const minified = minifyJs(jsCode, options);
-
-  // const to_base64 = str => Buffer.from(str).toString('base64');
-  // const sourceMapLine = options.includeSourceMap ? '//# sourceMappingURL=data:application/json;charset=utf-8;base64,' + to_base64(minified.map) : '';
+  const code = await pack(projectDir, pathToNoolsDirectory, options);
   return `define Target { _id: null, deleted: null, type: null, pass: null, date: null }
 define Contact { contact: null, reports: null }
 define Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }
 rule GenerateEvents {
-  when { c: Contact } then { ${minified.code} }
+  when { c: Contact } then { ${code} }
 }`;
 };
 

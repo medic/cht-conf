@@ -1,9 +1,8 @@
 const path = require('path');
 const fs = require('./sync-fs');
-const lint = require('./lint-with-linenumbers');
-const minify = require('../lib/minify-js');
+const pack = require('../lib/pack-lib');
 
-module.exports = (projectDir, options) => {
+module.exports = async (projectDir, options) => {
   const freeformPath = `${projectDir}/contact-summary.js`;
   const structuredPath = `${projectDir}/contact-summary.templated.js`;
 
@@ -13,14 +12,15 @@ module.exports = (projectDir, options) => {
   if (!freeformPathExists && !structuredPathExists) throw new Error(`Could not find contact-summary javascript at either of ${freeformPath} or ${structuredPath}.  Please create one xor other of these files.`);
   if (freeformPathExists && structuredPathExists) throw new Error(`Found contact-summary javascript at both ${freeformPath} and ${structuredPath}.  Only one of these files should exist.`);
 
+  const pathToContactSummaryFolder = path.join(__dirname, '../contact-summary');
+  
   let code;
-  const pathToContactSummaryLib = path.join(__dirname, '../contact-summary/lib.js');
   if (freeformPathExists) {
     code = fs.read(projectDir, freeformPath);
+    // TODO: How do you eslint this?
   } else {
-    const contactSummaryLib = fs.read(pathToContactSummaryLib);
+    code = await pack(projectDir, pathToContactSummaryFolder, options);
   }
 
-  lint(code, pathToContactSummaryLib, options);
-  return minify(code, options).code;
+  return code;
 };
