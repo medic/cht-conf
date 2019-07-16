@@ -218,7 +218,7 @@ function emitTargetFor(targetConfig, c, r) {
   }
 
   if(targetConfig.emitCustom) {
-    targetConfig.emitCustom(instance, c, r);
+    targetConfig.emitCustom(emit, instance, c, r);
     return;
   }
 
