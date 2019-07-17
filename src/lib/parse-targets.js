@@ -33,17 +33,9 @@ function warnOnUnexpectedProperties (targets) {
 }
 
 const getTargets = (projectDir) => {
-  const pathToNoolsExtras = path.join(projectDir, 'nools-extras.js');
   const pathToTargetJs = path.join(projectDir, 'targets.js');
   
-  let targets;
-  try {
-    global.extras = require(pathToNoolsExtras);
-    targets = require(pathToTargetJs);  
-  } finally {
-    delete global.extras;
-  }
-
+  const targets = require(pathToTargetJs);
   warnOnUnexpectedProperties(targets);
 
   return targets;

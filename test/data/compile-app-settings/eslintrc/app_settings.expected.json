@@ -15,15 +15,6 @@
           "translation_key": "targets.active_pregnancies.title",
           "subtitle_translation_key": "targets.all_time.subtitle",
           "icon": "pregnancy-1"
-        },
-        {
-          "id": "imm-children-registered-this-month",
-          "type": "count",
-          "goal": -1,
-          "translation_key": "targets.children_registered.title",
-          "subtitle_translation_key": "targets.this_month.subtitle",
-          "icon": "child",
-          "context": "user.parent.use_cases.split(\" \").indexOf(\"imm\") !== -1"
         }
       ]
     }

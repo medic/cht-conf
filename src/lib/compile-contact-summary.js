@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('./sync-fs');
-const pack = require('../lib/pack-lib');
+const pack = require('../lib/package-lib');
 
 module.exports = async (projectDir, options) => {
   const freeformPath = `${projectDir}/contact-summary.js`;
@@ -16,7 +16,7 @@ module.exports = async (projectDir, options) => {
   
   let code;
   if (freeformPathExists) {
-    code = fs.read(projectDir, freeformPath);
+    code = fs.read(freeformPath);
     // TODO: How do you eslint this?
   } else {
     code = await pack(projectDir, pathToContactSummaryFolder, options);

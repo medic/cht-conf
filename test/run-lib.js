@@ -17,6 +17,7 @@ const runNoolsLib = ({ c, targets, tasks }) => {
         d.setHours(0, 0, 0, 0);
         return d;
       },
+      now: () => new Date(TEST_DATE),
       isTimely: function() { return true; },
     },
     Target: function(props) {

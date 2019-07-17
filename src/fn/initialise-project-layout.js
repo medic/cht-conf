@@ -8,8 +8,16 @@ const LAYOUT = {
   resources: {},
   'targets.js': 'module.exports = [];',
   'tasks.js': 'module.exports = [];',
-  'nools-extras.js': 'module.exports = {};',
   'task-schedules.json': {},
+  '.eslintrc': `{
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6
+  }
+}`,
   forms: {
     app: {},
     collect: {},
