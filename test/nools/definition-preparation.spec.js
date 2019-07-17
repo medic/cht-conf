@@ -1,20 +1,11 @@
 const { expect } = require('chai');
+
 const rewire = require('rewire');
+const prepare = rewire('../../src/nools/definition-preparation');
 
-describe('nools lib unit tests', () => {
-  global.targets = [];
-  global.tasks = [];
-  global.emit = () => {};
-  const lib = rewire('../../src/nools/lib.js');
-  
-  after(() => {
-    delete global.targets;
-    delete global.tasks;
-    delete global.emit;
-  });
-
-  describe('deep copy', () => {
-    const deepCopy = lib.__get__('deepCopy');
+describe('definition-preparation', () => {
+  describe('deepCopy', () => {
+    const deepCopy = prepare.__get__('deepCopy');
 
     it('shallow fields are copied', () => {
       const original = { foo: 'bar' };
@@ -69,7 +60,7 @@ describe('nools lib unit tests', () => {
   });
 
   describe('bindAllFunctionsToContext', () => {
-    const bindAllFunctionsToContext = lib.__get__('bindAllFunctionsToContext');
+    const bindAllFunctionsToContext = prepare.__get__('bindAllFunctionsToContext');
 
     it('shallow functions are bound', done => {
       const context = { foo: 'bar' };

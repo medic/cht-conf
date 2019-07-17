@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const fs = require('../lib/sync-fs');
 
 module.exports = shell => {

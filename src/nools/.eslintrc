@@ -7,11 +7,6 @@
     "no-debugger": "off"
   },
   "globals": {
-    "c": true,
-    "emit": true,
-    "r": true,
-    "Task": true,
-    "Target": true,
     "user": true,
     "Utils": true
   }

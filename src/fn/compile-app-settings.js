@@ -16,7 +16,7 @@ const compileAppSettings = async (projectDir, couchUrl, extraArgs) => {
 
   let appSettings;
   const inheritedPath = path.join(projectDir, 'settings.inherit.json');
-  if(fs.exists(inheritedPath)) {
+  if (fs.exists(inheritedPath)) {
     const inherited = fs.readJson(inheritedPath);
     appSettings = await compileAppSettingsForProject(path.join(projectDir, inherited.inherit), options);
     applyTransforms(appSettings, inherited);
@@ -76,7 +76,7 @@ const compileAppSettingsForProject = async (projectDir, options) => {
 
 function applyTransforms(app_settings, inherited) {
   function doDelete(target, rules) {
-    if(!Array.isArray(rules)) throw new Error('.delete should be an array');
+    if (!Array.isArray(rules)) throw new Error('.delete should be an array');
   
     rules.forEach(k => {
       const parts = k.split('.');
@@ -90,7 +90,7 @@ function applyTransforms(app_settings, inherited) {
   }
 
   function doReplace(target, rules) {
-    if(typeof rules !== 'object') throw new Error('.replace should be an object');
+    if (typeof rules !== 'object') throw new Error('.replace should be an object');
   
     Object.keys(rules)
       .forEach(k => {
@@ -107,14 +107,14 @@ function applyTransforms(app_settings, inherited) {
   function doMerge(target, source) {
     Object.keys(target)
       .forEach(k => {
-        if(Array.isArray(source[k])) target[k] = target[k].concat(source[k]);
-        else if(typeof source[k] === 'object') doMerge(target[k], source[k]);
+        if (Array.isArray(source[k])) target[k] = target[k].concat(source[k]);
+        else if (typeof source[k] === 'object') doMerge(target[k], source[k]);
         else source[k] = target[k];
       });
   }
 
   function doFilter(target, rules) {
-    if(typeof rules !== 'object') throw new Error('.filter should be an object');
+    if (typeof rules !== 'object') throw new Error('.filter should be an object');
   
     Object.keys(rules)
       .forEach(k => {
@@ -125,11 +125,11 @@ function applyTransforms(app_settings, inherited) {
           parts.shift();
         }
   
-        if(!Array.isArray(rules[k])) throw new Error('.filter values must be arrays!');
+        if (!Array.isArray(rules[k])) throw new Error('.filter values must be arrays!');
   
         Object.keys(t[parts[0]])
           .forEach(tK => {
-            if(!rules[k].includes(tK)) delete t[parts[0]][tK];
+            if (!rules[k].includes(tK)) delete t[parts[0]][tK];
           });
       });
   }
@@ -140,14 +140,12 @@ function applyTransforms(app_settings, inherited) {
   doFilter(app_settings, inherited.filter);
 }
 
-// Parses extraArgs and asserts if required parameters are not present
 const parseExtraArgs = (extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
   return {
     minifyScripts: !args.debug,
-    haltOnMinifyWarning: !args.debug,
+    haltOnWebpackWarning: !args.debug,
     haltOnLintMessage: !args.debug,
-    includeSourceMap: !!args.debug,
   };
 };
 
