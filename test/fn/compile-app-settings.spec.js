@@ -6,7 +6,15 @@ const rewire = require('rewire');
 const compileAppSettings = rewire('../../src/fn/compile-app-settings');
 const fs = require('../../src/lib/sync-fs');
 
+let writeJson;
 describe('compile-app-settings', () => {
+  beforeEach(() => {
+    writeJson = sinon.stub(fs, 'writeJson');
+    compileAppSettings.__set__('fs', fs);
+  });
+  afterEach(() => {
+    writeJson.restore();
+  });
 
   it('should handle simple config', () =>
     test('simple/project'));
@@ -40,12 +48,8 @@ describe('compile-app-settings', () => {
 });
 
 async function test(relativeProjectDir) {
-  const writeJson = sinon.stub();
-  const actingFs = compileAppSettings.__get__('fs');
-  actingFs.writeJson = writeJson;
-
   const testDir = path.join(__dirname, '../data/compile-app-settings', relativeProjectDir);
-
+  
   // when
   await compileAppSettings(testDir);
 
@@ -53,6 +57,7 @@ async function test(relativeProjectDir) {
   const actual = JSON.parse(JSON.stringify(writeJson.args[0][1]));
   const expected = JSON.parse(fs.read(`${testDir}/../app_settings.expected.json`));
   actual.tasks.rules = expected.tasks.rules = '';
+  actual.contact_summary = expected.contact_summary = '';
   expect(actual).to.deep.eq(expected);
 }
 

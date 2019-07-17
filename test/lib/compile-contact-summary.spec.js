@@ -1,42 +1,39 @@
-const assert = require('chai').assert;
+const { assert, expect } = require('chai');
+const path = require('path');
 const compileContactSummary = require('../../src/lib/compile-contact-summary');
 
-const BASE_DIR = 'data/compile-contact-summary';
+const BASE_DIR = path.join(__dirname, '../data/compile-contact-summary');
 
-describe('compile-contact-summary', function() {
+const options = { minifyScripts: true };
 
-  it('should throw an error if no recognised file layout is found', function() {
+describe('compile-contact-summary', () => {
+  it('should throw an error if no recognised file layout is found', async () => {
     try {
-
       // when
-      compileContactSummary(`${BASE_DIR}/empty`);
-
+      await compileContactSummary(`${BASE_DIR}/empty`, options);
       assert.fail('Expected error to be thrown.');
-
     } catch(e) {
       if(e.name === 'AssertionError') throw e;
       // else expected :¬)
     }
   });
 
-  describe('with contact-summary.js', function() {
-
-    it('should include a simple file verbatim', function() {
+  describe('with contact-summary.js', () => {
+    it('should include a simple file verbatim', async () => {
       // when
-      const compiled = compileContactSummary(`${BASE_DIR}/verbatim`);
+      const compiled = await compileContactSummary(`${BASE_DIR}/verbatim`, options);
 
       // then
-      assert.equal(compiled, 'contact.x=\'a string\';');
+      expect(compiled).to.include('contact.x=\'a string\'');
     });
 
-    it('should include other source file referenced with __include_inline__()', function() {
+    it('should include other source file referenced with require', async () => {
       // when
-      const compiled = compileContactSummary(`${BASE_DIR}/includes`);
+      const compiled = await compileContactSummary(`${BASE_DIR}/includes`, options);
 
       // then
-      assert.equal(compiled, 'contact.x=\'from original\',contact.y=\'from included\';');
+      expect(compiled).to.include('contact.x=\'from original\'');
+      expect(compiled).to.include('contact.y=\'from included\'');
     });
-
   });
-
 });

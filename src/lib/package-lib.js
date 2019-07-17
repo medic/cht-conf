@@ -6,13 +6,12 @@ const webpack = require('webpack');
 
 const { info, warn, error } = require('./log');
 
-module.exports = (pathToProject, pathToLib, options = {}) => {
-  const entry = path.join(pathToLib, 'lib.js');
-  const baseEslintPath = path.join(pathToLib, '.eslintrc');
+module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
+  const directoryContainingEntry = path.dirname(entry);
   const baseEslintConfig = fsUtils.readJson(baseEslintPath);
   const outputDirectoryPath = path.join(__dirname, '../../build');
 
-  const libName = path.basename(pathToLib);
+  const libName = path.basename(directoryContainingEntry);
   info(`Packaging ${libName}`);
 
   const temporaryOutputFilename = `./${libName}.js`;
@@ -104,7 +103,7 @@ module.exports = (pathToProject, pathToLib, options = {}) => {
       }
 
       const outputPath = path.join(outputDirectoryPath, temporaryOutputFilename);
-      resolve(fs.readFileSync(outputPath));
+      resolve(fs.readFileSync(outputPath).toString());
     });
   });
 };
