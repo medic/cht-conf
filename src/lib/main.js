@@ -45,17 +45,6 @@ module.exports = async (argv, env) => {
   });
 
   //
-  // Logging
-  //
-  if (cmdArgs.silent) {
-    log.level = log.LEVEL_NONE;
-  } else if (cmdArgs.verbose) {
-    log.level = log.LEVEL_TRACE;
-  } else {
-    log.level = log.LEVEL_INFO;
-  }
-
-  //
   // General single use actions
   //
   if (cmdArgs.help) {
@@ -84,6 +73,17 @@ module.exports = async (argv, env) => {
 
   if (cmdArgs['accept-self-signed-certs']) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+  }
+
+  //
+  // Logging
+  //
+  if (cmdArgs.silent) {
+    log.level = log.LEVEL_NONE;
+  } else if (cmdArgs.verbose) {
+    log.level = log.LEVEL_TRACE;
+  } else {
+    log.level = log.LEVEL_INFO;
   }
 
   //
@@ -167,7 +167,7 @@ module.exports = async (argv, env) => {
 
   const skipCheckForUpdates = cmdArgs.check === false;
   if (actions.includes('check-for-updates') && !skipCheckForUpdates) {
-    await checkForUpdates({ nonFatal:true });
+    await checkForUpdates({ nonFatal: true });
   }
 
   for (let action of actions) {

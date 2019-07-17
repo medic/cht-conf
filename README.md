@@ -291,7 +291,7 @@ Move the contact with the id `contact_1` to the top of the hierarchy (no parent)
 This tool expects a project to be structured as follows:
 
 	example-project/
-    .eslintrc
+		.eslintrc
 		app_settings.json
 		contact-summary.js
 		resources.json
