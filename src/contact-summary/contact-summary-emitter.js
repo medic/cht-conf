@@ -1,4 +1,4 @@
-var emitter = function(contactSummary, contact, reports) {
+function emitter(contactSummary, contact, reports) {
   var fields = contactSummary.fields;
   var context = contactSummary.context;
   var cards = contactSummary.cards;
@@ -44,7 +44,7 @@ var emitter = function(contactSummary, contact, reports) {
   
   // return the result for 2.13+ as per #2635
   return result;
-};
+}
 
 function isReportValid(report) {
   // valid XForms won't have .errors field
