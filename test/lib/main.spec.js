@@ -12,9 +12,6 @@ describe('main', () => {
   beforeEach(() => {
     mocks = {
       usage: sinon.stub(),
-      console: {
-        log: sinon.stub(),
-      },
       shellCompletionSetup: sinon.stub(),
       error: sinon.stub(),
       info: sinon.stub(),
@@ -55,14 +52,14 @@ describe('main', () => {
 
   it('--supported-actions', async () => {
     await main([...normalArgv, '--supported-actions'], {});
-    expect(mocks.console.log.callCount).to.eq(1);
-    expect(mocks.console.log.args[0]).to.include('Supported actions:\n');
+    expect(mocks.info.callCount).to.eq(1);
+    expect(mocks.info.args[0]).to.include('Supported actions:\n');
   });
 
   it('--version', async () => {
     await main([...normalArgv, '--version'], {});
-    expect(mocks.console.log.callCount).to.eq(1);
-    expect(mocks.console.log.args[0]).to.match(/[0-9]+\.[0-9]+\.[0-9]/);
+    expect(mocks.info.callCount).to.eq(1);
+    expect(mocks.info.args[0]).to.match(/[0-9]+\.[0-9]+\.[0-9]/);
   });
 
   it('--local --accept-self-signed-certs', async () => {

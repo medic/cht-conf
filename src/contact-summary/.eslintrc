@@ -2,8 +2,28 @@
   "parserOptions": {
     "ecmaVersion": 5
   },
+  "extends": "eslint:recommended",
   "rules": {
+    "eqeqeq": "error",
+    "no-bitwise": "error",
     "no-console": "off",
-    "no-debugger": "off"
+    "no-debugger": "off",
+    "semi": [
+      "error",
+      "always"
+    ],
+    "quotes": [
+      "error",
+      "single",
+      {
+        "allowTemplateLiterals": true,
+        "avoidEscape": true
+      }
+    ]
+  },
+  "globals": {
+    "contact": true,
+    "reports": true,
+    "lineage": true
   }
 }

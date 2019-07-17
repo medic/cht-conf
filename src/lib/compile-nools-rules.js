@@ -1,7 +1,7 @@
 const path = require('path');
 
 const fs = require('./sync-fs');
-const pack = require('./pack-lib');
+const pack = require('./package-lib');
 
 const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js' ];
 
@@ -18,10 +18,12 @@ const compileNoolsRules = (projectDir, options) => {
   const legacyNoolsFilePath = path.join(projectDir, 'rules.nools.js');
   const legacyRules = tryLoadLegacyRules(legacyNoolsFilePath);
   
-  if (legacyRules) {
+  if (legacyRules !== undefined) {
     if (findMissingDeclarativeFiles(projectDir).length !== DECLARATIVE_NOOLS_FILES.length) {
       throw new Error(`Both legacy and current nools definitions found. You should either have ${legacyNoolsFilePath} xor ${DECLARATIVE_NOOLS_FILES} files.`);
     }
+
+    // TODO: Eslint this?
 
     return legacyRules;
   } else {

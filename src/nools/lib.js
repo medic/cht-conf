@@ -1,4 +1,4 @@
-/* global c, emit, Task, Target, Utils */
+/* global c, emit, Task, Target */
 
 var tasks = require('tasks.js');
 var targets = require('targets.js');
