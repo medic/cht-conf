@@ -122,6 +122,10 @@ module.exports = async (argv, env) => {
     instanceUrl = url.parse(`https://${instanceUsername}:${encodedPassword}@${cmdArgs.instance}.medicmobile.org`);
   } else if (cmdArgs.url) {
     instanceUrl = url.parse(cmdArgs.url);
+  } else {
+    error('Missing one of these required parameter: --local --instance --url');
+    usage();
+    return -1;
   }
 
   const projectName = fs.path.basename(fs.path.resolve('.'));

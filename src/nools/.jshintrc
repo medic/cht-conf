@@ -12,6 +12,7 @@
     "tasks": false,
     "Target": false,
     "Task": false,
+    "user": true,
     "Utils": false
   },
   "undef": true,

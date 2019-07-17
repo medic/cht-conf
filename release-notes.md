@@ -1,8 +1,17 @@
 # Release Notes
 
+## 2.2
+
+Medic-conf v2.2 includes:
+
+* New action `move-contact` facilitates the moving of contacts and places within a project's hierarchy. [Documentation](https://github.com/medic/medic-conf#moving-contacts-within-the-hierarchy). [#172](https://github.com/medic/medic-conf/issues/172)
+* Updates the `upload-custom-translations` action to support custom locales (for WebApp projects >v3.4.0). [#199](https://github.com/medic/medic-conf/issues/199)
+* The declarative configuration [target schema](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#target-schema) has been updated. The idType attribute can now be a function. [#145](https://github.com/medic/medic-conf/issues/145)
+* Support for Node 12, refactoring, and code cleanup.
+
 ## 2.0
 
-Medic-conf v2.0.x contains breaking interface changes for the command-line and for the [declarative configuration system](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
+Medic-conf v2.0 contains breaking interface changes for the command-line and for the [declarative configuration system](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
 
 ### Breaking Changes to Command-line Arguments
 Version 2.0 replaces our custom code for command-line argument parsing with [minimist](https://github.com/substack/minimist). This increases flexibility and more flexible ordering, but includes an interface change for a few commands. Refer to `medic-conf --help` for an overview of all command-line options and syntax.

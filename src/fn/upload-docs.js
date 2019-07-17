@@ -1,98 +1,115 @@
+const path = require('path');
+const minimist = require('minimist');
+const readline = require('readline-sync');
+
 const fs = require('../lib/sync-fs');
-const info = require('../lib/log').info;
-const log = require('../lib/log');
 const pouch = require('../lib/db');
 const progressBar = require('../lib/progress-bar');
 const skipFn = require('../lib/skip-fn');
-const trace = require('../lib/log').trace;
-const warn = require('../lib/log').warn;
 
-module.exports = (projectDir, couchUrl) => {
-  if(!couchUrl) return skipFn('no couch URL set');
+const log = require('../lib/log');
+const { info, trace, warn, error } = log;
 
-  const docDir = `${projectDir}/json_docs`;
-  const db = pouch(couchUrl);
+const FILE_EXTENSION = '.doc.json';
+const INITIAL_BATCH_SIZE = 100;
 
+module.exports = async (projectDir, couchUrl, extraArgs) => {
+  const args = minimist(extraArgs || [], { boolean: true });
+
+  if(!couchUrl) {
+    return skipFn('no couch URL set');
+  }
+
+  const docDir = path.resolve(projectDir, args.docDirectoryPath || 'json_docs');
   if(!fs.exists(docDir)) {
     warn(`No docs directory found at ${docDir}.`);
     return Promise.resolve();
   }
 
-  const docFiles = fs.recurseFiles(docDir)
-    .filter(name => name.endsWith('.doc.json'));
+  const filesToUpload = fs.recurseFiles(docDir).filter(name => name.endsWith(FILE_EXTENSION));
+  const docIdErrors = getErrorsWhereDocIdDiffersFromFilename(filesToUpload);
+  if (docIdErrors.length > 0) {
+    throw new Error(`upload-docs: ${docIdErrors.join('\n')}`);
+  }
 
-  docFiles
-    .forEach(validateJson);
+  const totalCount = filesToUpload.length;
+  if (totalCount === 0) {
+    return; // nothing to upload
+  }
 
-  const totalCount = docFiles.length;
+  warn(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
+  if(!readline.keyInYN()) {
+    error('User failed to confirm action.');
+    process.exit(1);
+  }
 
-  info(`Uploading ${totalCount} docs.  This may take some time to start…`);
-
+  const db = pouch(couchUrl);
   const results = { ok:[], failed:{} };
-
-  const progress = log.level > log.LEVEL_ERROR ?
-      progressBar.init(totalCount, '{{n}}/{{N}} docs ', ' {{%}} {{m}}:{{s}}') : null;
-
-  return processNextBatch(docFiles, 100);
-
-  function processNextBatch(docFiles, batchSize) {
+  const progress = log.level > log.LEVEL_ERROR ? progressBar.init(totalCount, '{{n}}/{{N}} docs ', ' {{%}} {{m}}:{{s}}') : null;
+  const processNextBatch = async (docFiles, batchSize) => {
+    const now = new Date();
     if(!docFiles.length) {
       if(progress) progress.done();
 
-      const reportFile = `upload-docs.${Date.now()}.log.json`;
+      const reportFile = `upload-docs.${now.getTime()}.log.json`;
       fs.writeJson(reportFile, results);
       info(`Summary: ${results.ok.length} of ${totalCount} docs uploaded OK.  Full report written to: ${reportFile}`);
 
-      return Promise.resolve();
+      return;
     }
 
-    const now = new Date().toISOString();
     const docs = docFiles.slice(0, batchSize)
         .map(file => {
           const doc = fs.readJson(file);
-          doc.imported_date = now;
+          doc.imported_date = now.toISOString();
           return doc;
         });
 
-    if(log.level >= log.LEVEL_TRACE) console.log();
+    trace('');
     trace(`Attempting to upload batch of ${docs.length} docs…`);
 
-    return db.bulkDocs(docs)
-      .then(res => {
-          if(progress) progress.inc(docs.length);
-          res.forEach(r => {
-            if(r.error) {
-              results.failed[r.id] = `${r.error}: ${r.reason}`;
-            } else {
-              results.ok.push(r.id);
-            }
-          });
-          return processNextBatch(docFiles.slice(batchSize), batchSize + 10);
-      })
-      .catch(err => {
-        if(err.code === 'ESOCKETTIMEDOUT') {
-          if(batchSize > 1) {
-            if(log.level >= log.LEVEL_TRACE) console.log();
-            trace('Server connection timed out.  Decreasing batch size…');
-            // eslint-disable-next-line no-bitwise
-            return processNextBatch(docFiles, batchSize >> 1);
-          } else {
-            warn('Server connection timed out for batch size of 1 document.  We will continue to retry, but you might want to cancel the job if this continues.');
-            return processNextBatch(docFiles, 1);
-          }
-        } else throw err;
+    try {
+      const uploadResult = await db.bulkDocs(docs);
+      if(progress) {
+        progress.increment(docs.length);
+      }
+
+      uploadResult.forEach(result => {
+        if(result.error) {
+          results.failed[result.id] = `${result.error}: ${result.reason}`;
+        } else {
+          results.ok.push(result.id);
+        }
       });
-  }
+
+      return processNextBatch(docFiles.slice(batchSize), batchSize);
+    } catch (err) {
+      if (err.error === 'timeout') {
+        if (batchSize > 1) {
+          trace('');
+          trace('Server connection timed out.  Decreasing batch size…');
+          return processNextBatch(docFiles, batchSize / 2);
+        } else {
+          warn('Server connection timed out for batch size of 1 document.  We will continue to retry, but you might want to cancel the job if this continues.');
+          return processNextBatch(docFiles, 1);
+        }
+      } else {
+        throw err;
+      }
+    }
+  };
+
+  return processNextBatch(filesToUpload, INITIAL_BATCH_SIZE);
 };
 
-function idFromFilename(doc) {
-  const name = fs.path.basename(doc);
-  return name.substring(0, name.length - 9);
-}
+const getErrorsWhereDocIdDiffersFromFilename = filePaths =>
+  filePaths
+    .map(filePath => {
+      const json = fs.readJson(filePath);
+      const idFromFilename = path.basename(filePath, FILE_EXTENSION);
 
-function validateJson(doc) {
-  const json = fs.readJson(doc);
-  if(json._id !== idFromFilename(doc)) {
-    throw new Error(`_id property '${json._id}' did not match implied ID for doc in file ${doc} (expected: ${idFromFilename(doc)})!`);
-  }
-}
+      if (json._id !== idFromFilename) {
+        return `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.`;      
+      }
+    })
+    .filter(err => err);

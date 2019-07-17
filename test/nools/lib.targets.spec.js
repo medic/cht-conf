@@ -1,4 +1,5 @@
 const chai = require('chai');
+const sinon = require('sinon');
 const { expect, assert } = chai;
 chai.use(require('chai-shallow-deep-equal'));
 
@@ -63,6 +64,7 @@ describe('nools lib', function() {
           { _type:'_complete', _id:true },
         ]);
       });
+
       it('should emit once for a person with one report', function() {
         // given
         const config = {
@@ -80,6 +82,7 @@ describe('nools lib', function() {
           { _type:'_complete', _id:true },
         ]);
       });
+
       it('should emit once for a person with multiple reports', function() {
         // given
         const config = {
@@ -97,6 +100,7 @@ describe('nools lib', function() {
           { _type:'_complete', _id:true },
         ]);
       });
+
       it('should allow "reported" as target date', function() {
         // given
         const target = aPersonBasedTarget();
@@ -122,6 +126,7 @@ describe('nools lib', function() {
           { _type:'_complete', _id:true },
         ]);
       });
+
       it('should allow "now" as target date', function() {
         // given
         const target = aPersonBasedTarget();
@@ -160,6 +165,76 @@ describe('nools lib', function() {
          // then
         expect(emitted).to.have.property('length', 1);
       });
+
+      describe('idType', () => {
+        it('as report', function() {
+          // given
+          const target = aReportBasedTarget();
+          target.idType = 'report';
+
+          const config = {
+            c: personWithReports(aReport()),
+            targets: [ target ],
+            tasks: [],
+          };
+
+          // when
+          const { emitted } = runNoolsLib(config);
+
+          // then
+          expect(emitted).to.have.property('length', 2);
+          expect(emitted[0]).to.deep.include({
+            _id: 'r-2~rT-1',
+            _type: 'target',
+          });
+        });
+
+        it('as function', function() {
+          // given
+          const target = aReportBasedTarget();
+          const idType = sinon.stub().returns('func');
+          target.idType = idType;
+
+          const config = {
+            c: personWithReports(aReport()),
+            targets: [ target ],
+            tasks: [],
+          };
+
+          // when
+          const { emitted } = runNoolsLib(config);
+
+          // then
+          expect(emitted).to.have.property('length', 2);
+          expect(emitted[0]).to.deep.include({
+            _id: 'func~rT-1',
+            _type: 'target',
+          });
+          expect(idType.args[0]).to.deep.eq([config.c, config.c.reports[0]]);
+        });
+
+        it('as contact', function() {
+          // given
+          const target = aReportBasedTarget();
+          target.idType = 'contact';
+
+          const config = {
+            c: personWithReports(aReport()),
+            targets: [ target ],
+            tasks: [],
+          };
+
+          // when
+          const { emitted } = runNoolsLib(config);
+
+          // then
+          expect(emitted).to.have.property('length', 2);
+          expect(emitted[0]).to.deep.include({
+            _id: 'c-3~rT-1',
+            _type: 'target',
+          });
+        });
+      });
     });
 
     describe('place-based', function() {
@@ -180,6 +255,7 @@ describe('nools lib', function() {
           { _type:'_complete', _id:true },
         ]);
       });
+
       it('should emit once for a place with one report', function() {
         // given
         const config = {
@@ -197,6 +273,7 @@ describe('nools lib', function() {
           { _type:'_complete', _id:true },
         ]);
       });
+
       it('should emit once for a place with multiple reports', function() {
         // given
         const config = {
@@ -234,6 +311,7 @@ describe('nools lib', function() {
             { _type:'_complete', _id:true },
           ]);
         });
+
         it('should emit once for person with once report', function() {
           // given
           const config = {
@@ -251,6 +329,7 @@ describe('nools lib', function() {
             { _type:'_complete', _id:true },
           ]);
         });
+
         it('should emit once per report for person with multiple reports', function() {
           // given
           const config = {
@@ -371,21 +450,19 @@ describe('nools lib', function() {
       ]);
     });
 
-    describe('invalid target type', function() {
-      it('should throw error', function() {
-        // given
-        const invalidTarget = aReportBasedTarget();
-        invalidTarget.appliesTo = 'unknown';
+    it('invalid target type should throw', function() {
+      // given
+      const invalidTarget = aReportBasedTarget();
+      invalidTarget.appliesTo = 'unknown';
 
-        const config = {
-          c: personWithReports(aReport()),
-          targets: [ invalidTarget ],
-          tasks: [],
-        };
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [ invalidTarget ],
+        tasks: [],
+      };
 
-        // throws
-        assert.throws(() => runNoolsLib(config), Error, 'unrecognised target type: unknown');
-      });
+      // throws
+      assert.throws(() => runNoolsLib(config), Error, 'unrecognised target type: unknown');
     });
   });
 });

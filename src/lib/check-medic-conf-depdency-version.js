@@ -34,7 +34,7 @@ function requestUserConfirmation(myVersion, theirLockedVersion) {
   warn(`medic-conf version is ${myVersion}, but project is tested against ${theirLockedVersion}.  Are you sure you want to continue?`);
   if(!readline.keyInYN()) {
     error('User failed to confirm action.');
-    process.exit(1);
+    process.exit(-1);
   }
 }
 

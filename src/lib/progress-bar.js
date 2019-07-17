@@ -32,7 +32,7 @@ module.exports = {
     print();
 
     return {
-      inc: d => { runningTotal += d; print(); },
+      increment: d => { runningTotal += d; print(); },
       done: () => { runningTotal = target; print(); console.log(); },
       cancel: () => { console.log(); },
     };
