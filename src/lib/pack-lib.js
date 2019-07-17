@@ -8,17 +8,20 @@ const { info, warn, error } = require('./log');
 module.exports = (pathToProject, pathToLib, options = {}) => {
   const entry = path.join(pathToLib, 'lib.js');
   const baseEslintPath = path.join(pathToLib, '.eslintrc');
-  const mainDirectory = path.dirname(require.main.filename);
+  const outputDirectoryPath = path.join(path.dirname(require.main.filename), '../../build');
 
   const libName = path.basename(pathToLib);
-  const temporaryOutputFilename = `./packed-${libName}.js`;
+
+  const temporaryOutputFilename = `./${libName}.js`;
+  createDirectoryIfNecessary(outputDirectoryPath);
+
   const compiler = webpack([{
     mode: 'production',
     entry,
     output: {
       pathinfo: false,
       filename: temporaryOutputFilename,
-      path: mainDirectory,
+      path: outputDirectoryPath,
     },
     optimization: {
       minimize: !!options.minifyScripts,
@@ -77,19 +80,25 @@ module.exports = (pathToProject, pathToLib, options = {}) => {
       }
 
       if (stats.hasWarnings()) {
-        const logLevel = options.haltOnMinifyWarning ? error : warn;
+        const logLevel = options.haltOnWebpackWarning ? error : warn;
         logLevel('WARNING');
         logLevel(JSON.stringify(statsInfo.warnings, null, 2));
 
-        if (options.haltOnMinifyWarning) {
+        if (options.haltOnWebpackWarning) {
           reject(statsInfo.warnings);
         }
       }
 
       info(stats.toString());
 
-      const outputPath = path.join(mainDirectory, temporaryOutputFilename);
+      const outputPath = path.join(outputDirectoryPath, temporaryOutputFilename);
       resolve(fs.readFileSync(outputPath));
     });
   });
+};
+
+const createDirectoryIfNecessary = directoryPath => {
+  if (!fs.existsSync(directoryPath)) {
+    fs.mkdirSync(directoryPath);
+  }
 };

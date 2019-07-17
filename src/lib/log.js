@@ -25,7 +25,7 @@ module.exports.warn = (...args)  => module.exports.level >= WARN  && logAtLevel(
 function logAtLevel(color, level, ...args) {
   args.unshift(color + level);
   args.push('\x1b[0m'); // reset color to terminal default
-  console.log.apply(console.log, args.map(redactUrls)); 
+  console.log.apply(console.log, args.map(redactUrls));
 }
 
 const redactUrls = s => {

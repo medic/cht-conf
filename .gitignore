@@ -2,4 +2,3 @@
 /node_modules/
 express-pouchdb.log
 upload-docs.*.log.json
-src/bin/packed*.js

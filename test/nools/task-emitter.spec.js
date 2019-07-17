@@ -1,7 +1,5 @@
 const chai = require('chai');
-const { assert, expect } = chai;
 const sinon = require('sinon');
-
 const { runNoolsLib } = require('../run-lib');
 const {
   TEST_DAY,
@@ -17,13 +15,16 @@ const {
   placeWithoutReports,
 } = require('./mocks');
 
-describe('nools lib', function() {
+const { assert, expect } = chai;
+chai.use(require('chai-shallow-deep-equal'));
+
+describe('task-emitter', () => {
   beforeEach(() => reset());
 
-  describe('tasks', function() {
-    describe('person-based', function() {
+  describe('tasks', () => {
+    describe('person-based', () => {
 
-      it('should emit once for a person based task', function() {
+      it('should emit once for a person based task', () => {
         // given
         const config = {
           c: personWithoutReports(),
@@ -46,9 +47,9 @@ describe('nools lib', function() {
       });
     });
 
-    describe('place-based', function() {
+    describe('place-based', () => {
 
-      it('should emit once for a place based task', function() {
+      it('should emit once for a place based task', () => {
         // given
         const config = {
           c: placeWithoutReports(),
@@ -62,14 +63,14 @@ describe('nools lib', function() {
         // then
         assert.shallowDeepEqual(emitted, [
           { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
     });
 
-    describe('report-based', function() {
+    describe('report-based', () => {
 
-      it('should not emit if contact has no reports', function() {
+      it('should not emit if contact has no reports', () => {
         // given
         const config = {
           c: personWithoutReports(),
@@ -82,11 +83,11 @@ describe('nools lib', function() {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
 
-      it('should emit once for a single report', function() {
+      it('should emit once for a single report', () => {
         // given
         const config = {
           c: personWithReports(aReport()),
@@ -100,11 +101,11 @@ describe('nools lib', function() {
         // then
         assert.shallowDeepEqual(emitted, [
           { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
 
-      it('should emit once per report', function() {
+      it('should emit once per report', () => {
         // given
         const config = {
           c: personWithReports(aReport(), aReport(), aReport()),
@@ -120,13 +121,13 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
 
         expectAllToHaveUniqueIds(emitted);
       });
 
-      it('should emit once per report per task', function() {
+      it('should emit once per report per task', () => {
         // given
         const config = {
           c: personWithReports(aReport(), aReport(), aReport()),
@@ -145,13 +146,13 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
 
         expectAllToHaveUniqueIds(emitted); // even with undefined name, the resulting ids are unique
       });
 
-      it('emitted events from tasks without name or id should be unique', function() {
+      it('emitted events from tasks without name or id should be unique', () => {
         // given
         const config = {
           c: personWithReports(aReport()),
@@ -173,7 +174,7 @@ describe('nools lib', function() {
         expectAllToHaveUniqueIds(emitted);
       });
 
-      it('dueDate function is invoked with expected data', function() {
+      it('dueDate function is invoked with expected data', () => {
         // given
         const config = {
           c: personWithReports(aReport()),
@@ -199,7 +200,7 @@ describe('nools lib', function() {
         });
       });
 
-      it('should allow custom action content', function() {
+      it('should allow custom action content', () => {
         // given
         const task = aReportBasedTask();
         task.actions[0].modifyContent =
@@ -236,7 +237,7 @@ describe('nools lib', function() {
         ]);
       });
 
-      it('modifyContent for appliesTo contacts', function() {
+      it('modifyContent for appliesTo contacts', () => {
         // given
         const task = aPersonBasedTask();
         task.actions[0].modifyContent = (content, c) => { content.report_id = c.contact._id; };
@@ -274,7 +275,7 @@ describe('nools lib', function() {
 
     });
 
-    it('functions have access to "this"', function() {
+    it('functions have access to "this"', () => {
       // given
       const config = {
         c: personWithReports(aReport()),
@@ -301,7 +302,7 @@ describe('nools lib', function() {
       expect(invoked).to.be.true;
     });
 
-    it('functions in "this.definition" have access to "this"', function() {
+    it('functions in "this.definition" have access to "this"', () => {
       // given
       const config = {
         c: personWithReports(aReport()),
@@ -331,8 +332,8 @@ describe('nools lib', function() {
       expect(invoked).to.be.true;
     });
 
-    describe('scheduled-task based', function() {
-      it('???', function() { // FIXME this test needs a proper name
+    describe('scheduled-task based', () => {
+      it('???', () => { // FIXME this test needs a proper name
         // given
         const config = {
           c: personWithReports(aReportWithScheduledTasks(5)),
@@ -350,13 +351,13 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
           { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
     });
 
-    describe('invalid task type', function() {
-      it('should throw error', function() {
+    describe('invalid task type', () => {
+      it('should throw error', () => {
         // given
         const invalidTask = aScheduledTaskBasedTask();
         invalidTask.appliesTo = 'unknown';
@@ -367,7 +368,7 @@ describe('nools lib', function() {
         };
 
         // should throw error
-        assert.throws(function() { runNoolsLib(config); }, Error, 'unrecognised task type: unknown');
+        assert.throws(() => { runNoolsLib(config); }, Error, 'Unrecognised task.appliesTo: unknown');
       });
     });
 
