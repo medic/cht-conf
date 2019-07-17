@@ -2,6 +2,7 @@ const path = require('path');
 
 const fs = require('./sync-fs');
 const pack = require('./package-lib');
+const minifyNools = require('./minify-nools');
 
 const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js' ];
 
@@ -10,6 +11,7 @@ const compileNoolsRules = (projectDir, options) => {
     let result;
     if (fs.exists(legacyNoolsFilePath)) {
       result = fs.read(legacyNoolsFilePath);
+      result = minifyNools(result);
     }
   
     return result;
@@ -22,8 +24,6 @@ const compileNoolsRules = (projectDir, options) => {
     if (findMissingDeclarativeFiles(projectDir).length !== DECLARATIVE_NOOLS_FILES.length) {
       throw new Error(`Both legacy and current nools definitions found. You should either have ${legacyNoolsFilePath} xor ${DECLARATIVE_NOOLS_FILES} files.`);
     }
-
-    // TODO: Eslint this?
 
     return legacyRules;
   } else {
@@ -42,9 +42,10 @@ const compileDeclarativeFiles = async (projectDir, options) => {
     throw new Error(`Missing required declarative configuration file(s): ${missingFiles}`);
   }
 
-  const pathToNoolsDirectory = path.join(__dirname, '../nools');
-
-  const code = await pack(projectDir, pathToNoolsDirectory, options);
+  const pathToDeclarativeLib = path.join(__dirname, '../nools/lib.js');
+  const baseEslintPath = path.join(__dirname, '../nools/.eslintrc');
+  
+  const code = await pack(projectDir, pathToDeclarativeLib, baseEslintPath, options);
   return `define Target { _id: null, deleted: null, type: null, pass: null, date: null }
 define Contact { contact: null, reports: null }
 define Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }
