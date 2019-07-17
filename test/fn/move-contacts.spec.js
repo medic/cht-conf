@@ -7,7 +7,6 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const moveContactsModule = rewire('../../src/fn/move-contacts');
 moveContactsModule.__set__('prepareDocumentDirectory', () => {});
-moveContactsModule.__set__('console', { log: () => {} });
 const updateLineagesAndStage = moveContactsModule.__get__('updateLineagesAndStage');
 const { mockReport, mockHierarchy, parentsToLineage } = require('../mock-hierarchies');
 
