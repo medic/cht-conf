@@ -1,20 +1,20 @@
 const fs = require('fs');
-const fsUtils = require('../lib/sync-fs');
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const webpack = require('webpack');
 
+const fsUtils = require('../lib/sync-fs');
 const { info, warn, error } = require('./log');
 
 module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
-  const directoryContainingEntry = path.dirname(entry);
   const baseEslintConfig = fsUtils.readJson(baseEslintPath);
-  const outputDirectoryPath = path.join(__dirname, '../../build');
-
+  
+  const directoryContainingEntry = path.dirname(entry);
   const libName = path.basename(directoryContainingEntry);
   info(`Packaging ${libName}`);
 
-  const temporaryOutputFilename = `./${libName}.js`;
+  const outputFilename = `./${libName}.js`;
+  const outputDirectoryPath = path.join(__dirname, '../../build');
   createDirectoryIfNecessary(outputDirectoryPath);
 
   const compiler = webpack([{
@@ -22,7 +22,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
     entry,
     output: {
       pathinfo: false,
-      filename: temporaryOutputFilename,
+      filename: outputFilename,
       path: outputDirectoryPath,
     },
     optimization: {
@@ -68,41 +68,32 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
 
   return new Promise((resolve, reject) => {
     compiler.run((err, stats) => {
+      info(stats.toString());
+      
       if (err) {
         error(err.stack || err);
         if (err.details) {
           error(err.details);
         }
         
-        reject(err);
+        return reject(err);
       }
 
-      info(stats.toString());
-      
       if (stats.hasErrors()) {
-        const shouldHalt = () => {
-          if (options.haltOnLintMessage) {
-            return true;
-          }
-
-          const { errors } = stats.toJson();
-          return errors.some(err => !err.includes('(from ./node_modules/eslint-loader/index.js)'));
-        };
-
-        if (shouldHalt()) {
+        const hasErrorsNotRelatedToLinting = stats.toJson().errors.some(err => !err.includes('(from ./node_modules/eslint-loader/index.js)'));
+        const shouldHalt = options.haltOnLintMessage || hasErrorsNotRelatedToLinting;
+        if (shouldHalt) {
           return reject(Error(`Webpack errors when building ${libName}`));
         } else {
           warn('Ignoring linting errors');
         }
       }
 
-      if (stats.hasWarnings()) {
-        if (options.haltOnWebpackWarning) {
-          return reject(Error(`Webpack warnings when building ${libName}`));
-        }
+      if (stats.hasWarnings() && options.haltOnWebpackWarning) {
+        return reject(Error(`Webpack warnings when building ${libName}`));
       }
 
-      const outputPath = path.join(outputDirectoryPath, temporaryOutputFilename);
+      const outputPath = path.join(outputDirectoryPath, outputFilename);
       resolve(fs.readFileSync(outputPath).toString());
     });
   });
