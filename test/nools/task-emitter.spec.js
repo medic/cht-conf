@@ -1,6 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const { runNoolsLib } = require('../run-lib');
+const runNoolsLib = require('../run-nools-lib');
 const {
   TEST_DAY,
   reset,

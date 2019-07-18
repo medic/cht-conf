@@ -1,3 +1,9 @@
+/*
+Declarative tasks and targets (the elements exported by partner task.js and target.js files), are complex objects containing functions. 
+Definition-preparation.js binds a value for `this` in all the functions within a definition. 
+This fascilitates simple data sharing between functions, and allows function logic to reference the definition itself.
+*/
+
 function prepare(definition) {
   var targetContext = {};
   bindAllFunctionsToContext(definition, targetContext);

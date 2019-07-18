@@ -6,7 +6,7 @@ const minifyNools = require('./minify-nools');
 
 const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js' ];
 
-const compileNoolsRules = (projectDir, options) => {
+const compileNoolsRules = async (projectDir, options) => {
   const tryLoadLegacyRules = legacyNoolsFilePath => {
     let result;
     if (fs.exists(legacyNoolsFilePath)) {
@@ -22,7 +22,7 @@ const compileNoolsRules = (projectDir, options) => {
   
   if (legacyRules !== undefined) {
     if (findMissingDeclarativeFiles(projectDir).length !== DECLARATIVE_NOOLS_FILES.length) {
-      throw new Error(`Both legacy and current nools definitions found. You should either have ${legacyNoolsFilePath} xor ${DECLARATIVE_NOOLS_FILES} files.`);
+      throw new Error(`Both legacy and declarative files found. You should either have rules.nools.js xor ${DECLARATIVE_NOOLS_FILES} files.`);
     }
 
     return legacyRules;

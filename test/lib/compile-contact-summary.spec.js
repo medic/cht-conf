@@ -1,25 +1,78 @@
 const { assert, expect } = require('chai');
+const fs = require('fs');
 const path = require('path');
-const compileContactSummary = require('../../src/lib/compile-contact-summary');
+const sinon = require('sinon');
+const rewire = require('rewire');
+
+const compileContactSummary = rewire('../../src/lib/compile-contact-summary');
 
 const BASE_DIR = path.join(__dirname, '../data/compile-contact-summary');
 
-const options = { minifyScripts: true };
+const genMocks = () => ({
+  fs: {
+    exists: sinon.stub(),
+    read: sinon.stub(),
+  },
+  pack: sinon.stub().returns('code'),
+});
 
 describe('compile-contact-summary', () => {
-  it('should throw an error if no recognised file layout is found', async () => {
-    try {
-      // when
-      await compileContactSummary(`${BASE_DIR}/empty`, options);
-      assert.fail('Expected error to be thrown.');
-    } catch(e) {
-      if(e.name === 'AssertionError') throw e;
-      // else expected :¬)
-    }
+  describe('mocked scenarios', () => {
+    it('no contact-summary files yields exception', () =>
+      compileContactSummary(`${BASE_DIR}/empty`)
+        .then(() => assert.fail('Expected compilation error'))
+        .catch(err => {
+          expect(err.message).to.include('Could not find contact-summary');
+        })
+    );
+
+    it('multiple contact-summary files yields exception', () => {
+      const mocks = genMocks();
+      mocks.fs.exists
+        .withArgs('/project/contact-summary.js').returns(true)
+        .withArgs('/project/contact-summary.templated.js').returns(true);
+      mocks.fs.read.withArgs('/rules.nools.js').returns('define Target {_id: null}');
+      
+      return compileContactSummary.__with__(mocks)(() => compileContactSummary('/project'))
+        .then(() => assert.fail('Expected compilation error'))
+        .catch(err => {
+          expect(err.message).to.include('contact-summary.js and');
+        });
+    });
+
+    it('package and use templated file', () => {
+      const expectedProjectPath = '/project';
+      const options = {};
+      const mocks = genMocks();
+      mocks.fs.exists
+        .withArgs('/project/contact-summary.js').returns(false)
+        .withArgs('/project/contact-summary.templated.js').returns(true);
+  
+      return compileContactSummary
+        .__with__(mocks)(() => compileContactSummary(expectedProjectPath, options))
+        .then(actualCode => {
+          expect(actualCode).to.eq('code');
+          expect(mocks.pack.callCount).to.eq(1);
+  
+          const [actualProjectPath, actualEntryPath, actualLintPath, actualOptions] = mocks.pack.args[0];
+          expect(actualProjectPath).to.eq(expectedProjectPath);
+          expect(path.basename(actualEntryPath)).to.eq('lib.js');
+          expect(fs.existsSync(actualEntryPath)).to.eq(true);
+  
+          expect(path.basename(actualLintPath)).to.eq('.eslintrc');
+          expect(fs.existsSync(actualLintPath)).to.eq(true);
+  
+          expect(actualOptions).to.eq(options);
+        });
+    });
   });
 
-  describe('with contact-summary.js', () => {
-    it('should include a simple file verbatim', async () => {
+  describe('file based scenarios', () => {
+    const options = { minifyScripts: true };
+    const evalString = function(str) { return eval(str); }; // jshint ignore:line	
+    const evalInContext = (js, context) => evalString.call(context, ' with(this) { ' + js + ' }');
+    
+    it('pack a simple file', async () => {
       // when
       const compiled = await compileContactSummary(`${BASE_DIR}/verbatim`, options);
 
@@ -27,13 +80,22 @@ describe('compile-contact-summary', () => {
       expect(compiled).to.include('contact.x=\'a string\'');
     });
 
-    it('should include other source file referenced with require', async () => {
+    it('require file via require', async () => {
       // when
       const compiled = await compileContactSummary(`${BASE_DIR}/includes`, options);
 
       // then
       expect(compiled).to.include('contact.x=\'from original\'');
-      expect(compiled).to.include('contact.y=\'from included\'');
+      expect(compiled).to.include('reports.y=\'from included\'');
+
+      const context = {
+        contact: { foo: 'bar' },
+        reports: {},
+      };
+      evalInContext(compiled, context);
+      expect(context.contact.x).to.eq('from original');
+      expect(context.contact.foo).to.eq('bar');
+      expect(context.reports.y).to.eq('from included');
     });
   });
 });

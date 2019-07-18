@@ -44,4 +44,4 @@ const runNoolsLib = ({ c, targets, tasks }) => {
   return { emitted };
 };
 
-module.exports = { runNoolsLib };
+module.exports = runNoolsLib;
