@@ -25,6 +25,7 @@
   },
   "globals": {
     "user": true,
-    "Utils": true
+    "Utils": true,
+    "persistentState": true
   }
 }

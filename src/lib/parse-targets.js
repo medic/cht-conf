@@ -34,11 +34,15 @@ function warnOnUnexpectedProperties (targets) {
 
 const getTargets = (projectDir) => {
   const pathToTargetJs = path.join(projectDir, 'targets.js');
-
-  const targets = require(pathToTargetJs);
-  warnOnUnexpectedProperties(targets);
-
-  return targets;
+  
+  try {
+    global.persistentState = {};
+    const targets = require(pathToTargetJs);
+    warnOnUnexpectedProperties(targets);
+    return targets;
+  } finally {
+    delete global.persistentState;
+  }
 };
 
 module.exports = {
