@@ -9,8 +9,10 @@ module.exports = shell => {
       console.log(fs.read(completionFile));
       process.exit(0);
     }
+  } else if (shell === true){
+    console.log('# ERROR shell type argument not provided e.g. --shell-completion=bash');
   } else {
     console.log('# ERROR medic-conf shell completion not yet supported for', shell);
-    process.exit(1);
   }
+  process.exit(1);
 };

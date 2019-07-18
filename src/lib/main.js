@@ -53,12 +53,7 @@ module.exports = async (argv, env) => {
   }
 
   if (cmdArgs['shell-completion']) {
-    if (cmdArgs['shell-completion'] === true){
-      console.log('# ERROR shell type argument not provided e.g. --shell-completion=bash');
-      return 0;
-    } else {
-      return shellCompletionSetup(cmdArgs['shell-completion']);
-    }
+    return shellCompletionSetup(cmdArgs['shell-completion']);
   }
 
   if (cmdArgs['supported-actions']) {
