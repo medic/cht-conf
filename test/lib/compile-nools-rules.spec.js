@@ -11,7 +11,7 @@ const genMocks = () => ({
     exists: sinon.stub(),
     read: sinon.stub(),
   },
-  package: sinon.stub().returns('code'),
+  pack: sinon.stub().returns('code'),
 });
 
 describe('compile nools-rules', () => {
@@ -43,7 +43,7 @@ describe('compile nools-rules', () => {
       .__with__(mocks)(() => compileNoolsRules('/project'))
       .then(actual => {
         expect(actual).to.eq('define Target {_id: null}define Contact {contact: null,reports: null}rule GenerateEvents {when {c: Contact}then {var now = Utils.now();var today = new Date();}}');
-        expect(mocks.package.callCount).to.eq(0);
+        expect(mocks.pack.callCount).to.eq(0);
       });
   });
 
@@ -76,9 +76,9 @@ describe('compile nools-rules', () => {
         expect(actualCode).to.include('define Target {');
         expect(actualCode).to.include('define Contact {');
         expect(actualCode).to.include('{ code }');
-        expect(mocks.package.callCount).to.eq(1);
+        expect(mocks.pack.callCount).to.eq(1);
 
-        const [actualProjectPath, actualEntryPath, actualLintPath, actualOptions] = mocks.package.args[0];
+        const [actualProjectPath, actualEntryPath, actualLintPath, actualOptions] = mocks.pack.args[0];
         expect(actualProjectPath).to.eq(expectedProjectPath);
         expect(path.basename(actualEntryPath)).to.eq('lib.js');
         expect(fs.existsSync(actualEntryPath)).to.eq(true);
