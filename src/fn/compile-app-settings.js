@@ -4,7 +4,12 @@ const compileContactSummary = require('../lib/compile-contact-summary');
 const compileNoolsRules = require('../lib/compile-nools-rules');
 const fs = require('../lib/sync-fs');
 const parseTargets = require('../lib/parse-targets');
-const warn = require('../lib/log').warn;
+const { error, info, warn } = require('../lib/log');
+const Ajv = require('ajv');
+const ajv = new Ajv({ allErrors: true });
+
+const SCHEMA_FILE_PREFIX = 'schema-';
+const SCHEMA_FILE_EXT = '.bak';
 
 function parsePurgingFunction(root) {
   const purgeFnPath = `${root}/purging.js`;
@@ -23,9 +28,9 @@ function parsePurgingFunction(root) {
   }
 }
 
-module.exports = (projectDir /*, couchUrl */) => {
+module.exports = (projectDir, instanceUrl, extraArgs) => {
   projectDir = path.resolve(projectDir);
-  
+
   return Promise.resolve()
     .then(() => {
       checkMedicConfDependencyVersion(projectDir);
@@ -42,6 +47,29 @@ module.exports = (projectDir /*, couchUrl */) => {
 
       } else {
         app_settings = compileAppSettings(projectDir);
+      }
+
+      if (extraArgs !== undefined && extraArgs.includes('skip-validation')){
+        info("Skipping validation of app_settings");
+      } else {
+        let schema_file = fs.readdir('.').find( f => {
+          return f.startsWith(SCHEMA_FILE_PREFIX) && f.endsWith(SCHEMA_FILE_EXT);
+        });
+
+        if (schema_file){
+          let schema = fs.fs.readFileSync(schema_file, { encoding: 'utf8' });
+          let validate = ajv.compile(JSON.parse(schema));
+          let valid = validate(app_settings);
+          if (valid) {
+            info("App settings conformant to schema");
+          } else {
+            error(`app_settings.json not conformant to schema found at ${schema_file}`);
+            error("If you think this is an error, you can skip validation with the 'skip-validation' flag");
+            error(validate.errors);
+          }
+        } else {
+          warn("app_settings.json schema not found, skipping validation");
+        }
       }
 
       fs.writeJson(`${projectDir}/app_settings.json`, app_settings);
