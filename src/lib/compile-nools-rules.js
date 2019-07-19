@@ -1,7 +1,7 @@
 const path = require('path');
 
 const fs = require('./sync-fs');
-const package = require('./package-lib');
+const pack = require('./package-lib');
 const minifyNools = require('./minify-nools');
 
 const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js' ];
@@ -45,7 +45,7 @@ const compileDeclarativeFiles = async (projectDir, options) => {
   const pathToDeclarativeLib = path.join(__dirname, '../nools/lib.js');
   const baseEslintPath = path.join(__dirname, '../nools/.eslintrc');
   
-  const code = await package(projectDir, pathToDeclarativeLib, baseEslintPath, options);
+  const code = await pack(projectDir, pathToDeclarativeLib, baseEslintPath, options);
   return `define Target { _id: null, deleted: null, type: null, pass: null, date: null }
 define Contact { contact: null, reports: null }
 define Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }

@@ -13,7 +13,7 @@ describe('compile-app-settings', () => {
     compileAppSettings.__set__('fs', fs);
   });
   afterEach(() => {
-    writeJson.restore();
+    sinon.restore();
   });
 
   it('should handle simple config', () =>

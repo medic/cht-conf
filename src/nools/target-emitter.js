@@ -7,12 +7,12 @@ function targetEmitter(targets, c, Utils, Target, emit) {
 
     switch (target.appliesTo) {
       case 'contacts':
-        emitTargetFor(target, c, undefined, Target, Utils, emit);
+        emitTargetFor(target, Target, Utils, emit, c);
         break;
       case 'reports':
         for (var idx2 = 0; idx2 < c.reports.length; ++idx2) {
           var r = c.reports[idx2];
-          emitTargetFor(target, c, r, Target, Utils, emit);
+          emitTargetFor(target, Target, Utils, emit, c, r);
         }
         break;
       default:
@@ -21,7 +21,7 @@ function targetEmitter(targets, c, Utils, Target, emit) {
   }
 }
 
-function emitTargetFor(targetConfig, c, r, Target, Utils, emit) {
+function emitTargetFor(targetConfig, Target, Utils, emit, c, r) {
   var isEmittingForReport = !!r;
   if (!c.contact) return;
   var appliesToKey = isEmittingForReport ? r.form : c.contact.type;
