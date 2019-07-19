@@ -50,7 +50,7 @@ module.exports = (projectDir, instanceUrl, extraArgs) => {
       }
 
       if (extraArgs !== undefined && extraArgs.includes('skip-validation')){
-        info("Skipping validation of app_settings");
+        info('Skipping validation of app_settings');
       } else {
         let schema_file = fs.readdir('.').find( f => {
           return f.startsWith(SCHEMA_FILE_PREFIX) && f.endsWith(SCHEMA_FILE_EXT);
@@ -61,14 +61,14 @@ module.exports = (projectDir, instanceUrl, extraArgs) => {
           let validate = ajv.compile(JSON.parse(schema));
           let valid = validate(app_settings);
           if (valid) {
-            info("App settings conformant to schema");
+            info('app_settings conformant to schema');
           } else {
             error(`app_settings.json not conformant to schema found at ${schema_file}`);
-            error("If you think this is an error, you can skip validation with the 'skip-validation' flag");
+            error('If you think this is an error, you can skip validation with the "skip-validation" flag');
             error(validate.errors);
           }
         } else {
-          warn("app_settings.json schema not found, skipping validation");
+          warn('app_settings.json schema not found, skipping validation');
         }
       }
 
