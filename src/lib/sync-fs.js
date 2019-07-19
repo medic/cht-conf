@@ -91,6 +91,7 @@ module.exports = {
   recurseFiles: recurseFiles,
   deleteFilesInFolder: folderPath => recurseFiles(folderPath).forEach(filePath => fs.unlinkSync(filePath)),
   readdir: fs.readdirSync,
+  unlinkSync: file => fs.unlinkSync(file),
   withoutExtension: withoutExtension,
   write: (path, content) => fs.writeFileSync(path, content, 'utf8'),
   writeBinary: (path, content) => fs.writeFileSync(path, content),
