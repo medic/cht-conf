@@ -46,6 +46,9 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         'contact-summary.templated.js': path.join(pathToProject, 'contact-summary.templated.js'),
       },
     },
+    resolveLoader: {
+      modules: [path.join(__dirname, '../../node_modules')],
+    },
     module: {
       rules: [
         {
