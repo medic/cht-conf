@@ -17,6 +17,9 @@ const genMocks = () => ({
 });
 
 describe('compile-contact-summary', () => {
+  beforeEach(() => sinon.useFakeTimers(1));
+  afterEach(() => sinon.restore());
+
   describe('mocked scenarios', () => {
     it('no contact-summary files yields exception', () =>
       compileContactSummary(`${BASE_DIR}/empty`)
@@ -79,9 +82,9 @@ describe('compile-contact-summary', () => {
       expect(compiled).to.include('contact.x=\'a string\'');
     });
 
-    it('require file in legacy script', async () => {
+    it('legacy script', async () => {
       // when
-      const compiled = await compileContactSummary(`${BASE_DIR}/includes`, options);
+      const compiled = await compileContactSummary(`${BASE_DIR}/legacy`, options);
 
       // then
       expect(compiled).to.include('contact.x=\'from original\'');
@@ -103,6 +106,40 @@ describe('compile-contact-summary', () => {
       expect(contact.x).to.eq('from original');
       expect(contact.foo).to.eq('bar');
       expect(reports.y).to.eq('from included');
+    });
+  
+    it('templated script', async () => {
+      // when
+      const compiled = await compileContactSummary(`${BASE_DIR}/templated`, options);
+
+      // then
+      const contact = {
+        foo: 'bar',
+        type: 'person',
+        date_of_birth: 1500,
+      };
+      const reports = {};
+
+      const result = evalInContext(compiled, contact, reports, []);
+      expect(result).to.deep.eq({
+        fields: [
+          {
+            label: 'testing',
+            value: 5,
+          },
+          {
+            filter: 'age',
+            label: 'contact.age',
+            value: 1500,
+            width: 3,
+          },
+        ],
+        context: {
+          foo: 'bar',
+          muted: false,
+        },
+        cards: [],
+      });
     });
   });
 });
