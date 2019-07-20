@@ -21,9 +21,10 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
     mode: 'production',
     entry,
     output: {
-      pathinfo: false,
-      filename: outputFilename,
       path: outputDirectoryPath,
+      filename: outputFilename,
+      libraryTarget: options.libraryTarget ? 'umd' : undefined,
+      globalObject: options.libraryTarget,
     },
     optimization: {
       minimize: !!options.minifyScripts,
