@@ -51,7 +51,7 @@ describe('compile-contact-summary', () => {
       return compileContactSummary
         .__with__(mocks)(() => compileContactSummary(expectedProjectPath, options))
         .then(actualCode => {
-          expect(actualCode).to.eq('code');
+          expect(actualCode).to.eq('var ContactSummary = {}; code return ContactSummary;');
           expect(mocks.pack.callCount).to.eq(1);
   
           const [actualProjectPath, actualEntryPath, actualLintPath, actualOptions] = mocks.pack.args[0];
@@ -62,15 +62,14 @@ describe('compile-contact-summary', () => {
           expect(path.basename(actualLintPath)).to.eq('.eslintrc');
           expect(fs.existsSync(actualLintPath)).to.eq(true);
   
-          expect(actualOptions).to.eq(options);
+          expect(actualOptions).to.deep.eq({ libraryTarget: 'ContactSummary' });
         });
     });
   });
 
   describe('file based scenarios', () => {
     const options = { minifyScripts: true };
-    const evalString = function(str) { return eval(str); }; // jshint ignore:line	
-    const evalInContext = (js, context) => evalString.call(context, ' with(this) { ' + js + ' }');
+    const evalInContext = (js, contact, reports, lineage) => new Function('contact', 'reports', 'lineage', js)(contact, reports, lineage);
     
     it('pack a simple file', async () => {
       // when
@@ -80,7 +79,7 @@ describe('compile-contact-summary', () => {
       expect(compiled).to.include('contact.x=\'a string\'');
     });
 
-    it('require file via require', async () => {
+    it('require file in legacy script', async () => {
       // when
       const compiled = await compileContactSummary(`${BASE_DIR}/includes`, options);
 
@@ -88,14 +87,22 @@ describe('compile-contact-summary', () => {
       expect(compiled).to.include('contact.x=\'from original\'');
       expect(compiled).to.include('reports.y=\'from included\'');
 
-      const context = {
-        contact: { foo: 'bar' },
-        reports: {},
-      };
-      evalInContext(compiled, context);
-      expect(context.contact.x).to.eq('from original');
-      expect(context.contact.foo).to.eq('bar');
-      expect(context.reports.y).to.eq('from included');
+      const contact = { foo: 'bar' };
+      const reports = {};
+
+      const result = evalInContext(compiled, contact, reports, []);
+      expect(result).to.deep.eq({
+        fields: [{
+          label: 'testing',
+          value: 5,
+        }],
+        context: {
+          foo: 'bar',
+        },
+      });
+      expect(contact.x).to.eq('from original');
+      expect(contact.foo).to.eq('bar');
+      expect(reports.y).to.eq('from included');
     });
   });
 });

@@ -1,2 +1,9 @@
 contact.x = 'from original';
-require('./lib.js');
+
+module.exports = {
+  fields: [{
+    label: 'testing',
+    value: 5,
+  }],
+  context: require('./lib'),
+};

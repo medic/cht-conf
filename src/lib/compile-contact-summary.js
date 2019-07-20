@@ -15,5 +15,12 @@ module.exports = async (projectDir, options) => {
   const baseEslintPath = path.join(__dirname, '../contact-summary/.eslintrc');
   const pathToDeclarativeLib = path.join(__dirname, '../contact-summary/lib.js');
   const pathToPack = freeformPathExists ? freeformPath : pathToDeclarativeLib;
-  return await pack(projectDir, pathToPack, baseEslintPath, options);
+  
+  /*
+  WebApp expects the contact-summary to make a bare return
+  This isn't a direct output option for webpack, so add some boilerplate
+  */
+  const packOptions = Object.assign({}, options, { libraryTarget: 'ContactSummary' });
+  const code = await pack(projectDir, pathToPack, baseEslintPath, packOptions);
+  return `var ContactSummary = {}; ${code} return ContactSummary;`;
 };
