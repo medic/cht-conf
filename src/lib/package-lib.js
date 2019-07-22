@@ -1,4 +1,5 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const webpack = require('webpack');
@@ -13,9 +14,8 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
   const libName = path.basename(directoryContainingEntry);
   info(`Packaging ${libName}`);
 
+  const outputDirectoryPath = os.tmpdir();
   const outputFilename = `./${libName}.js`;
-  const outputDirectoryPath = path.join(__dirname, '../../build');
-  createDirectoryIfNecessary(outputDirectoryPath);
 
   const compiler = webpack([{
     mode: 'production',
@@ -75,8 +75,6 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
 
   return new Promise((resolve, reject) => {
     compiler.run((err, stats) => {
-      info(stats.toString());
-      
       if (err) {
         error(err.stack || err);
         if (err.details) {
@@ -85,6 +83,8 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         
         return reject(err);
       }
+
+      info(stats.toString());
 
       if (stats.hasErrors()) {
         const hasErrorsNotRelatedToLinting = stats.toJson().errors.some(err => !err.includes('(from ./node_modules/eslint-loader/index.js)'));
@@ -104,10 +104,4 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
       resolve(fs.readFileSync(outputPath).toString());
     });
   });
-};
-
-const createDirectoryIfNecessary = directoryPath => {
-  if (!fs.existsSync(directoryPath)) {
-    fs.mkdirSync(directoryPath);
-  }
 };
