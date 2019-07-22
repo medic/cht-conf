@@ -34,7 +34,7 @@ function warnOnUnexpectedProperties (targets) {
 
 const getTargets = (projectDir) => {
   const pathToTargetJs = path.join(projectDir, 'targets.js');
-  
+
   const targets = require(pathToTargetJs);
   warnOnUnexpectedProperties(targets);
 
@@ -69,8 +69,8 @@ module.exports = {
     if (jsonExists) return fs.readJson(jsonPath);
 
     const targets = getTargets(projectDir);
-    if (!targets) {
-      throwError(`No array named 'targets' was defined in ${jsPath}`);
+    if (!targets || !Array.isArray(targets)) {
+      throwError(`Targets.js is expected to module.exports=[] an array of targets. ${jsPath}`);
     }
 
     return {
