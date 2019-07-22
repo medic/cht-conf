@@ -1,6 +1,7 @@
 const fs = require('../lib/sync-fs');
 const request = require('request-promise-native');
 const skipFn = require('../lib/skip-fn');
+const { info, error } = require('../lib/log');
 
 module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
@@ -12,10 +13,16 @@ module.exports = (projectDir, couchUrl) => {
       headers: { 'Content-Type':'application/json' },
       body: fs.read(`${projectDir}/app_settings.json`),
     })
-    .then(JSON.parse)
-    .then(json => {
-      // As per https://github.com/medic/medic-webapp/issues/3674, this endpoint
-      // will return 200 even when upload fails.
-      if(!json.success) throw new Error(json.error);
+    .then(res => {
+      info('app_settings uploaded successfully');
+    })
+    .catch(e =>{
+      if (e.statusCode && e.statusCode === 400){
+        error('app_settings does not conform to schema');
+        error(JSON.parse(e.error));
+        throw new Error('app_settings upload failed');
+      } else {
+        throw e;
+      }
     });
 };
