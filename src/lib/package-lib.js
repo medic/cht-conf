@@ -48,7 +48,10 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
       },
     },
     resolveLoader: {
-      modules: [path.join(__dirname, '../../node_modules')],
+      modules: [
+        path.join(__dirname, '../../node_modules'),
+        'node_modules',
+      ],
     },
     module: {
       rules: [
