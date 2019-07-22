@@ -1,7 +1,7 @@
 function emitter(contactSummary, contact, reports) {
-  var fields = contactSummary.fields;
-  var context = contactSummary.context;
-  var cards = contactSummary.cards;
+  var fields = contactSummary.fields || [];
+  var context = contactSummary.context || {};
+  var cards = contactSummary.cards || [];
   
   var result = {
     cards: [],
@@ -27,8 +27,10 @@ function emitter(contactSummary, contact, reports) {
           continue;
         }
 
-        added = addCard(card, r, context);
-        result.cards.push(added);
+        added = addCard(card, context, r);
+        if (added) {
+          result.cards.push(added);
+        }
       }
     } else {
       if (contact.type !== card.appliesToType) {
@@ -36,7 +38,9 @@ function emitter(contactSummary, contact, reports) {
       }
 
       added = addCard(card, context);
-      result.cards.push(added);
+      if (added) {
+        result.cards.push(added);
+      }
     }
   });
   
