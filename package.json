@@ -1,6 +1,6 @@
 {
-  "name": "medic-conf",
-  "version": "2.2.0",
+  "name": "@kennsippell/medic-conf",
+  "version": "3.0.3",
   "description": "Configure Medic Mobile deployments",
   "main": "index.js",
   "engines": {
