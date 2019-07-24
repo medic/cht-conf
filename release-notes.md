@@ -5,10 +5,10 @@
 medic-conf v3.0 contains breaking changes! This release only impacts the `compile-app-settings` action and the partner code written in `tasks.js`, `targets.js`, `contact-summary.js`, and `contact-summary.templated.js`.
 
 ### Breaking Change - Static Analysis via EsLint
-medic-conf has changed the engine we use for performing static analysis from [JsHint](https://jshint.com/) to [eslint](https://eslint.org/). This grants authors more control over the static analysis rules which are enforced on their code. We provide a set of default rules, but you can create an [.eslintrc file](https://eslint.org/docs/user-guide/configuring#using-configuration-files-1) to define your override these defaults or define your own static analysis rules. The default static analysis rules which are enforced in medic-conf 3.0 are similar to the rules which were enforced in medic-conf 2.x, but details may be slightly different.
+medic-conf has changed the engine we use for performing static analysis from [JsHint](https://jshint.com/) to [eslint](https://eslint.org/). This grants authors more control over the static analysis rules which are enforced on their code. We provide a set of default rules, but you can create an [.eslintrc file](https://eslint.org/docs/user-guide/configuring#using-configuration-files-1) to override these defaults or add rules. The default static analysis rules which are enforced in medic-conf 3.0 are similar to the rules which were enforced in medic-conf 2.x, but details may be slightly different.
 
 ### Support for ECMAScript 6
-In previous versions of medic-conf, configuration Javascript was been limited to ES5. [ECMAScript 6](http://es6-features.org/) was a huge change for the JavaScript language and community. To use ES6 in your JavaScript configuration code, add a `.eslintrc` file to your project directory with the following contents:
+In previous versions of medic-conf, Javascript was limited to ES5. [ECMAScript 6](http://es6-features.org/) was a huge change for the JavaScript language and community. To use ES6 in your JavaScript configuration code, add a `.eslintrc` file to your project directory with the following contents:
 
 ```
 {
@@ -51,7 +51,7 @@ module.exports = {
 ```
 
 ### Breaking Change - Declarative Configuration library is now internal
-The [Declarative Configuration System](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) explicitly provides documented functions which are meant to be re-used by configuration code (eg. [Utils](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#utils)). It was also possible for configuration code to use the undocumented internals of the declarative library (commonly used examples are `now`, `isReportValid()`, and `emitTargetInstance()`). In medic-conf 3.0, all internal functions and variables are no longer accessible. Documented interfaces remain unchanged.
+The [Declarative Configuration System](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md) explicitly provides documented functions which are meant to be re-used in configuration code (eg. [Utils](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#utils)). In medic-conf 2.x and before, it was possible to also re-use some undocumented internals of the declarative library (common examples are `now`, `isReportValid()`, and `emitTargetInstance()`). In medic-conf 3.0, these internals and hidden as was intended. Documented interfaces remain unchanged.
 
 ### Breaking Change - Interface change in Target.emitCustom()
 The Declarative Configuration [Target Schema](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#target-schema) for `emitCustom` has changed to `function(emit, instance, contact, report)`. The default value is `(emit, instance) => emit(instance)`.
