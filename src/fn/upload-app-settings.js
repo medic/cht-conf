@@ -14,7 +14,7 @@ module.exports = (projectDir, couchUrl) => {
       body: fs.read(`${projectDir}/app_settings.json`),
     })
     .then(res => {
-      info('app_settings uploaded successfully');
+      info(`app_settings uploaded successfully: ${res}`);
     })
     .catch(e =>{
       if (e.statusCode && e.statusCode === 400){
