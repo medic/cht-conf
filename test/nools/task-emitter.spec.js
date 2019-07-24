@@ -164,7 +164,7 @@ describe('task-emitter', () => {
         ]);
       });
 
-      describe('heading attribute', () => {
+      describe('contactLabel attribute', () => {
         const mockHeading = sinon.stub().returns('foo');
         const scenarios = [
           {
@@ -200,7 +200,7 @@ describe('task-emitter', () => {
               targets: [],
               tasks: [ aReportBasedTask() ],
             };
-            config.tasks[0].heading = scenario.contactValue;
+            config.tasks[0].contactLabel = scenario.contactValue;
             
             // when
             const { emitted } = runNoolsLib(config);
