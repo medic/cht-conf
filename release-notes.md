@@ -62,7 +62,7 @@ The Declarative Configuration [Target Schema](https://github.com/medic/medic-doc
 The `--debug` flag will change the behavior of `compile-app-settings` such that:
 
 1. ESLint failures are logged as warnings instead of causing errors
-1. Webpack warnings are logged as warnings instaed of causing errors
+1. Webpack warnings are logged as warnings instead of causing errors
 1. Code minification is skipped to make it easier to debug your code
 
 ## 2.2
