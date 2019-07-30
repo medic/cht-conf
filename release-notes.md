@@ -2,13 +2,13 @@
 
 ## 3.0
 
-medic-conf v3.0 contains breaking changes! This release only impacts the `compile-app-settings` action and the partner code written in `tasks.js`, `targets.js`, `contact-summary.js`, and `contact-summary.templated.js`.
+medic-conf v3.0 contains breaking changes! This release only impacts the `compile-app-settings` action, which impacts the configuration code in `tasks.js`, `targets.js`, `contact-summary.js`, and `contact-summary.templated.js`.
 
-### Breaking Change - Static Analysis via EsLint
-medic-conf has changed the engine we use for performing static analysis from [JsHint](https://jshint.com/) to [eslint](https://eslint.org/). This grants authors more control over the static analysis rules which are enforced on their code. We provide a set of default rules, but you can create an [.eslintrc file](https://eslint.org/docs/user-guide/configuring#using-configuration-files-1) to override these defaults or add rules. The default static analysis rules which are enforced in medic-conf 3.0 are similar to the rules which were enforced in medic-conf 2.x, but details may be slightly different.
+### Breaking Change - Static Analysis via ESLint
+medic-conf has changed the engine we use for performing static analysis from [JSHint](https://jshint.com/) to [ESLint](https://eslint.org/). This grants authors more control over the static analysis rules which are enforced on their code. We provide a set of default rules, but you can change or add rules by creating an [.eslintrc file](https://eslint.org/docs/user-guide/configuring#using-configuration-files-1). The default static analysis rules which are enforced in medic-conf 3.0 are similar to the rules which were enforced in medic-conf 2.x, but details may be slightly different.
 
 ### Support for ECMAScript 6
-In previous versions of medic-conf, Javascript was limited to ES5. [ECMAScript 6](http://es6-features.org/) was a huge change for the JavaScript language and community. To use ES6 in your JavaScript configuration code, add a `.eslintrc` file to your project directory with the following contents:
+In previous versions of medic-conf, configuration JavaScript was been limited to ECMAScript 5. [ECMAScript 6](http://es6-features.org/) is the next generation of the JavaScript language. To use ES6 in your JavaScript configuration code, add a `.eslintrc` file to your project directory with the following contents:
 
 ```
 {
@@ -22,7 +22,7 @@ In previous versions of medic-conf, Javascript was limited to ES5. [ECMAScript 6
 }
 ```
 
-If your project is using [medic-android](https://github.com/medic/medic-android) you must be running >v0.1.203 (March 2017) to use `ecmaVersion: 6`. The `medic-android` project does not support ecmaVersions above 6.
+If your project is using [medic-android](https://github.com/medic/medic-android) you must be running a version newer than v0.1.203 (March 2017) to use `ecmaVersion: 6`. ecmaVersions above 6 are not currently supported.
 
 ### Breaking Change - Modules
 As part of our effort to leverage JavaScript standards, JavaScript configuration code should now use `require('./file')` or `import lib from './file';` to share code between multiple JavaScript files. The global `extras` object is no longer present and you may see the error `'extras' is not defined` when running `compile-app-settings`. This global object was a reference to `nools-extras.js` or `contact-summary-extras.js`, so you can achieve the same behavior by adding the line `var extras = require('./nools-extras');` or `import extras from './nools-extras';` to the top of your JavaScript.  This gives configuration authors the flexibility to have multiple library files, and enables the sharing of code across projects.
@@ -61,8 +61,8 @@ The Declarative Configuration [Target Schema](https://github.com/medic/medic-doc
 
 The `--debug` flag will change the behavior of `compile-app-settings` such that:
 
-1. Eslint failures are logged as warnings instead of causing errors
-1. Webpack warnings are logged as warnings instead of causing errors
+1. ESLint failures are logged as warnings instead of causing errors
+1. Webpack warnings are logged as warnings instaed of causing errors
 1. Code minification is skipped to make it easier to debug your code
 
 ## 2.2
