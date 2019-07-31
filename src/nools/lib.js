@@ -71,7 +71,8 @@ if (tasks) {
         }
         break;
       case 'contacts':
-        if(c.contact && task.appliesToType.indexOf(c.contact.type) !== -1) {
+        var type = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
+        if(c.contact && task.appliesToType.indexOf(type) !== -1) {
           emitTasksForSchedule(c, task);
         }
         break;
@@ -187,6 +188,7 @@ function emitTargetFor(targetConfig, c, r) {
   var isEmittingForReport = !!r;
   if (!c.contact) return;
   var appliesToKey = isEmittingForReport ? r.form : c.contact.type;
+  if (appliesToKey === 'contact') appliesToKey = c.contact.contact_type;
   if (targetConfig.appliesToType && targetConfig.appliesToType.indexOf(appliesToKey) < 0) return;
   if (targetConfig.appliesIf && !targetConfig.appliesIf(c, r)) return;
 

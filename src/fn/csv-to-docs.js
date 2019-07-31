@@ -32,14 +32,16 @@ module.exports = (projectDir)=> {
     docs: {},
     references: [],
     exclusions: [],
+    users: []
   };
   const addToModel = (csvFile, docs) => {
     csvFile = csvFile.match(/^(?:.*[\/\\])?csv[\/\\](.*)\.csv$/)[1]; // eslint-disable-line no-useless-escape
     model.csvFiles[csvFile] = docs;
     docs.forEach(doc => {
       model.docs[doc._id] = doc;
-      if(!model[doc.type]) model[doc.type] = [];
-      model[doc.type].push(doc);
+      if (doc.type === 'user') {
+        model.users.push(doc);
+      }
     });
   };
 
@@ -53,10 +55,11 @@ module.exports = (projectDir)=> {
             const nameParts = fs.path.basename(csv).split('.');
             const prefix = nameParts[0];
             switch(prefix) {
-              case 'person': return processPersons(csv);
-              case 'place':  return processPlaces(csv);
-              case 'report': return processReports(nameParts[1], csv);
-              case 'users' : return processUsers(csv);
+              case 'contact': return processContacts('contact', csv);
+              case 'person':  return processPersons(csv);
+              case 'place':   return processPlaces(csv);
+              case 'report':  return processReports(nameParts[1], csv);
+              case 'users' :  return processUsers(csv);
               default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
             }
           })
@@ -65,9 +68,9 @@ module.exports = (projectDir)=> {
 
     .then(() => model.references.forEach(updateRef))
     .then(() => model.exclusions.forEach(removeExcludedField))
-    .then(() => { 
-      if(model.user) { 
-        generateCsv(model.user,projectDir + '/users.csv'); 
+    .then(() => {
+      if(model.users.length) {
+        generateCsv(model.users, projectDir + '/users.csv');
       }
     })
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));

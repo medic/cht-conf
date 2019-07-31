@@ -4,11 +4,16 @@ function isReportValid(report) {
   return report && !(report.errors && report.errors.length);
 }
 
+function getType(contact) {
+  return contact.type === 'contact' ? contact.contact_type : contact.type;
+}
+
 var result = {
   cards: [],
   fields: fields.filter(function(f) {
-        if(f.appliesToType === contact.type ||
-            (f.appliesToType.charAt(0) === '!' && f.appliesToType.slice(1) !== contact.type)) {
+        var type = getType(contact);
+        if(f.appliesToType === type ||
+            (f.appliesToType.charAt(0) === '!' && f.appliesToType.slice(1) !== type)) {
           if(!f.appliesIf || f.appliesIf()) {
             delete f.appliesToType;
             delete f.appliesIf;
@@ -75,7 +80,7 @@ cards.forEach(function(card) {
       }
       break;
     default:
-      if(contact.type !== card.appliesToType) return;
+      if(getType(contact) !== card.appliesToType) return;
       addCard(card);
   }
 });
