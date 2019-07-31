@@ -6,12 +6,11 @@ const minifyNools = require('./minify-nools');
 
 const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js' ];
 
-const compileNoolsRules = async (projectDir, options) => {
+const compileNoolsRules = async (projectDir, options = {}) => {
   const tryLoadLegacyRules = legacyNoolsFilePath => {
     let result;
     if (fs.exists(legacyNoolsFilePath)) {
       result = fs.read(legacyNoolsFilePath);
-      result = minifyNools(result);
     }
   
     return result;
@@ -25,7 +24,7 @@ const compileNoolsRules = async (projectDir, options) => {
       throw new Error(`Both legacy and declarative files found. You should either have rules.nools.js xor ${DECLARATIVE_NOOLS_FILES} files.`);
     }
 
-    return legacyRules;
+    return options.minifyScripts ? minifyNools(legacyRules) : legacyRules;
   } else {
     return compileDeclarativeFiles(projectDir, options);
   }
