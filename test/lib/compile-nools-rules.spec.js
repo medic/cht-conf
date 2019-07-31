@@ -40,7 +40,7 @@ describe('compile nools-rules', () => {
       }`);
     
     return compileNoolsRules
-      .__with__(mocks)(() => compileNoolsRules('/project'))
+      .__with__(mocks)(() => compileNoolsRules('/project', { minifyScripts: true }))
       .then(actual => {
         expect(actual).to.eq('define Target {_id: null}define Contact {contact: null,reports: null}rule GenerateEvents {when {c: Contact}then {var now = Utils.now();var today = new Date();}}');
         expect(mocks.pack.callCount).to.eq(0);
