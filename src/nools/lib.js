@@ -71,9 +71,11 @@ if (tasks) {
         }
         break;
       case 'contacts':
-        var type = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
-        if(c.contact && task.appliesToType.indexOf(type) !== -1) {
-          emitTasksForSchedule(c, task);
+        if (c.contact) {
+          var type = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
+          if(task.appliesToType.indexOf(type) !== -1) {
+            emitTasksForSchedule(c, task);
+          }
         }
         break;
       default:
