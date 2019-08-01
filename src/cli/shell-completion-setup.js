@@ -1,4 +1,6 @@
 const fs = require('../lib/sync-fs');
+const { error } = require('../lib/log');
+
 const supported_shells = ['bash'];
 
 module.exports = shell => {
@@ -10,10 +12,9 @@ module.exports = shell => {
       process.exit(0);
     }
   } else if (shell === true){
-    console.log('# ERROR shell type argument not provided e.g. --shell-completion=bash');
+    error('shell type argument not specified e.g. --shell-completion=bash');
   } else {
-    console.error('shell completion not yet supported for', shell);
-    process.exit(1);
+    error(`completion not yet supported for '${shell}' shell`);
   }
   process.exit(1);
 };
