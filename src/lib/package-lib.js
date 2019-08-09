@@ -31,7 +31,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
       minimizer: [
         new TerserPlugin({
           terserOptions: {
-            warnings: true,
+            warnings: false,
             output: {
               comments: false,
               quote_style: 1,
