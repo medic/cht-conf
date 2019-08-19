@@ -44,6 +44,41 @@ describe('nools lib', function() {
           },
         ]);
       });
+
+      it('appliesToType filters by type', () => {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+        config.tasks[0].appliesToType = ['dne'];
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted).to.have.length(1);
+      });
+
+      it('appliesToType is not required', () => {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+        delete config.tasks[0].appliesToType;
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted[0]).to.nested.include({
+          'actions[0].content.source_id': 'c-2',
+          resolved: false,
+        });
+      });
     });
 
     describe('place-based', function() {
@@ -102,6 +137,41 @@ describe('nools lib', function() {
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id:true },
         ]);
+      });
+
+      it('appliesToType filters by form', () => {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aReportBasedTask() ],
+        };
+        config.tasks[0].appliesToType = ['dne'];
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted).to.have.length(1);
+      });
+
+      it('appliesToType is not required', () => {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aReportBasedTask() ],
+        };
+        delete config.tasks[0].appliesToType;
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted[0]).to.nested.include({
+          'actions[0].content.source_id': 'r-1',
+          resolved: false,
+        });
       });
 
       it('should emit once per report', function() {
@@ -271,7 +341,6 @@ describe('nools lib', function() {
           },
         ]);
       });
-
     });
 
     it('functions have access to "this"', function() {

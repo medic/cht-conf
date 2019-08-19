@@ -72,10 +72,7 @@ if (tasks) {
         break;
       case 'contacts':
         if (c.contact) {
-          var type = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
-          if(task.appliesToType.indexOf(type) !== -1) {
-            emitTasksForSchedule(c, task);
-          }
+          emitTasksForSchedule(c, task);
         }
         break;
       default:
@@ -87,8 +84,15 @@ if (tasks) {
 function emitTasksForSchedule(c, schedule, r) {
   var i;
 
-  if(r && schedule.appliesToType && schedule.appliesToType.indexOf(r.form) === -1) {
-    return;
+  if (schedule.appliesToType) {
+    var contactType = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
+    var shouldApply = schedule.appliesTo === 'contacts' ?
+      schedule.appliesToType.indexOf(contactType) !== -1 :
+      r && schedule.appliesToType.indexOf(r.form) !== -1;
+    
+    if (!shouldApply) {
+      return;
+    }
   }
 
   if(schedule.appliesTo !== 'scheduled_tasks' &&
