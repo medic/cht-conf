@@ -291,6 +291,7 @@ Move the contact with the id `contact_1` to the top of the hierarchy (no parent)
 This tool expects a project to be structured as follows:
 
 	example-project/
+		.eslintrc
 		app_settings.json
 		contact-summary.js
 		resources.json
@@ -299,7 +300,6 @@ This tool expects a project to be structured as follows:
 			…
 		targets.js
 		tasks.js
-		nools-extras.js
 		task-schedules.json
 		forms/
 			app/

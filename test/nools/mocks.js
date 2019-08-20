@@ -101,6 +101,11 @@ function personWithReports(...reports) {
   return { contact:{ _id:`c-${idCounter}`, type:'person', reported_date:TEST_DATE }, reports };
 }
 
+function configurableHierarchyPersonWithReports(...reports) {
+  ++idCounter;
+  return { contact: { _id:`c-${idCounter}`, type:`contact`, contact_type:`custom`, reported_date:TEST_DATE }, reports };
+}
+
 function placeWithoutReports() {
   return placeWithReports();
 }
@@ -129,6 +134,7 @@ module.exports = {
   aReport,
   aReportWithScheduledTasks,
   personWithoutReports,
+  configurableHierarchyPersonWithReports,
   personWithReports,
   placeWithoutReports,
   placeWithReports,

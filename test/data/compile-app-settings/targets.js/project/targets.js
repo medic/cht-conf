@@ -20,7 +20,7 @@ module.exports = [
     goal: -1,
     translation_key: 'targets.children_registered.title',
     subtitle_translation_key: 'targets.this_month.subtitle',
-    context: "user.parent.use_cases.split(' ').indexOf('imm') !== -1",
+    context: 'user.parent.use_cases.split(" ").indexOf("imm") !== -1',
 
     appliesIf: function(c) { return c.age_in_months <= 60; },
     date: function(c) { return c.contact.reported_date; },

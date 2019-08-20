@@ -1,9 +1,7 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const { expect, assert } = chai;
-chai.use(require('chai-shallow-deep-equal'));
 
-const { runNoolsLib } = require('../run-lib');
+const runNoolsLib = require('../run-nools-lib');
 const {
   TEST_DATE,
   reset,
@@ -18,11 +16,13 @@ const {
   aRandomTimestamp,
 } = require('./mocks');
 
-describe('nools lib', function() {
+const { expect, assert } = chai;
+
+describe('target emitter', () => {
   beforeEach(() => reset());
 
-  describe('test setup', function() {
-    it('should successfully parse the lib', function() {
+  describe('test setup', () => {
+    it('should successfully parse the lib', () => {
       // given
       const emptyConfig = { c:{}, targets:[] };
 
@@ -33,7 +33,7 @@ describe('nools lib', function() {
       assert.isNotNull(lib);
     });
 
-    it('should emit completed signal', function() {
+    it('should emit completed signal', () => {
       // given
       const emptyConfig = { c:{}, targets:[] };
 
@@ -41,13 +41,13 @@ describe('nools lib', function() {
       const emitted = runNoolsLib(emptyConfig).emitted;
 
       // then
-      assert.deepEqual(emitted, [ { _type:'_complete', _id:true } ]);
+      assert.deepEqual(emitted, [ { _type:'_complete', _id: true } ]);
     });
   });
 
-  describe('targets', function() {
-    describe('person-based', function() {
-      it('should emit once for a person with no reports', function() {
+  describe('targets', () => {
+    describe('person-based', () => {
+      it('should emit once for a person with no reports', () => {
         // given
         const config = {
           c: personWithoutReports(),
@@ -61,11 +61,11 @@ describe('nools lib', function() {
         // then
         assert.deepEqual(emitted, [
           { _id: 'c-1~pT-2', _type:'target', date: TEST_DATE },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
 
-      it('should emit once for a person with one report', function() {
+      it('should emit once for a person with one report', () => {
         // given
         const config = {
           c: personWithReports(aReport()),
@@ -79,11 +79,11 @@ describe('nools lib', function() {
         // then
         assert.deepEqual(emitted, [
           {_id: 'c-2~pT-3', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
 
-      it('should emit once for a person with multiple reports', function() {
+      it('should emit once for a person with multiple reports', () => {
         // given
         const config = {
           c: personWithReports(aReport(), aReport(), aReport()),
@@ -97,11 +97,11 @@ describe('nools lib', function() {
         // then
         assert.deepEqual(emitted, [
           { _id: 'c-4~pT-5', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
 
-      it('should allow "reported" as target date', function() {
+      it('should allow "reported" as target date', () => {
         // given
         const target = aPersonBasedTarget();
         target.date = 'reported';
@@ -123,11 +123,11 @@ describe('nools lib', function() {
         // then
         assert.deepEqual(emitted, [
           { _id: 'c-2~pT-1', _type:'target', date: reportedDate },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
 
-      it('should allow "now" as target date', function() {
+      it('should allow "now" as target date', () => {
         // given
         const target = aPersonBasedTarget();
         target.date = 'now';
@@ -144,11 +144,11 @@ describe('nools lib', function() {
         // then
         assert.deepEqual(emitted, [
           { _id: 'c-2~pT-1', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
 
-      it('should not emit if appliesToType doesnt match', function() {
+      it('should not emit if appliesToType doesnt match', () => {
         // given
         const target = aPersonBasedTarget();
         target.appliesToType = [ 'dne' ];
@@ -167,7 +167,7 @@ describe('nools lib', function() {
       });
 
       describe('idType', () => {
-        it('as report', function() {
+        it('as report', () => {
           // given
           const target = aReportBasedTarget();
           target.idType = 'report';
@@ -189,7 +189,7 @@ describe('nools lib', function() {
           });
         });
 
-        it('as function', function() {
+        it('as function', () => {
           // given
           const target = aReportBasedTarget();
           const idType = sinon.stub().returns('func');
@@ -213,7 +213,7 @@ describe('nools lib', function() {
           expect(idType.args[0]).to.deep.eq([config.c, config.c.reports[0]]);
         });
 
-        it('as contact', function() {
+        it('as contact', () => {
           // given
           const target = aReportBasedTarget();
           target.idType = 'contact';
@@ -237,8 +237,8 @@ describe('nools lib', function() {
       });
     });
 
-    describe('place-based', function() {
-      it('should emit once for a place with no reports', function() {
+    describe('place-based', () => {
+      it('should emit once for a place with no reports', () => {
         // given
         const config = {
           c: placeWithoutReports(),
@@ -252,11 +252,11 @@ describe('nools lib', function() {
         // then
         assert.deepEqual(emitted, [
           { _id: 'c-1~plT-2', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
 
-      it('should emit once for a place with one report', function() {
+      it('should emit once for a place with one report', () => {
         // given
         const config = {
           c: placeWithReports(aReport()),
@@ -270,11 +270,11 @@ describe('nools lib', function() {
         // then
         assert.deepEqual(emitted, [
           { _id: 'c-2~plT-3', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
 
-      it('should emit once for a place with multiple reports', function() {
+      it('should emit once for a place with multiple reports', () => {
         // given
         const config = {
           c: placeWithReports(aReport(), aReport(), aReport()),
@@ -288,14 +288,14 @@ describe('nools lib', function() {
         // then
         assert.deepEqual(emitted, [
           { _id: 'c-4~plT-5', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id:true },
+          { _type:'_complete', _id: true },
         ]);
       });
     });
 
-    describe('report-based', function() {
-      describe('with a single target', function() {
-        it('should not emit for person with no reports', function() {
+    describe('report-based', () => {
+      describe('with a single target', () => {
+        it('should not emit for person with no reports', () => {
           // given
           const config = {
             c: personWithoutReports(aReport()),
@@ -308,11 +308,11 @@ describe('nools lib', function() {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'_complete', _id:true },
+            { _type:'_complete', _id: true },
           ]);
         });
 
-        it('should emit once for person with once report', function() {
+        it('should emit once for person with once report', () => {
           // given
           const config = {
             c: personWithReports(aReport()),
@@ -326,11 +326,11 @@ describe('nools lib', function() {
           // then
           assert.deepEqual(emitted, [
             { _type:'target', _id:'c-2~rT-3', date: TEST_DATE },
-            { _type:'_complete', _id:true },
+            { _type:'_complete', _id: true },
           ]);
         });
 
-        it('should emit once per report for person with multiple reports', function() {
+        it('should emit once per report for person with multiple reports', () => {
           // given
           const config = {
             c: personWithReports(aReport(), aReport(), aReport()),
@@ -346,11 +346,11 @@ describe('nools lib', function() {
             { _type:'target', _id:'c-4~rT-5', date: TEST_DATE },
             { _type:'target', _id:'c-4~rT-5', date: TEST_DATE },
             { _type:'target', _id:'c-4~rT-5', date: TEST_DATE },
-            { _type:'_complete', _id:true },
+            { _type:'_complete', _id: true },
           ]);
         });
 
-        it('should not emit if appliesToType doesnt match', function() {
+        it('should not emit if appliesToType doesnt match', () => {
           // given
           const target = aReportBasedTarget();
           target.appliesToType = [ 'dne' ];
@@ -369,8 +369,8 @@ describe('nools lib', function() {
         });
       });
 
-      describe('with multiple targets', function() {
-        it('should not emit for person with no reports', function() {
+      describe('with multiple targets', () => {
+        it('should not emit for person with no reports', () => {
           // given
           const config = {
             c: personWithoutReports(aReport()),
@@ -383,10 +383,10 @@ describe('nools lib', function() {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'_complete', _id:true },
+            { _type:'_complete', _id: true },
           ]);
         });
-        it('should emit once per report for person with one report', function() {
+        it('should emit once per report for person with one report', () => {
           // given
           const config = {
             c: personWithReports(aReport()),
@@ -401,10 +401,10 @@ describe('nools lib', function() {
           assert.deepEqual(emitted, [
             { _type:'target', _id:'c-2~rT-3', date: TEST_DATE },
             { _type:'target', _id:'c-2~rT-4', date: TEST_DATE },
-            { _type:'_complete', _id:true },
+            { _type:'_complete', _id: true },
           ]);
         });
-        it('should emit once per report for person with multiple reports', function() {
+        it('should emit once per report for person with multiple reports', () => {
           // given
           const config = {
             c: personWithReports(aReport(), aReport(), aReport()),
@@ -423,13 +423,13 @@ describe('nools lib', function() {
             { _type:'target', _id:'c-4~rT-6', date: TEST_DATE },
             { _type:'target', _id:'c-4~rT-6', date: TEST_DATE },
             { _type:'target', _id:'c-4~rT-6', date: TEST_DATE },
-            { _type:'_complete', _id:true },
+            { _type:'_complete', _id: true },
           ]);
         });
       });
     });
 
-    it('appliesToType is optional', function() {
+    it('appliesToType is optional', () => {
       // given
       const target = aPersonBasedTarget();
       delete target.appliesToType;
@@ -446,11 +446,11 @@ describe('nools lib', function() {
        // then
       assert.deepEqual(emitted, [
         { _id: 'c-3~pT-1', _type:'target', date: TEST_DATE },
-        { _type:'_complete', _id:true },
+        { _type:'_complete', _id: true },
       ]);
     });
 
-    it('invalid target type should throw', function() {
+    it('invalid target type should throw', () => {
       // given
       const invalidTarget = aReportBasedTarget();
       invalidTarget.appliesTo = 'unknown';
@@ -462,7 +462,7 @@ describe('nools lib', function() {
       };
 
       // throws
-      assert.throws(() => runNoolsLib(config), Error, 'unrecognised target type: unknown');
+      assert.throws(() => runNoolsLib(config), Error, 'Unrecognised target.appliesTo: unknown');
     });
   });
 });

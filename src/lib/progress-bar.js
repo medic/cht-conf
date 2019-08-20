@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 module.exports = {
   init: function(target, prefix, suffix) {
     let runningTotal = 0;

@@ -1,13 +1,29 @@
 {
-  "env": {
-    "es6": false,
-    "node": true
-  },
-  "extends": "eslint:recommended",
   "parserOptions": {
     "ecmaVersion": 5
   },
+  "extends": "eslint:recommended",
   "rules": {
-    "no-undef": "off"
+    "eqeqeq": "error",
+    "no-bitwise": "error",
+    "no-console": "off",
+    "no-debugger": "off",
+    "semi": [
+      "error",
+      "always"
+    ],
+    "quotes": [
+      "error",
+      "single",
+      {
+        "allowTemplateLiterals": true,
+        "avoidEscape": true
+      }
+    ]
+  },
+  "globals": {
+    "contact": true,
+    "reports": true,
+    "lineage": true
   }
 }
