@@ -62,6 +62,17 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
     emitForEvents();
   }
 
+  function obtainContactLabelFromSchedule(taskDefinition, c, r) {
+    var contactLabel;
+    if (typeof taskDefinition.contactLabel === 'function') {
+      contactLabel = taskDefinition.contactLabel(c, r);
+    } else {
+      contactLabel = taskDefinition.contactLabel;
+    }
+  
+    return contactLabel ? { name: contactLabel } : c.contact;
+  }  
+
   function emitForEvents(scheduledTaskIdx) {
     var i, dueDate = null, event, priority, task;
     for (i = 0; i < taskDefinition.events.length; i++) {
@@ -79,7 +90,8 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         if (event.dueDate) {
           dueDate = event.dueDate(event, c);
         } else {
-          dueDate = new Date(Utils.addDate(new Date(c.contact.reported_date), event.days));
+          var defaultDueDate = c.contact && c.contact.reported_date ? new Date(c.contact.reported_date) : new Date();
+          dueDate = new Date(Utils.addDate(defaultDueDate, event.days));
         }
       }
 
@@ -93,7 +105,7 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         _id: (r ? r._id : c.contact && c.contact._id) + '~' + (event.id || i) + '~' + (taskDefinition.name || taskDefinition.index),
         deleted: !!((c.contact && c.contact.deleted) || r ? r.deleted : false),
         doc: c,
-        contact: c.contact,
+        contact: obtainContactLabelFromSchedule(taskDefinition, c, r),
         icon: taskDefinition.icon,
         date: dueDate,
         title: taskDefinition.title,
