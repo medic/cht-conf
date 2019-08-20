@@ -18,7 +18,7 @@ function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
         }
         break;
       case 'contacts':
-        if (c.contact && taskDefinition.appliesToType.indexOf(c.contact.type) !== -1) {
+        if (c.contact) {
           emitTasks(taskDefinition, Utils, Task, emit, c);
         }
         break;
@@ -31,8 +31,15 @@ function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
 function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
   var i;
 
-  if (r && taskDefinition.appliesToType && taskDefinition.appliesToType.indexOf(r.form) === -1) {
-    return;
+  if (taskDefinition.appliesToType) {
+    var contactType = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
+    var shouldApply = taskDefinition.appliesTo === 'contacts' ?
+      taskDefinition.appliesToType.indexOf(contactType) !== -1 :
+      r && taskDefinition.appliesToType.indexOf(r.form) !== -1;
+
+    if (!shouldApply) {
+      return;
+    }
   }
 
   if (taskDefinition.appliesTo !== 'scheduled_tasks' && taskDefinition.appliesIf && !taskDefinition.appliesIf(c, r)) {

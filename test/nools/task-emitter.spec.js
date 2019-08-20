@@ -11,6 +11,7 @@ const {
   aReport,
   aReportWithScheduledTasks,
   personWithoutReports,
+  configurableHierarchyPersonWithReports,
   personWithReports,
   placeWithoutReports,
 } = require('./mocks');
@@ -79,6 +80,47 @@ describe('task-emitter', () => {
           'actions[0].content.source_id': 'c-2',
           resolved: false,
         });
+      });
+
+      it('appliesToType should filter configurable hierarchy contact', () => {
+        // given
+        const config = {
+          c: configurableHierarchyPersonWithReports(),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+
+        // when
+        const emitted = runNoolsLib(config).emitted;
+
+        // then
+        assert.shallowDeepEqual(emitted, [
+          { _type:'_complete', _id: true },
+        ]);
+      });
+
+      it('emitted task for configurable hierarchy contact', () => {
+        // given
+        const config = {
+          c: configurableHierarchyPersonWithReports(),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+        config.tasks[0].appliesToType = 'custom';
+
+        // when
+        const emitted = runNoolsLib(config).emitted;
+
+        // then
+        assert.shallowDeepEqual(emitted, [
+          {
+            _type: 'task',
+            date: TEST_DAY,
+            resolved: false,
+            actions:[ { form: 'example-form' } ]
+          },
+          { _type:'_complete', _id: true },
+        ]);
       });
     });
 
