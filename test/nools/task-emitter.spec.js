@@ -34,7 +34,7 @@ describe('task-emitter', () => {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -135,7 +135,7 @@ describe('task-emitter', () => {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -156,12 +156,63 @@ describe('task-emitter', () => {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.deepEqual(emitted, [
           { _type:'_complete', _id: true },
         ]);
+      });
+
+      describe('contactLabel attribute', () => {
+        const mockHeading = sinon.stub().returns('foo');
+        const scenarios = [
+          {
+            name: 'as function returning string',
+            contactValue: mockHeading,
+            expectations: (config, emitted) => {
+              expect(emitted[0]).to.nested.include({
+                'contact.name': 'foo',
+              });
+              expect(mockHeading.calledOnce).to.be.true;
+              expect(mockHeading.args[0]).to.deep.eq([config.c, config.c.reports[0]]);
+            }
+          },
+
+          {
+            name: 'as string',
+            contactValue: 'foo',
+            expectations: (config, emitted) => expect(emitted[0]).to.nested.include({ 'contact.name': 'foo' }),
+          },
+
+          {
+            name: 'undefined',
+            contactValue: undefined,
+            expectations: (config, emitted) => expect(emitted[0]).to.nested.include({ 'contact.type': 'person' }),
+          },
+        ];
+
+        for (let scenario of scenarios) {
+          it(scenario.name, () => {
+            // given
+            const config = {
+              c: personWithReports(aReport()),
+              targets: [],
+              tasks: [ aReportBasedTask() ],
+            };
+            config.tasks[0].contactLabel = scenario.contactValue;
+            
+            // when
+            const { emitted } = runNoolsLib(config);
+
+            // then
+            expect(emitted[0]).to.nested.include({
+              _type: 'task',
+              'actions[0].content.contact._id': 'c-2',
+            });
+            scenario.expectations(config, emitted);
+          });
+        }
       });
 
       it('should emit once for a single report', () => {
@@ -173,7 +224,7 @@ describe('task-emitter', () => {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -226,7 +277,7 @@ describe('task-emitter', () => {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -248,7 +299,7 @@ describe('task-emitter', () => {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -279,11 +330,31 @@ describe('task-emitter', () => {
         config.tasks[0].events = [event, event];
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         expect(emitted).to.have.property('length', 4);
         expectAllToHaveUniqueIds(emitted);
+      });
+
+      it('given contact without reported_date, dueDate defaults to now', () => {
+        sinon.useFakeTimers();
+
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+        delete config.c.contact.reported_date;
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        const expected = new Date();
+        expected.setHours(0, 0, 0, 0);
+        expect(emitted[0].date.getTime()).to.eq(expected.getTime());
       });
 
       it('dueDate function is invoked with expected data', () => {
@@ -300,7 +371,7 @@ describe('task-emitter', () => {
         event.dueDate = spy;
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         expect(emitted).to.have.property('length', 2);
@@ -325,7 +396,7 @@ describe('task-emitter', () => {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -361,7 +432,7 @@ describe('task-emitter', () => {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
@@ -406,7 +477,7 @@ describe('task-emitter', () => {
       };
 
       // when
-      const emitted = runNoolsLib(config).emitted;
+      const { emitted } = runNoolsLib(config);
 
       // then
       expect(emitted).to.have.property('length', 1);
@@ -436,7 +507,7 @@ describe('task-emitter', () => {
       };
 
       // when
-      const emitted = runNoolsLib(config).emitted;
+      const { emitted } = runNoolsLib(config);
 
       // then
       expect(emitted).to.have.property('length', 1);
@@ -453,7 +524,7 @@ describe('task-emitter', () => {
         };
 
         // when
-        const emitted = runNoolsLib(config).emitted;
+        const { emitted } = runNoolsLib(config);
 
         // then
         assert.shallowDeepEqual(emitted, [
