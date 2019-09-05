@@ -41,6 +41,7 @@ const getUserInfo = async (instanceUrl, user) => {
     params.contact = user.contact;
   }
 
+  info(`Requesting user-info for "${user.username}"`);
   let result;
   try {
     result = await request.get(`${instanceUrl}/api/v1/users-info`, { qs: params, json: true });
@@ -74,7 +75,6 @@ module.exports = async (projectDir, couchUrl) => {
 
   const users = getUsersData(fs.read(csvPath));
   for (let user of users) {
-    info(`Requesting user-info for "${user.username}"`);
     const userInfo = await getUserInfo(instanceUrl, user);
     if (userInfo && userInfo.warn) {
       warn(`The user "${user.username}" would replicate ${userInfo.total_docs}, which is above the recommended limit of ${userInfo.limit}. Are you sure you want to continue?`);
