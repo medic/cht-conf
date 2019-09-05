@@ -28,29 +28,28 @@ const getUsersData = (csvData) => {
 };
 
 const getUserInfo = async (instanceUrl, user) => {
-  if (typeof user.place !== 'string') {
+  const getId = (obj) => typeof obj === 'string' ? obj : obj._id;
+  const facilityId = getId(user.place);
+  if (!facilityId) {
     // new place - nothing to check
     return;
   }
 
   const params = {
-    facility_id: user.place,
+    facility_id: facilityId,
     role: JSON.stringify(user.roles),
+    contact: getId(user.contact),
   };
-  if (typeof user.contact === 'string') {
-    params.contact = user.contact;
-  }
 
   info(`Requesting user-info for "${user.username}"`);
   let result;
   try {
     result = await request.get(`${instanceUrl}/api/v1/users-info`, { qs: params, json: true });
   } catch (err) {
-    // we can safely ignore errors
-    // a) This endpoint was only added in 3.7, we can ignore the 404
-    // b) The endpoint throws an error if the requested roles are "online"
-    // c) The requesting authenticated user doesn't have permissions to update users, the corresponding user create request will fail
-    // d) Missing facility or role, the corresponding user create request will fail
+    // we can safely ignore some errors
+    // - 404: This endpoint was only added in 3.7
+    // - 400: The endpoint throws an error if the requested roles are "online"
+    // - 400: Missing facility or role, the corresponding user create request will fail
     if (err.statusCode !== 404 && err.statusCode !== 400) {
       throw err;
     }
