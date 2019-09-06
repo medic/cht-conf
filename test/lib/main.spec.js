@@ -15,6 +15,7 @@ describe('main', () => {
       shellCompletionSetup: sinon.stub(),
       error: sinon.stub(),
       info: sinon.stub(),
+      checkMedicConfDependencyVersion: sinon.stub(),
       warn: sinon.stub(),
       executeAction: sinon.stub(),
       readline: {
@@ -62,6 +63,16 @@ describe('main', () => {
     expect(mocks.info.args[0]).to.match(/[0-9]+\.[0-9]+\.[0-9]/);
   });
 
+  it('--skip-dependency-check', async () => {
+    await main([...normalArgv, '--skip-dependency-check'], {});
+    expect(mocks.checkMedicConfDependencyVersion.callCount).to.eq(0);
+  });
+
+  it('medic conf dependency checked', async () => {
+    await main([...normalArgv, '--local'], {});
+    expect(mocks.checkMedicConfDependencyVersion.calledOnce).to.be.true;
+  });
+
   it('--local --accept-self-signed-certs', async () => {
     await main([...normalArgv, '--local', '--accept-self-signed-certs'], {});
     expect(mocks.executeAction.callCount).to.deep.eq(defaultActions.length);
@@ -72,7 +83,7 @@ describe('main', () => {
     await main([...normalArgv, '--local'], {});
     
     expect(mocks.executeAction.callCount).to.deep.eq(defaultActions.length);
-    expect(mocks.executeAction.args[0]).to.deep.eq(['compile-app-settings', 'http://admin:pass@localhost:5988/medic', undefined, '.']);
+    expect(mocks.executeAction.args[0]).to.deep.eq(['compile-app-settings', 'http://admin:pass@localhost:5988/medic', undefined]);
   });
 
   it('--local with COUCH_URL to localhost', async () => {
@@ -80,7 +91,7 @@ describe('main', () => {
     await main([...normalArgv, '--local'], { COUCH_URL });
     
     expect(mocks.executeAction.callCount).to.deep.eq(defaultActions.length);
-    expect(mocks.executeAction.args[0]).to.deep.eq(['compile-app-settings', 'http://user:pwd@localhost:5988/medic', undefined, '.']);
+    expect(mocks.executeAction.args[0]).to.deep.eq(['compile-app-settings', 'http://user:pwd@localhost:5988/medic', undefined]);
   });
 
   it('--local with COUCH_URL to non-localhost yields error', async () => {
@@ -101,7 +112,7 @@ describe('main', () => {
   it('--instance + 2 ordered actions', async () => {
     await main([...normalArgv, '--instance=test.app', 'convert-app-forms', 'compile-app-settings'], {});
     expect(mocks.executeAction.callCount).to.deep.eq(2);
-    expect(mocks.executeAction.args[0]).to.deep.eq(['convert-app-forms', 'https://admin:pwd@test.app.medicmobile.org/medic', undefined, '.']);
+    expect(mocks.executeAction.args[0]).to.deep.eq(['convert-app-forms', 'https://admin:pwd@test.app.medicmobile.org/medic', undefined]);
     expect(mocks.executeAction.args[1][0]).to.eq('compile-app-settings');
   });
 
@@ -109,7 +120,7 @@ describe('main', () => {
     const formName = 'form-name';
     await main([...normalArgv, '--local', 'convert-app-forms', '--', formName], {});
     expect(mocks.executeAction.callCount).to.deep.eq(1);
-    expect(mocks.executeAction.args[0]).to.deep.eq(['convert-app-forms', 'http://admin:pass@localhost:5988/medic', [formName], '.']);
+    expect(mocks.executeAction.args[0]).to.deep.eq(['convert-app-forms', 'http://admin:pass@localhost:5988/medic', [formName]]);
   });
 
   it('unsupported action', async () => {

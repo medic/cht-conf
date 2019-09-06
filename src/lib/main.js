@@ -4,6 +4,7 @@ const opn = require('opn');
 const readline = require('readline-sync');
 const redactBasicAuth = require('redact-basic-auth');
 const url = require('url');
+const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
 
 const checkForUpdates = require('../lib/check-for-updates');
 const emoji = require('../lib/emoji');
@@ -12,7 +13,6 @@ const fs = require('../lib/sync-fs');
 const supportedActions = require('../cli/supported-actions');
 const shellCompletionSetup = require('../cli/shell-completion-setup');
 const usage = require('../cli/usage');
-const executeAction = require('./execute-action');
 
 const { error, info, warn } = log;
 const defaultActions = [
@@ -74,6 +74,10 @@ module.exports = async (argv, env) => {
 
   if (cmdArgs['accept-self-signed-certs']) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+  }
+
+  if (!cmdArgs['skip-dependency-check']) {
+    checkMedicConfDependencyVersion('.');
   }
 
   //
@@ -173,7 +177,7 @@ module.exports = async (argv, env) => {
 
   for (let action of actions) {
     info(`Starting action: ${action}…`);
-    await executeAction(action, `${instanceUrl.href}medic`, extraArgs, '.');
+    await executeAction(action, `${instanceUrl.href}medic`, extraArgs);
     info(`${action} complete.`);
   }
 
@@ -188,3 +192,6 @@ const parseCouchUrl = COUCH_URL => {
   parsed.host = `${parsed.hostname}:5988`;
   return url.parse(url.format(parsed));
 };
+
+const executeAction = (action, instanceUrl, extraArgs) => require(`../fn/${action}`)('.', instanceUrl, extraArgs);
+
