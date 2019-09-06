@@ -1,5 +1,5 @@
 module.exports = {
-  fn: function(userCtx, contact, reports, messages) {
+  fn: function (userCtx, contact, reports, messages) {
     const old = Date.now() - (1000 * 60 * 60 * 24 * 365);
 
     return [
