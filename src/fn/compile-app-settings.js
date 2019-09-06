@@ -142,7 +142,6 @@ const parseExtraArgs = (extraArgs = []) => {
     minifyScripts: !args.debug,
     haltOnWebpackWarning: !args.debug,
     haltOnLintMessage: !args.debug,
-    dependencyCheck: !args.noDependencyCheck
   };
 };
 
