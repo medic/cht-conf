@@ -2,7 +2,7 @@
   "name": "medic-conf",
   "version": "3.0.4",
   "description": "Configure Medic Mobile deployments",
-  "main": "index.js",
+  "main": "./src/lib/execute-action.js",
   "engines": {
     "node": ">=8.9.0"
   },

@@ -12,6 +12,7 @@ const fs = require('../lib/sync-fs');
 const supportedActions = require('../cli/supported-actions');
 const shellCompletionSetup = require('../cli/shell-completion-setup');
 const usage = require('../cli/usage');
+const executeAction = require('./execute-action');
 
 const { error, info, warn } = log;
 const defaultActions = [
@@ -172,7 +173,7 @@ module.exports = async (argv, env) => {
 
   for (let action of actions) {
     info(`Starting action: ${action}…`);
-    await executeAction(action, `${instanceUrl.href}medic`, extraArgs);
+    await executeAction(action, `${instanceUrl.href}medic`, extraArgs, '.');
     info(`${action} complete.`);
   }
 
@@ -187,6 +188,3 @@ const parseCouchUrl = COUCH_URL => {
   parsed.host = `${parsed.hostname}:5988`;
   return url.parse(url.format(parsed));
 };
-
-const executeAction = (action, instanceUrl, extraArgs) => require(`../fn/${action}`)('.', instanceUrl, extraArgs);
-

@@ -12,8 +12,10 @@ const compileAppSettings = async (projectDir, couchUrl, extraArgs) => {
   const options = parseExtraArgs(extraArgs);
   projectDir = path.resolve(projectDir);
   
-  checkMedicConfDependencyVersion(projectDir);
-
+  if(options.dependencyCheck){
+    checkMedicConfDependencyVersion(projectDir);
+  }
+  
   let appSettings;
   const inheritedPath = path.join(projectDir, 'settings.inherit.json');
   if (fs.exists(inheritedPath)) {
@@ -146,6 +148,7 @@ const parseExtraArgs = (extraArgs = []) => {
     minifyScripts: !args.debug,
     haltOnWebpackWarning: !args.debug,
     haltOnLintMessage: !args.debug,
+    dependencyCheck: !args.noDependencyCheck
   };
 };
 
