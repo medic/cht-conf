@@ -1,7 +1,6 @@
 const fs = require('../lib/sync-fs');
 const csvParse = require('csv-parse/lib/sync');
 const { info, warn, error } = require('../lib/log');
-const request = require('request-promise-native');
 const readline = require('readline-sync');
 
 const nestPrefixedProperties = (obj, name) => {
@@ -27,7 +26,7 @@ const parseUsersData = (csvData) => {
   return users;
 };
 
-const getUserInfo = async (instanceUrl, user) => {
+const getUserInfo = async (repository, user) => {
   const getId = (obj) => typeof obj === 'string' ? obj : obj._id;
   const facilityId = getId(user.place);
   if (!facilityId) {
@@ -44,7 +43,7 @@ const getUserInfo = async (instanceUrl, user) => {
   info(`Requesting user-info for "${user.username}"`);
   let result;
   try {
-    result = await request.get(`${instanceUrl}/api/v1/users-info`, { qs: params, json: true });
+    result = await repository.getUserInfo(params);
   } catch (err) {
     // we can safely ignore some errors
     // - 404: This endpoint was only added in 3.7
@@ -57,16 +56,7 @@ const getUserInfo = async (instanceUrl, user) => {
   return result;
 };
 
-const createUser = (instanceUrl, user) => {
-  return request.post(`${instanceUrl}/api/v1/users`, { json: true, body: user });
-};
-
-module.exports = async (projectDir, couchUrl) => {
-  if(!couchUrl) {
-    throw new Error('Server URL must be defined to use this function.');
-  }
-
-  const instanceUrl = couchUrl.replace(/\/medic$/, '');
+module.exports = async (projectDir, repository) => {
   const csvPath = `${projectDir}/users.csv`;
   if(!fs.exists(csvPath)) {
     throw new Error(`User csv file not found at ${csvPath}`);
@@ -92,6 +82,6 @@ module.exports = async (projectDir, couchUrl) => {
 
   for (let user of users) {
     info(`Creating user ${user.username}`);
-    await createUser(instanceUrl, user);
+    await repository.createUser(user);
   }
 };

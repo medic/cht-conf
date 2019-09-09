@@ -5,6 +5,8 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
+const Repository = require('../../src/lib/server-repository');
+
 const moveContactsModule = rewire('../../src/fn/move-contacts');
 moveContactsModule.__set__('prepareDocumentDirectory', () => {});
 const updateLineagesAndStage = moveContactsModule.__get__('updateLineagesAndStage');
@@ -22,7 +24,7 @@ const reports_by_freetext = {
 
 describe('move-contacts', () => {
 
-  let pouchDb, scenarioCount = 0;
+  let pouchDb, repository, scenarioCount = 0;
   const writtenDocs = [];
   const getWrittenDoc = async docId => {
     const matches = writtenDocs.filter(doc => doc && doc._id === docId);
@@ -48,6 +50,7 @@ describe('move-contacts', () => {
 
   beforeEach(async () => {
     pouchDb = new PouchDB(`scenario${scenarioCount++}`, { adapter: 'memory' });
+    repository = new Repository(pouchDb);
 
     await mockHierarchy(pouchDb, {
       district_1: {
@@ -87,7 +90,7 @@ describe('move-contacts', () => {
     await updateLineagesAndStage({
       contactIds: ['health_center_1'],
       parentId: 'district_2',
-    }, pouchDb);
+    }, repository);
 
     expect(await getWrittenDoc('health_center_1_contact')).to.deep.eq({
       _id: 'health_center_1_contact',
@@ -129,7 +132,7 @@ describe('move-contacts', () => {
     await updateLineagesAndStage({
       contactIds: ['health_center_1'],
       parentId: 'root',
-    }, pouchDb);
+    }, repository);
 
     expect(await getWrittenDoc('health_center_1_contact')).to.deep.eq({
       _id: 'health_center_1_contact',
@@ -171,7 +174,7 @@ describe('move-contacts', () => {
     await updateLineagesAndStage({
       contactIds: ['district_1'],
       parentId: 'district_2',
-    }, pouchDb);
+    }, repository);
 
     expect(await getWrittenDoc('district_1')).to.deep.eq({
       _id: 'district_1',
@@ -244,7 +247,7 @@ describe('move-contacts', () => {
     await updateLineagesAndStage({
       contactIds: ['t_patient_1'],
       parentId: 't_clinic_2',
-    }, pouchDb);
+    }, repository);
 
     expect(await getWrittenDoc('t_health_center_1')).to.deep.eq({
       _id: 't_health_center_1',
@@ -268,7 +271,7 @@ describe('move-contacts', () => {
     await updateLineagesAndStage({
       contactIds: ['health_center_1'],
       parentId: 'district_2',
-    }, pouchDb);
+    }, repository);
 
     expect(await getWrittenDoc('health_center_1')).to.deep.eq({
       _id: 'health_center_1',
@@ -299,7 +302,7 @@ describe('move-contacts', () => {
     await updateLineagesAndStage({
       contactIds: ['clinic_1'],
       parentId: 'district_2',
-    }, pouchDb);
+    }, repository);
 
 
     expect(await getWrittenDoc('clinic_1')).to.deep.eq({
@@ -324,7 +327,7 @@ describe('move-contacts', () => {
       await updateLineagesAndStage({
         contactIds: ['health_center_1'],
         parentId: 'clinic_1',
-      }, pouchDb);
+      }, repository);
       assert.fail('should throw');
     } catch (err) {
       expect(err.message).to.include('circular');
@@ -336,7 +339,7 @@ describe('move-contacts', () => {
       await updateLineagesAndStage({
         contactIds: ['clinic_1'],
         parentId: 'dne_parent_id'
-      }, pouchDb);
+      }, repository);
       assert.fail('should throw when parent is not defined');
     } catch (err) {
       expect(err.message).to.include('could not be found');
@@ -348,7 +351,7 @@ describe('move-contacts', () => {
       await updateLineagesAndStage({
         contactIds: ['patient_1', 'health_center_1'],
         parentId: 'district_2',
-      }, pouchDb);
+      }, repository);
       assert.fail('should throw');
     } catch (err) {
       expect(err.message).to.include('same lineage');
@@ -360,7 +363,7 @@ describe('move-contacts', () => {
       await updateLineagesAndStage({
         contactIds: ['dne'],
         parentId: 'clinic_1'
-      }, pouchDb);
+      }, repository);
       assert.fail('should throw');
     } catch (err) {
       expect(err.message).to.include('could not be found');
@@ -372,7 +375,7 @@ describe('move-contacts', () => {
       await updateLineagesAndStage({
         contactIds: ['report_1'],
         parentId: 'clinic_1'
-      }, pouchDb);
+      }, repository);
       assert.fail('should throw');
     } catch (err) {
       expect(err.message).to.include('unknown type');
@@ -384,7 +387,7 @@ describe('move-contacts', () => {
       await updateLineagesAndStage({
         contactIds: ['clinic_1_contact'],
         parentId: 'district_1'
-      }, pouchDb);
+      }, repository);
 
       assert.fail('should throw');
     } catch (err) {
@@ -398,7 +401,7 @@ describe('move-contacts', () => {
       await updateLineagesAndStage({
         contactIds: ['clinic_1'],
         parentId: 'clinic_1'
-      }, pouchDb);
+      }, repository);
 
       assert.fail('should throw');
     } catch (err) {
@@ -413,7 +416,7 @@ describe('move-contacts', () => {
       await updateLineagesAndStage({
         contactIds: ['district_1'],
         parentId: 'district_2',
-      }, pouchDb);
+      }, repository);
 
       assert.fail('Expected error');
     } catch (err) {

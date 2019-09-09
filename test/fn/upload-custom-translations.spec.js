@@ -35,7 +35,7 @@ describe('upload-custom-translations', () => {
     });
 
     it('should upload simple translations', () => {
-      return uploadCustomTranslations(`${testProjectDir}simple`, api.couchUrl)
+      return uploadCustomTranslations(`${testProjectDir}simple`, api.repository)
         .then(() => expectTranslationDocs('en'))
         .then(() => getTranslationDoc('en'))
         .then(messagesEn => {
@@ -46,7 +46,7 @@ describe('upload-custom-translations', () => {
     });
 
     it('should upload translations for multiple languages', () => {
-      return uploadCustomTranslations(`${testProjectDir}multi-lang`, api.couchUrl)
+      return uploadCustomTranslations(`${testProjectDir}multi-lang`, api.repository)
         .then(() => expectTranslationDocs('en', 'fr'))
         .then(() => getTranslationDoc('en'))
         .then(messagesEn => {
@@ -63,7 +63,7 @@ describe('upload-custom-translations', () => {
     });
 
     it('should upload translations containing equals signs', () => {
-      return uploadCustomTranslations(`${testProjectDir}contains-equals`, api.couchUrl)
+      return uploadCustomTranslations(`${testProjectDir}contains-equals`, api.repository)
         .then(() => expectTranslationDocs('en'))
         .then(() => getTranslationDoc('en'))
         .then(messagesEn => {
@@ -85,7 +85,7 @@ describe('upload-custom-translations', () => {
           type: 'translations',
           values: { a: 'first' }
         })
-        .then(() => uploadCustomTranslations(`${testProjectDir}custom-lang`, api.couchUrl))
+        .then(() => uploadCustomTranslations(`${testProjectDir}custom-lang`, api.repository))
         .then(() => expectTranslationDocs('en', 'fr'))
         .then(() => getTranslationDoc('en'))
         .then(messagesEn => {
@@ -109,7 +109,7 @@ describe('upload-custom-translations', () => {
       it('should upload simple translations', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        return uploadCustomTranslations(`${testProjectDir}simple`, api.couchUrl)
+        return uploadCustomTranslations(`${testProjectDir}simple`, api.repository)
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -122,7 +122,7 @@ describe('upload-custom-translations', () => {
       it('should upload translations for multiple languages', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        return uploadCustomTranslations(`${testProjectDir}multi-lang`, api.couchUrl)
+        return uploadCustomTranslations(`${testProjectDir}multi-lang`, api.repository)
           .then(() => expectTranslationDocs('en', 'fr'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -141,7 +141,7 @@ describe('upload-custom-translations', () => {
       it('should upload translations containing equals signs', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        return uploadCustomTranslations(`${testProjectDir}contains-equals`, api.couchUrl)
+        return uploadCustomTranslations(`${testProjectDir}contains-equals`, api.repository)
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -163,7 +163,7 @@ describe('upload-custom-translations', () => {
             type: 'translations',
             values: { a:'first', from_custom:'third' }
           })
-          .then(() => uploadCustomTranslations(`${testProjectDir}with-customs`, api.couchUrl))
+          .then(() => uploadCustomTranslations(`${testProjectDir}with-customs`, api.repository))
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -181,7 +181,7 @@ describe('upload-custom-translations', () => {
             name: 'English',
             type: 'translations'
           })
-          .then(() => uploadCustomTranslations(`${testProjectDir}with-customs`, api.couchUrl))
+          .then(() => uploadCustomTranslations(`${testProjectDir}with-customs`, api.repository))
           .catch(err => {
             assert.equal(err.message, 'Existent translation doc messages-en is malformed');
           });
@@ -194,7 +194,7 @@ describe('upload-custom-translations', () => {
       it('should upload simple translations', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        return uploadCustomTranslations(`${testProjectDir}simple`, api.couchUrl)
+        return uploadCustomTranslations(`${testProjectDir}simple`, api.repository)
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -207,7 +207,7 @@ describe('upload-custom-translations', () => {
       it('should upload translations for multiple languages', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        return uploadCustomTranslations(`${testProjectDir}multi-lang`, api.couchUrl)
+        return uploadCustomTranslations(`${testProjectDir}multi-lang`, api.repository)
           .then(() => expectTranslationDocs('en', 'fr'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -226,7 +226,7 @@ describe('upload-custom-translations', () => {
       it('should upload translations containing equals signs', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        return uploadCustomTranslations(`${testProjectDir}contains-equals`, api.couchUrl)
+        return uploadCustomTranslations(`${testProjectDir}contains-equals`, api.repository)
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -249,7 +249,7 @@ describe('upload-custom-translations', () => {
             generic: { a: 'first' },
             custom: { c: 'third' }
           })
-          .then(() => uploadCustomTranslations(`${testProjectDir}with-customs`, api.couchUrl))
+          .then(() => uploadCustomTranslations(`${testProjectDir}with-customs`, api.repository))
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -269,7 +269,7 @@ describe('upload-custom-translations', () => {
             generic: { a: 'first' },
             custom: { c: 'third' }
           })
-          .then(() => uploadCustomTranslations(`${testProjectDir}no-customs`, api.couchUrl))
+          .then(() => uploadCustomTranslations(`${testProjectDir}no-customs`, api.repository))
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -296,7 +296,7 @@ describe('upload-custom-translations', () => {
             type: 'translations',
             generic: { a: 'first' }
           }))
-          .then(() => uploadCustomTranslations(`${testProjectDir}custom-lang`, api.couchUrl))
+          .then(() => uploadCustomTranslations(`${testProjectDir}custom-lang`, api.repository))
           .then(() => expectTranslationDocs('en', 'fr'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -321,7 +321,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should upload simple translations', () => {
-        return uploadCustomTranslations(`${testProjectDir}simple`, api.couchUrl)
+        return uploadCustomTranslations(`${testProjectDir}simple`, api.repository)
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -332,7 +332,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should upload translations for multiple languages', () => {
-        return uploadCustomTranslations(`${testProjectDir}multi-lang`, api.couchUrl)
+        return uploadCustomTranslations(`${testProjectDir}multi-lang`, api.repository)
           .then(() => expectTranslationDocs('en', 'fr'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
@@ -349,7 +349,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should upload translations containing equals signs', () => {
-        return uploadCustomTranslations(`${testProjectDir}contains-equals`, api.couchUrl)
+        return uploadCustomTranslations(`${testProjectDir}contains-equals`, api.repository)
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {

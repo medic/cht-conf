@@ -38,7 +38,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers(testDir, api.repository))
       .then(() => {
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
@@ -306,7 +306,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers(testDir, api.repository))
 
       .then(() =>
         assert.deepEqual(api.requestLog(), [
