@@ -6,7 +6,7 @@ const warn = require('../lib/log').warn;
 const SVGO = require('svgo');
 const svgo = new SVGO();
 
-module.exports = (projectDir/*, couchUrl*/) =>
+module.exports = projectDir =>
   fs.recurseFiles(projectDir)
     .filter(name => name.endsWith('.svg'))
     .reduce((promiseChain, path) =>

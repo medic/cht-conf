@@ -1,11 +1,7 @@
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
-const request = require('request-promise-native');
 
-module.exports = (projectDir, couchUrl) => {
-  if(!couchUrl) throw new Error('Server URL must be defined to use this function.');
-  const instanceUrl = couchUrl.replace(/\/medic$/, '');
-
+module.exports = (projectDir, repository) => {
   return Promise.resolve()
     .then(() => {
       const csvPath = `${projectDir}/users.csv`;
@@ -30,12 +26,7 @@ module.exports = (projectDir, couchUrl) => {
         return promiseChain
           .then(() => {
             info('Creating user', username);
-            return request({
-              uri: `${instanceUrl}/api/v1/users`,
-              method: 'POST',
-              json: true,
-              body: requestObject,
-            });
+            return repository.createUser(requestObject);
           });
       }, Promise.resolve());
     });

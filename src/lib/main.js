@@ -8,8 +8,9 @@ const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdenc
 
 const checkForUpdates = require('../lib/check-for-updates');
 const emoji = require('../lib/emoji');
-const log = require('../lib/log');
 const fs = require('../lib/sync-fs');
+const log = require('../lib/log');
+const Repository = require('../lib/server-repository');
 const supportedActions = require('../cli/supported-actions');
 const shellCompletionSetup = require('../cli/shell-completion-setup');
 const usage = require('../cli/usage');
@@ -175,9 +176,11 @@ module.exports = async (argv, env) => {
     await checkForUpdates({ nonFatal: true });
   }
 
+  const couchUrl = `${instanceUrl.href}medic`;
+  const repository = new Repository(couchUrl);
   for (let action of actions) {
     info(`Starting action: ${action}…`);
-    await executeAction(action, `${instanceUrl.href}medic`, extraArgs);
+    await executeAction(action, repository, extraArgs);
     info(`${action} complete.`);
   }
 

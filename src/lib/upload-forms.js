@@ -1,27 +1,16 @@
 const attachmentsFromDir = require('../lib/attachments-from-dir');
 const attachmentFromFile = require('../lib/attachment-from-file');
 const fs = require('../lib/sync-fs');
-const info = require('../lib/log').info;
-const insertOrReplace = require('../lib/insert-or-replace');
-const skipFn = require('../lib/skip-fn');
-const trace = require('../lib/log').trace;
-const warn = require('../lib/log').warn;
-const pouch = require('../lib/db');
+const { info, trace, warn } = require('../lib/log');
 const abortPromiseChain = require('../lib/abort-promise-chain');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 
 
-module.exports = (projectDir, couchUrl, subDirectory, options) => {
-  if(!couchUrl) return skipFn('no couch URL set');
-
-  const db = pouch(couchUrl);
-
-  if(!options) options = {};
+module.exports = (projectDir, repository, subDirectory, options) => {
+  if (!options) options = {};
 
   const formsDir = `${projectDir}/forms/${subDirectory}`;
-
-
   if(!fs.exists(formsDir)) {
     warn(`Forms dir not found: ${formsDir}`);
     return Promise.resolve();
@@ -64,12 +53,12 @@ module.exports = (projectDir, couchUrl, subDirectory, options) => {
       doc._attachments = fs.exists(mediaDir) ? attachmentsFromDir(mediaDir) : {};
       doc._attachments.xml = attachmentFromFile(xformPath);
 
-      const docUrl = `${couchUrl}/${docId}`;
+      const docUrl = `${repository.description}/${docId}`;
 
       return promiseChain
-        .then(() => trace('Uploading form', `${formsDir}/${fileName}`, 'to', docUrl))
-        .then(() => insertOrReplace(db, doc))
-        .then(() => info('Uploaded form', `${formsDir}/${fileName}`, 'to', docUrl));
+        .then(() => trace(`Uploading form ${formsDir}/${fileName} to ${docUrl}`))
+        .then(() => repository.insertOrReplace(doc))
+        .then(() => info(`Uploaded form ${formsDir}/${fileName} to ${docUrl}`));
     }, Promise.resolve());
 };
 

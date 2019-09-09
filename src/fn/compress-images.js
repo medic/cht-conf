@@ -2,7 +2,7 @@ const compressPng = require('../lib/compress-png');
 const compressSvg = require('../lib/compress-svg');
 const fs = require('../lib/sync-fs');
 
-module.exports = (projectDir/*, couchUrl*/) =>
+module.exports = projectDir =>
   fs.recurseFiles(projectDir)
     .reduce((promiseChain, path) => {
         switch(fs.extension(path)) {

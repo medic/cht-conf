@@ -6,7 +6,7 @@ const fs = require('../lib/sync-fs');
 const parseTargets = require('../lib/parse-targets');
 const { warn } = require('../lib/log');
 
-const compileAppSettings = async (projectDir, couchUrl, extraArgs) => {
+const compileAppSettings = async (projectDir, repository, extraArgs) => {
   const options = parseExtraArgs(extraArgs);
   projectDir = path.resolve(projectDir);
   

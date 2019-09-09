@@ -16,7 +16,7 @@ describe('upload-sms-from-csv', function() {
     const testDir = 'data/upload-sms-from-csv';
 
     // when
-    return csvToSms(testDir, api.couchUrl)
+    return csvToSms(testDir, api.repository)
       .then(() => {
         const expected = fs.readJson(`${testDir}/expected.json`);
         assert.deepEqualExcludingEvery(api.gatewayRequests, expected, ['id', 'sms_sent', 'sms_received']);
