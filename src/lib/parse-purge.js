@@ -39,6 +39,7 @@ module.exports = (projectDir) => {
   // Backwards compatibility with older configurations, where `purge` settings were wrongly parsed from `purging`
   // see https://github.com/medic/medic-conf/issues/130
   if (purgingExists) {
+    warn('Warning: Storing your purge function in `purging.js` is deprecated. Create a `purge.js` file instead.');
     const purgeFnString = fs.read(purgingPath);
     let purgeFn;
     try {

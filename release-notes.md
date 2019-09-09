@@ -1,5 +1,27 @@
 # Release Notes
 
+## 3.0.5
+
+### Updates to purge configuration
+
+medic-conf has changed the way it compiles purge configuration.
+To configure purge, create a file `purge.js` in your project root. This file is a javascript module that should export an object containing your purge configuration:
+
+```
+module.exports = {
+  text_expression: 'at 12 am on Sunday',
+  run_every_days: 7,
+  fn: (userCtx, contact, reports, messages) => {
+    const old = Date.now() - (1000 * 60 * 60 * 24 * 365);
+    return [
+        ...reports.filter(report => report.reported_date > old),
+        ...messages.filter(message => message.reported_date > old),
+    ].map(doc => doc._id);
+  },
+};
+```
+Storing the purge function in `purging.js` is deprecated.
+
 ## 3.0
 
 medic-conf v3.0 contains breaking changes! This release only impacts the `compile-app-settings` action, which impacts the configuration code in `tasks.js`, `targets.js`, `contact-summary.js`, and `contact-summary.templated.js`.
