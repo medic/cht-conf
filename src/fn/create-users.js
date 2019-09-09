@@ -17,7 +17,7 @@ const nestPrefixedProperties = (obj, name) => {
   return obj[name] || nested;
 };
 
-const getUsersData = (csvData) => {
+const parseUsersData = (csvData) => {
   const users = csvParse(csvData, { columns: true });
   users.forEach(user => {
     user.contact = nestPrefixedProperties(user, 'contact');
@@ -57,7 +57,7 @@ const getUserInfo = async (instanceUrl, user) => {
   return result;
 };
 
-const createUser = async (instanceUrl, user) => {
+const createUser = (instanceUrl, user) => {
   return request.post(`${instanceUrl}/api/v1/users`, { json: true, body: user });
 };
 
@@ -72,16 +72,21 @@ module.exports = async (projectDir, couchUrl) => {
     throw new Error(`User csv file not found at ${csvPath}`);
   }
 
-  const users = getUsersData(fs.read(csvPath));
+  const users = parseUsersData(fs.read(csvPath));
+  const warnings = [];
   for (let user of users) {
     const userInfo = await getUserInfo(instanceUrl, user);
     if (userInfo && userInfo.warn) {
-      warn(`The user "${user.username}" would replicate ${userInfo.total_docs}, which is above the recommended limit of ${userInfo.limit}. Are you sure you want to continue?`);
-      if(!readline.keyInYN()) {
-        error('User failed to confirm action.');
-        process.exit(1);
-        return; // stop execution in tests
-      }
+      warnings.push(`The user "${user.username}" would replicate ${userInfo.total_docs}, which is above the recommended limit of ${userInfo.limit}.`);
+    }
+  }
+  if (warnings.length) {
+    warnings.forEach(warning => warn(warning));
+    warn('Are you sure you want to continue?');
+    if(!readline.keyInYN()) {
+      error('User failed to confirm action.');
+      process.exit(1);
+      return; // stop execution in tests
     }
   }
 

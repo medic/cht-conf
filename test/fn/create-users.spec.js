@@ -3,13 +3,12 @@ const assert = require('chai').assert;
 const rewire = require('rewire');
 const sinon = require('sinon');
 const querystring = require('querystring');
-let createUsers;
+const createUsers = rewire('../../src/fn/create-users');
 let readLine;
 
 describe('create-users', function() {
   beforeEach(() => {
     readLine = { keyInYN: sinon.stub() };
-    createUsers = rewire('../../src/fn/create-users');
     createUsers.__set__('readline', readLine);
     return api.start();
   });
@@ -222,7 +221,7 @@ describe('create-users', function() {
     return assertDbEmpty()
       .then(() => createUsers(testDir, api.couchUrl))
       .then(() => {
-        assert.equal(readLine.keyInYN.callCount, 2);
+        assert.equal(readLine.keyInYN.callCount, 1);
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jack), body: {} },
@@ -244,24 +243,25 @@ describe('create-users', function() {
       { status: 400, body: { code: 400, error: 'not an offline role' } },
       { body: { total_docs: 12000, warn: true, limit: 10000 } },
       { body: { total_docs: 10200, warn: true, limit: 10000 } },
+      { body: { total_docs: 1000, warn: false, limit: 10000 } },
     );
 
-    readLine.keyInYN
-      .onCall(0).returns(true)
-      .onCall(1).returns(false);
+    readLine.keyInYN.onCall(1).returns(false);
     const todd = { username: 'todd', password: pwd, roles: ['district-admin'],  place: 'place_uuid_1', contact: 'contact_uuid_1' };
     const jack = { username: 'jack', password: pwd, roles: ['district-admin', 'supervisor'],  place: 'place_uuid_2', contact: 'contact_uuid_2' };
     const jill = { username: 'jill', password: pwd, roles: ['role1', 'role2', 'role3'],  place: 'place_uuid_3', contact: 'contact_uuid_3' };
+    const john = { username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4' };
     const qs = (user) => querystring.stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
     return assertDbEmpty()
       .then(() => createUsers(testDir, api.couchUrl))
       .then(() => {
-        assert.equal(readLine.keyInYN.callCount, 2);
+        assert.equal(readLine.keyInYN.callCount, 1);
         assert.equal(process.exit.callCount, 1);
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jack), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + qs(jill), body: {} }
+          { method: 'GET', url: '/api/v1/users-info?' + qs(jill), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(john), body: {} },
         ]);
       });
   });
