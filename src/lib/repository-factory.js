@@ -71,7 +71,7 @@ const parseLocalUrl = (couchUrl) => {
   if (couchUrl) {
     const parsedUrl = doParse(couchUrl);
 
-    info(`Using local url from COUCH_URL environment variable: ${parsedUrl}`);
+    info(`Using local url from COUCH_URL environment variable: ${couchUrl}`);
     if (parsedUrl.hostname !== 'localhost') {
       error(`You asked to configure a local instance, but the COUCH_URL env var is set to '${couchUrl}'.  This may be a remote server.`);
       return false;

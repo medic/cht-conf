@@ -127,16 +127,4 @@ describe('main', () => {
     await main([...normalArgv, '--local', 'not-an-action'], {});
     expect(mocks.executeAction.called).to.be.false;
   });
-
-  describe('parseCouchUrl', () => {
-    const parseCouchUrl = main.__get__('parseCouchUrl');
-    it('basic', () =>
-      expect(parseCouchUrl('http://admin:pass@localhost:5988/medic').href).to.eq('http://admin:pass@localhost:5988/'));
-    
-    it('updates port', () =>
-      expect(parseCouchUrl('http://admin:pass@localhost:5984/medic').href).to.eq('http://admin:pass@localhost:5988/'));
-
-    it('ignores path', () =>
-      expect(parseCouchUrl('http://admin:pass@localhost:5984/foo').href).to.eq('http://admin:pass@localhost:5988/'));
-  });
 });
