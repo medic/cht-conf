@@ -4,7 +4,8 @@
 
 const options = [
     '--instance', '--local', '--url', '--user',
-    '--help', '--shell-completion', '--supported-actions', '--version', '--accept-self-signed-certs',
+    '--help', '--shell-completion', '--supported-actions',
+    '--version', '--accept-self-signed-certs', '--skip-dependency-check',
     ...require('../cli/supported-actions'),
 ];
 

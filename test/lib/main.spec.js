@@ -15,6 +15,7 @@ describe('main', () => {
       shellCompletionSetup: sinon.stub(),
       error: sinon.stub(),
       info: sinon.stub(),
+      checkMedicConfDependencyVersion: sinon.stub(),
       warn: sinon.stub(),
       executeAction: sinon.stub(),
       readline: {
@@ -60,6 +61,16 @@ describe('main', () => {
     await main([...normalArgv, '--version'], {});
     expect(mocks.info.callCount).to.eq(1);
     expect(mocks.info.args[0]).to.match(/[0-9]+\.[0-9]+\.[0-9]/);
+  });
+
+  it('--skip-dependency-check', async () => {
+    await main([...normalArgv, '--skip-dependency-check'], {});
+    expect(mocks.checkMedicConfDependencyVersion.callCount).to.eq(0);
+  });
+
+  it('medic conf dependency checked', async () => {
+    await main([...normalArgv, '--local'], {});
+    expect(mocks.checkMedicConfDependencyVersion.calledOnce).to.be.true;
   });
 
   it('--local --accept-self-signed-certs', async () => {

@@ -17,6 +17,7 @@ describe('shell-completion', () => {
         '--supported-actions',
         '--version',
         '--accept-self-signed-certs',
+        '--skip-dependency-check',
 
         'backup-all-forms',
         'backup-app-settings',

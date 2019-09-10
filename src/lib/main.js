@@ -4,6 +4,7 @@ const opn = require('opn');
 const readline = require('readline-sync');
 const redactBasicAuth = require('redact-basic-auth');
 const url = require('url');
+const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
 
 const checkForUpdates = require('../lib/check-for-updates');
 const emoji = require('../lib/emoji');
@@ -73,6 +74,10 @@ module.exports = async (argv, env) => {
 
   if (cmdArgs['accept-self-signed-certs']) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+  }
+
+  if (!cmdArgs['skip-dependency-check']) {
+    checkMedicConfDependencyVersion('.');
   }
 
   //

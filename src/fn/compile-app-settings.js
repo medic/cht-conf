@@ -1,7 +1,5 @@
 const minimist = require('minimist');
 const path = require('path');
-
-const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
 const compileContactSummary = require('../lib/compile-contact-summary');
 const compileNoolsRules = require('../lib/compile-nools-rules');
 const fs = require('../lib/sync-fs');
@@ -12,8 +10,6 @@ const compileAppSettings = async (projectDir, couchUrl, extraArgs) => {
   const options = parseExtraArgs(extraArgs);
   projectDir = path.resolve(projectDir);
   
-  checkMedicConfDependencyVersion(projectDir);
-
   let appSettings;
   const inheritedPath = path.join(projectDir, 'settings.inherit.json');
   if (fs.exists(inheritedPath)) {

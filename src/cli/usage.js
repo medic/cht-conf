@@ -52,7 +52,10 @@ ${bold('OPTIONS')}
     Display application changelog.
   
   --accept-self-signed-certs
-    Allows medic-conf to work with self signed certs by telling node to ignore the error 
+    Allows medic-conf to work with self signed certs by telling node to ignore the error
+  
+  --skip-dependency-check
+    Skips checking the version running is set to the same version in the package.json
 `);
 };
 
