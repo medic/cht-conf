@@ -87,8 +87,17 @@ const save = (folderPath, fileName, content) => {
     fs.mkdirSync(folderPath);
   }
 
-  const destination = path.resolve(folderPath, fileName);
-  const fileContent = typeof content === 'string' ? content : JSON.stringify(content);
+  const replacer = (name, val) => {
+    if (name === 'data' && val && val.type === 'Buffer') {
+      return Buffer.from(val).toString('base64');
+    }
+
+    return val;
+  };
+
+  const sanitizedFileName = fileName.replace(/[/\\?%*:|"<>]/g, '-'); // for Windows
+  const destination = path.resolve(folderPath, sanitizedFileName);
+  const fileContent = typeof content === 'string' ? content : JSON.stringify(content, replacer);
   fs.writeFileSync(destination, fileContent);
 };
 
