@@ -1,21 +1,16 @@
 #!/usr/bin/env node
 
 const opn = require('opn');
-const readline = require('readline-sync');
-const redactBasicAuth = require('redact-basic-auth');
-const url = require('url');
-const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
 
 const checkForUpdates = require('../lib/check-for-updates');
-const emoji = require('../lib/emoji');
 const fs = require('../lib/sync-fs');
 const log = require('../lib/log');
-const Repository = require('../lib/server-repository');
-const supportedActions = require('../cli/supported-actions');
+const createRepository = require('../lib/repository-factory');
 const shellCompletionSetup = require('../cli/shell-completion-setup');
+const supportedActions = require('../cli/supported-actions');
 const usage = require('../cli/usage');
 
-const { error, info, warn } = log;
+const { error, info } = log;
 const defaultActions = [
   'compile-app-settings',
   'backup-app-settings',
@@ -93,58 +88,15 @@ module.exports = async (argv, env) => {
   }
 
   //
-  // Compile instance information
+  // Construct the data access layer
   //
-  if (cmdArgs.user && !cmdArgs.instance) {
-    error('The --user switch can only be used if followed by --instance');
+  const pathToProject = fs.path.resolve(cmdArgs.source || '.');
+  const projectName = fs.path.basename(pathToProject);
+  const repository = createRepository(cmdArgs, env, projectName);
+  if (!repository) {
     return -1;
   }
-
-  let instanceUrl;
-  if (cmdArgs.local) {
-    const { COUCH_URL } = env;
-    if (COUCH_URL) {
-      instanceUrl = parseCouchUrl(COUCH_URL);
-
-      info('Using local url from COUCH_URL environment variable');
-      info(instanceUrl);
-      if (instanceUrl.hostname !== 'localhost') {
-        error(`You asked to configure a local instance, but the COUCH_URL env var is set to '${COUCH_URL}'.  This may be a remote server.`);
-        return -1;
-      }
-    } else {
-      instanceUrl = url.parse('http://admin:pass@localhost:5988');
-      info('Using default local url');
-    }
-  } else if (cmdArgs.instance) {
-    const password = readline.question(`${emoji.key}  Password: `, { hideEchoBack: true });
-    const instanceUsername = cmdArgs.user || 'admin';
-    const encodedPassword = encodeURIComponent(password);
-    instanceUrl = url.parse(`https://${instanceUsername}:${encodedPassword}@${cmdArgs.instance}.medicmobile.org`);
-  } else if (cmdArgs.url) {
-    instanceUrl = url.parse(cmdArgs.url);
-  } else {
-    error('Missing one of these required parameter: --local --instance --url');
-    usage();
-    return -1;
-  }
-
-  const projectName = fs.path.basename(fs.path.resolve('.'));
-
-  if (instanceUrl) {
-    const productionUrlMatch = instanceUrl.href.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
-    if (productionUrlMatch &&
-        productionUrlMatch[1] !== projectName &&
-        productionUrlMatch[1] !== 'alpha') {
-      warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
-          `against non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl.href)}\x1b[33m`);
-      if(!readline.keyInYN()) {
-        error('User failed to confirm action.');
-        return -1;
-      }
-    }
-  }
-
+  
   //
   // Build up actions
   //
@@ -167,7 +119,7 @@ module.exports = async (argv, env) => {
   //
   // GO GO GO
   //
-  info(`Processing config in ${projectName} for ${instanceUrl.href}.`);
+  info(`Processing config in ${projectName}.`);
   info('Actions:\n     -', actions.join('\n     - '));
   info('Extra args:', extraArgs);
 
@@ -176,8 +128,7 @@ module.exports = async (argv, env) => {
     await checkForUpdates({ nonFatal: true });
   }
 
-  const couchUrl = `${instanceUrl.href}medic`;
-  const repository = new Repository(couchUrl);
+  const executeAction = (action, repository, args) => require(`../fn/${action}`)(pathToProject, repository, args);
   for (let action of actions) {
     info(`Starting action: ${action}…`);
     await executeAction(action, repository, extraArgs);
@@ -188,13 +139,3 @@ module.exports = async (argv, env) => {
     await info('All actions completed.');
   }
 };
-
-const parseCouchUrl = COUCH_URL => {
-  const parsed = url.parse(COUCH_URL);
-  parsed.path = parsed.pathname = '';
-  parsed.host = `${parsed.hostname}:5988`;
-  return url.parse(url.format(parsed));
-};
-
-const executeAction = (action, instanceUrl, extraArgs) => require(`../fn/${action}`)('.', instanceUrl, extraArgs);
-

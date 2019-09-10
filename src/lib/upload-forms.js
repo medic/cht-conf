@@ -15,9 +15,17 @@ module.exports = (projectDir, repository, subDirectory, options) => {
     warn(`Forms dir not found: ${formsDir}`);
     return Promise.resolve();
   }
+
+  const formFilter = name => {
+    if (options && Array.isArray(options) && options.length) {
+      return options.includes(fs.withoutExtension(name));
+    } 
+    return true;
+  };
+
   return fs.readdir(formsDir)
     .filter(name => name.endsWith('.xml'))
-    .filter(name => !options.forms || options.forms.includes(fs.withoutExtension(name)))
+    .filter(formFilter)
     .reduce((promiseChain, fileName) => {
       info(`Preparing form for upload: ${fileName}…`);
 
