@@ -36,6 +36,7 @@
     "eslint": "^5.15.1",
     "eslint-loader": "^2.2.1",
     "googleapis": "^34.0.0",
+    "iso-639-1": "^2.1.0",
     "json2csv": "^4.3.5",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",

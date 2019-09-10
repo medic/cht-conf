@@ -4,6 +4,7 @@ const warn = require('../lib/log').warn;
 const pouch = require('../lib/db');
 const request = require('request-promise-native');
 const semver = require('semver');
+const ISO639 = require('iso-639-1');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
@@ -64,25 +65,34 @@ function overwriteProperties(doc, props) {
 }
 
 function newDocFor(fileName, instanceUrl, db) {
+
   const id = idFor(fileName);
+  const language_code = id.substring(id.indexOf('-') + 1);
+  const language_name = ISO639.getName(language_code);
 
-  const doc = {
-    _id: id,
-    type: 'translations',
-    code: id.substring(id.indexOf('-') + 1),
-    name: 'TODO: please ask admin to set this in settings UI',
-    enabled: true,
-  };
+  if (!!language_name){
 
-  return genericTranslationsStructure(instanceUrl, db).then(useGenericTranslations => {
-    if (useGenericTranslations) {
-      doc.generic = {};
-    } else {
-      doc.values = {};
-    }
+    const doc = {
+      _id: id,
+      type: 'translations',
+      code: language_code,
+      name: language_name,
+      enabled: true,
+    };
 
-    return doc;
-  });
+    return genericTranslationsStructure(instanceUrl, db).then(useGenericTranslations => {
+      if (useGenericTranslations) {
+        doc.generic = {};
+      } else {
+        doc.values = {};
+      }
+
+      return doc;
+    });
+
+  } else {
+    throw new Error(`'${language_code}' is not a recognized ISO639 language code`);
+  }
 }
 
 function idFor(fileName) {
