@@ -55,7 +55,7 @@ ${bold('OPTIONS')}
     Allows medic-conf to work with self signed certs by telling node to ignore the error
   
   --skip-dependency-check
-    Medic conf will not check that the version running is set to the same version in your package.json
+    Skips checking the version running is set to the same version in the package.json
 `);
 };
 
