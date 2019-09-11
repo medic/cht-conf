@@ -5,6 +5,7 @@ const pouch = require('../lib/db');
 const request = require('request-promise-native');
 const semver = require('semver');
 const ISO639 = require('iso-639-1');
+const {error} = require('../lib/log');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
@@ -22,11 +23,18 @@ module.exports = (projectDir, couchUrl) => {
       return Promise.all(fs.readdir(dir)
         .filter(name => FILE_MATCHER.test(name))
         .map(fileName => {
+          const id = idFor(fileName);
+          const language_code = id.substring(id.indexOf('-') + 1);
+          const language_name = ISO639.getName(language_code);
+          if (!language_name){
+            error(`skipping '${language_code}': not a valid ISO 639 language code`);
+            return;
+          }
           var translations = propertiesAsObject(`${dir}/${fileName}`);
 
-          return db.get(idFor(fileName))
+          return db.get(id)
             .catch(e => {
-              if(e.status === 404) return newDocFor(fileName, instanceUrl, db);
+              if(e.status === 404) return newDocFor(fileName, instanceUrl, db, language_name, language_code);
               else throw e;
             })
             .then(doc => overwriteProperties(doc, translations))
@@ -64,35 +72,25 @@ function overwriteProperties(doc, props) {
   return doc;
 }
 
-function newDocFor(fileName, instanceUrl, db) {
+function newDocFor(fileName, instanceUrl, db, language_name, language_code) {
 
-  const id = idFor(fileName);
-  const language_code = id.substring(id.indexOf('-') + 1);
-  const language_name = ISO639.getName(language_code);
+  const doc = {
+    _id: idFor(fileName),
+    type: 'translations',
+    code: language_code,
+    name: language_name,
+    enabled: true,
+  };
 
-  if (!!language_name){
+  return genericTranslationsStructure(instanceUrl, db).then(useGenericTranslations => {
+    if (useGenericTranslations) {
+      doc.generic = {};
+    } else {
+      doc.values = {};
+    }
 
-    const doc = {
-      _id: id,
-      type: 'translations',
-      code: language_code,
-      name: language_name,
-      enabled: true,
-    };
-
-    return genericTranslationsStructure(instanceUrl, db).then(useGenericTranslations => {
-      if (useGenericTranslations) {
-        doc.generic = {};
-      } else {
-        doc.values = {};
-      }
-
-      return doc;
-    });
-
-  } else {
-    throw new Error(`'${language_code}' is not a recognized ISO639 language code`);
-  }
+    return doc;
+  });
 }
 
 function idFor(fileName) {

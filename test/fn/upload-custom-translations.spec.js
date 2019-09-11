@@ -362,5 +362,13 @@ describe('upload-custom-translations', () => {
           });
       });
     });
+
+    describe('all-versions', () => {
+      it('should not upload non-ISO639 languages', () => {
+        return uploadCustomTranslations(`${testProjectDir}unknown-lang`, api.couchUrl)
+          .then(() => api.db.get('messages-zx'))
+          .catch(e => assert(e.message === 'missing'));
+      });
+    });
   });
 });
