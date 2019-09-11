@@ -128,10 +128,9 @@ module.exports = async (argv, env) => {
     await checkForUpdates({ nonFatal: true });
   }
 
-  const executeAction = (action, repository, args) => require(`../fn/${action}`)(pathToProject, repository, args);
   for (let action of actions) {
     info(`Starting action: ${action}…`);
-    await executeAction(action, repository, extraArgs);
+    await executeAction(action, pathToProject, repository, extraArgs);
     info(`${action} complete.`);
   }
 
@@ -139,3 +138,5 @@ module.exports = async (argv, env) => {
     await info('All actions completed.');
   }
 };
+
+const executeAction = (action, pathToProject, repository, args) => require(`../fn/${action}`)(pathToProject, repository, args);
