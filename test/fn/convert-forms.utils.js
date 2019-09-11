@@ -16,22 +16,18 @@ module.exports = {
       // recursively copy forms and expected XML to temp directory, and create
       // tests dynamically
 
-      const targetDir = `${projectDir}/forms/${type}`;
+      const expectedDir = `${projectDir}/forms/${type}/expected`;
 
-      fs.recurseFiles(targetDir)
-        .filter(file => file.endsWith('.expected.xml'))
-        .forEach(expectedXml => {
+      fs.recurseFiles(expectedDir).forEach(expectedXml => {
 
-          const generatedXml = expectedXml.replace(/\.expected\.xml$/, '.xml');
+        const generatedXml = expectedXml.replace('/expected/', '/');
 
-          it(`should generate ${generatedXml} as expected`, () => {
-
-            assert.ok(fs.exists(generatedXml), `Missing generated XML file: ${generatedXml}`);
-            assert.equal(fs.read(generatedXml), fs.read(expectedXml), `Content of ${generatedXml} was not as expected.`);
-
-          });
-
+        it(`should generate ${generatedXml} as expected`, () => {
+          assert.ok(fs.exists(generatedXml), `Missing generated XML file: ${generatedXml}`);
+          assert.equal(fs.read(generatedXml), fs.read(expectedXml), `Content of ${generatedXml} was not as expected.`);
         });
+
+      });
 
       before(() => convertForms(projectDir));
 
