@@ -74,8 +74,14 @@ function withoutExtension(fileName) {
   return extensionStart === -1 ? fileName : fileName.substring(0, extensionStart);
 }
 
+function copy(from, to, { overwrite=true }={}) {
+  if (overwrite || !fs.existsSync(to)) {
+    fs.writeFileSync(to, fs.readFileSync(from));
+  }
+}
+
 module.exports = {
-  copy: (from, to) => fs.writeFileSync(to, fs.readFileSync(from)),
+  copy: copy,
   dirs: dirs,
   exists: fs.existsSync,
   extension: extension,

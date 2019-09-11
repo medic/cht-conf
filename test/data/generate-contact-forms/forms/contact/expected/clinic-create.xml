@@ -150,7 +150,7 @@
             <value>Select an existing person</value>
           </text>
           <text id="/data/init/create_new_person:label">
-            <value>Set the Primary Contact</value>
+            <value>------------ UPDATED LABEL TO TEST THAT THE XML ISN'T OVERWRITTEN --------------</value>
           </text>
           <text id="/data/init/custom_place_name:hint">
             <value>Enter the name of this place</value>
