@@ -20,7 +20,7 @@ module.exports = {
 
       fs.recurseFiles(expectedDir).forEach(expectedXml => {
 
-        const generatedXml = expectedXml.replace(/\/expected/, '');
+        const generatedXml = expectedXml.replace('/expected/', '/');
 
         it(`should generate ${generatedXml} as expected`, () => {
           assert.ok(fs.exists(generatedXml), `Missing generated XML file: ${generatedXml}`);
