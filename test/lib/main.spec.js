@@ -7,9 +7,10 @@ const normalArgv = ['node', 'medic-conf'];
 
 const defaultActions = main.__get__('defaultActions');
 
-let mocks;
+let mocks, repository;
 describe('main', () => {
   beforeEach(() => {
+    repository = {};
     mocks = {
       usage: sinon.stub(),
       shellCompletionSetup: sinon.stub(),
@@ -18,6 +19,7 @@ describe('main', () => {
       checkMedicConfDependencyVersion: sinon.stub(),
       warn: sinon.stub(),
       executeAction: sinon.stub(),
+      createRepository: sinon.stub().returns(repository),
       readline: {
         question: sinon.stub().returns('pwd'),
         keyInYN: sinon.stub().returns(true),
@@ -79,40 +81,31 @@ describe('main', () => {
     expect(main.__get__('process').env.NODE_TLS_REJECT_UNAUTHORIZED).to.eq('0');
   });
 
+  const expectExecuteActionBehavior = (stub, expectedActions, expectedExtraParams) => {
+    if (Array.isArray(expectedActions)) {
+      expect(stub.args.map(args => args[0])).to.deep.eq(expectedActions);
+    } else {
+      expect(stub.args[0][0]).to.eq(expectedActions);
+    }
+    expect(stub.args[0][2]).to.eq(repository);
+    expect(stub.args[0][3]).to.deep.eq(expectedExtraParams);
+  };
+
   it('--local no COUCH_URL', async () => {
     await main([...normalArgv, '--local'], {});
-    
-    expect(mocks.executeAction.callCount).to.deep.eq(defaultActions.length);
-    expect(mocks.executeAction.args[0]).to.deep.eq(['compile-app-settings', 'http://admin:pass@localhost:5988/medic', undefined]);
+    expectExecuteActionBehavior(mocks.executeAction, defaultActions, undefined);
   });
 
   it('--local with COUCH_URL to localhost', async () => {
     const COUCH_URL = 'http://user:pwd@localhost:5988/medic';
     await main([...normalArgv, '--local'], { COUCH_URL });
-    
-    expect(mocks.executeAction.callCount).to.deep.eq(defaultActions.length);
-    expect(mocks.executeAction.args[0]).to.deep.eq(['compile-app-settings', 'http://user:pwd@localhost:5988/medic', undefined]);
-  });
-
-  it('--local with COUCH_URL to non-localhost yields error', async () => {
-    const COUCH_URL = 'http://user:pwd@host:5988/medic';
-    await main([...normalArgv, '--local'], { COUCH_URL });
-    expect(mocks.executeAction.callCount).to.deep.eq(0);
-  });
-
-  it('--instance production warning', async () => {
-    mocks.readline.keyInYN.returns(false);
-    const exit = await main([...normalArgv, '--instance=resolved.app', '--user=foo'], {});
-    expect(mocks.readline.question.calledOnce).to.be.true; // prompt for password
-    expect(mocks.readline.keyInYN.calledOnce).to.be.true; // prompted with warning
-    expect(mocks.warn.args[0][1]).to.include('https://foo:****@resolved.app.medicmobile.org');
-    expect(exit).to.eq(-1);
+    expectExecuteActionBehavior(mocks.executeAction, defaultActions, undefined);
   });
 
   it('--instance + 2 ordered actions', async () => {
     await main([...normalArgv, '--instance=test.app', 'convert-app-forms', 'compile-app-settings'], {});
     expect(mocks.executeAction.callCount).to.deep.eq(2);
-    expect(mocks.executeAction.args[0]).to.deep.eq(['convert-app-forms', 'https://admin:pwd@test.app.medicmobile.org/medic', undefined]);
+    expectExecuteActionBehavior(mocks.executeAction, 'convert-app-forms', undefined);
     expect(mocks.executeAction.args[1][0]).to.eq('compile-app-settings');
   });
 
@@ -120,7 +113,7 @@ describe('main', () => {
     const formName = 'form-name';
     await main([...normalArgv, '--local', 'convert-app-forms', '--', formName], {});
     expect(mocks.executeAction.callCount).to.deep.eq(1);
-    expect(mocks.executeAction.args[0]).to.deep.eq(['convert-app-forms', 'http://admin:pass@localhost:5988/medic', [formName]]);
+    expectExecuteActionBehavior(mocks.executeAction, 'convert-app-forms', [formName]);
   });
 
   it('unsupported action', async () => {

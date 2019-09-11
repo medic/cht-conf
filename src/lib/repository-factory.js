@@ -8,7 +8,7 @@ const { error, info, warn } = require('./log');
 const ServerRepository = require('./server-repository');
 const usage = require('../cli/usage');
 
-const createRepository = (cmdArgs, env, projectName) => {
+const createRepository = (cmdArgs, env = {}, projectName) => {
   const specifiedModes = [cmdArgs.local, cmdArgs.instance, cmdArgs.url, cmdArgs.archive].filter(mode => mode);
   if (specifiedModes.length !== 1) {
     error('Require exactly one of these parameter: --local --instance --url --archive');
@@ -17,8 +17,7 @@ const createRepository = (cmdArgs, env, projectName) => {
   }
 
   if (cmdArgs.archive) {
-    const options = cmdArgs;
-    return new ArchiveRepository(options);
+    return new ArchiveRepository(cmdArgs);
   }
 
   return createServerRepository(cmdArgs, env, projectName);
@@ -30,12 +29,14 @@ const createServerRepository = (cmdArgs, env, projectName) => {
     return false;
   }
 
-  if (cmdArgs.local) {
-    return parseLocalUrl(env.COUCH_URL);
-  }
-  
   let instanceUrl;
-  if (cmdArgs.instance) {
+  if (cmdArgs.local) {
+    instanceUrl = parseLocalUrl(env.COUCH_URL);
+    if (instanceUrl.hostname !== 'localhost') {
+      error(`You asked to configure localhost, but the COUCH_URL env var is set to '${instanceUrl.hostname}'.  This may be a remote server.`);
+      return false;
+    }
+  } else if (cmdArgs.instance) {
     const password = readline.question(`${emoji.key}  Password: `, { hideEchoBack: true });
     const instanceUsername = cmdArgs.user || 'admin';
     const encodedPassword = encodeURIComponent(password);
@@ -44,16 +45,14 @@ const createServerRepository = (cmdArgs, env, projectName) => {
     instanceUrl = url.parse(cmdArgs.url);
   }
 
-  if (instanceUrl) {
-    const productionUrlMatch = instanceUrl.href.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
-    const expectedOptions = ['alpha', projectName];
-    if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
-      warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
-          `against non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl.href)}\x1b[33m`);
-      if(!readline.keyInYN()) {
-        error('User failed to confirm action.');
-        return false;
-      }
+  const productionUrlMatch = instanceUrl.href.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
+  const expectedOptions = ['alpha', projectName];
+  if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
+    warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
+        `against non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl.href)}\x1b[33m`);
+    if(!readline.keyInYN()) {
+      error('User failed to confirm action.');
+      return false;
     }
   }
 
@@ -69,15 +68,8 @@ const parseLocalUrl = (couchUrl) => {
   };
 
   if (couchUrl) {
-    const parsedUrl = doParse(couchUrl);
-
     info(`Using local url from COUCH_URL environment variable: ${couchUrl}`);
-    if (parsedUrl.hostname !== 'localhost') {
-      error(`You asked to configure a local instance, but the COUCH_URL env var is set to '${couchUrl}'.  This may be a remote server.`);
-      return false;
-    }
-
-    return parsedUrl;
+    return doParse(couchUrl);
   }
 
   info('Using default local url');
