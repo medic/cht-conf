@@ -1,3 +1,7 @@
+/**
+Maps a set of command-line options to a repository (data-access-layer)
+*/
+
 const redactBasicAuth = require('redact-basic-auth');
 const readline = require('readline-sync');
 const url = require('url');

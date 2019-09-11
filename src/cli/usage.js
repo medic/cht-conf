@@ -40,7 +40,7 @@ ${bold('OPTIONS')}
   --shell-completion=bash
     Generate the shell-completion script for use in bash.
 
-  --source=<path to project folder>
+  --source=<path to project folder>. Defaults to the working directory.
 
   --supported-actions
     Display a list of supported actions.
