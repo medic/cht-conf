@@ -113,7 +113,7 @@ The list of available actions can be seen via `medic-conf --help`.
 
 N.B. this feature is currently in development, and probably not ready for production yet.
 
-To create users on a remote server, use the `create-users` action.  The CSV file should be called `users.csv`, and an example is available [in the tests directory](test/data/create-users/users.csv).
+To create users on a remote server, use the `create-users` action.  The CSV file should be called `users.csv`, and an example is available [in the tests directory](test/data/create-users), for [an existing place](test/data/create-users/existing-place) and [a new place](test/data/create-users/new-place).
 
 ## csv-to-docs
 
