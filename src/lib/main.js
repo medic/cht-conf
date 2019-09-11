@@ -3,9 +3,10 @@
 const opn = require('opn');
 
 const checkForUpdates = require('../lib/check-for-updates');
+const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
+const createRepository = require('../lib/repository-factory');
 const fs = require('../lib/sync-fs');
 const log = require('../lib/log');
-const createRepository = require('../lib/repository-factory');
 const shellCompletionSetup = require('../cli/shell-completion-setup');
 const supportedActions = require('../cli/supported-actions');
 const usage = require('../cli/usage');
@@ -72,10 +73,6 @@ module.exports = async (argv, env) => {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
   }
 
-  if (!cmdArgs['skip-dependency-check']) {
-    checkMedicConfDependencyVersion('.');
-  }
-
   //
   // Logging
   //
@@ -88,9 +85,16 @@ module.exports = async (argv, env) => {
   }
 
   //
-  // Construct the data access layer
+  // Dependency check
   //
   const pathToProject = fs.path.resolve(cmdArgs.source || '.');
+  if (!cmdArgs['skip-dependency-check']) {
+    checkMedicConfDependencyVersion(pathToProject);
+  }
+
+  //
+  // Construct the data access layer
+  //
   const projectName = fs.path.basename(pathToProject);
   const repository = createRepository(cmdArgs, env, projectName);
   if (!repository) {
