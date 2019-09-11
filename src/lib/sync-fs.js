@@ -76,7 +76,7 @@ function withoutExtension(fileName) {
 
 function copy(from, to, { overwrite=true }={}) {
   if (overwrite || !fs.existsSync(to)) {
-    fs.copyFileSync(to, from);
+    fs.copyFileSync(from, to);
   }
 }
 
