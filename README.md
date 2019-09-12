@@ -376,6 +376,9 @@ Accepted log types:
 
 ## Testing Locally
 
+Clone the project locally
+Make changes to medic-conf or checkout a branch for testing
+
 To test CLI changes locally you can run `node <project_dir>/src/bin/medic-conf.js`. 
 
 To test changes that are imported in code run `npm install <project_dir>` to use the local version of medic-conf.
