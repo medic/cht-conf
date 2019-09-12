@@ -14,7 +14,7 @@ module.exports = (projectDir) => {
   const purgingExists = fs.exists(purgingPath);
 
   if (purgeExists && purgingExists) {
-    throwError(`Purge is defined at both ${purgePath} and ${purgingPath}.  Only one of these files should exist.`);
+    throwError(`Purge is defined at both ${purgePath} and ${purgingPath}. Using 'purging.js' is deprecated. Create a 'purge.js' file instead.`);
   }
 
   let purgeConfig;
