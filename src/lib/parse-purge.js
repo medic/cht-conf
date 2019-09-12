@@ -3,7 +3,7 @@ const fs = require('./sync-fs');
 const { warn } = require('./log');
 
 const throwError = (err) => {
-  throw new Error(`Error loading purge: ${err}`);
+  throw new Error(`Error parsing purge: ${err}`);
 };
 
 module.exports = (projectDir) => {
