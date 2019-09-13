@@ -374,6 +374,14 @@ Accepted log types:
 	nginx
 	sentinel
 
+## Testing Locally
+
+1. Clone the project locally
+1. Make changes to medic-conf or checkout a branch for testing
+1. Test changes 
+	1. To test CLI changes locally you can run `node <project_dir>/src/bin/medic-conf.js`. This will run as if you installed via npm. 
+	1. To test changes that are imported in code run `npm install <project_dir>` to use the local version of medic-conf.
+
 ## compress images
 
 To compress PNGs and SVGs in the current directory and its subdirectories, two commands are available:
