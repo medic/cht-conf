@@ -90,6 +90,7 @@ The list of available actions can be seen via `medic-conf --help`.
   - rules
   - schedules
   - contact-summary
+  - purge
 * backup from server
 * upload to server
 
@@ -294,6 +295,7 @@ This tool expects a project to be structured as follows:
 		.eslintrc
 		app_settings.json
 		contact-summary.js
+		purge.js
 		resources.json
 		resources/
 			icon-one.png

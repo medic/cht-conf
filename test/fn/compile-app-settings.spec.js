@@ -31,25 +31,43 @@ describe('compile-app-settings', () => {
   it('should reject a project with both old and new nools config', () =>
     testFails('unexpected-legacy-nools-rules/project'));
 
-  it('should handle a project with a purge function', () =>
-    test('purging-function/project'));
+  it('should reject a project with both purge and purging files', () =>
+    testFails('purge/both-purge-and-purging/project'));
 
-  it('should handle a project with a perge function that need to be merged with other purge config', () =>
-    test('purging-function/project'));
+  it('should reject a project purge file exists and its not valid js', () =>
+    testFails('purge/broken-purge-file/project'));
+
+  it('should reject a project invalid purge file config', () =>
+    testFails('purge/invalid-purge/project'));
 
   it('should reject a project with an uncompilable purging function', () =>
-    testFails('invalid-purging-function/project'));
+    testFails('purge/invalid-purging-function/project'));
+
+  it('should handle a project with a purge function that need to be merged with other purge config', () =>
+    test('purge/merge-purging-function/project'));
+
+  it('should handle a project with no export purge config', () =>
+    test('purge/no-export-purge/project'));
+
+  it('should handle a project with correct purge config', () =>
+    test('purge/purge-correct/project'));
+
+  it('should reject a project where purge.fn is not a function', () =>
+    testFails('purge/purge-fn-not-a-function/project'));
+
+  it('should handle a project with a purge function', () =>
+    test('purge/purging-function/project'));
 
   it('should reject a project with eslint error', () =>
     testFails('eslint-error/project'));
-  
+
   it('can overwrite eslint rules with eslintrc file', () =>
     test('eslintrc/project'));
 });
 
 async function test(relativeProjectDir) {
   const testDir = path.join(__dirname, '../data/compile-app-settings', relativeProjectDir);
-  
+
   // when
   await compileAppSettings(testDir);
 

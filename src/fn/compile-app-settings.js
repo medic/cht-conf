@@ -5,11 +5,12 @@ const compileNoolsRules = require('../lib/compile-nools-rules');
 const fs = require('../lib/sync-fs');
 const parseTargets = require('../lib/parse-targets');
 const { warn } = require('../lib/log');
+const parsePurge = require('../lib/parse-purge');
 
 const compileAppSettings = async (projectDir, couchUrl, extraArgs) => {
   const options = parseExtraArgs(extraArgs);
   projectDir = path.resolve(projectDir);
-  
+
   let appSettings;
   const inheritedPath = path.join(projectDir, 'settings.inherit.json');
   if (fs.exists(inheritedPath)) {
@@ -24,22 +25,6 @@ const compileAppSettings = async (projectDir, couchUrl, extraArgs) => {
 };
 
 const compileAppSettingsForProject = async (projectDir, options) => {
-  const parsePurgingFunction = root => {
-    const purgeFnPath = path.join(root, 'purging.js');
-    if (fs.exists(purgeFnPath)) {
-      const purgeFn = fs.read(purgeFnPath);
-  
-      try {
-        eval(`(${purgeFn})`);
-      } catch(err) {
-        warn('Unable to parse purging.js', err);
-        throw err;
-      }
-  
-      return purgeFn;
-    }
-  };
-
   // Helpful support for refactoring tasks.json to task-schedules.json
   // This warning can be removed when all projects have moved to the new layout.
   let taskSchedulesPath = path.join(projectDir, 'task-schedules.json');
@@ -61,10 +46,9 @@ const compileAppSettingsForProject = async (projectDir, options) => {
     targets: parseTargets.json(projectDir),
   };
 
-  const purgingFunction = parsePurgingFunction(projectDir);
-  if (purgingFunction) {
-    appSettings.purge = appSettings.purging || {};
-    appSettings.purge.fn = purgingFunction;
+  const purgeConfig = parsePurge(projectDir);
+  if (purgeConfig) {
+    appSettings.purge = purgeConfig;
   }
 
   return appSettings;
@@ -73,7 +57,7 @@ const compileAppSettingsForProject = async (projectDir, options) => {
 function applyTransforms(app_settings, inherited) {
   function doDelete(target, rules) {
     if (!Array.isArray(rules)) throw new Error('.delete should be an array');
-  
+
     rules.forEach(k => {
       const parts = k.split('.');
       let t = target;
@@ -87,7 +71,7 @@ function applyTransforms(app_settings, inherited) {
 
   function doReplace(target, rules) {
     if (typeof rules !== 'object') throw new Error('.replace should be an object');
-  
+
     Object.keys(rules)
       .forEach(k => {
         const parts = k.split('.');
@@ -111,7 +95,7 @@ function applyTransforms(app_settings, inherited) {
 
   function doFilter(target, rules) {
     if (typeof rules !== 'object') throw new Error('.filter should be an object');
-  
+
     Object.keys(rules)
       .forEach(k => {
         const parts = k.split('.');
@@ -120,9 +104,9 @@ function applyTransforms(app_settings, inherited) {
           t = t[parts[0]];
           parts.shift();
         }
-  
+
         if (!Array.isArray(rules[k])) throw new Error('.filter values must be arrays!');
-  
+
         Object.keys(t[parts[0]])
           .forEach(tK => {
             if (!rules[k].includes(tK)) delete t[parts[0]][tK];
