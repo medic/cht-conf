@@ -1,11 +1,10 @@
 const fs = require('../lib/sync-fs');
 const skipFn = require('../lib/skip-fn');
-const warn = require('../lib/log').warn;
+const {warn} = require('../lib/log');
 const pouch = require('../lib/db');
 const request = require('request-promise-native');
 const semver = require('semver');
 const ISO639 = require('iso-639-1');
-const {error} = require('../lib/log');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
@@ -24,11 +23,11 @@ module.exports = (projectDir, couchUrl) => {
         .filter(name => FILE_MATCHER.test(name))
         .map(fileName => {
           const id = idFor(fileName);
-          const language_code = id.substring(id.indexOf('-') + 1);
-          const language_name = ISO639.getName(language_code);
+          const language_code = id.substring('messages-'.length);
+          let language_name = ISO639.getName(language_code);
           if (!language_name){
-            error(`skipping '${language_code}': not a valid ISO 639 language code`);
-            return;
+            warn(`'${language_code}' is not a recognized ISO 639 language code, please ask admin to set the name`);
+            language_name = 'TODO: please ask admin to set this in settings UI';
           }
           var translations = propertiesAsObject(`${dir}/${fileName}`);
 

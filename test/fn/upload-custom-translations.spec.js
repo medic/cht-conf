@@ -39,6 +39,7 @@ describe('upload-custom-translations', () => {
         .then(() => expectTranslationDocs('en'))
         .then(() => getTranslationDoc('en'))
         .then(messagesEn => {
+          assert(messagesEn.name === 'English');
           assert.deepEqual(messagesEn.values, { a:'first', b:'second', c:'third' });
           assert(!messagesEn.generic);
           assert(!messagesEn.custom);
@@ -363,12 +364,5 @@ describe('upload-custom-translations', () => {
       });
     });
 
-    describe('all-versions', () => {
-      it('should not upload non-ISO639 languages', () => {
-        return uploadCustomTranslations(`${testProjectDir}unknown-lang`, api.couchUrl)
-          .then(() => api.db.get('messages-zx'))
-          .catch(e => assert(e.message === 'missing'));
-      });
-    });
   });
 });
