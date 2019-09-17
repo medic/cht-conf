@@ -46,6 +46,10 @@ class ArchiveRepository {
     error.status = 404;
     return Promise.reject(error);
   }
+
+  getUserInfo() {
+    throw Error('not supported in --archive mode');
+  }
   
   insertOrReplace(doc) {
     save(this.options.destination, doc._id, doc);

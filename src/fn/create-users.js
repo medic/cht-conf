@@ -65,7 +65,7 @@ module.exports = async (projectDir, repository) => {
   const users = parseUsersData(fs.read(csvPath));
   const warnings = [];
   for (let user of users) {
-    const userInfo = await getUserInfo(instanceUrl, user);
+    const userInfo = await getUserInfo(repository, user);
     if (userInfo && userInfo.warn) {
       warnings.push(`The user "${user.username}" would replicate ${userInfo.total_docs}, which is above the recommended limit of ${userInfo.limit}.`);
     }

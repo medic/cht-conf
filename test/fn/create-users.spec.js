@@ -68,7 +68,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers(testDir, api.repository))
       .then(() => {
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
@@ -98,7 +98,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers(testDir, api.repository))
       .then(() => {
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
@@ -129,7 +129,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers(testDir, api.repository))
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.deepEqual(api.requestLog(), [
@@ -161,7 +161,7 @@ describe('create-users', function() {
       role: JSON.stringify(todd.roles),
     };
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers(testDir, api.repository))
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.equal(process.exit.callCount, 1);
@@ -187,7 +187,7 @@ describe('create-users', function() {
       role: JSON.stringify(todd.roles),
     };
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers(testDir, api.repository))
       .then(r => assert.equal(r, 'Expected to reject'))
       .catch(err => {
         assert.deepEqual(err.error, { code: 500, error: 'boom' });
@@ -219,7 +219,7 @@ describe('create-users', function() {
     const john = { username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4' };
     const qs = (user) => querystring.stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
     return assertDbEmpty()
-      .then(() => createUsers(testDir, api.couchUrl))
+      .then(() => createUsers(testDir, api.repository))
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.deepEqual(api.requestLog(), [
@@ -253,7 +253,7 @@ describe('create-users', function() {
     const john = { username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4' };
     const qs = (user) => querystring.stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
     return assertDbEmpty()
-      .then(() => createUsers(testDir, api.couchUrl))
+      .then(() => createUsers(testDir, api.repository))
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.equal(process.exit.callCount, 1);
