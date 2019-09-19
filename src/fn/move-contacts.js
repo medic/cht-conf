@@ -5,12 +5,14 @@ const readline = require('readline-sync');
 const fs = require('../lib/sync-fs');
 const lineageManipulation = require('../lib/lineage-manipulation');
 const lineageConstraints = require('../lib/lineage-constraints');
+const pouch = require('../lib/db');
 const { warn, trace, info, error } = require('../lib/log');
 
 const HIERARCHY_ROOT = 'root';
 
-module.exports = (projectDir, db, api, extraArgs) => {
+module.exports = (projectDir, apiUrl, extraArgs) => {
   const args = parseExtraArgs(projectDir, extraArgs);
+  const db = pouch(apiUrl);
   prepareDocumentDirectory(args);
   return updateLineagesAndStage(args, db);
 };

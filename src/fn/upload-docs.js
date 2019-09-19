@@ -3,6 +3,7 @@ const minimist = require('minimist');
 const readline = require('readline-sync');
 
 const fs = require('../lib/sync-fs');
+const pouch = require('../lib/db');
 const progressBar = require('../lib/progress-bar');
 
 const log = require('../lib/log');
@@ -11,7 +12,7 @@ const { info, trace, warn, error } = log;
 const FILE_EXTENSION = '.doc.json';
 const INITIAL_BATCH_SIZE = 100;
 
-module.exports = async (projectDir, db, api, extraArgs) => {
+module.exports = async (projectDir, apiUrl, extraArgs) => {
   const args = minimist(extraArgs || [], { boolean: true });
 
   const docDir = path.resolve(projectDir, args.docDirectoryPath || 'json_docs');
@@ -61,6 +62,7 @@ module.exports = async (projectDir, db, api, extraArgs) => {
     trace('');
     trace(`Attempting to upload batch of ${docs.length} docs…`);
 
+    const db = pouch(apiUrl);
     try {
       const uploadResult = await db.bulkDocs(docs);
       if(progress) {

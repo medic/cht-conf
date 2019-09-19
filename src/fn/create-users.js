@@ -1,3 +1,4 @@
+const api = require('../lib/api');
 const fs = require('../lib/sync-fs');
 const csvParse = require('csv-parse/lib/sync');
 const { info, warn, error } = require('../lib/log');
@@ -56,7 +57,8 @@ const getUserInfo = async (api, user) => {
   return result;
 };
 
-module.exports = async (projectDir, db, api) => {
+module.exports = async (projectDir, apiUrl) => {
+  const request = api(apiUrl);
   const csvPath = `${projectDir}/users.csv`;
   if(!fs.exists(csvPath)) {
     throw new Error(`User csv file not found at ${csvPath}`);
@@ -65,7 +67,7 @@ module.exports = async (projectDir, db, api) => {
   const users = parseUsersData(fs.read(csvPath));
   const warnings = [];
   for (let user of users) {
-    const userInfo = await getUserInfo(api, user);
+    const userInfo = await getUserInfo(request, user);
     if (userInfo && userInfo.warn) {
       warnings.push(`The user "${user.username}" would replicate ${userInfo.total_docs}, which is above the recommended limit of ${userInfo.limit}.`);
     }
@@ -82,6 +84,6 @@ module.exports = async (projectDir, db, api) => {
 
   for (let user of users) {
     info(`Creating user ${user.username}`);
-    await api.createUser(user);
+    await request.createUser(user);
   }
 };

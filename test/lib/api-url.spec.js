@@ -2,50 +2,46 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 const { expect } = require('chai');
 
-const getApiUrl = rewire('../../src/lib/get-api-url');
+const apiUrl = rewire('../../src/lib/api-url');
 
-describe('get-api-url', () => {
-  let serverRepo, archiveRepo, error, readline;
+describe('api-url', () => {
+  let error, readline;
   beforeEach(() => {
-    serverRepo = sinon.stub();
-    archiveRepo = sinon.stub().returns({});
     error = sinon.stub();
     readline = {
       question: sinon.stub().throws('unexpected'),
       keyInYN: sinon.stub().throws('unexpected'),
     };
 
-    getApiUrl.__set__('ServerRepository', serverRepo);
-    getApiUrl.__set__('ArchiveRepository', archiveRepo);
-    getApiUrl.__set__('error', error);
-    getApiUrl.__set__('readline', readline);
+    apiUrl.__set__('error', error);
+    apiUrl.__set__('readline', readline);
   });
   
   it('multiple destinations yields error', () => {
-    const actual = getApiUrl({ local: true, instance: 'demo' });
+    const actual = apiUrl.getApiUrl({ local: true, instance: 'demo' });
     expect(error.args[0][0]).to.include('one of these');
     expect(actual).to.eq(false);
   });
 
   it('no destination yields error', () => {
-    const actual = getApiUrl({});
+    const actual = apiUrl.getApiUrl({});
     expect(error.args[0][0]).to.include('one of these');
     expect(actual).to.eq(false);
   });
 
   describe('--local', () => {
     it('no environment variable has a default', () => {
-      const actual = getApiUrl({ local: true });
+      const actual = apiUrl.getApiUrl({ local: true });
       expect(actual).to.eq('http://admin:pass@localhost:5988/medic');
     });
     
     it('use environment variable', () => {
-      const actual = getApiUrl({ local: true }, { COUCH_URL: 'http://user:pwd@localhost:5984/db' });
+      const actual = apiUrl.getApiUrl({ local: true }, { COUCH_URL: 'http://user:pwd@localhost:5984/db' });
       expect(actual).to.eq('http://user:pwd@localhost:5988/medic');
     });
 
     it('warn if environment variable targets remote', () => {
-      const actual = getApiUrl({ local: true }, { COUCH_URL: 'http://user:pwd@remote:5984/db' });
+      const actual = apiUrl.getApiUrl({ local: true }, { COUCH_URL: 'http://user:pwd@remote:5984/db' });
       expect(error.args[0][0]).to.include('remote');
       expect(actual).to.eq(false);
     });
@@ -54,26 +50,26 @@ describe('get-api-url', () => {
   describe('--instance', () => {
     it('with default user', () => {
       readline.question.returns('entered');
-      const actual = getApiUrl({ instance: 'inst' });
+      const actual = apiUrl.getApiUrl({ instance: 'inst' });
       expect(actual).to.eq('https://admin:entered@inst.medicmobile.org/medic');
     });
 
     it('with --user', () => {
       readline.question.returns('entered');
-      const actual = getApiUrl({ instance: 'inst', user: 'user' });
+      const actual = apiUrl.getApiUrl({ instance: 'inst', user: 'user' });
       expect(actual).to.eq('https://user:entered@inst.medicmobile.org/medic');
     });
   });
 
   describe('--url', () => {
     it('basic', () => {
-      const actual = getApiUrl({ url: 'https://admin:pwd@url.medicmobile.org/' });
+      const actual = apiUrl.getApiUrl({ url: 'https://admin:pwd@url.medicmobile.org/' });
       expect(actual).to.eq('https://admin:pwd@url.medicmobile.org/medic');
     });
   });
 
   describe('parseLocalUrl', () => {
-    const parseLocalUrl = getApiUrl.__get__('parseLocalUrl');
+    const parseLocalUrl = apiUrl.__get__('parseLocalUrl');
     it('basic', () =>
       expect(parseLocalUrl('http://admin:pass@localhost:5988/medic').href).to.eq('http://admin:pass@localhost:5988/'));
     

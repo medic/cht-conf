@@ -86,8 +86,8 @@ describe('main', () => {
     } else {
       expect(stub.args[0][0]).to.eq(expectedActions);
     }
-    expect(stub.args[0][3]).to.deep.eq({ couchUrl: 'http://api' });
-    expect(stub.args[0][4]).to.deep.eq(expectedExtraParams);
+    expect(stub.args[0][2]).to.deep.eq('http://api');
+    expect(stub.args[0][3]).to.deep.eq(expectedExtraParams);
   };
 
   it('--local no COUCH_URL', async () => {

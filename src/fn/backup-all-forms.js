@@ -2,10 +2,12 @@ const backupFileFor = require('../lib/backup-file-for');
 const formsList = require('../lib/forms-list');
 const fs = require('../lib/sync-fs');
 const log = require('../lib/log');
+const pouch = require('../lib/db');
 
-module.exports = (projectDir, db) => {
+module.exports = (projectDir, apiUrl) => {
+  const db = pouch(apiUrl);
   const parentBackupDir = backupFileFor(projectDir, 'forms');
-
+  
   log('Backing up forms to:', parentBackupDir);
   fs.mkdir(parentBackupDir);
 

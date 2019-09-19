@@ -1,11 +1,16 @@
 const fs = require('../lib/sync-fs');
 const semver = require('semver');
 
+const api = require('../lib/api');
+const pouch = require('../lib/db');
 const { warn } = require('../lib/log');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
-module.exports = (projectDir, db, api) => {
+module.exports = (projectDir, apiUrl) => {
+  const request = api(apiUrl);
+  const db = pouch(apiUrl);
+
   const dir = `${projectDir}/translations`;
   
   return Promise.resolve()
@@ -20,7 +25,7 @@ module.exports = (projectDir, db, api) => {
           return db.get(idFor(fileName))
             .catch(e => {
               if(e.status === 404) {
-                return newDocFor(fileName, api, db);
+                return newDocFor(fileName, request, db);
               }
               
               throw e;
@@ -60,7 +65,7 @@ function overwriteProperties(doc, props) {
   return doc;
 }
 
-async function newDocFor(fileName, api, db) {
+async function newDocFor(fileName, request, db) {
   const id = idFor(fileName);
 
   const doc = {
@@ -71,7 +76,7 @@ async function newDocFor(fileName, api, db) {
     enabled: true,
   };
 
-  const useGenericTranslations = await genericTranslationsStructure(api, db);
+  const useGenericTranslations = await genericTranslationsStructure(request, db);
   if (useGenericTranslations) {
     doc.generic = {};
   } else {
@@ -85,11 +90,11 @@ function idFor(fileName) {
   return fileName.substring(0, fileName.length - 11);
 }
 
-async function genericTranslationsStructure(api, db) {
+async function genericTranslationsStructure(request, db) {
   let version;
   
   try {
-    version = await api.version();
+    version = await request.version();
   }
   catch (err) {
     const ddoc = await db.get('_design/medic-client');

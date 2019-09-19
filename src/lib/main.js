@@ -2,14 +2,10 @@
 
 const opn = require('opn');
 
-const ArchivingFakeApi = require('./archiving-fake-api');
-const ArchivingFakeDb = require('./archiving-fake-db');
 const checkForUpdates = require('../lib/check-for-updates');
 const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
-const createDb = require('./db');
-const createApi = require('./api');
 const fs = require('../lib/sync-fs');
-const getApiUrl = require('../lib/get-api-url');
+const { getApiUrl } = require('../lib/api-url');
 const log = require('../lib/log');
 const readline = require('readline-sync');
 const redactBasicAuth = require('redact-basic-auth');
@@ -103,31 +99,22 @@ module.exports = async (argv, env) => {
   //
   const projectName = fs.path.basename(pathToProject);
   
-  let db, api;
-  if (cmdArgs.archive) {
-    db = new ArchivingFakeDb(cmdArgs);
-    api = new ArchivingFakeApi(cmdArgs);
-  } else {
-    const urlToApi = getApiUrl(cmdArgs, env);
-    if (!urlToApi) {
-      error('Failed to obtain a url to the API');
-      return -1;
-    }
+  const urlToApi = getApiUrl(cmdArgs, env);
+  if (!urlToApi) {
+    error('Failed to obtain a url to the API');
+    return -1;
+  }
 
-    const instanceUrl = urlToApi.replace(/\/medic$/, '');
-    const productionUrlMatch = instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
-    const expectedOptions = ['alpha', projectName];
-    if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
-      warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
-          `against non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl.href)}\x1b[33m`);
-      if(!readline.keyInYN()) {
-        error('User failed to confirm action.');
-        return false;
-      }
+  const instanceUrl = urlToApi.replace(/\/medic$/, '');
+  const productionUrlMatch = instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
+  const expectedOptions = ['alpha', projectName];
+  if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
+    warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
+        `against non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl.href)}\x1b[33m`);
+    if(!readline.keyInYN()) {
+      error('User failed to confirm action.');
+      return false;
     }
-
-    db = createDb(urlToApi);
-    api = createApi(urlToApi);
   }
   
   //
@@ -163,7 +150,7 @@ module.exports = async (argv, env) => {
 
   for (let action of actions) {
     info(`Starting action: ${action}…`);
-    await executeAction(action, pathToProject, db, api, extraArgs);
+    await executeAction(action, pathToProject, urlToApi, extraArgs);
     info(`${action} complete.`);
   }
 
@@ -172,4 +159,4 @@ module.exports = async (argv, env) => {
   }
 };
 
-const executeAction = (action, pathToProject, db, api, args) => require(`../fn/${action}`)(pathToProject, db, api, args);
+const executeAction = (action, pathToProject, urlToApi, args) => require(`../fn/${action}`)(pathToProject, urlToApi, args);

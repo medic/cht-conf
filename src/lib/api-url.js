@@ -5,6 +5,8 @@ const usage = require('../cli/usage');
 const emoji = require('./emoji');
 const { error, info } = require('./log');
 
+const ARCHIVE_URL = 'archive';
+
 const getApiUrl = (cmdArgs, env={}) => {
   const specifiedModes = [cmdArgs.local, cmdArgs.instance, cmdArgs.url, cmdArgs.archive].filter(mode => mode);
   if (specifiedModes.length !== 1) {
@@ -14,7 +16,7 @@ const getApiUrl = (cmdArgs, env={}) => {
   }
 
   if (cmdArgs.archive) {
-    return false;
+    return ARCHIVE_URL;
   }
 
   if (cmdArgs.user && !cmdArgs.instance) {
@@ -58,4 +60,7 @@ const parseLocalUrl = (couchUrl) => {
   return url.parse('http://admin:pass@localhost:5988');
 };
 
-module.exports = getApiUrl;
+module.exports = {
+  isArchiveUrl: url => url === ARCHIVE_URL,
+  getApiUrl,
+};

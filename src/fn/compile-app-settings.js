@@ -7,7 +7,7 @@ const parseTargets = require('../lib/parse-targets');
 const { warn } = require('../lib/log');
 const parsePurge = require('../lib/parse-purge');
 
-const compileAppSettings = async (projectDir, db, api, extraArgs) => {
+const compileAppSettings = async (projectDir, apiUrl, extraArgs) => {
   const options = parseExtraArgs(extraArgs);
   projectDir = path.resolve(projectDir);
 

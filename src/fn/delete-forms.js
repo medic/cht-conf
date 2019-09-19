@@ -1,6 +1,8 @@
 const { info, warn } = require('../lib/log');
+const pouch = require('../lib/db');
 
-module.exports = (projectDir, db, api, extras) => {
+module.exports = (projectDir, apiUrl, extras) => {
+  const db = pouch(apiUrl);
   if (!extras || !extras.length) {
     warn('No forms specified for deleting.');
     return;

@@ -1,7 +1,7 @@
 const convertForms = require('../lib/convert-forms');
 const fs = require('../lib/sync-fs');
 
-module.exports = (projectDir, db, api, extras) => {
+module.exports = (projectDir, apiUrl, extras) => {
 
   const dir = `${projectDir}/forms/contact`;
   const placeTypesJson = `${dir}/place-types.json`;

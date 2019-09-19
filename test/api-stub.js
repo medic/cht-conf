@@ -6,7 +6,6 @@ const expressPouch = require('express-pouchdb');
 const ExpressSpy = require('./express-spy');
 const bodyParser = require('body-parser');
 
-const createApi = require('../src/lib/api');
 const mockMiddleware = new ExpressSpy();
 
 const opts = {
@@ -37,8 +36,6 @@ module.exports = {
 
     const port = server.address().port;
     const couchUrl = `http://admin:pass@localhost:${port}/medic`;
-    module.exports.db = new PouchDB(couchUrl);
-    module.exports.api = createApi(couchUrl);
     module.exports.couchUrl = couchUrl;
 
     module.exports.gatewayRequests = [];
