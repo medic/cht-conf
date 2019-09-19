@@ -11,7 +11,7 @@ const { info, trace, warn, error } = log;
 const FILE_EXTENSION = '.doc.json';
 const INITIAL_BATCH_SIZE = 100;
 
-module.exports = async (projectDir, repository, extraArgs) => {
+module.exports = async (projectDir, db, api, extraArgs) => {
   const args = minimist(extraArgs || [], { boolean: true });
 
   const docDir = path.resolve(projectDir, args.docDirectoryPath || 'json_docs');
@@ -62,7 +62,7 @@ module.exports = async (projectDir, repository, extraArgs) => {
     trace(`Attempting to upload batch of ${docs.length} docs…`);
 
     try {
-      const uploadResult = await repository.bulkDocs(docs);
+      const uploadResult = await db.bulkDocs(docs);
       if(progress) {
         progress.increment(docs.length);
       }

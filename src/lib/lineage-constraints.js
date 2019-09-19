@@ -3,10 +3,10 @@ const { trace } = log;
 
 const { pluckIdsFromLineage } = require('./lineage-manipulation');
 
-const lineageConstraints = async (repository, parentDoc) => {
+const lineageConstraints = async (db, parentDoc) => {
   let mapTypeToAllowedParents;
   try {
-    const { settings } = await repository.get('settings');
+    const { settings } = await db.get('settings');
     const { contact_types } = settings;
 
     if (Array.isArray(contact_types)) {
@@ -33,7 +33,7 @@ const lineageConstraints = async (repository, parentDoc) => {
 
   return {
     getHierarchyErrors: contactDoc => getHierarchyViolations(mapTypeToAllowedParents, contactDoc, parentDoc),
-    getPrimaryContactViolations: (contactDoc, descendantDocs) => getPrimaryContactViolations(repository, contactDoc, parentDoc, descendantDocs),
+    getPrimaryContactViolations: (contactDoc, descendantDocs) => getPrimaryContactViolations(db, contactDoc, parentDoc, descendantDocs),
   };
 };
 
@@ -68,7 +68,7 @@ A place's primary contact must be a descendant of that place.
 1. Check to see which part of the contact's lineage will be removed
 2. For each removed part of the contact's lineage, confirm that place's primary contact isn't being removed.
 */
-const getPrimaryContactViolations = async (repository, contactDoc, parentDoc, descendantDocs) => {
+const getPrimaryContactViolations = async (db, contactDoc, parentDoc, descendantDocs) => {
   const safeGetLineageFromDoc = doc => doc ? pluckIdsFromLineage(doc.parent) : [];
   const contactsLineageIds = safeGetLineageFromDoc(contactDoc);
   const parentsLineageIds = safeGetLineageFromDoc(parentDoc);
@@ -78,7 +78,7 @@ const getPrimaryContactViolations = async (repository, contactDoc, parentDoc, de
   }
 
   const docIdsRemovedFromContactLineage = contactsLineageIds.filter(value => !parentsLineageIds.includes(value));
-  const docsRemovedFromContactLineage = await repository.allDocs({
+  const docsRemovedFromContactLineage = await db.allDocs({
     keys: docIdsRemovedFromContactLineage,
     include_docs: true,
   });

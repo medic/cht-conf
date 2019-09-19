@@ -1,6 +1,6 @@
 const uploadForms = require('../lib/upload-forms');
 
-module.exports = (projectDir, repository, extras) => uploadForms(projectDir, repository, 'collect', {
+module.exports = (projectDir, db, api, extras) => uploadForms(projectDir, db, 'collect', {
   forms: extras,
   default_context: { collect:true },
 });

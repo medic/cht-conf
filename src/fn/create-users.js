@@ -1,7 +1,7 @@
 const fs = require('../lib/sync-fs');
 const info = require('../lib/log').info;
 
-module.exports = (projectDir, repository) => {
+module.exports = (projectDir, db, api) => {
   return Promise.resolve()
     .then(() => {
       const csvPath = `${projectDir}/users.csv`;
@@ -26,7 +26,7 @@ module.exports = (projectDir, repository) => {
         return promiseChain
           .then(() => {
             info('Creating user', username);
-            return repository.createUser(requestObject);
+            return api.createUser(requestObject);
           });
       }, Promise.resolve());
     });

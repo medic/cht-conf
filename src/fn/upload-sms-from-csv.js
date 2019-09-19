@@ -2,7 +2,7 @@ const fs = require('../lib/sync-fs');
 const { trace } = require('../lib/log');
 const uuid = require('uuid/v4');
 
-module.exports = (projectDir, repository, extras) => {
+module.exports = (projectDir, db, api, extras) => {
   const csvFiles = extras || ['sms.csv'];
 
   trace('upload-sms-from-csv', 'csv files:', csvFiles);
@@ -24,6 +24,6 @@ module.exports = (projectDir, repository, extras) => {
       };
     });
 
-    return repository.uploadSms(messages);
+    return api.uploadSms(messages);
   }, Promise.resolve());
 };

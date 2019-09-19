@@ -2,16 +2,22 @@
 
 const opn = require('opn');
 
+const ArchivingFakeApi = require('./archiving-fake-api');
+const ArchivingFakeDb = require('./archiving-fake-db');
 const checkForUpdates = require('../lib/check-for-updates');
 const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
-const createRepository = require('../lib/repository-factory');
+const createDb = require('./db');
+const createApi = require('./api');
 const fs = require('../lib/sync-fs');
+const getApiUrl = require('../lib/get-api-url');
 const log = require('../lib/log');
+const readline = require('readline-sync');
+const redactBasicAuth = require('redact-basic-auth');
 const shellCompletionSetup = require('../cli/shell-completion-setup');
 const supportedActions = require('../cli/supported-actions');
 const usage = require('../cli/usage');
 
-const { error, info } = log;
+const { error, info, warn } = log;
 const defaultActions = [
   'compile-app-settings',
   'backup-app-settings',
@@ -96,9 +102,32 @@ module.exports = async (argv, env) => {
   // Construct the data access layer
   //
   const projectName = fs.path.basename(pathToProject);
-  const repository = createRepository(cmdArgs, env, projectName);
-  if (!repository) {
-    return -1;
+  
+  let db, api;
+  if (cmdArgs.archive) {
+    db = new ArchivingFakeDb(cmdArgs);
+    api = new ArchivingFakeApi(cmdArgs);
+  } else {
+    const urlToApi = getApiUrl(cmdArgs, env);
+    if (!urlToApi) {
+      error('Failed to obtain a url to the API');
+      return -1;
+    }
+
+    const instanceUrl = urlToApi.replace(/\/medic$/, '');
+    const productionUrlMatch = instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
+    const expectedOptions = ['alpha', projectName];
+    if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
+      warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
+          `against non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl.href)}\x1b[33m`);
+      if(!readline.keyInYN()) {
+        error('User failed to confirm action.');
+        return false;
+      }
+    }
+
+    db = createDb(urlToApi);
+    api = createApi(urlToApi);
   }
   
   //
@@ -134,7 +163,7 @@ module.exports = async (argv, env) => {
 
   for (let action of actions) {
     info(`Starting action: ${action}…`);
-    await executeAction(action, pathToProject, repository, extraArgs);
+    await executeAction(action, pathToProject, db, api, extraArgs);
     info(`${action} complete.`);
   }
 
@@ -143,4 +172,4 @@ module.exports = async (argv, env) => {
   }
 };
 
-const executeAction = (action, pathToProject, repository, args) => require(`../fn/${action}`)(pathToProject, repository, args);
+const executeAction = (action, pathToProject, db, api, args) => require(`../fn/${action}`)(pathToProject, db, api, args);

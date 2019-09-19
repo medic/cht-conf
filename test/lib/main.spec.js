@@ -7,10 +7,9 @@ const normalArgv = ['node', 'medic-conf'];
 
 const defaultActions = main.__get__('defaultActions');
 
-let mocks, repository;
+let mocks;
 describe('main', () => {
   beforeEach(() => {
-    repository = {};
     mocks = {
       usage: sinon.stub(),
       shellCompletionSetup: sinon.stub(),
@@ -19,7 +18,7 @@ describe('main', () => {
       checkMedicConfDependencyVersion: sinon.stub(),
       warn: sinon.stub(),
       executeAction: sinon.stub(),
-      createRepository: sinon.stub().returns(repository),
+      getApiUrl: sinon.stub().returns('http://api'),
       readline: {
         question: sinon.stub().returns('pwd'),
         keyInYN: sinon.stub().returns(true),
@@ -87,8 +86,8 @@ describe('main', () => {
     } else {
       expect(stub.args[0][0]).to.eq(expectedActions);
     }
-    expect(stub.args[0][2]).to.eq(repository);
-    expect(stub.args[0][3]).to.deep.eq(expectedExtraParams);
+    expect(stub.args[0][3]).to.deep.eq({ couchUrl: 'http://api' });
+    expect(stub.args[0][4]).to.deep.eq(expectedExtraParams);
   };
 
   it('--local no COUCH_URL', async () => {
@@ -120,4 +119,19 @@ describe('main', () => {
     await main([...normalArgv, '--local', 'not-an-action'], {});
     expect(mocks.executeAction.called).to.be.false;
   });
+
+  // TODO: Add these tests back into main.spec.js
+  // it('--archive', () => {
+  //   const cmdArgs = { archive: true };
+  //   getApiUrl(cmdArgs);
+  //   expect(archiveRepo.callCount).to.eq(1);
+  //   expect(archiveRepo.args[0][0]).to.eq(cmdArgs);
+  // });
+
+  // it('non-matching instance warning', () => {
+  //   readline.keyInYN.returns(true);
+  //   const actual = getApiUrl({ url: 'https://admin:pwd@url.app.medicmobile.org/' });
+  //   expect(readline.keyInYN.callCount).to.eq(1);
+  //   expect(actual).to.eq('https://admin:pwd@url.app.medicmobile.org/medic');
+  // });
 });

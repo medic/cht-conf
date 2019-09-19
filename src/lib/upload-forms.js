@@ -1,13 +1,13 @@
+const abortPromiseChain = require('../lib/abort-promise-chain');
 const attachmentsFromDir = require('../lib/attachments-from-dir');
 const attachmentFromFile = require('../lib/attachment-from-file');
 const fs = require('../lib/sync-fs');
 const { info, trace, warn } = require('../lib/log');
-const abortPromiseChain = require('../lib/abort-promise-chain');
+const insertOrReplace = require('../lib/insert-or-replace');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 
-
-module.exports = (projectDir, repository, subDirectory, options) => {
+module.exports = (projectDir, db, subDirectory, options) => {
   if (!options) options = {};
 
   const formsDir = `${projectDir}/forms/${subDirectory}`;
@@ -61,11 +61,11 @@ module.exports = (projectDir, repository, subDirectory, options) => {
       doc._attachments = fs.exists(mediaDir) ? attachmentsFromDir(mediaDir) : {};
       doc._attachments.xml = attachmentFromFile(xformPath);
 
-      const docUrl = `${repository.description}/${docId}`;
+      const docUrl = `${db.description}/${docId}`;
 
       return promiseChain
         .then(() => trace(`Uploading form ${formsDir}/${fileName} to ${docUrl}`))
-        .then(() => repository.insertOrReplace(doc))
+        .then(() => insertOrReplace(db, doc))
         .then(() => info(`Uploaded form ${formsDir}/${fileName} to ${docUrl}`));
     }, Promise.resolve());
 };

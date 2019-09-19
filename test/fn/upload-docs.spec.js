@@ -23,7 +23,7 @@ describe('upload-docs', function() {
 
   it('should upload docs to pouch', async () => {
     await assertDbEmpty();
-    await uploadDocs('', api.repository);
+    await uploadDocs('', api.db, api.api);
     const res = await api.db.allDocs();
 
     expect(res.rows.map(doc => doc.id)).to.deep.eq(['one', 'three', 'two']);
@@ -35,7 +35,7 @@ describe('upload-docs', function() {
     const pouch = sinon.stub();
     fs.recurseFiles = () => [];
     return uploadDocs.__with__({ fs, pouch })(async () => {
-      await uploadDocs('', api.repository);
+      await uploadDocs('', api.db, api.api);
       expect(pouch.called).to.be.false;
     });
   });
@@ -48,7 +48,7 @@ describe('upload-docs', function() {
 
     return uploadDocs.__with__({ fs, pouch })(async () => {
       try {
-        await uploadDocs('', api.repository);
+        await uploadDocs('', api.db, api.api);
         expect.fail('should throw');
       } catch (err) {
         expect(err.message).to.include('expected _id is');
@@ -69,7 +69,7 @@ describe('upload-docs', function() {
       INITIAL_BATCH_SIZE: 4,
       fs,
     })(async () => {
-      await uploadDocs('', api.repository);
+      await uploadDocs('', api.db, api.api);
       expect(bulkDocs.callCount).to.eq(1 + 10 / 2);
 
       // first failed batch of 4

@@ -20,7 +20,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.repository))
+      .then(() => /* when */ createUsers(testDir, api.db, api.api))
 
       .then(() =>
         assert.deepEqual(api.requestLog(), [
@@ -65,7 +65,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.repository))
+      .then(() => /* when */ createUsers(testDir, api.db, api.api))
 
       .then(() =>
         assert.deepEqual(api.requestLog(), [

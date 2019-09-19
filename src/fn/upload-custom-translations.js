@@ -5,7 +5,7 @@ const { warn } = require('../lib/log');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
-module.exports = (projectDir, repository) => {
+module.exports = (projectDir, db, api) => {
   const dir = `${projectDir}/translations`;
   
   return Promise.resolve()
@@ -17,16 +17,16 @@ module.exports = (projectDir, repository) => {
         .map(fileName => {
           var translations = propertiesAsObject(`${dir}/${fileName}`);
 
-          return repository.get(idFor(fileName))
+          return db.get(idFor(fileName))
             .catch(e => {
               if(e.status === 404) {
-                return newDocFor(fileName, repository);
+                return newDocFor(fileName, api, db);
               }
               
               throw e;
             })
             .then(doc => overwriteProperties(doc, translations))
-            .then(doc => repository.put(doc));
+            .then(doc => db.put(doc));
         }));
     });
 
@@ -60,7 +60,7 @@ function overwriteProperties(doc, props) {
   return doc;
 }
 
-async function newDocFor(fileName, repository) {
+async function newDocFor(fileName, api, db) {
   const id = idFor(fileName);
 
   const doc = {
@@ -71,7 +71,7 @@ async function newDocFor(fileName, repository) {
     enabled: true,
   };
 
-  const useGenericTranslations = await genericTranslationsStructure(repository);
+  const useGenericTranslations = await genericTranslationsStructure(api, db);
   if (useGenericTranslations) {
     doc.generic = {};
   } else {
@@ -85,14 +85,22 @@ function idFor(fileName) {
   return fileName.substring(0, fileName.length - 11);
 }
 
-async function genericTranslationsStructure(repository) {
-  const version = await repository.version();
+async function genericTranslationsStructure(api, db) {
+  let version;
+  
+  try {
+    version = await api.version();
+  }
+  catch (err) {
+    const ddoc = await db.get('_design/medic-client');
+    version = ddoc.deploy_info && ddoc.deploy_info.version;
+  }
 
   if (semver.valid(version)) {
     return semver.gte(version, '3.4.0');
   }
 
-  return repository.get('messages-en')
+  return db.get('messages-en')
     .then(doc => doc.generic)
     .catch(() => false);
 }

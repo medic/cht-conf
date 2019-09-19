@@ -5,8 +5,8 @@ const express = require('express');
 const expressPouch = require('express-pouchdb');
 const ExpressSpy = require('./express-spy');
 const bodyParser = require('body-parser');
-const Repository = require('../src/lib/server-repository');
 
+const createApi = require('../src/lib/api');
 const mockMiddleware = new ExpressSpy();
 
 const opts = {
@@ -26,11 +26,9 @@ app.use('/', stripAuth, expressPouch(PouchDB, opts));
 
 let server;
 const db = new PouchDB('medic', { adapter: 'memory' });
-const repository = new Repository(db);
 
 module.exports = {
   db,
-  repository,
   giveResponses: mockMiddleware.setResponses,
   requestLog: () => mockMiddleware.requests.map(r => ({ method:r.method, url:r.originalUrl, body:r.body })),
   start: () => {
@@ -38,7 +36,10 @@ module.exports = {
     server = app.listen();
 
     const port = server.address().port;
-    repository.couchUrl = module.exports.couchUrl = `http://admin:pass@localhost:${port}/medic`;
+    const couchUrl = `http://admin:pass@localhost:${port}/medic`;
+    module.exports.db = new PouchDB(couchUrl);
+    module.exports.api = createApi(couchUrl);
+    module.exports.couchUrl = couchUrl;
 
     module.exports.gatewayRequests = [];
   },

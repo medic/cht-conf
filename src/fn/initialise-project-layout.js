@@ -29,7 +29,7 @@ const LAYOUT = {
 };
 
 
-module.exports = (projectDir, repository, extraArgs) => {
+module.exports = (projectDir, db, api, extraArgs) => {
   if(extraArgs && extraArgs.length) extraArgs.forEach(createProject);
   else createProject('.');
 

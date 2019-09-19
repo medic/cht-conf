@@ -1,8 +1,9 @@
-const log = require('../lib/log');
-const fs = require('../lib/sync-fs');
 const backupFileFor = require('../lib/backup-file-for');
+const formsList = require('../lib/forms-list');
+const fs = require('../lib/sync-fs');
+const log = require('../lib/log');
 
-module.exports = (projectDir, repository) => {
+module.exports = (projectDir, db) => {
   const parentBackupDir = backupFileFor(projectDir, 'forms');
 
   log('Backing up forms to:', parentBackupDir);
@@ -11,7 +12,7 @@ module.exports = (projectDir, repository) => {
   function backup(form) {
     const backupDir = `${parentBackupDir}/${form.id.replace(/:/g, '_')}`;
     fs.mkdir(backupDir);
-    return repository.get(form.id, { attachments: true, binary: true })
+    return db.get(form.id, { attachments: true, binary: true })
       .then(form => {
         fs.writeJson(`${backupDir}/context.json`, form.context);
         Object.keys(form._attachments).forEach(name => {
@@ -25,7 +26,7 @@ module.exports = (projectDir, repository) => {
       });
   }
 
-  return repository.formsList()
+  return formsList(db)
     .then(res => res.rows)
     .then(forms => Promise.all(forms.map(backup)));
 };

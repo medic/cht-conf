@@ -1,6 +1,7 @@
+const formsList = require('../lib/forms-list');
 
-module.exports = (projectDir, repository) => {
-  return repository.formsList({ include_docs: true })
+module.exports = (projectDir, db) => {
+  return formsList(db, { include_docs: true })
     .then(res => res.rows)
-    .then(forms => Promise.all(forms.map(f => repository.remove(f.doc))));
+    .then(forms => Promise.all(forms.map(f => db.remove(f.doc))));
 };
