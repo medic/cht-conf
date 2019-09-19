@@ -90,6 +90,7 @@ The list of available actions can be seen via `medic-conf --help`.
   - rules
   - schedules
   - contact-summary
+  - purge
 * backup from server
 * upload to server
 
@@ -113,7 +114,7 @@ The list of available actions can be seen via `medic-conf --help`.
 
 N.B. this feature is currently in development, and probably not ready for production yet.
 
-To create users on a remote server, use the `create-users` action.  The CSV file should be called `users.csv`, and an example is available [in the tests directory](test/data/create-users/users.csv).
+To create users on a remote server, use the `create-users` action.  The CSV file should be called `users.csv`, and an example is available [in the tests directory](test/data/create-users), for [an existing place](test/data/create-users/existing-place) and [a new place](test/data/create-users/new-place).
 
 ## csv-to-docs
 
@@ -294,6 +295,7 @@ This tool expects a project to be structured as follows:
 		.eslintrc
 		app_settings.json
 		contact-summary.js
+		purge.js
 		resources.json
 		resources/
 			icon-one.png
@@ -373,6 +375,14 @@ Accepted log types:
 	gardener
 	nginx
 	sentinel
+
+## Testing Locally
+
+1. Clone the project locally
+1. Make changes to medic-conf or checkout a branch for testing
+1. Test changes 
+	1. To test CLI changes locally you can run `node <project_dir>/src/bin/medic-conf.js`. This will run as if you installed via npm. 
+	1. To test changes that are imported in code run `npm install <project_dir>` to use the local version of medic-conf.
 
 ## compress images
 

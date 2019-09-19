@@ -7,9 +7,10 @@ const normalArgv = ['node', 'medic-conf'];
 
 const defaultActions = main.__get__('defaultActions');
 
-let mocks;
+let mocks, repository;
 describe('main', () => {
   beforeEach(() => {
+    repository = {};
     mocks = {
       usage: sinon.stub(),
       shellCompletionSetup: sinon.stub(),

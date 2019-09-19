@@ -17,7 +17,7 @@ const shellCompletionSetup = require('../cli/shell-completion-setup');
 const supportedActions = require('../cli/supported-actions');
 const usage = require('../cli/usage');
 
-const { error, info, warn } = log;
+const { error, info } = log;
 const defaultActions = [
   'compile-app-settings',
   'backup-app-settings',

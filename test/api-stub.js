@@ -5,6 +5,7 @@ const express = require('express');
 const expressPouch = require('express-pouchdb');
 const ExpressSpy = require('./express-spy');
 const bodyParser = require('body-parser');
+const Repository = require('../src/lib/server-repository');
 
 const createApi = require('../src/lib/api');
 const mockMiddleware = new ExpressSpy();

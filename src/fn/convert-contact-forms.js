@@ -11,8 +11,8 @@ module.exports = (projectDir, db, api, extras) => {
     PLACE_TYPES = fs.readJson(placeTypesJson);
     Object.keys(PLACE_TYPES)
       .forEach(type => {
-        fs.copy(`${dir}/PLACE_TYPE-create.xlsx`, `${dir}/${type}-create.xlsx`);
-        fs.copy(`${dir}/PLACE_TYPE-edit.xlsx`, `${dir}/${type}-edit.xlsx`);
+        fs.copy(`${dir}/PLACE_TYPE-create.xlsx`, `${dir}/${type}-create.xlsx`,{ overwrite: false });
+        fs.copy(`${dir}/PLACE_TYPE-edit.xlsx`, `${dir}/${type}-edit.xlsx`, { overwrite: false });
       });
   }
 
