@@ -82,6 +82,6 @@ module.exports = async (projectDir, db, api) => {
 
   for (let user of users) {
     info(`Creating user ${user.username}`);
-    await db.createUser(user);
+    await api.createUser(user);
   }
 };

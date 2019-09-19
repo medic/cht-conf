@@ -5,21 +5,6 @@ class API {
     this.couchUrl = data;
   }
 
-  createUser(userData) {
-    const instanceUrl = this.couchUrl.replace(/\/medic$/, '');
-
-    return request({
-      uri: `${instanceUrl}/api/v1/users`,
-      method: 'POST',
-      json: true,
-      body: userData,
-    });
-  }
-
-  get description() {
-    return this.couchUrl;
-  }
-
   get appSettings() {
     return {
       get: () => {
@@ -44,6 +29,26 @@ class API {
         });
       },
     };
+  }
+
+  createUser(userData) {
+    const instanceUrl = this.couchUrl.replace(/\/medic$/, '');
+
+    return request({
+      uri: `${instanceUrl}/api/v1/users`,
+      method: 'POST',
+      json: true,
+      body: userData,
+    });
+  }
+
+  get description() {
+    return this.couchUrl;
+  }
+
+  getUserInfo(queryString) {
+    const instanceUrl = this.couchUrl.replace(/\/medic$/, '');
+    return request.get(`${instanceUrl}/api/v1/users-info`, { qs: queryString, json: true });
   }
 
   uploadSms(messages) {

@@ -17,7 +17,7 @@ module.exports = (projectDir, db, api) => {
         .map(fileName => {
           var translations = propertiesAsObject(`${dir}/${fileName}`);
 
-          return repository.get(idFor(fileName))
+          return db.get(idFor(fileName))
             .catch(e => {
               if(e.status === 404) {
                 return newDocFor(fileName, api, db);
@@ -26,7 +26,7 @@ module.exports = (projectDir, db, api) => {
               throw e;
             })
             .then(doc => overwriteProperties(doc, translations))
-            .then(doc => repository.put(doc));
+            .then(doc => db.put(doc));
         }));
     });
 

@@ -62,7 +62,7 @@ module.exports = async (projectDir, db, api, extraArgs) => {
     trace(`Attempting to upload batch of ${docs.length} docs…`);
 
     try {
-      const uploadResult = await repository.bulkDocs(docs);
+      const uploadResult = await db.bulkDocs(docs);
       if(progress) {
         progress.increment(docs.length);
       }

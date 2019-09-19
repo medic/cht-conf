@@ -12,7 +12,7 @@ const HIERARCHY_ROOT = 'root';
 module.exports = (projectDir, db, api, extraArgs) => {
   const args = parseExtraArgs(projectDir, extraArgs);
   prepareDocumentDirectory(args);
-  return updateLineagesAndStage(args, repository);
+  return updateLineagesAndStage(args, db);
 };
 
 const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
