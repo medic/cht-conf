@@ -138,6 +138,9 @@ module.exports = (projectDir)=> {
         propertyName: col,
       });
     }
+    if(docType !== 'users'){
+      doc.reported_date = Date.now();
+    }
 
     return _idIndex === -1 ? withId(doc) : doc;
   }
