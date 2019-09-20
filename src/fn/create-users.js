@@ -60,7 +60,7 @@ const getUserInfo = async (api, user) => {
 };
 
 module.exports = async () => {
-  const request = api(environment.apiUrl);
+  const request = api();
   const csvPath = `${environment.pathToProject}/users.csv`;
   if(!fs.exists(csvPath)) {
     throw new Error(`User csv file not found at ${csvPath}`);

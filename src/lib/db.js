@@ -2,14 +2,14 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const ArchivingFakeDB = require('./archiving-fake-db');
-const { isArchiveUrl } = require('./api-url');
+const ArchivingDB = require('./archiving-db');
+const environment = require('./environment');
 
-module.exports = url => {
-  if (isArchiveUrl(url)) {
-    return new ArchivingFakeDB(url);
+module.exports = () => {
+  if (environment.isArchiveMode) {
+    return new ArchivingDB(environment.archiveDestination);
   }
   
-  return new PouchDB(url, { ajax: { timeout: 60000 } });
+  return new PouchDB(environment.apiUrl, { ajax: { timeout: 60000 } });
 };
 

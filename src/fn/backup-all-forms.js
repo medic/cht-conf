@@ -6,7 +6,7 @@ const log = require('../lib/log');
 const pouch = require('../lib/db');
 
 module.exports = () => {
-  const db = pouch(environment.apiUrl);
+  const db = pouch();
   const parentBackupDir = backupFileFor(environment.pathToProject, 'forms');
   
   log('Backing up forms to:', parentBackupDir);

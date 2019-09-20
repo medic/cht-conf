@@ -3,7 +3,7 @@ const { info, warn } = require('../lib/log');
 const pouch = require('../lib/db');
 
 module.exports = () => {
-  const db = pouch(environment.apiUrl);
+  const db = pouch();
   const { extraArgs } = environment;
   if (!extraArgs || !extraArgs.length) {
     warn('No forms specified for deleting.');

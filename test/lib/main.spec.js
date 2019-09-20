@@ -88,8 +88,8 @@ describe('main', () => {
       expect(mocks.executeAction.args[0][0]).to.eq(expectedActions);
     }
 
-    expect(mocks.environment.initialize.args[0][2]).to.deep.eq(expectedExtraParams);
-    expect(mocks.environment.initialize.args[0][3]).to.eq('http://api');
+    expect(mocks.environment.initialize.args[0][3]).to.deep.eq(expectedExtraParams);
+    expect(mocks.environment.initialize.args[0][4]).to.eq('http://api');
   };
 
   it('--local no COUCH_URL', async () => {

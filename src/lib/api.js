@@ -1,14 +1,14 @@
 const request = require('request-promise-native');
 
-class API {
-  constructor(data) {
-    this.apiUrl = data;
-  }
+const archivingApi = require('./archiving-api');
+const environment = require('./environment');
+const instanceUrl = () => environment.apiUrl.replace(/\/medic$/, '');
 
+const api = {
   get appSettings() {
     return {
       get: () => {
-        const settingsUrl = `${this.apiUrl}/_design/medic/_rewrite/app_settings/medic`;
+        const settingsUrl = `${environment.apiUrl}/_design/medic/_rewrite/app_settings/medic`;
         return request({ url: settingsUrl, json: true })
           .catch(err => {
             if(err.statusCode === 404) {
@@ -23,49 +23,40 @@ class API {
       update: (content) => {
         return request.put({
           method: 'PUT',
-          url: `${this.apiUrl}/_design/medic/_rewrite/update_settings/medic?replace=1`,
+          url: `${environment.apiUrl}/_design/medic/_rewrite/update_settings/medic?replace=1`,
           headers: { 'Content-Type':'application/json' },
           body: content,
         });
       },
     };
-  }
+  },
 
   createUser(userData) {
-    const instanceUrl = this.apiUrl.replace(/\/medic$/, '');
-
     return request({
-      uri: `${instanceUrl}/api/v1/users`,
+      uri: `${instanceUrl()}/api/v1/users`,
       method: 'POST',
       json: true,
       body: userData,
     });
-  }
-
-  get description() {
-    return this.apiUrl;
-  }
+  },
 
   getUserInfo(queryString) {
-    const instanceUrl = this.apiUrl.replace(/\/medic$/, '');
-    return request.get(`${instanceUrl}/api/v1/users-info`, { qs: queryString, json: true });
-  }
+    return request.get(`${instanceUrl()}/api/v1/users-info`, { qs: queryString, json: true });
+  },
 
   uploadSms(messages) {
-    const instanceUrl = this.apiUrl.replace(/\/medic$/, '');
     return request({
-      uri: `${instanceUrl}/api/sms`,
+      uri: `${instanceUrl()}/api/sms`,
       method: 'POST',
       json: true,
       body: { messages },
     });
-  }
+  },
 
   version() {
-    const instanceUrl = this.apiUrl.replace(/\/medic$/, '');
-    return request({ uri: `${instanceUrl}/api/deploy-info`, method: 'GET', json: true }) // endpoint added in 3.5
+    return request({ uri: `${instanceUrl()}/api/deploy-info`, method: 'GET', json: true }) // endpoint added in 3.5
       .then(deploy_info => deploy_info && deploy_info.version);
-  }
-}
+  },
+};
 
-module.exports = url => new API(url);
+module.exports = () => environment.isArchiveMode ? archivingApi : api;

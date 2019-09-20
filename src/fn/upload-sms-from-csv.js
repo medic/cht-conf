@@ -6,7 +6,6 @@ const fs = require('../lib/sync-fs');
 const { trace } = require('../lib/log');
 
 module.exports = () => {
-  const request = api(environment.apiUrl);
   const csvFiles = environment.extraArgs || ['sms.csv'];
 
   trace('upload-sms-from-csv', 'csv files:', csvFiles);
@@ -28,6 +27,6 @@ module.exports = () => {
       };
     });
 
-    return request.uploadSms(messages);
+    return api().uploadSms(messages);
   }, Promise.resolve());
 };

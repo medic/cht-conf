@@ -6,7 +6,7 @@ const checkForUpdates = require('../lib/check-for-updates');
 const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
 const environment = require('./environment');
 const fs = require('../lib/sync-fs');
-const { getApiUrl } = require('../lib/api-url');
+const getApiUrl = require('../lib/get-api-url');
 const log = require('../lib/log');
 const readline = require('readline-sync');
 const redactBasicAuth = require('redact-basic-auth');
@@ -123,7 +123,7 @@ module.exports = async (argv, env) => {
     extraArgs = undefined;
   }
 
-  environment.initialize(pathToProject, !!cmdArgs.archive, extraArgs, apiUrl);
+  environment.initialize(pathToProject, !!cmdArgs.archive, cmdArgs.destination, extraArgs, apiUrl);
   
   //
   // Build up actions

@@ -1,18 +1,11 @@
-/**
-Maps a set of command-line options to a repository (data-access-layer)
-*/
-
-const redactBasicAuth = require('redact-basic-auth');
 const readline = require('readline-sync');
 const url = require('url');
-
-const ArchiveRepository = require('./archive-repository');
-const emoji = require('./emoji');
-const { error, info, warn } = require('./log');
-const ServerRepository = require('./server-repository');
 const usage = require('../cli/usage');
 
-const createRepository = (cmdArgs, env = {}, projectName) => {
+const emoji = require('./emoji');
+const { error, info } = require('./log');
+
+const getApiUrl = (cmdArgs, env = {}) => {
   const specifiedModes = [cmdArgs.local, cmdArgs.instance, cmdArgs.url, cmdArgs.archive].filter(mode => mode);
   if (specifiedModes.length !== 1) {
     error('Require exactly one of these parameter: --local --instance --url --archive');
@@ -21,13 +14,9 @@ const createRepository = (cmdArgs, env = {}, projectName) => {
   }
 
   if (cmdArgs.archive) {
-    return new ArchiveRepository(cmdArgs);
+    return '--archive mode';
   }
 
-  return createServerRepository(cmdArgs, env, projectName);
-};
-
-const createServerRepository = (cmdArgs, env, projectName) => {
   if (cmdArgs.user && !cmdArgs.instance) {
     error('The --user switch can only be used if followed by --instance');
     return false;
@@ -49,18 +38,7 @@ const createServerRepository = (cmdArgs, env, projectName) => {
     instanceUrl = url.parse(cmdArgs.url);
   }
 
-  const productionUrlMatch = instanceUrl.href.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
-  const expectedOptions = ['alpha', projectName];
-  if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
-    warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
-        `against non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl.href)}\x1b[33m`);
-    if(!readline.keyInYN()) {
-      error('User failed to confirm action.');
-      return false;
-    }
-  }
-
-  return new ServerRepository(`${instanceUrl.href}medic`);
+  return `${instanceUrl.href}medic`;
 };
 
 const parseLocalUrl = (couchUrl) => {
@@ -80,4 +58,4 @@ const parseLocalUrl = (couchUrl) => {
   return url.parse('http://admin:pass@localhost:5988');
 };
 
-module.exports = createRepository;
+module.exports = getApiUrl;

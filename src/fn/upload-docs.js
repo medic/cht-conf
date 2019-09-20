@@ -63,9 +63,8 @@ module.exports = async () => {
     trace('');
     trace(`Attempting to upload batch of ${docs.length} docs…`);
 
-    const db = pouch(environment.apiUrl);
     try {
-      const uploadResult = await db.bulkDocs(docs);
+      const uploadResult = await pouch().bulkDocs(docs);
       if(progress) {
         progress.increment(docs.length);
       }

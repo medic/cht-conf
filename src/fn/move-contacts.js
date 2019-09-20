@@ -13,25 +13,25 @@ const HIERARCHY_ROOT = 'root';
 
 module.exports = () => {
   const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
-  const db = pouch(environment.apiUrl);
+  const db = pouch();
   prepareDocumentDirectory(args);
   return updateLineagesAndStage(args, db);
 };
 
 const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
-const updateLineagesAndStage = async (options, repository) => {
+const updateLineagesAndStage = async (options, db) => {
   trace(`Fetching contact details for parent: ${options.parentId}`);
-  const parentDoc = await fetch.contact(repository, options.parentId);
+  const parentDoc = await fetch.contact(db, options.parentId);
 
-  const constraints = await lineageConstraints(repository, parentDoc);
-  const contactDocs = await fetch.contactList(repository, options.contactIds);
+  const constraints = await lineageConstraints(db, parentDoc);
+  const contactDocs = await fetch.contactList(db, options.contactIds);
   await validateContacts(contactDocs, constraints);
 
   let affectedContactCount = 0, affectedReportCount = 0;
   const replacementLineage = lineageManipulation.createLineageFromDoc(parentDoc);
   for (let contactId of options.contactIds) {
     const contactDoc = contactDocs[contactId];
-    const descendantsAndSelf = await repository.descendantsOf(contactId);
+    const descendantsAndSelf = await fetch.descendantsOf(db, contactId);
     
     // Check that primary contact is not removed from areas where they are required
     const invalidPrimaryContactDoc = await constraints.getPrimaryContactViolations(contactDoc, descendantsAndSelf);
@@ -42,11 +42,11 @@ const updateLineagesAndStage = async (options, repository) => {
     trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)}.`);
     const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, contactId);
     
-    const ancestors = await fetch.ancestorsOf(repository, contactDoc);
+    const ancestors = await fetch.ancestorsOf(db, contactDoc);
     trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
     const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
 
-    const reportsCreatedByDescendants = await repository.reportsCreatedBy(descendantsAndSelf.map(descendant => descendant._id));
+    const reportsCreatedByDescendants = await fetch.reportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
     trace(`${reportsCreatedByDescendants.length} report(s) created by these affected contact(s) will update`);
     const updatedReports = replaceLineageInReports(reportsCreatedByDescendants, replacementLineage, contactId);
     
@@ -166,8 +166,8 @@ const fetch = {
   /*
   Fetches all of the documents associated with the "contactIds" and confirms they exist.
   */
-  contactList: async (repository, ids) => {
-    const contactDocs = await repository.allDocs({
+  contactList: async (db, ids) => {
+    const contactDocs = await db.allDocs({
       keys: ids,
       include_docs: true,
     });
@@ -180,13 +180,13 @@ const fetch = {
     return contactDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
   },
 
-  contact: async (repository, id) => {
+  contact: async (db, id) => {
     try {
       if (id === HIERARCHY_ROOT) {
         return undefined;
       }
   
-      return await repository.get(id);
+      return await db.get(id);
     } catch (err) {
       if (err.name !== 'not_found') {
         throw err;

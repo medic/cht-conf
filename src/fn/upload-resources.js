@@ -6,7 +6,6 @@ const { warn } = require('../lib/log');
 const insertOrReplace = require('../lib/insert-or-replace');
 
 module.exports = () => {
-  const db = pouch(environment.apiUrl);
   const resourcesPath = fs.path.resolve(`${environment.pathToProject}/resources.json`);
 
   if(!fs.exists(resourcesPath)) {
@@ -14,7 +13,7 @@ module.exports = () => {
     return Promise.resolve();
   }
 
-  return insertOrReplace(db, {
+  return insertOrReplace(pouch(), {
     _id: 'resources',
     resources: fs.readJson(resourcesPath),
     _attachments: attachmentsFromDir(`${environment.pathToProject}/resources`),
