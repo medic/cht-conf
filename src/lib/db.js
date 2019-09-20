@@ -9,7 +9,7 @@ module.exports = () => {
   if (environment.isArchiveMode) {
     return new ArchivingDB(environment.archiveDestination);
   }
-  
+
   return new PouchDB(environment.apiUrl, { ajax: { timeout: 60000 } });
 };
 

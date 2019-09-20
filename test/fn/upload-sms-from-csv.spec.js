@@ -12,7 +12,7 @@ const { assert } = chai;
 describe('upload-sms-from-csv', function() {
   beforeEach(api.start);
   afterEach(api.stop);
-  
+
   it('should upload SMS supplied in CSV format to medic-api', function() {
 
     // given

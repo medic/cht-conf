@@ -21,7 +21,7 @@ module.exports = (projectDir, subDirectory, options) => {
   const formFilter = name => {
     if (options && Array.isArray(options) && options.length) {
       return options.includes(fs.withoutExtension(name));
-    } 
+    }
     return true;
   };
 

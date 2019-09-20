@@ -9,7 +9,7 @@ module.exports = () => {
   const csvFiles = environment.extraArgs || ['sms.csv'];
 
   trace('upload-sms-from-csv', 'csv files:', csvFiles);
-  
+
   return csvFiles.map(fileName => `${environment.pathToProject}/${fileName}`)
     .reduce((promiseChain, csvFile) => {
       trace(`Processing csv file ${csvFile}…`);

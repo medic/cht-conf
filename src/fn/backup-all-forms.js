@@ -8,7 +8,7 @@ const pouch = require('../lib/db');
 module.exports = () => {
   const db = pouch();
   const parentBackupDir = backupFileFor(environment.pathToProject, 'forms');
-  
+ 
   log('Backing up forms to:', parentBackupDir);
   fs.mkdir(parentBackupDir);
 

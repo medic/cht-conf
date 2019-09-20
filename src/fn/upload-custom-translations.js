@@ -13,7 +13,7 @@ module.exports = () => {
   const db = pouch(environment.apiUrl);
 
   const dir = `${environment.pathToProject}/translations`;
-  
+
   return Promise.resolve()
     .then(() => {
       if(!fs.exists(dir)) return warn('Could not find custom translations dir:', dir);
@@ -28,7 +28,7 @@ module.exports = () => {
               if(e.status === 404) {
                 return newDocFor(fileName, request, db);
               }
-              
+
               throw e;
             })
             .then(doc => overwriteProperties(doc, translations))
@@ -93,7 +93,7 @@ function idFor(fileName) {
 
 async function genericTranslationsStructure(request, db) {
   let version;
-  
+
   try {
     version = await request.version();
   }

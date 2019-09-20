@@ -99,7 +99,7 @@ module.exports = async (argv, env) => {
   // Initialize the environment
   //
   const projectName = fs.path.basename(pathToProject);
-  
+
   const apiUrl = getApiUrl(cmdArgs, env);
   if (!apiUrl) {
     error('Failed to obtain a url to the API');
@@ -124,7 +124,7 @@ module.exports = async (argv, env) => {
   }
 
   environment.initialize(pathToProject, !!cmdArgs.archive, cmdArgs.destination, extraArgs, apiUrl);
-  
+
   //
   // Build up actions
   //

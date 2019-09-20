@@ -16,7 +16,7 @@ describe('get-api-url', () => {
     getApiUrl.__set__('error', error);
     getApiUrl.__set__('readline', readline);
   });
-  
+
   it('multiple destinations yields error', () => {
     const actual = getApiUrl({ local: true, instance: 'demo' });
     expect(error.args[0][0]).to.include('one of these');
@@ -34,7 +34,7 @@ describe('get-api-url', () => {
       const actual = getApiUrl({ local: true });
       expect(actual).to.eq('http://admin:pass@localhost:5988/medic');
     });
-    
+
     it('use environment variable', () => {
       const actual = getApiUrl({ local: true }, { COUCH_URL: 'http://user:pwd@localhost:5984/db' });
       expect(actual).to.eq('http://user:pwd@localhost:5988/medic');
@@ -72,7 +72,7 @@ describe('get-api-url', () => {
     const parseLocalUrl = getApiUrl.__get__('parseLocalUrl');
     it('basic', () =>
       expect(parseLocalUrl('http://admin:pass@localhost:5988/medic').href).to.eq('http://admin:pass@localhost:5988/'));
-    
+
     it('updates port', () =>
       expect(parseLocalUrl('http://admin:pass@localhost:5984/medic').href).to.eq('http://admin:pass@localhost:5988/'));
 

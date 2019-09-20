@@ -31,7 +31,7 @@ describe('upload-docs', function() {
 
   it('do nothing if there are no docs to upload', async () => {
     await assertDbEmpty();
-    
+
     const pouch = sinon.stub();
     fs.recurseFiles = () => [];
     return uploadDocs.__with__({ fs, pouch })(async () => {
@@ -62,7 +62,7 @@ describe('upload-docs', function() {
       .returns(Promise.resolve([{}]));
     fs.recurseFiles = () => new Array(10).fill('').map((x, i) => `${i}.doc.json`);
     sinon.useFakeTimers(0);
-    
+
     const imported_date = new Date(0).toISOString();
     return uploadDocs.__with__({
       INITIAL_BATCH_SIZE: 4,

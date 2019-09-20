@@ -29,7 +29,7 @@ const parseUsersData = (csvData) => {
   return users;
 };
 
-const getUserInfo = async (api, user) => {
+const getUserInfo = async (user) => {
   const getId = (obj) => typeof obj === 'string' ? obj : obj._id;
   const facilityId = getId(user.place);
   if (!facilityId) {
@@ -46,7 +46,7 @@ const getUserInfo = async (api, user) => {
   info(`Requesting user-info for "${user.username}"`);
   let result;
   try {
-    result = await api.getUserInfo(params);
+    result = await api().getUserInfo(params);
   } catch (err) {
     // we can safely ignore some errors
     // - 404: This endpoint was only added in 3.7
@@ -60,7 +60,6 @@ const getUserInfo = async (api, user) => {
 };
 
 module.exports = async () => {
-  const request = api();
   const csvPath = `${environment.pathToProject}/users.csv`;
   if(!fs.exists(csvPath)) {
     throw new Error(`User csv file not found at ${csvPath}`);
@@ -69,7 +68,7 @@ module.exports = async () => {
   const users = parseUsersData(fs.read(csvPath));
   const warnings = [];
   for (let user of users) {
-    const userInfo = await getUserInfo(request, user);
+    const userInfo = await getUserInfo(user);
     if (userInfo && userInfo.warn) {
       warnings.push(`The user "${user.username}" would replicate ${userInfo.total_docs}, which is above the recommended limit of ${userInfo.limit}.`);
     }
@@ -86,6 +85,6 @@ module.exports = async () => {
 
   for (let user of users) {
     info(`Creating user ${user.username}`);
-    await request.createUser(user);
+    await api().createUser(user);
   }
 };

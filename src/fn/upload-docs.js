@@ -104,7 +104,7 @@ const getErrorsWhereDocIdDiffersFromFilename = filePaths =>
       const idFromFilename = path.basename(filePath, FILE_EXTENSION);
 
       if (json._id !== idFromFilename) {
-        return `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.`;      
+        return `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.`;
       }
     })
     .filter(err => err);
