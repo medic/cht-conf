@@ -1,6 +1,8 @@
 const PouchDB = require('pouchdb-core');
+const sinon = require('sinon');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
+const environment = require('../src/lib/environment');
 const express = require('express');
 const expressPouch = require('express-pouchdb');
 const ExpressSpy = require('./express-spy');
@@ -36,8 +38,8 @@ module.exports = {
 
     const port = server.address().port;
     const couchUrl = `http://admin:pass@localhost:${port}/medic`;
+    sinon.stub(environment, 'apiUrl').get(() => couchUrl);
     module.exports.couchUrl = couchUrl;
-
     module.exports.gatewayRequests = [];
   },
   stop: async () => {

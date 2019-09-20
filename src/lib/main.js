@@ -4,6 +4,7 @@ const opn = require('opn');
 
 const checkForUpdates = require('../lib/check-for-updates');
 const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
+const environment = require('./environment');
 const fs = require('../lib/sync-fs');
 const { getApiUrl } = require('../lib/api-url');
 const log = require('../lib/log');
@@ -95,17 +96,17 @@ module.exports = async (argv, env) => {
   }
 
   //
-  // Construct the data access layer
+  // Initialize the environment
   //
   const projectName = fs.path.basename(pathToProject);
   
-  const urlToApi = getApiUrl(cmdArgs, env);
-  if (!urlToApi) {
+  const apiUrl = getApiUrl(cmdArgs, env);
+  if (!apiUrl) {
     error('Failed to obtain a url to the API');
     return -1;
   }
 
-  const instanceUrl = urlToApi.replace(/\/medic$/, '');
+  const instanceUrl = apiUrl.replace(/\/medic$/, '');
   const productionUrlMatch = instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
   const expectedOptions = ['alpha', projectName];
   if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
@@ -116,6 +117,13 @@ module.exports = async (argv, env) => {
       return false;
     }
   }
+
+  let extraArgs = cmdArgs['--'];
+  if (!extraArgs.length) {
+    extraArgs = undefined;
+  }
+
+  environment.initialize(pathToProject, !!cmdArgs.archive, extraArgs, apiUrl);
   
   //
   // Build up actions
@@ -123,11 +131,6 @@ module.exports = async (argv, env) => {
   let actions = cmdArgs._;
   if (!actions.length) {
     actions = defaultActions;
-  }
-
-  let extraArgs = cmdArgs['--'];
-  if (!extraArgs.length) {
-    extraArgs = undefined;
   }
 
   const unsupported = actions.filter(a => !supportedActions.includes(a));
@@ -141,7 +144,6 @@ module.exports = async (argv, env) => {
   //
   info(`Processing config in ${projectName}.`);
   info('Actions:\n     -', actions.join('\n     - '));
-  info('Extra args:', extraArgs);
 
   const skipCheckForUpdates = cmdArgs.check === false;
   if (actions.includes('check-for-updates') && !skipCheckForUpdates) {
@@ -150,7 +152,7 @@ module.exports = async (argv, env) => {
 
   for (let action of actions) {
     info(`Starting action: ${action}…`);
-    await executeAction(action, pathToProject, urlToApi, extraArgs);
+    await executeAction(action);
     info(`${action} complete.`);
   }
 
@@ -159,4 +161,4 @@ module.exports = async (argv, env) => {
   }
 };
 
-const executeAction = (action, pathToProject, urlToApi, args) => require(`../fn/${action}`)(pathToProject, urlToApi, args);
+const executeAction = action => require(`../fn/${action}`)();

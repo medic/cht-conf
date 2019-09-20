@@ -1,5 +1,6 @@
+const environment = require('../lib/environment');
 const uploadForms = require('../lib/upload-forms');
 
-module.exports = (projectDir, apiUrl, extras) => uploadForms(projectDir, apiUrl, 'app', {
-  forms: extras,
+module.exports = () => uploadForms(environment.pathToProject, environment.apiUrl, 'app', {
+  forms: environment.extraArgs,
 });

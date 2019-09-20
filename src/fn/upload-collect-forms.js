@@ -1,6 +1,7 @@
+const environment = require('../lib/environment');
 const uploadForms = require('../lib/upload-forms');
 
-module.exports = (projectDir, apiUrl, extras) => uploadForms(projectDir, apiUrl, 'collect', {
-  forms: extras,
+module.exports = () => uploadForms(environment.pathToProject, environment.apiUrl, 'collect', {
+  forms: environment.extraArgs,
   default_context: { collect:true },
 });

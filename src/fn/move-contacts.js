@@ -2,6 +2,7 @@ const minimist = require('minimist');
 const path = require('path');
 const readline = require('readline-sync');
 
+const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const lineageManipulation = require('../lib/lineage-manipulation');
 const lineageConstraints = require('../lib/lineage-constraints');
@@ -10,9 +11,9 @@ const { warn, trace, info, error } = require('../lib/log');
 
 const HIERARCHY_ROOT = 'root';
 
-module.exports = (projectDir, apiUrl, extraArgs) => {
-  const args = parseExtraArgs(projectDir, extraArgs);
-  const db = pouch(apiUrl);
+module.exports = () => {
+  const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
+  const db = pouch(environment.apiUrl);
   prepareDocumentDirectory(args);
   return updateLineagesAndStage(args, db);
 };

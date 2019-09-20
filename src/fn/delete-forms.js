@@ -1,14 +1,16 @@
+const environment = require('../lib/environment');
 const { info, warn } = require('../lib/log');
 const pouch = require('../lib/db');
 
-module.exports = (projectDir, apiUrl, extras) => {
-  const db = pouch(apiUrl);
-  if (!extras || !extras.length) {
+module.exports = () => {
+  const db = pouch(environment.apiUrl);
+  const { extraArgs } = environment;
+  if (!extraArgs || !extraArgs.length) {
     warn('No forms specified for deleting.');
     return;
   }
 
-  return Promise.all(extras.map(formName => {
+  return Promise.all(extraArgs.map(formName => {
     const docId = `form:${formName}`;
     return db.get(docId)
       .then(doc => db.remove(doc))

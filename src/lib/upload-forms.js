@@ -4,10 +4,12 @@ const attachmentFromFile = require('../lib/attachment-from-file');
 const fs = require('../lib/sync-fs');
 const { info, trace, warn } = require('../lib/log');
 const insertOrReplace = require('../lib/insert-or-replace');
+const pouch = require('../lib/db');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 
-module.exports = (projectDir, db, subDirectory, options) => {
+module.exports = (projectDir, apiUrl, subDirectory, options) => {
+  const db = pouch(apiUrl);
   if (!options) options = {};
 
   const formsDir = `${projectDir}/forms/${subDirectory}`;

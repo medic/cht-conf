@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 
 const compileAppSettings = rewire('../../src/fn/compile-app-settings');
+const environment = require('../../src/lib/environment');
 const fs = require('../../src/lib/sync-fs');
 
 let writeJson;
@@ -67,9 +68,10 @@ describe('compile-app-settings', () => {
 
 async function test(relativeProjectDir) {
   const testDir = path.join(__dirname, '../data/compile-app-settings', relativeProjectDir);
+  sinon.stub(environment, 'pathToProject').get(() => testDir);
 
   // when
-  await compileAppSettings(testDir);
+  await compileAppSettings();
 
   // then
   const actual = JSON.parse(JSON.stringify(writeJson.args[0][1]));

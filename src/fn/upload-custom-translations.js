@@ -1,17 +1,18 @@
-const fs = require('../lib/sync-fs');
 const semver = require('semver');
 
 const api = require('../lib/api');
+const environment = require('../lib/environment');
+const fs = require('../lib/sync-fs');
 const pouch = require('../lib/db');
 const { warn } = require('../lib/log');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
-module.exports = (projectDir, apiUrl) => {
-  const request = api(apiUrl);
-  const db = pouch(apiUrl);
+module.exports = () => {
+  const request = api(environment.apiUrl);
+  const db = pouch(environment.apiUrl);
 
-  const dir = `${projectDir}/translations`;
+  const dir = `${environment.pathToProject}/translations`;
   
   return Promise.resolve()
     .then(() => {

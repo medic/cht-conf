@@ -1,12 +1,17 @@
-const api = require('../api-stub');
-const assert = require('chai').assert;
+const { assert } = require('chai');
+const querystring = require('querystring');
 const rewire = require('rewire');
 const sinon = require('sinon');
-const querystring = require('querystring');
-const createUsers = rewire('../../src/fn/create-users');
-let readLine;
 
-describe('create-users', function() {
+const api = require('../api-stub');
+const environment = require('../../src/lib/environment');
+
+const createUsers = rewire('../../src/fn/create-users');
+
+let readLine;
+const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => testDir);
+
+describe('create-users', () => {
   beforeEach(() => {
     readLine = { keyInYN: sinon.stub() };
     createUsers.__set__('readline', readLine);
@@ -18,7 +23,7 @@ describe('create-users', function() {
   });
 
   it('should create a user with place defined as a string', function() {
-    const testDir = `data/create-users/existing-place`;
+    mockTestDir(`data/create-users/existing-place`);
     api.giveResponses({ body: {} }, { body: {} });
     const todd = {
       username: 'todd',
@@ -38,7 +43,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers())
       .then(() => {
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
@@ -48,7 +53,7 @@ describe('create-users', function() {
   });
 
   it('should create user with existent place and response from user-info', () => {
-    const testDir = `data/create-users/existing-place`;
+    mockTestDir(`data/create-users/existing-place`);
     api.giveResponses({ body: { total_docs: 1000, warn: false } }, { body: {} });
     const todd = {
       username: 'todd',
@@ -68,7 +73,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers())
       .then(() => {
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
@@ -78,7 +83,7 @@ describe('create-users', function() {
   });
 
   it('should create user with existent place and not implemented user-info endpoint', () => {
-    const testDir = `data/create-users/existing-place`;
+    mockTestDir(`data/create-users/existing-place`);
     api.giveResponses({ status: 404, body: { code: 404, error: 'not_found' } }, { body: {} });
     const todd = {
       username: 'todd',
@@ -98,7 +103,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers())
       .then(() => {
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
@@ -108,7 +113,7 @@ describe('create-users', function() {
   });
 
   it('should require user input before creating user with too many docs', () => {
-    const testDir = `data/create-users/existing-place`;
+    mockTestDir(`data/create-users/existing-place`);
     api.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } }, { body: {} });
     const todd = {
       username: 'todd',
@@ -129,7 +134,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers())
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.deepEqual(api.requestLog(), [
@@ -140,7 +145,7 @@ describe('create-users', function() {
   });
 
   it('should not create user if no input when too many docs', () => {
-    const testDir = `data/create-users/existing-place`;
+    mockTestDir(`data/create-users/existing-place`);
     sinon.stub(process, 'exit');
     api.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } } );
     const todd = {
@@ -161,7 +166,7 @@ describe('create-users', function() {
       role: JSON.stringify(todd.roles),
     };
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers())
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.equal(process.exit.callCount, 1);
@@ -172,7 +177,7 @@ describe('create-users', function() {
   });
 
   it('should throw some users-info errors', () => {
-    const testDir = `data/create-users/existing-place`;
+    mockTestDir(`data/create-users/existing-place`);
     const todd = {
       roles: ['district-admin'],
       place: 'place_uuid_here',
@@ -187,7 +192,7 @@ describe('create-users', function() {
       role: JSON.stringify(todd.roles),
     };
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers())
       .then(r => assert.equal(r, 'Expected to reject'))
       .catch(err => {
         assert.deepEqual(err.error, { code: 500, error: 'boom' });
@@ -199,7 +204,7 @@ describe('create-users', function() {
   });
 
   it('should request user-info in sequence before creating users', () => {
-    const testDir = `data/create-users/multiple-existing-place`;
+    mockTestDir(`data/create-users/multiple-existing-place`);
     const pwd = 'Secret_1';
     api.giveResponses(
       { status: 400, body: { code: 400, error: 'not an offline role' } },
@@ -219,7 +224,7 @@ describe('create-users', function() {
     const john = { username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4' };
     const qs = (user) => querystring.stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
     return assertDbEmpty()
-      .then(() => createUsers(testDir, api.couchUrl))
+      .then(() => createUsers())
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.deepEqual(api.requestLog(), [
@@ -236,7 +241,7 @@ describe('create-users', function() {
   });
 
   it('should interrupt execution when user fails to confirm user', () => {
-    const testDir = `data/create-users/multiple-existing-place`;
+    mockTestDir(`data/create-users/multiple-existing-place`);
     sinon.stub(process, 'exit');
     const pwd = 'Secret_1';
     api.giveResponses(
@@ -253,7 +258,7 @@ describe('create-users', function() {
     const john = { username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4' };
     const qs = (user) => querystring.stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
     return assertDbEmpty()
-      .then(() => createUsers(testDir, api.couchUrl))
+      .then(() => createUsers())
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.equal(process.exit.callCount, 1);
@@ -268,7 +273,7 @@ describe('create-users', function() {
 
   it('should create one user for each row in a CSV file', function() {
     // given
-    const testDir = `data/create-users/new-place`;
+    mockTestDir(`data/create-users/new-place`);
     api.giveResponses({ body: {} }, { body: {} });
 
     // and
@@ -306,7 +311,7 @@ describe('create-users', function() {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers(testDir, api.couchUrl))
+      .then(() => /* when */ createUsers())
 
       .then(() =>
         assert.deepEqual(api.requestLog(), [

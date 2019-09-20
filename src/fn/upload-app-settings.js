@@ -1,9 +1,10 @@
 const api = require('../lib/api');
+const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 
-module.exports = (projectDir, apiUrl) => {
-  const request = api(apiUrl);
-  const settings = fs.read(`${projectDir}/app_settings.json`);
+module.exports = () => {
+  const request = api(environment.apiUrl);
+  const settings = fs.read(`${environment.pathToProject}/app_settings.json`);
   return request.appSettings.update(settings)
     .then(JSON.parse)
     .then(json => {

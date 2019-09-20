@@ -1,15 +1,17 @@
-const api = require('../lib/api');
-const fs = require('../lib/sync-fs');
-const { trace } = require('../lib/log');
 const uuid = require('uuid/v4');
 
-module.exports = (projectDir, apiUrl, extras) => {
-  const request = api(apiUrl);
-  const csvFiles = extras || ['sms.csv'];
+const api = require('../lib/api');
+const environment = require('../lib/environment');
+const fs = require('../lib/sync-fs');
+const { trace } = require('../lib/log');
+
+module.exports = () => {
+  const request = api(environment.apiUrl);
+  const csvFiles = environment.extraArgs || ['sms.csv'];
 
   trace('upload-sms-from-csv', 'csv files:', csvFiles);
   
-  return csvFiles.map(fileName => `${projectDir}/${fileName}`)
+  return csvFiles.map(fileName => `${environment.pathToProject}/${fileName}`)
     .reduce((promiseChain, csvFile) => {
       trace(`Processing csv file ${csvFile}…`);
       const raw = fs.readCsv(csvFile);

@@ -2,20 +2,21 @@ const path = require('path');
 const minimist = require('minimist');
 const readline = require('readline-sync');
 
+const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
+const log = require('../lib/log');
 const pouch = require('../lib/db');
 const progressBar = require('../lib/progress-bar');
 
-const log = require('../lib/log');
 const { info, trace, warn, error } = log;
 
 const FILE_EXTENSION = '.doc.json';
 const INITIAL_BATCH_SIZE = 100;
 
-module.exports = async (projectDir, apiUrl, extraArgs) => {
-  const args = minimist(extraArgs || [], { boolean: true });
+module.exports = async () => {
+  const args = minimist(environment.extraArgs || [], { boolean: true });
 
-  const docDir = path.resolve(projectDir, args.docDirectoryPath || 'json_docs');
+  const docDir = path.resolve(environment.pathToProject, args.docDirectoryPath || 'json_docs');
   if(!fs.exists(docDir)) {
     warn(`No docs directory found at ${docDir}.`);
     return Promise.resolve();
@@ -62,7 +63,7 @@ module.exports = async (projectDir, apiUrl, extraArgs) => {
     trace('');
     trace(`Attempting to upload batch of ${docs.length} docs…`);
 
-    const db = pouch(apiUrl);
+    const db = pouch(environment.apiUrl);
     try {
       const uploadResult = await db.bulkDocs(docs);
       if(progress) {

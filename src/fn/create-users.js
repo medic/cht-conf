@@ -1,8 +1,10 @@
-const api = require('../lib/api');
-const fs = require('../lib/sync-fs');
 const csvParse = require('csv-parse/lib/sync');
-const { info, warn, error } = require('../lib/log');
 const readline = require('readline-sync');
+
+const api = require('../lib/api');
+const environment = require('../lib/environment');
+const fs = require('../lib/sync-fs');
+const { info, warn, error } = require('../lib/log');
 
 const nestPrefixedProperties = (obj, name) => {
   const nested = {};
@@ -57,9 +59,9 @@ const getUserInfo = async (api, user) => {
   return result;
 };
 
-module.exports = async (projectDir, apiUrl) => {
-  const request = api(apiUrl);
-  const csvPath = `${projectDir}/users.csv`;
+module.exports = async () => {
+  const request = api(environment.apiUrl);
+  const csvPath = `${environment.pathToProject}/users.csv`;
   if(!fs.exists(csvPath)) {
     throw new Error(`User csv file not found at ${csvPath}`);
   }

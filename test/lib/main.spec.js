@@ -19,6 +19,7 @@ describe('main', () => {
       warn: sinon.stub(),
       executeAction: sinon.stub(),
       getApiUrl: sinon.stub().returns('http://api'),
+      environment: { initialize: sinon.stub() },
       readline: {
         question: sinon.stub().returns('pwd'),
         keyInYN: sinon.stub().returns(true),
@@ -80,31 +81,32 @@ describe('main', () => {
     expect(main.__get__('process').env.NODE_TLS_REJECT_UNAUTHORIZED).to.eq('0');
   });
 
-  const expectExecuteActionBehavior = (stub, expectedActions, expectedExtraParams) => {
+  const expectExecuteActionBehavior = (expectedActions, expectedExtraParams) => {
     if (Array.isArray(expectedActions)) {
-      expect(stub.args.map(args => args[0])).to.deep.eq(expectedActions);
+      expect(mocks.executeAction.args.map(args => args[0])).to.deep.eq(expectedActions);
     } else {
-      expect(stub.args[0][0]).to.eq(expectedActions);
+      expect(mocks.executeAction.args[0][0]).to.eq(expectedActions);
     }
-    expect(stub.args[0][2]).to.deep.eq('http://api');
-    expect(stub.args[0][3]).to.deep.eq(expectedExtraParams);
+
+    expect(mocks.environment.initialize.args[0][2]).to.deep.eq(expectedExtraParams);
+    expect(mocks.environment.initialize.args[0][3]).to.eq('http://api');
   };
 
   it('--local no COUCH_URL', async () => {
     await main([...normalArgv, '--local'], {});
-    expectExecuteActionBehavior(mocks.executeAction, defaultActions, undefined);
+    expectExecuteActionBehavior(defaultActions, undefined);
   });
 
   it('--local with COUCH_URL to localhost', async () => {
     const COUCH_URL = 'http://user:pwd@localhost:5988/medic';
     await main([...normalArgv, '--local'], { COUCH_URL });
-    expectExecuteActionBehavior(mocks.executeAction, defaultActions, undefined);
+    expectExecuteActionBehavior(defaultActions, undefined);
   });
 
   it('--instance + 2 ordered actions', async () => {
     await main([...normalArgv, '--instance=test.app', 'convert-app-forms', 'compile-app-settings'], {});
     expect(mocks.executeAction.callCount).to.deep.eq(2);
-    expectExecuteActionBehavior(mocks.executeAction, 'convert-app-forms', undefined);
+    expectExecuteActionBehavior('convert-app-forms', undefined);
     expect(mocks.executeAction.args[1][0]).to.eq('compile-app-settings');
   });
 
@@ -112,7 +114,7 @@ describe('main', () => {
     const formName = 'form-name';
     await main([...normalArgv, '--local', 'convert-app-forms', '--', formName], {});
     expect(mocks.executeAction.callCount).to.deep.eq(1);
-    expectExecuteActionBehavior(mocks.executeAction, 'convert-app-forms', [formName]);
+    expectExecuteActionBehavior('convert-app-forms', [formName]);
   });
 
   it('unsupported action', async () => {
