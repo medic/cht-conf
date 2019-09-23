@@ -28,12 +28,12 @@ module.exports = async (projectDir, subDirectory, options) => {
     return Promise.resolve();
   }
 
-  const formWhitelist = options && options.forms && options.forms.filter(form => !form.startsWith('--'));
   const candidateFiles = fs.readdir(formsDir)
     .filter(name => name.endsWith('.xlsx'))
     .filter(name => !name.startsWith('~$')) // ignore Excel "owner files"
     .filter(name => name !== 'PLACE_TYPE-create.xlsx' && name !== 'PLACE_TYPE-edit.xlsx');
   
+  const formWhitelist = options && options.forms && options.forms.filter(form => !form.startsWith('--'));
   const filteredFiles = candidateFiles.filter(name => !formWhitelist || !formWhitelist.length || formWhitelist.includes(fs.withoutExtension(name)));
   if (candidateFiles.length && !filteredFiles.length) {
     warn(`No matches found for files matching form filter: ${formWhitelist.join('.xlsx,')}.xlsx`);
