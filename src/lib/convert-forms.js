@@ -28,18 +28,9 @@ module.exports = async (projectDir, subDirectory, options) => {
     return Promise.resolve();
   }
 
-  const candidateFiles = fs.readdir(formsDir)
-    .filter(name => name.endsWith('.xlsx'))
-    .filter(name => !name.startsWith('~$')) // ignore Excel "owner files"
-    .filter(name => name !== 'PLACE_TYPE-create.xlsx' && name !== 'PLACE_TYPE-edit.xlsx');
-  
-  const formWhitelist = options && options.forms && options.forms.filter(form => !form.startsWith('--'));
-  const filteredFiles = candidateFiles.filter(name => !formWhitelist || !formWhitelist.length || formWhitelist.includes(fs.withoutExtension(name)));
-  if (candidateFiles.length && !filteredFiles.length) {
-    warn(`No matches found for files matching form filter: ${formWhitelist.join('.xlsx,')}.xlsx`);
-  }
+  const filesToConvert = getPathsToConvert(formsDir, options);
 
-  for (let xls of filteredFiles) {
+  for (let xls of filesToConvert) {
     const originalSourcePath = `${formsDir}/${xls}`;
     let sourcePath;
 
@@ -57,6 +48,24 @@ module.exports = async (projectDir, subDirectory, options) => {
     await fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
     trace('Converted form', originalSourcePath);
   }
+};
+
+const getPathsToConvert = (formsDir, options) => {
+  const candidateFiles = fs.readdir(formsDir)
+    .filter(name => name.endsWith('.xlsx'))
+    .filter(name => !name.startsWith('~$')) // ignore Excel "owner files"
+    .filter(name => name !== 'PLACE_TYPE-create.xlsx' && name !== 'PLACE_TYPE-edit.xlsx');
+  
+  const formAllowList = options && options.forms && options.forms.filter(form => !form.startsWith('--'));
+  if (!formAllowList || !formAllowList.length) {
+    return candidateFiles;
+  }
+
+  const filteredFiles = candidateFiles.filter(name => formAllowList.includes(fs.withoutExtension(name)));
+  if (candidateFiles.length && !filteredFiles.length) {
+    warn(`No matches found for files matching form filter: ${formAllowList.join('.xlsx,')}.xlsx`);
+  }
+  return filteredFiles;
 };
 
 const xls2xform = (sourcePath, targetPath) =>
