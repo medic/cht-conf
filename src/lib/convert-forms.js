@@ -33,7 +33,7 @@ module.exports = (projectDir, subDirectory, options) => {
     .filter(name => name.endsWith('.xlsx'))
     .filter(name => !name.startsWith('~$')) // ignore Excel "owner files"
     .filter(name => name !== 'PLACE_TYPE-create.xlsx' && name !== 'PLACE_TYPE-edit.xlsx')
-    .filter(name => !options.forms || !options.forms.filter(form => !form.startsWith('--')).length || options.forms.includes(fs.withoutExtension(name)))
+    .filter(name => !options.forms || options.forms.includes(fs.withoutExtension(name)))
     .reduce((promiseChain, xls) => {
         const originalSourcePath = `${formsDir}/${xls}`;
         let sourcePath;
