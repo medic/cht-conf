@@ -121,6 +121,7 @@ module.exports = (projectDir)=> {
 
   function processCsv(docType, cols, row, baseDoc) {
     const doc = baseDoc || {};
+    const _idIndex = cols.indexOf('_id');
     doc.type = docType;
 
     for(let i=0; i<cols.length; ++i) {
@@ -138,7 +139,11 @@ module.exports = (projectDir)=> {
       });
     }
 
-    return withId(doc);
+    if(docType !== 'users'){
+      doc.reported_date = Date.now();
+    }
+
+    return _idIndex === -1 ? withId(doc) : doc;
   }
 
   function withId(json) {
