@@ -2,14 +2,17 @@ const rewire = require('rewire');
 const sinon = require('sinon');
 const { expect } = require('chai');
 
+const environment = rewire('../../src/lib/environment');
 const main = rewire('../../src/lib/main');
-const normalArgv = ['node', 'medic-conf'];
 
 const defaultActions = main.__get__('defaultActions');
+const normalArgv = ['node', 'medic-conf'];
 
 let mocks;
 describe('main', () => {
   beforeEach(() => {
+    environment.__set__('state', {});
+    sinon.spy(environment, 'initialize');
     mocks = {
       usage: sinon.stub(),
       shellCompletionSetup: sinon.stub(),
@@ -19,7 +22,7 @@ describe('main', () => {
       warn: sinon.stub(),
       executeAction: sinon.stub(),
       getApiUrl: sinon.stub().returns('http://api'),
-      environment: { initialize: sinon.stub() },
+      environment,
       readline: {
         question: sinon.stub().returns('pwd'),
         keyInYN: sinon.stub().returns(true),
@@ -35,6 +38,9 @@ describe('main', () => {
     for (let attr of Object.keys(mocks)) {
       main.__set__(attr, mocks[attr]);
     }
+  });
+  afterEach(() => {
+    environment.initialize.restore(); 
   });
 
   it('no argv yields usage', async () => {
@@ -122,18 +128,25 @@ describe('main', () => {
     expect(mocks.executeAction.called).to.be.false;
   });
 
-  // TODO: Add these tests back into main.spec.js
-  // it('--archive', () => {
-  //   const cmdArgs = { archive: true };
-  //   getApiUrl(cmdArgs);
-  //   expect(archiveRepo.callCount).to.eq(1);
-  //   expect(archiveRepo.args[0][0]).to.eq(cmdArgs);
-  // });
+  it('--archive', async () => {
+    await main([...normalArgv, '--archive', 'upload-app-settings'], {});
+    expectExecuteActionBehavior('upload-app-settings');
+    expect(mocks.readline.keyInYN.callCount).to.eq(0);
+  });
 
-  // it('non-matching instance warning', () => {
-  //   readline.keyInYN.returns(true);
-  //   const actual = getApiUrl({ url: 'https://admin:pwd@url.app.medicmobile.org/' });
-  //   expect(readline.keyInYN.callCount).to.eq(1);
-  //   expect(actual).to.eq('https://admin:pwd@url.app.medicmobile.org/medic');
-  // });
+  it('accept non-matching instance warning', async () => {
+    mocks.getApiUrl.returns('https://admin:pwd@url.app.medicmobile.org/medic');
+    mocks.readline.keyInYN.returns(true);
+    const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
+    expect(mocks.readline.keyInYN.callCount).to.eq(1);
+    expect(actual).to.be.undefined;
+  });
+
+  it('reject non-matching instance warning', async () => {
+    mocks.getApiUrl.returns('https://admin:pwd@url.app.medicmobile.org/medic');
+    mocks.readline.keyInYN.returns(false);
+    const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
+    expect(mocks.readline.keyInYN.callCount).to.eq(1);
+    expect(actual).to.eq(false);
+  });
 });

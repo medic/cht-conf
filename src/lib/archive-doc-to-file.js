@@ -1,10 +1,8 @@
-const fs = require('fs');
 const path = require('path');
+const fs = require('./sync-fs');
 
 const archiveDocToFile = (folderPath, fileName, content) => {
-  if (!fs.existsSync(folderPath)) {
-    fs.mkdirSync(folderPath);
-  }
+  fs.mkdir(folderPath);
 
   const replacer = (name, val) => {
     if (name === 'data' && val && val.type === 'Buffer') {
@@ -17,7 +15,7 @@ const archiveDocToFile = (folderPath, fileName, content) => {
   const sanitizedFileName = fileName.replace(/[/\\?%*:|"<>]/g, '-'); // for Windows
   const destination = path.resolve(folderPath, sanitizedFileName);
   const fileContent = typeof content === 'string' ? content : JSON.stringify(content, replacer);
-  fs.writeFileSync(destination, fileContent);
+  fs.write(destination, fileContent);
 };
 
 module.exports = archiveDocToFile;

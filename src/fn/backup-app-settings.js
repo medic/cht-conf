@@ -7,7 +7,7 @@ const log = require('../lib/log');
 module.exports = () => {
   const backupLocation = backupFileFor(environment.pathToProject, 'app_settings.json');
 
-  return api().appSettings.get()
+  return api().getAppSettings()
     .then(body => fs.writeJson(backupLocation, body.settings))
     .then(() => log('Backed up to:', backupLocation));
 };

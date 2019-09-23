@@ -4,7 +4,7 @@ const fs = require('../lib/sync-fs');
 
 module.exports = () => {
   const settings = fs.read(`${environment.pathToProject}/app_settings.json`);
-  return api().appSettings.update(settings)
+  return api().updateAppSettings(settings)
     .then(JSON.parse)
     .then(json => {
       // As per https://github.com/medic/medic-webapp/issues/3674, this endpoint

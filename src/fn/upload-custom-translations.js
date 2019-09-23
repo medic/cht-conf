@@ -1,15 +1,14 @@
 const semver = require('semver');
 
-const api = require('../lib/api');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const pouch = require('../lib/db');
+const getApiVersion = require('../lib/get-api-version');
 const { warn } = require('../lib/log');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
 module.exports = () => {
-  const request = api(environment.apiUrl);
   const db = pouch(environment.apiUrl);
 
   const dir = `${environment.pathToProject}/translations`;
@@ -26,7 +25,7 @@ module.exports = () => {
           return db.get(idFor(fileName))
             .catch(e => {
               if(e.status === 404) {
-                return newDocFor(fileName, request, db);
+                return newDocFor(fileName, db);
               }
 
               throw e;
@@ -66,7 +65,7 @@ function overwriteProperties(doc, props) {
   return doc;
 }
 
-async function newDocFor(fileName, request, db) {
+async function newDocFor(fileName, db) {
   const id = idFor(fileName);
 
   const doc = {
@@ -77,7 +76,7 @@ async function newDocFor(fileName, request, db) {
     enabled: true,
   };
 
-  const useGenericTranslations = await genericTranslationsStructure(request, db);
+  const useGenericTranslations = await genericTranslationsStructure(db);
   if (useGenericTranslations) {
     doc.generic = {};
   } else {
@@ -91,16 +90,8 @@ function idFor(fileName) {
   return fileName.substring(0, fileName.length - 11);
 }
 
-async function genericTranslationsStructure(request, db) {
-  let version;
-
-  try {
-    version = await request.version();
-  }
-  catch (err) {
-    const ddoc = await db.get('_design/medic-client');
-    version = ddoc.deploy_info && ddoc.deploy_info.version;
-  }
+async function genericTranslationsStructure(db) {
+  const version = await getApiVersion();
 
   if (semver.valid(version)) {
     return semver.gte(version, '3.4.0');
