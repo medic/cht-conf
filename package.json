@@ -1,6 +1,6 @@
 {
-  "name": "@kennsippell/medic-conf",
-  "version": "3.0.7",
+  "name": "medic-conf",
+  "version": "3.0.4",
   "description": "Configure Medic Mobile deployments",
   "main": "./src/lib/main.js",
   "engines": {
