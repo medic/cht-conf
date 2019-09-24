@@ -50,12 +50,14 @@ describe('upload-custom-translations', () => {
         .then(() => expectTranslationDocs('en', 'fr'))
         .then(() => getTranslationDoc('en'))
         .then(messagesEn => {
+          assert(messagesEn.name === 'English');
           assert.deepEqual(messagesEn.values, { one: 'one' });
           assert(!messagesEn.generic);
           assert(!messagesEn.custom);
         })
         .then(() => getTranslationDoc('fr'))
         .then(messagesFr => {
+          assert(messagesFr.name === 'Français (French)');
           assert.deepEqual(messagesFr.values, { one: 'un(e)' });
           assert(!messagesFr.generic);
           assert(!messagesFr.custom);
@@ -100,6 +102,15 @@ describe('upload-custom-translations', () => {
           assert(!messagesFr.custom);
         });
     });
+
+    it('should set default name for unknown language', () => {
+      return uploadCustomTranslations(`${testProjectDir}unknown-lang`, api.couchUrl)
+        .then(() => expectTranslationDocs('qp'))
+        .then(() => getTranslationDoc('qp'))
+        .then(messagesQp => {
+          assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
+        });
+    });
   });
 
   describe('medic-3.x', () => {
@@ -126,12 +137,14 @@ describe('upload-custom-translations', () => {
           .then(() => expectTranslationDocs('en', 'fr'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
+            assert(messagesEn.name === 'English');
             assert.deepEqual(messagesEn.values, { one: 'one' });
             assert(!messagesEn.generic);
             assert(!messagesEn.custom);
           })
           .then(() => getTranslationDoc('fr'))
           .then(messagesFr => {
+            assert(messagesFr.name === 'Français (French)');
             assert.deepEqual(messagesFr.values, { one: 'un(e)' });
             assert(!messagesFr.generic);
             assert(!messagesFr.custom);
@@ -186,6 +199,15 @@ describe('upload-custom-translations', () => {
             assert.equal(err.message, 'Existent translation doc messages-en is malformed');
           });
       });
+
+      it('should set default name for unknown language', () => {
+        return uploadCustomTranslations(`${testProjectDir}unknown-lang`, api.couchUrl)
+          .then(() => expectTranslationDocs('qp'))
+          .then(() => getTranslationDoc('qp'))
+          .then(messagesQp => {
+            assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
+          });
+      });
     });
 
     describe('3.4.0', () => {
@@ -211,12 +233,14 @@ describe('upload-custom-translations', () => {
           .then(() => expectTranslationDocs('en', 'fr'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
+            assert(messagesEn.name === 'English');
             assert.deepEqual(messagesEn.custom, { one: 'one' });
             assert.deepEqual(messagesEn.generic, {});
             assert(!messagesEn.values);
           })
           .then(() => getTranslationDoc('fr'))
           .then(messagesFr => {
+            assert(messagesFr.name === 'Français (French)');
             assert.deepEqual(messagesFr.custom, { one: 'un(e)' });
             assert.deepEqual(messagesFr.generic, {});
             assert(!messagesFr.values);
@@ -311,6 +335,15 @@ describe('upload-custom-translations', () => {
             assert(!messagesFr.values);
           });
       });
+
+      it('should set default name for unknown language', () => {
+        return uploadCustomTranslations(`${testProjectDir}unknown-lang`, api.couchUrl)
+          .then(() => expectTranslationDocs('qp'))
+          .then(() => getTranslationDoc('qp'))
+          .then(messagesQp => {
+            assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
+          });
+      });
     });
 
     describe('3.5.0', () => {
@@ -336,12 +369,14 @@ describe('upload-custom-translations', () => {
           .then(() => expectTranslationDocs('en', 'fr'))
           .then(() => getTranslationDoc('en'))
           .then(messagesEn => {
+            assert(messagesEn.name === 'English');
             assert.deepEqual(messagesEn.custom, { one: 'one' });
             assert.deepEqual(messagesEn.generic, {});
             assert(!messagesEn.values);
           })
           .then(() => getTranslationDoc('fr'))
           .then(messagesFr => {
+            assert(messagesFr.name === 'Français (French)');
             assert.deepEqual(messagesFr.custom, { one: 'un(e)' });
             assert.deepEqual(messagesFr.generic, {});
             assert(!messagesFr.values);
@@ -361,6 +396,18 @@ describe('upload-custom-translations', () => {
             assert(!messagesEn.values);
           });
       });
+
+      it('should set default name for unknown language', () => {
+        return uploadCustomTranslations(`${testProjectDir}unknown-lang`, api.couchUrl)
+          .then(() => expectTranslationDocs('qp'))
+          .then(() => getTranslationDoc('qp'))
+          .then(messagesQp => {
+            assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
+          });
+      });
+
     });
+
+
   });
 });
