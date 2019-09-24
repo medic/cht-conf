@@ -8,6 +8,8 @@ const ISO639 = require('iso-639-1');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
+
+
 module.exports = (projectDir, couchUrl) => {
   if(!couchUrl) return skipFn('no couch URL set');
 
@@ -23,17 +25,23 @@ module.exports = (projectDir, couchUrl) => {
         .filter(name => FILE_MATCHER.test(name))
         .map(fileName => {
           const id = idFor(fileName);
-          const language_code = id.substring('messages-'.length);
-          let language_name = ISO639.getName(language_code);
-          if (!language_name){
-            warn(`'${language_code}' is not a recognized ISO 639 language code, please ask admin to set the name`);
-            language_name = 'TODO: please ask admin to set this in settings UI';
+          const languageCode = id.substring('messages-'.length);
+          let languageName = ISO639.getName(languageCode);
+          if (!languageName){
+            warn(`'${languageCode}' is not a recognized ISO 639 language code, please ask admin to set the name`);
+            languageName = 'TODO: please ask admin to set this in settings UI';
+          } else {
+            let languageNativeName = ISO639.getNativeName(languageCode);
+            if (languageNativeName !== languageName){
+              languageName = `${languageNativeName} (${languageName})`;
+            }
           }
+
           var translations = propertiesAsObject(`${dir}/${fileName}`);
 
           return db.get(id)
             .catch(e => {
-              if(e.status === 404) return newDocFor(fileName, instanceUrl, db, language_name, language_code);
+              if(e.status === 404) return newDocFor(fileName, instanceUrl, db, languageName, languageCode);
               else throw e;
             })
             .then(doc => overwriteProperties(doc, translations))
@@ -71,13 +79,13 @@ function overwriteProperties(doc, props) {
   return doc;
 }
 
-function newDocFor(fileName, instanceUrl, db, language_name, language_code) {
+function newDocFor(fileName, instanceUrl, db, languageName, languageCode) {
 
   const doc = {
     _id: idFor(fileName),
     type: 'translations',
-    code: language_code,
-    name: language_name,
+    code: languageCode,
+    name: languageName,
     enabled: true,
   };
 
