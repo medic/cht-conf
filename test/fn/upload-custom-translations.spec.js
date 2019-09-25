@@ -113,7 +113,8 @@ describe('upload-custom-translations', () => {
     });
 
     it('should set default name for unknown language', () => {
-      return uploadCustomTranslations(`${testProjectDir}unknown-lang`, api.couchUrl)
+      mockTestDir(`unknown-lang`);
+      return uploadCustomTranslations()
         .then(() => expectTranslationDocs('qp'))
         .then(() => getTranslationDoc('qp'))
         .then(messagesQp => {
@@ -215,7 +216,8 @@ describe('upload-custom-translations', () => {
       });
 
       it('should set default name for unknown language', () => {
-        return uploadCustomTranslations(`${testProjectDir}unknown-lang`, api.couchUrl)
+        mockTestDir(`unknown-lang`);
+        return uploadCustomTranslations()
           .then(() => expectTranslationDocs('qp'))
           .then(() => getTranslationDoc('qp'))
           .then(messagesQp => {
@@ -357,7 +359,8 @@ describe('upload-custom-translations', () => {
       });
 
       it('should set default name for unknown language', () => {
-        return uploadCustomTranslations(`${testProjectDir}unknown-lang`, api.couchUrl)
+        mockTestDir(`unknown-lang`);
+        return uploadCustomTranslations()
           .then(() => expectTranslationDocs('qp'))
           .then(() => getTranslationDoc('qp'))
           .then(messagesQp => {
@@ -421,7 +424,8 @@ describe('upload-custom-translations', () => {
       });
 
       it('should set default name for unknown language', () => {
-        return uploadCustomTranslations(`${testProjectDir}unknown-lang`, api.couchUrl)
+        mockTestDir(`unknown-lang`);
+        return uploadCustomTranslations()
           .then(() => expectTranslationDocs('qp'))
           .then(() => getTranslationDoc('qp'))
           .then(messagesQp => {

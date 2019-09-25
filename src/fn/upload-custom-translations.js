@@ -113,4 +113,3 @@ async function genericTranslationsStructure(db) {
     .then(doc => doc.generic)
     .catch(() => false);
 }
-
