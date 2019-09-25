@@ -4,6 +4,7 @@ const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const pouch = require('../lib/db');
 const getApiVersion = require('../lib/get-api-version');
+const iso639 = require('iso-639-1');
 const { warn } = require('../lib/log');
 
 const FILE_MATCHER = /messages-.*\.properties/;
@@ -20,14 +21,27 @@ module.exports = () => {
       return Promise.all(fs.readdir(dir)
         .filter(name => FILE_MATCHER.test(name))
         .map(fileName => {
+          const id = idFor(fileName);
+          const languageCode = id.substring('messages-'.length);
+          let languageName = iso639.getName(languageCode);
+          if (!languageName){
+            warn(`'${languageCode}' is not a recognized ISO 639 language code, please ask admin to set the name`);
+            languageName = 'TODO: please ask admin to set this in settings UI';
+          } else {
+            let languageNativeName = iso639.getNativeName(languageCode);
+            if (languageNativeName !== languageName){
+              languageName = `${languageNativeName} (${languageName})`;
+            }
+          }
+
           var translations = propertiesAsObject(`${dir}/${fileName}`);
 
-          return db.get(idFor(fileName))
+          return db.get(id)
             .catch(e => {
               if(e.status === 404) {
-                return newDocFor(fileName, db);
+                return newDocFor(fileName, db, languageName, languageCode);
               }
-
+              
               throw e;
             })
             .then(doc => overwriteProperties(doc, translations))
@@ -65,14 +79,12 @@ function overwriteProperties(doc, props) {
   return doc;
 }
 
-async function newDocFor(fileName, db) {
-  const id = idFor(fileName);
-
+async function newDocFor(fileName, db, languageName, languageCode) {
   const doc = {
-    _id: id,
+    _id: idFor(fileName),
     type: 'translations',
-    code: id.substring(id.indexOf('-') + 1),
-    name: 'TODO: please ask admin to set this in settings UI',
+    code: languageCode,
+    name: languageName,
     enabled: true,
   };
 
