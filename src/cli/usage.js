@@ -30,7 +30,7 @@ ${bold('SAVE CONFIG TO')}
     Upload to URL specified.
 
   --archive
-    Save configuration content to files on disk. Supports optional parameter --destination=<path to save files>.
+    Save configuration content to files on disk. Requires parameter --destination=<path to save files>.
 
 ${bold('OPTIONS')}
   --help

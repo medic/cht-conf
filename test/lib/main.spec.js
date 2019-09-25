@@ -128,10 +128,25 @@ describe('main', () => {
     expect(mocks.executeAction.called).to.be.false;
   });
 
-  it('--archive', async () => {
-    await main([...normalArgv, '--archive', 'upload-app-settings'], {});
-    expectExecuteActionBehavior('upload-app-settings');
-    expect(mocks.readline.keyInYN.callCount).to.eq(0);
+  describe('--archive', () => {
+    it('default actions', async () => {
+      await main([...normalArgv, '--archive', '--destination=foo'], {});
+      const executed = mocks.executeAction.args.map(args => args[0]);
+      expect(executed).to.include('upload-app-settings');
+      expect(executed).to.not.include('delete-all-forms');
+    });
+
+    it('single action', async () => {
+      await main([...normalArgv, '--archive', '--destination=foo', 'upload-app-settings'], {});
+      expectExecuteActionBehavior('upload-app-settings');
+      expect(mocks.readline.keyInYN.callCount).to.eq(0);
+    });
+
+    it('requires destination', async () => {
+      const actual = await main([...normalArgv, '--archive', 'upload-app-settings'], {});
+      expect(actual).to.eq(-1);
+      expect(mocks.executeAction.called).to.be.false;
+    });
   });
 
   it('accept non-matching instance warning', async () => {

@@ -8,7 +8,7 @@ This class implements the interfaces from the PouchDB object which are used by m
 const archiveDocToFile = require('./archive-doc-to-file');
 
 class ArchivingDB {
-  constructor(destination = '.') {
+  constructor(destination) {
     this.destination = destination;
   }
 

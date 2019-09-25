@@ -32,6 +32,20 @@ const defaultActions = [
   'csv-to-docs',
   'upload-docs',
 ];
+const defaultArchiveActions = [
+  'compile-app-settings',
+  'upload-app-settings',
+  'convert-app-forms',
+  'convert-collect-forms',
+  'convert-contact-forms',
+  'upload-app-forms',
+  'upload-collect-forms',
+  'upload-contact-forms',
+  'upload-resources',
+  'upload-custom-translations',
+  'csv-to-docs',
+  'upload-docs',
+];
 
 module.exports = async (argv, env) => {
   // No params at all
@@ -68,8 +82,13 @@ module.exports = async (argv, env) => {
   }
 
   if (cmdArgs.changelog) {
-      opn('https://github.com/medic/medic-conf/releases');
-      return process.exit(0);
+    opn('https://github.com/medic/medic-conf/releases');
+    return process.exit(0);
+  }
+
+  if (cmdArgs.archive && !cmdArgs.destination) {
+    error('--destination=<path to save files> is required with --archive.');
+    return -1;
   }
 
   if (cmdArgs['accept-self-signed-certs']) {
@@ -129,7 +148,7 @@ module.exports = async (argv, env) => {
   //
   let actions = cmdArgs._;
   if (!actions.length) {
-    actions = defaultActions;
+    actions = !cmdArgs.archive ? defaultActions : defaultArchiveActions;
   }
 
   const unsupported = actions.filter(a => !supportedActions.includes(a));
