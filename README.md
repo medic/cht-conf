@@ -116,11 +116,28 @@ The list of available actions can be seen via `medic-conf --help`.
 
 * upload of custom translations to the server
 
-## create-users **[ALPHA]**
+## create-users
 
-N.B. this feature is currently in development, and probably not ready for production yet.
 
 To create users on a remote server, use the `create-users` action.  The CSV file should be called `users.csv`, and an example is available [in the tests directory](test/data/create-users), for [an existing place](test/data/create-users/existing-place) and [a new place](test/data/create-users/new-place).
+
+### Linking users to contacts created from csv-to-docs
+
+To create user accounts for contacts that are created while running csv-to-docs action follow these steps.
+
+1. Create a users.csv file in the same folder as the rest of the csvs needed for `csv-to-docs` action.
+1. Add columns for username, password, roles, phone, contact, place, and any other additional fields you want to populate. 
+1. Using the query language for contact `contact:person WHERE reference_id=COL_VAL` and place `place:GET _id OF place WHERE reference_id=COL_VAL` to fill these values based on the generated UUID for contact and place created by `csv-to-docs`. This works the same as if you were using `csv-to-docs`
+1. Run `medic-conf csv-to-docs` and this will generate the contacts, places, and users associated to those contacts. The users are placed into a users.csv file in your working directory.
+1. Run `medic-conf upload-docs` to upload the json docs created
+1. Run `medic-conf create-users` to create the new users that are associated to the contacts that were uploaded in the last step.
+
+Example of what the csv would look like below
+
+| username	| password	|roles|	phone	| contact:person WHERE reference_id=COL_VAL |	place:GET _id OF place WHERE reference_id=COL_VAL |
+| ------ | ------ | ------ | ------ | ------ | ------ |
+| ac1 |	Secret_1	| district_admin:red1 |	+123456789 |	p_hc1 |	health_center_1 |
+| ac2	| Secret_1	| district_admin:supervisor	| +123456789	| p_hc2	|health_center_1 |
 
 ## csv-to-docs
 
