@@ -122,6 +122,7 @@ module.exports = (projectDir)=> {
   function processCsv(docType, cols, row, baseDoc) {
     const doc = baseDoc || {};
     doc.type = docType;
+    doc.reported_date = Date.now();
 
     for(let i=0; i<cols.length; ++i) {
       const { col, val, reference, excluded } = parseColumn(cols[i], row[i]);
@@ -137,15 +138,17 @@ module.exports = (projectDir)=> {
         propertyName: col,
       });
     }
+    
+    if(cols.indexOf('_id') !== -1){
+      return doc;
+    }
 
     return withId(doc);
   }
 
   function withId(json) {
     const id = uuid5(stringify(json), couchUrlUuid);
-    const reported = Date.now();
     json._id = id;
-    json.reported_date = reported;
     return json;
   }
 };
