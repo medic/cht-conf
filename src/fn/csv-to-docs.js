@@ -138,7 +138,7 @@ module.exports = (projectDir)=> {
       });
     }
     if(docType !== 'user'){
-      doc.reported_date = Date.now();
+      doc.reported_date = stringify(Date.now());
     }
 
     if(cols.indexOf('_id') !== -1){
