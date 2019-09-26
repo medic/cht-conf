@@ -137,6 +137,8 @@ module.exports = (projectDir)=> {
         propertyName: col,
       });
     }
+
+    doc.reported_date = Date.now();
     if(cols.indexOf('_id') !== -1){
       return doc;
     }
