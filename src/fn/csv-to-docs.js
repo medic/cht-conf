@@ -121,6 +121,7 @@ module.exports = (projectDir)=> {
 
   function processCsv(docType, cols, row, baseDoc) {
     const doc = baseDoc || {};
+    const reported_date = Date.now();
     doc.type = docType;
 
     for(let i=0; i<cols.length; ++i) {
@@ -146,8 +147,8 @@ module.exports = (projectDir)=> {
   }
 
   function withId(json) {
-    const id = uuid5(stringify(json), couchUrlUuid);
-    json._id = id;
+    //const id = uuid5(stringify(json), couchUrlUuid);
+    json._id = Date.now();
     return json;
   }
 };
