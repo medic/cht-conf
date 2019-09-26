@@ -1,12 +1,13 @@
-const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
-const { info, trace, warn } = require('../lib/log');
+const info = require('../lib/log').info;
+const trace = require('../lib/log').trace;
+const warn = require('../lib/log').warn;
 
 const SVGO = require('svgo');
 const svgo = new SVGO();
 
-module.exports = () =>
-  fs.recurseFiles(environment.pathToProject)
+module.exports = (projectDir/*, couchUrl*/) =>
+  fs.recurseFiles(projectDir)
     .filter(name => name.endsWith('.svg'))
     .reduce((promiseChain, path) =>
       promiseChain

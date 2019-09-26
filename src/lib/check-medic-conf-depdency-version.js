@@ -11,7 +11,7 @@ const error = require('./log').error;
 const fs = require('./sync-fs');
 const readline = require('readline-sync');
 const semver = require('semver');
-const { warn } = require('./log');
+const warn = require('./log').warn;
 
 module.exports = projectDir => {
   const myVersion = require('../../package.json').version;

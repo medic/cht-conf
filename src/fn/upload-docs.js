@@ -2,21 +2,25 @@ const path = require('path');
 const minimist = require('minimist');
 const readline = require('readline-sync');
 
-const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
-const log = require('../lib/log');
 const pouch = require('../lib/db');
 const progressBar = require('../lib/progress-bar');
+const skipFn = require('../lib/skip-fn');
 
+const log = require('../lib/log');
 const { info, trace, warn, error } = log;
 
 const FILE_EXTENSION = '.doc.json';
 const INITIAL_BATCH_SIZE = 100;
 
-module.exports = async () => {
-  const args = minimist(environment.extraArgs || [], { boolean: true });
+module.exports = async (projectDir, couchUrl, extraArgs) => {
+  const args = minimist(extraArgs || [], { boolean: true });
 
-  const docDir = path.resolve(environment.pathToProject, args.docDirectoryPath || 'json_docs');
+  if(!couchUrl) {
+    return skipFn('no couch URL set');
+  }
+
+  const docDir = path.resolve(projectDir, args.docDirectoryPath || 'json_docs');
   if(!fs.exists(docDir)) {
     warn(`No docs directory found at ${docDir}.`);
     return Promise.resolve();
@@ -39,6 +43,7 @@ module.exports = async () => {
     process.exit(1);
   }
 
+  const db = pouch(couchUrl);
   const results = { ok:[], failed:{} };
   const progress = log.level > log.LEVEL_ERROR ? progressBar.init(totalCount, '{{n}}/{{N}} docs ', ' {{%}} {{m}}:{{s}}') : null;
   const processNextBatch = async (docFiles, batchSize) => {
@@ -64,7 +69,7 @@ module.exports = async () => {
     trace(`Attempting to upload batch of ${docs.length} docs…`);
 
     try {
-      const uploadResult = await pouch().bulkDocs(docs);
+      const uploadResult = await db.bulkDocs(docs);
       if(progress) {
         progress.increment(docs.length);
       }
@@ -104,7 +109,7 @@ const getErrorsWhereDocIdDiffersFromFilename = filePaths =>
       const idFromFilename = path.basename(filePath, FILE_EXTENSION);
 
       if (json._id !== idFromFilename) {
-        return `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.`;
+        return `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.`;      
       }
     })
     .filter(err => err);

@@ -2,15 +2,14 @@ const minimist = require('minimist');
 const path = require('path');
 const compileContactSummary = require('../lib/compile-contact-summary');
 const compileNoolsRules = require('../lib/compile-nools-rules');
-const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const parseTargets = require('../lib/parse-targets');
 const { warn } = require('../lib/log');
 const parsePurge = require('../lib/parse-purge');
 
-const compileAppSettings = async () => {
-  const options = parseExtraArgs(environment.extraArgs);
-  const projectDir = path.resolve(environment.pathToProject);
+const compileAppSettings = async (projectDir, couchUrl, extraArgs) => {
+  const options = parseExtraArgs(extraArgs);
+  projectDir = path.resolve(projectDir);
 
   let appSettings;
   const inheritedPath = path.join(projectDir, 'settings.inherit.json');

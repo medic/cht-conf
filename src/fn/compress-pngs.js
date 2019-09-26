@@ -1,10 +1,10 @@
-const environment = require('../lib/environment');
 const exec = require('../lib/exec-promise');
 const fs = require('../lib/sync-fs');
-const { info, trace } = require('../lib/log');
+const info = require('../lib/log').info;
+const trace = require('../lib/log').trace;
 
-module.exports = () =>
-  fs.recurseFiles(environment.pathToProject)
+module.exports = (projectDir/*, couchUrl*/) =>
+  fs.recurseFiles(projectDir)
     .filter(name => name.endsWith('.png'))
     .reduce((promiseChain, png) =>
       promiseChain

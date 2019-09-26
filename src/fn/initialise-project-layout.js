@@ -1,6 +1,5 @@
 const path = require('path');
 
-const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { info } = require('../lib/log');
 
@@ -30,13 +29,12 @@ const LAYOUT = {
 };
 
 
-module.exports = () => {
-  const { extraArgs } = environment;
+module.exports = (projectDir, couchUrl, extraArgs) => {
   if(extraArgs && extraArgs.length) extraArgs.forEach(createProject);
   else createProject('.');
 
   function createProject(root) {
-    const dir = path.join(environment.pathToProject, root);
+    const dir = path.join(projectDir, root);
     info(`Initialising project at ${dir}`);
     createRecursively(dir, LAYOUT);
   }

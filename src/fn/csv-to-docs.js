@@ -1,9 +1,8 @@
+const fs = require('../lib/sync-fs');
+const info = require('../lib/log').info;
 const stringify = require('canonical-json/index2');
 const uuid5 = require('uuid/v5');
-
-const environment = require('../lib/environment');
-const fs = require('../lib/sync-fs');
-const { info, warn } = require('../lib/log');
+const warn = require('../lib/log').warn;
 const generateCsv = require('../lib/generate-users-csv');
 
 const pretty = o => JSON.stringify(o, null, 2);
@@ -14,16 +13,16 @@ const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
 
 require('../lib/polyfill');
 
-module.exports = ()=> {
+module.exports = (projectDir)=> {
   const couchUrlUuid = uuid5('http://medicmobile.org/configurer/csv-to-docs/permanent-hash', uuid5.URL);
 
-  const csvDir = `${environment.pathToProject}/csv`;
+  const csvDir = `${projectDir}/csv`;
   if(!fs.exists(csvDir)) {
     warn(`No csv directory found at ${csvDir}.`);
     return Promise.resolve();
   }
 
-  const jsonDir = `${environment.pathToProject}/json_docs`;
+  const jsonDir = `${projectDir}/json_docs`;
   fs.mkdir(jsonDir);
 
   const saveJsonDoc = doc => fs.write(`${jsonDir}/${doc._id}.doc.json`, toSafeJson(doc) + '\n');
@@ -71,7 +70,7 @@ module.exports = ()=> {
     .then(() => model.exclusions.forEach(removeExcludedField))
     .then(() => {
       if(model.users.length) {
-        generateCsv(model.users, environment.pathToProject + '/users.csv');
+        generateCsv(model.users, projectDir + '/users.csv');
       }
     })
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));

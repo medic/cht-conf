@@ -295,7 +295,7 @@ describe('move-contacts', () => {
 
     await upsert('clinic_1', clinic);
     await upsert('patient_1', patient);
-
+    
     await updateLineagesAndStage({
       contactIds: ['clinic_1'],
       parentId: 'district_2',

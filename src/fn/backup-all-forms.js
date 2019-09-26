@@ -1,21 +1,25 @@
-const backupFileFor = require('../lib/backup-file-for');
-const environment = require('../lib/environment');
-const formsList = require('../lib/forms-list');
-const fs = require('../lib/sync-fs');
 const log = require('../lib/log');
+const fs = require('../lib/sync-fs');
+const skipFn = require('../lib/skip-fn');
 const pouch = require('../lib/db');
+const formsList = require('../lib/forms-list');
+const backupFileFor = require('../lib/backup-file-for');
 
-module.exports = () => {
-  const db = pouch();
-  const parentBackupDir = backupFileFor(environment.pathToProject, 'forms');
- 
+module.exports = (projectDir, couchUrl) => {
+  if (!couchUrl) {
+    return skipFn('no couch URL set');
+  }
+
+  const db = pouch(couchUrl);
+  const parentBackupDir = backupFileFor(projectDir, 'forms');
+
   log('Backing up forms to:', parentBackupDir);
   fs.mkdir(parentBackupDir);
 
   function backup(form) {
     const backupDir = `${parentBackupDir}/${form.id.replace(/:/g, '_')}`;
     fs.mkdir(backupDir);
-    return db.get(form.id, { attachments: true, binary: true })
+    return db.get(form.id, { attachments:true, binary:true })
       .then(form => {
         fs.writeJson(`${backupDir}/context.json`, form.context);
         Object.keys(form._attachments).forEach(name => {

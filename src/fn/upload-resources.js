@@ -1,21 +1,26 @@
-const attachmentsFromDir = require('../lib/attachments-from-dir');
-const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
+const skipFn = require('../lib/skip-fn');
+const warn = require('../lib/log').warn;
 const pouch = require('../lib/db');
-const { warn } = require('../lib/log');
+
+const attachmentsFromDir = require('../lib/attachments-from-dir');
 const insertOrReplace = require('../lib/insert-or-replace');
 
-module.exports = () => {
-  const resourcesPath = fs.path.resolve(`${environment.pathToProject}/resources.json`);
+module.exports = (projectDir, couchUrl) => {
+  if(!couchUrl) return skipFn('no couch URL set');
+
+  const resourcesPath = fs.path.resolve(`${projectDir}/resources.json`);
 
   if(!fs.exists(resourcesPath)) {
     warn(`No resources file found at path: ${resourcesPath}`);
     return Promise.resolve();
   }
 
-  return insertOrReplace(pouch(), {
+  const db = pouch(couchUrl);
+
+  return insertOrReplace(db, {
     _id: 'resources',
     resources: fs.readJson(resourcesPath),
-    _attachments: attachmentsFromDir(`${environment.pathToProject}/resources`),
+    _attachments: attachmentsFromDir(`${projectDir}/resources`),
   });
 };

@@ -1,15 +1,13 @@
-const { assert } = require('chai');
-const sinon = require('sinon');
-
-const environment = require('../../src/lib/environment');
+const assert = require('chai').assert;
 const fs = require('../../src/lib/sync-fs');
+
 
 module.exports = {
   testFor: (testName, type) => {
 
     const convertForms = require(`../../src/fn/convert-${type}-forms`);
 
-    describe(testName, function () {
+    describe(testName, function() {
 
       this.timeout(30000); // allow time for form conversion
 
@@ -31,10 +29,7 @@ module.exports = {
 
       });
 
-      before(() => {
-        sinon.stub(environment, 'pathToProject').get(() => projectDir);
-        return convertForms();
-      });
+      before(() => convertForms(projectDir));
 
     });
 
