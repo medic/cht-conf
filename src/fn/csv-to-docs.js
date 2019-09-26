@@ -139,7 +139,7 @@ module.exports = (projectDir)=> {
     }
 
     const wordd = 'date';
-    doc.reported_date = word;
+    doc.reported_date = wordd;
     if(cols.indexOf('_id') !== -1){
       return doc;
     }
