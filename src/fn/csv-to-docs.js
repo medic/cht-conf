@@ -122,7 +122,6 @@ module.exports = (projectDir)=> {
   function processCsv(docType, cols, row, baseDoc) {
     const doc = baseDoc || {};
     doc.type = docType;
-    doc.reported = Date.now();
 
     for(let i=0; i<cols.length; ++i) {
       const { col, val, reference, excluded } = parseColumn(cols[i], row[i]);
@@ -137,6 +136,10 @@ module.exports = (projectDir)=> {
         doc: doc,
         propertyName: col,
       });
+    }
+
+    if(cols.indexOf('reported_date') === -1){
+      doc.reported_date = Date.now();
     }
     
     if(cols.indexOf('_id') !== -1){
