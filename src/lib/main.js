@@ -29,8 +29,6 @@ const defaultActions = [
   'upload-contact-forms',
   'upload-resources',
   'upload-custom-translations',
-  'csv-to-docs',
-  'upload-docs',
 ];
 
 module.exports = async (argv, env) => {
