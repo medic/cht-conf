@@ -137,10 +137,8 @@ module.exports = (projectDir)=> {
         propertyName: col,
       });
     }
-    if(docType !== 'user'){
-      doc.reported_date = stringify(Date.now());
-    }
 
+    doc.reported_date = 'hello';
     if(cols.indexOf('_id') !== -1){
       return doc;
     }
