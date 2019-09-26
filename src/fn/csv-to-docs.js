@@ -138,7 +138,8 @@ module.exports = (projectDir)=> {
       });
     }
 
-    doc.reported_date = 'hello';
+    const wordd = 'date';
+    doc.reported_date = word;
     if(cols.indexOf('_id') !== -1){
       return doc;
     }
