@@ -1,34 +1,33 @@
+const abortPromiseChain = require('../lib/abort-promise-chain');
 const attachmentsFromDir = require('../lib/attachments-from-dir');
 const attachmentFromFile = require('../lib/attachment-from-file');
 const fs = require('../lib/sync-fs');
-const info = require('../lib/log').info;
+const { info, warn } = require('../lib/log');
 const insertOrReplace = require('../lib/insert-or-replace');
-const skipFn = require('../lib/skip-fn');
-const trace = require('../lib/log').trace;
-const warn = require('../lib/log').warn;
 const pouch = require('../lib/db');
-const abortPromiseChain = require('../lib/abort-promise-chain');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 
-
-module.exports = (projectDir, couchUrl, subDirectory, options) => {
-  if(!couchUrl) return skipFn('no couch URL set');
-
-  const db = pouch(couchUrl);
-
-  if(!options) options = {};
+module.exports = (projectDir, subDirectory, options) => {
+  const db = pouch();
+  if (!options) options = {};
 
   const formsDir = `${projectDir}/forms/${subDirectory}`;
-
-
   if(!fs.exists(formsDir)) {
     warn(`Forms dir not found: ${formsDir}`);
     return Promise.resolve();
   }
+
+  const formFilter = name => {
+    if (options && Array.isArray(options) && options.length) {
+      return options.includes(fs.withoutExtension(name));
+    }
+    return true;
+  };
+
   return fs.readdir(formsDir)
     .filter(name => name.endsWith('.xml'))
-    .filter(name => !options.forms || options.forms.includes(fs.withoutExtension(name)))
+    .filter(formFilter)
     .reduce((promiseChain, fileName) => {
       info(`Preparing form for upload: ${fileName}…`);
 
@@ -64,12 +63,9 @@ module.exports = (projectDir, couchUrl, subDirectory, options) => {
       doc._attachments = fs.exists(mediaDir) ? attachmentsFromDir(mediaDir) : {};
       doc._attachments.xml = attachmentFromFile(xformPath);
 
-      const docUrl = `${couchUrl}/${docId}`;
-
       return promiseChain
-        .then(() => trace('Uploading form', `${formsDir}/${fileName}`, 'to', docUrl))
         .then(() => insertOrReplace(db, doc))
-        .then(() => info('Uploaded form', `${formsDir}/${fileName}`, 'to', docUrl));
+        .then(() => info(`Uploaded form ${formsDir}/${fileName}`));
     }, Promise.resolve());
 };
 

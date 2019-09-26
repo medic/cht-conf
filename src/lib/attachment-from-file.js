@@ -5,8 +5,7 @@ module.exports = path => {
   const mime = mimeTypeFor(path);
   return {
     content_type: mime,
-    // eslint-disable-next-line no-buffer-constructor
-    data: new Buffer(data),
+    data: Buffer.from(data),
   };
 };
 

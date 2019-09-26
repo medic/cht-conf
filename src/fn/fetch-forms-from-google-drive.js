@@ -1,8 +1,9 @@
+const environment = require('../lib/environment');
 const fetchFilesFromGoogleDrive = require('../lib/fetch-files-from-google-drive');
 
-module.exports = projectDir => {
+module.exports = () => {
   fetchFilesFromGoogleDrive(
-      `${projectDir}/forms-on-google-drive.json`,
-      `${projectDir}/forms`,
+      `${environment.pathToProject}/forms-on-google-drive.json`,
+      `${environment.pathToProject}/forms`,
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 };

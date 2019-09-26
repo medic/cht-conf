@@ -1,15 +1,16 @@
-const fs = require('../lib/sync-fs');
-const request = require('request-promise-native');
-const trace = require('../lib/log').trace;
 const uuid = require('uuid/v4');
 
-module.exports = (projectDir, couchUrl, extras) => {
-  const instanceUrl = couchUrl.replace(/\/medic$/, '');
-  const csvFiles = extras || ['sms.csv'];
+const api = require('../lib/api');
+const environment = require('../lib/environment');
+const fs = require('../lib/sync-fs');
+const { trace } = require('../lib/log');
+
+module.exports = () => {
+  const csvFiles = environment.extraArgs || ['sms.csv'];
 
   trace('upload-sms-from-csv', 'csv files:', csvFiles);
-  
-  return csvFiles.map(fileName => `${projectDir}/${fileName}`)
+
+  return csvFiles.map(fileName => `${environment.pathToProject}/${fileName}`)
     .reduce((promiseChain, csvFile) => {
       trace(`Processing csv file ${csvFile}…`);
       const raw = fs.readCsv(csvFile);
@@ -26,11 +27,6 @@ module.exports = (projectDir, couchUrl, extras) => {
       };
     });
 
-    return request({
-      uri: `${instanceUrl}/api/sms`,
-      method: 'POST',
-      json: true,
-      body: { messages },
-    });
+    return api().uploadSms(messages);
   }, Promise.resolve());
 };

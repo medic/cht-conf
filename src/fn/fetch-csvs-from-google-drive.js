@@ -1,8 +1,9 @@
+const environment = require('../lib/environment');
 const fetchFilesFromGoogleDrive = require('../lib/fetch-files-from-google-drive');
 
-module.exports = projectDir => {
+module.exports = () => {
   fetchFilesFromGoogleDrive(
-      `${projectDir}/csvs-on-google-drive.json`,
-      `${projectDir}/csv`,
+      `${environment.pathToProject}/csvs-on-google-drive.json`,
+      `${environment.pathToProject}/csv`,
       'text/csv');
 };

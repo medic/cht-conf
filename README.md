@@ -71,9 +71,15 @@ If a different username is required, add the `--user` switch:
 
 	medic-conf --url=https://username:password@example.com:12345
 
+### Into an archive to be uploaded later
+
+  medic-conf --archive
+
+The resulting archive is consumable by Medic's API >v3.7 to create default configurations.
+
 ## Perform specific action(s)
 
-	medic-conf <--local|--instance=instance-name|--url=url> <...action>
+	medic-conf <--archive|--local|--instance=instance-name|--url=url> <...action>
 
 The list of available actions can be seen via `medic-conf --help`.
 

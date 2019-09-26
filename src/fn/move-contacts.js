@@ -2,19 +2,18 @@ const minimist = require('minimist');
 const path = require('path');
 const readline = require('readline-sync');
 
+const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
-const log = require('../lib/log');
-const pouch = require('../lib/db');
 const lineageManipulation = require('../lib/lineage-manipulation');
 const lineageConstraints = require('../lib/lineage-constraints');
-
-const { warn, trace, info, error } = log;
+const pouch = require('../lib/db');
+const { warn, trace, info, error } = require('../lib/log');
 
 const HIERARCHY_ROOT = 'root';
 
-module.exports = (projectDir, couchUrl, extraArgs) => {
-  const args = parseExtraArgs(projectDir, extraArgs);
-  const db = connectToDatabase(couchUrl);
+module.exports = () => {
+  const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
+  const db = pouch();
   prepareDocumentDirectory(args);
   return updateLineagesAndStage(args, db);
 };
@@ -33,7 +32,7 @@ const updateLineagesAndStage = async (options, db) => {
   for (let contactId of options.contactIds) {
     const contactDoc = contactDocs[contactId];
     const descendantsAndSelf = await fetch.descendantsOf(db, contactId);
-    
+
     // Check that primary contact is not removed from areas where they are required
     const invalidPrimaryContactDoc = await constraints.getPrimaryContactViolations(contactDoc, descendantsAndSelf);
     if (invalidPrimaryContactDoc) {
@@ -42,7 +41,7 @@ const updateLineagesAndStage = async (options, db) => {
 
     trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)}.`);
     const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, contactId);
-    
+
     const ancestors = await fetch.ancestorsOf(db, contactDoc);
     trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
     const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
@@ -50,7 +49,7 @@ const updateLineagesAndStage = async (options, db) => {
     const reportsCreatedByDescendants = await fetch.reportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
     trace(`${reportsCreatedByDescendants.length} report(s) created by these affected contact(s) will update`);
     const updatedReports = replaceLineageInReports(reportsCreatedByDescendants, replacementLineage, contactId);
-    
+
     [...updatedDescendants, ...updatedReports, ...updatedAncestors].forEach(updatedDoc => {
       lineageManipulation.minifyLineagesInDoc(updatedDoc);
       writeDocumentToDisk(options, updatedDoc);
@@ -116,13 +115,6 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
   };
-};
-
-const connectToDatabase = couchUrl => {
-  if (!couchUrl) {
-    throw ('Action "move-contacts" is missing the required couchUrl information');
-  }
-  return pouch(couchUrl);
 };
 
 const prepareDocumentDirectory = ({ docDirectoryPath, force }) => {
@@ -193,13 +185,13 @@ const fetch = {
       if (id === HIERARCHY_ROOT) {
         return undefined;
       }
-  
+
       return await db.get(id);
     } catch (err) {
       if (err.name !== 'not_found') {
         throw err;
       }
-  
+
       throw Error(`Contact with id '${id}' could not be found`);
     }
   },
