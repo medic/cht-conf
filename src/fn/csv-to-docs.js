@@ -122,7 +122,7 @@ module.exports = (projectDir)=> {
   function processCsv(docType, cols, row, baseDoc) {
     const doc = baseDoc || {};
     doc.type = docType;
-    doc.reported_date = Date.now();
+    doc.reported = Date.now();
 
     for(let i=0; i<cols.length; ++i) {
       const { col, val, reference, excluded } = parseColumn(cols[i], row[i]);
