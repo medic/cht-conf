@@ -1,4 +1,4 @@
-var id = 'active-pregnancies'
+var id = 'active-pregnancies';
 
 module.exports = [
   {
