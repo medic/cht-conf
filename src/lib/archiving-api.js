@@ -3,7 +3,7 @@ const environment = require('./environment');
 
 const archivingApi = {
   updateAppSettings: (content) => {
-    archiveDocToFile(environment.archiveDestination, 'settings.json', content);
+    archiveDocToFile(environment.archiveDestination, 'settings', content);
     return Promise.resolve('{ "success": true }');
   },
 

@@ -13,7 +13,7 @@ const archiveDocToFile = (folderPath, fileName, content) => {
   };
 
   const sanitizedFileName = fileName.replace(/[/\\?%*:|"<>]/g, '-'); // for Windows
-  const destination = path.resolve(folderPath, sanitizedFileName);
+  const destination = path.resolve(folderPath, `${sanitizedFileName}.doc.json`);
   const fileContent = typeof content === 'string' ? content : JSON.stringify(content, replacer);
   fs.write(destination, fileContent);
 };
