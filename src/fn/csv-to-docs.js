@@ -138,10 +138,6 @@ module.exports = (projectDir)=> {
       });
     }
 
-    if(cols.indexOf('reported_date') === -1){
-      doc.reported_date = Date.now();
-    }
-    
     if(cols.indexOf('_id') !== -1){
       return doc;
     }
