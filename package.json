@@ -1,6 +1,6 @@
 {
   "name": "medic-conf",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "Configure Medic Mobile deployments",
   "main": "./src/lib/main.js",
   "engines": {
