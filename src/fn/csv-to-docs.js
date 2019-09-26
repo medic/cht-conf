@@ -137,6 +137,9 @@ module.exports = (projectDir)=> {
         propertyName: col,
       });
     }
+    if(cols.indexOf('_id') !== -1){
+      return doc;
+    }
 
     return withId(doc);
   }
