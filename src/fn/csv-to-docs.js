@@ -138,18 +138,14 @@ module.exports = (projectDir)=> {
       });
     }
 
-    const wordd = 'date';
-    doc.reported_date = wordd;
-    if(cols.indexOf('_id') !== -1){
-      return doc;
-    }
-
     return withId(doc);
   }
 
   function withId(json) {
     const id = uuid5(stringify(json), couchUrlUuid);
+    const reported = Date.now();
     json._id = id;
+    json.reported_date = reported;
     return json;
   }
 };
