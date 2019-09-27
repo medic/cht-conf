@@ -4,7 +4,7 @@ const googleAuth = require('./google-auth');
 const info = require('./log').info;
 
 // List of valid MIME types: https://developers.google.com/drive/api/v3/manage-downloads#downloading_google_documents
-module.exports = (filesJson, targetDir, mimeType) => {
+module.exports = async (filesJson, targetDir, mimeType) => {
   return googleAuth()
     .then(auth => {
       const drive = google.drive({ auth, version:'v3' });
