@@ -10,7 +10,7 @@
     "clean": "rm -rf ./build/",
     "generate-changelog": "echo 'Generating changelog...' && ./scripts/changelog > CHANGELOG.md && echo 'Changelog generated.'",
     "eslint": "eslint src/**/*.js test/*.js test/**/*.js",
-    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js",
+    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js && npx @medic/audit-dependencies check",
     "postversion": "npm publish",
     "postpublish": "git push --all; git push --tags"
   },
@@ -62,8 +62,5 @@
     "pouchdb-adapter-memory": "^7.1.1",
     "rewire": "^4.0.1",
     "sinon": "^7.3.2"
-  },
-  "resolutions": {
-    "random-uuid-v4": "0.0.8"
   }
 }
