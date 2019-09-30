@@ -260,7 +260,7 @@ Note the special string `COL_VAL` - this matches the CSV column value for the ro
 ## create-users
 
 
-## Creating a new user with a new place.
+### Creating a new user with a new place
 
 To create new users associated to new place and a new contact. Provide values for contact.name, place.name, and place.parent(can be existing place)
 
@@ -276,14 +276,14 @@ To create user accounts for contacts that are created while running csv-to-docs 
 
 1. Create a `users.csv` file in the `csv` folder with the rest of the csvs needed for `csv-to-docs` action.
 1. Add columns for username, password, roles, phone, contact, place, and any other additional fields you want to populate. 
-1. Using the query language for contact `contact:person WHERE reference_id=COL_VAL` and place `place:GET _id OF place WHERE reference_id=COL_VAL` to fill these values based on the generated UUID for contact and place created by `csv-to-docs`. This works the same as if you were using `csv-to-docs`
+1. Use the following query language as the header names: for contact contact:person WHERE reference_id=COL_VAL and place place:GET _id OF place WHERE reference_id=COL_VAL. This feature is also supported in the csv-to-docs csv files.
 1. Run `medic-conf csv-to-docs upload-docs create-users` 
 	1. This will generate the contacts, places, and users associated to those contacts. The users are placed into a users.csv file in your working directory. Then upload the json docs creating your data and creating users associated.
 
 
 Here is a example of how the three csvs need to be configured to setup a user linked to existing place and contact.  
 
-place.health_center.csv
+**csv/place.health_center.csv**
 
 ```
 reference_id:excluded,parent:place WHERE reference_id=COL_VAL,is_name_generated,name,reported_date:timestamp
@@ -311,7 +311,7 @@ Generated json doc for the health center
 }
 ```
 
-person.csv
+**csv/person.csv**
 
 ```
 reference_id:excluded,parent:place WHERE reference_id=COL_VAL,name,phone,sex,role,reported_date,patient_id
@@ -352,7 +352,7 @@ Generated json doc for the person
 
 ```
 
-users.csv 
+**csv/users.csv**
 ```
 username,password,roles,phone,contact:person WHERE reference_id=COL_VAL,place:GET _id OF place WHERE reference_id=COL_VAL
 ac1,Secret_1,district_admin:red1,+123456789,p_hc1,health_center_1
@@ -361,7 +361,7 @@ ac3,Secret_1,district_admin,+123456789,p_hc3,health_center_1
 ac4,Secret_1,district_admin,+123456789,p_hc4,health_center_1
 
 ```
-Generating a new users.csv with the person and place set to the uuids for the above person and place
+This will generate the `users.csv` file in the working directory which is used by the `create-users` action. The contact and place fields should be resolved to the actual UUIDs.
 
 ```
 p_hc1"username","password","roles","contact","phone","place"
