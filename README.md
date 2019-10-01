@@ -116,12 +116,6 @@ The list of available actions can be seen via `medic-conf --help`.
 
 * upload of custom translations to the server
 
-## create-users **[ALPHA]**
-
-N.B. this feature is currently in development, and probably not ready for production yet.
-
-To create users on a remote server, use the `create-users` action.  The CSV file should be called `users.csv`, and an example is available [in the tests directory](test/data/create-users), for [an existing place](test/data/create-users/existing-place) and [a new place](test/data/create-users/new-place).
-
 ## csv-to-docs
 
 To convert CSV to JSON docs, use the `csv-to-docs` action.
@@ -262,6 +256,119 @@ This would create a structure such as:
 ```
 
 Note the special string `COL_VAL` - this matches the CSV column value for the row being processed.
+
+## create-users
+
+
+### Creating a new user with a new place
+
+To create new users associated to new place and a new contact. Provide values for contact.name, place.name, and place.parent(can be existing place)
+
+```
+username,password,roles,name,phone,contact.name,place.c_prop,place.type,place.name,place.parent
+alice,Secret_1,district-admin,Alice Example,+123456789,Alice,p_val_a,health_center,alice area, district_uuid
+bob,Secret_1,district-admin,bob Example,+123456789,bob,p_val_a,health_center,bob area,disctrict_uuid
+```
+
+### Linking users to contacts created from csv-to-docs
+
+To create user accounts for contacts that are created while running csv-to-docs action follow these steps.
+
+1. Create a `users.csv` file in the `csv` folder with the rest of the csvs needed for `csv-to-docs` action.
+1. Add columns for username, password, roles, phone, contact, place, and any other additional fields you want to populate. 
+1. Use the following query language as the header names: for contact contact:person WHERE reference_id=COL_VAL and place place:GET _id OF place WHERE reference_id=COL_VAL. This feature is also supported in the csv-to-docs csv files.
+1. Run `medic-conf csv-to-docs upload-docs create-users` 
+	1. This will generate the contacts, places, and users associated to those contacts. The users are placed into a users.csv file in your working directory. Then upload the json docs creating your data and creating users associated.
+
+
+Here is a example of how the three csvs need to be configured to setup a user linked to existing place and contact.  
+
+**csv/place.health_center.csv**
+
+```
+reference_id:excluded,parent:place WHERE reference_id=COL_VAL,is_name_generated,name,reported_date:timestamp
+health_center_1,district_1,FALSE,HC1,1544031155715
+```
+Generated json doc for the health center
+```
+{
+  "type": "health_center",
+  "parent": {
+    "type": "district_hospital",
+    "parent": "",
+    "is_name_generated": "false",
+    "name": "District1",
+    "external_id": "",
+    "notes": "",
+    "geolocation": "",
+    "reported_date": 1544031155715,
+    "_id": "e8f9739a-5d37-5b1e-be3c-a571b2c2409b"
+  },
+  "is_name_generated": "FALSE",
+  "name": "HC1",
+  "reported_date": 1544031155715,
+  "_id": "8606a91a-f454-56e3-a089-0b686af3c6b7"
+}
+```
+
+**csv/person.csv**
+
+```
+reference_id:excluded,parent:place WHERE reference_id=COL_VAL,name,phone,sex,role,reported_date,patient_id
+p_hc1,health_center_1,Bob Johnson 1,+16143291527,male,manager,1552494835669,60951
+p_hc2,health_center_1,Bob Johnson 2,+16143291528,male,manager,1552494835669,60951
+
+```
+Generated json doc for the person
+```
+{
+  "type": "person",
+  "parent": {
+    "type": "health_center",
+    "parent": {
+      "type": "district_hospital",
+      "parent": "",
+      "is_name_generated": "false",
+      "name": "District1",
+      "external_id": "",
+      "notes": "",
+      "geolocation": "",
+      "reported_date": 1544031155715,
+      "_id": "e8f9739a-5d37-5b1e-be3c-a571b2c2409b"
+    },
+    "is_name_generated": "FALSE",
+    "name": "HC1",
+    "reported_date": 1544031155715,
+    "_id": "8606a91a-f454-56e3-a089-0b686af3c6b7"
+  },
+  "name": "Bob Johnson 1",
+  "phone": "+16143291527",
+  "sex": "male",
+  "role": "manager",
+  "reported_date": "1552494835669",
+  "patient_id": "60951",
+  "_id": "65c52076-84c5-53a2-baca-88e6ec6e0875"
+}
+
+```
+
+**csv/users.csv**
+```
+username,password,roles,phone,contact:person WHERE reference_id=COL_VAL,place:GET _id OF place WHERE reference_id=COL_VAL
+ac1,Secret_1,district_admin:red1,+123456789,p_hc1,health_center_1
+ac2,Secret_1,district_admin:supervisor,+123456789,p_hc2,health_center_1
+ac3,Secret_1,district_admin,+123456789,p_hc3,health_center_1
+ac4,Secret_1,district_admin,+123456789,p_hc4,health_center_1
+
+```
+This will generate the `users.csv` file in the working directory which is used by the `create-users` action. The contact and place fields should be resolved to the actual UUIDs.
+
+```
+p_hc1"username","password","roles","contact","phone","place"
+"ac1","Secret_1","district_admin:red1","65c52076-84c5-53a2-baca-88e6ec6e0875","+123456789","8606a91a-f454-56e3-a089-0b686af3c6b7"
+"ac2","Secret_1","district_admin:supervisor","b7d0dbd5-beeb-52a8-8e4c-513d0baece8e","+123456789","8606a91a-f454-56e3-a089-0b686af3c6b7"
+```
+
 
 ## Moving Contacts within the Hierarchy
 
