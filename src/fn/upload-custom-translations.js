@@ -67,10 +67,8 @@ function overwriteProperties(doc, props) {
     doc.custom = props;
   } else if (doc.values) {
     // pre-3.4.0 doc structure
-    for(const k in props) {
-      if(props.hasOwnProperty(k)) {
-        doc.values[k] = props[k];
-      }
+    for (const [key, value] of Object.entries(props)) {
+      doc.values[key] = value;
     }
   } else {
     throw new Error(`Existent translation doc ${doc._id} is malformed`);
