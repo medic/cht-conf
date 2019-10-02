@@ -14,7 +14,7 @@ describe('initialise-project-layout', () => {
     // when
 
     sinon.stub(environment, 'pathToProject').get(() => TARGET_DIR);
-    initialiseProjectLayout();
+    initialiseProjectLayout.action();
 
     // then
     assertExists('app_settings.json');

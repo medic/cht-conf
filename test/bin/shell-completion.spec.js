@@ -23,6 +23,7 @@ describe('shell-completion', () => {
         'backup-app-settings',
         'check-for-updates',
         'compile-app-settings',
+        'compress-images',
         'compress-pngs',
         'compress-svgs',
         'convert-app-forms',

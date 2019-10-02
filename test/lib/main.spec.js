@@ -40,7 +40,7 @@ describe('main', () => {
     }
   });
   afterEach(() => {
-    environment.initialize.restore(); 
+    environment.initialize.restore();
   });
 
   it('no argv yields usage', async () => {
@@ -85,6 +85,12 @@ describe('main', () => {
     await main([...normalArgv, '--local', '--accept-self-signed-certs'], {});
     expect(mocks.executeAction.callCount).to.deep.eq(defaultActions.length);
     expect(main.__get__('process').env.NODE_TLS_REJECT_UNAUTHORIZED).to.eq('0');
+  });
+
+  it('supports actions that do not require an instance', async () => {
+    await main([...normalArgv, 'initialise-project-layout'], {});
+    expect(mocks.executeAction.callCount).to.deep.eq(1);
+    expect(mocks.executeAction.args[0][0]).to.eq('initialise-project-layout');
   });
 
   const expectExecuteActionBehavior = (expectedActions, expectedExtraParams) => {

@@ -111,35 +111,6 @@ module.exports = async (argv, env) => {
   }
 
   //
-  // Initialize the environment
-  //
-  const projectName = fs.path.basename(pathToProject);
-
-  const apiUrl = getApiUrl(cmdArgs, env);
-  if (!apiUrl) {
-    error('Failed to obtain a url to the API');
-    return -1;
-  }
-
-  let extraArgs = cmdArgs['--'];
-  if (!extraArgs.length) {
-    extraArgs = undefined;
-  }
-
-  environment.initialize(pathToProject, !!cmdArgs.archive, cmdArgs.destination, extraArgs, apiUrl);
-
-  const productionUrlMatch = environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
-  const expectedOptions = ['alpha', projectName];
-  if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
-    warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
-        `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
-    if(!readline.keyInYN()) {
-      error('User failed to confirm action.');
-      return false;
-    }
-  }
-
-  //
   // Build up actions
   //
   let actions = cmdArgs._;
@@ -151,6 +122,38 @@ module.exports = async (argv, env) => {
   if(unsupported.length) {
     error(`Unsupported action(s): ${unsupported.join(' ')}`);
     return -1;
+  }
+
+  //
+  // Initialize the environment
+  //
+  const projectName = fs.path.basename(pathToProject);
+
+  let apiUrl;
+  if (requiresInstance(actions)) {
+    apiUrl = getApiUrl(cmdArgs, env);
+    if (!apiUrl) {
+      error('Failed to obtain a url to the API');
+      return -1;
+    }
+  }
+
+  let extraArgs = cmdArgs['--'];
+  if (!extraArgs.length) {
+    extraArgs = undefined;
+  }
+
+  environment.initialize(pathToProject, !!cmdArgs.archive, cmdArgs.destination, extraArgs, apiUrl);
+
+  const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
+  const expectedOptions = ['alpha', projectName];
+  if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
+    warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
+        `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
+    if(!readline.keyInYN()) {
+      error('User failed to confirm action.');
+      return false;
+    }
   }
 
   //
@@ -175,4 +178,23 @@ module.exports = async (argv, env) => {
   }
 };
 
-const executeAction = action => require(`../fn/${action}`)();
+
+const requiresInstance = actions => actions.find(actionName => {
+  const actionLib = require(`../fn/${actionName}`);
+  if (typeof actionLib === 'function') {
+    return true;
+  } else if (typeof actionLib.requiresInstance === 'boolean') {
+    return actionLib.requiresInstance;
+  } else {
+    return true;
+  }
+});
+
+const executeAction = actionName => {
+  const actionLib = require(`../fn/${actionName}`);
+  if (typeof actionLib === 'function') {
+    return actionLib();
+  } else {
+    return actionLib.action();
+  }
+};
