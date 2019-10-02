@@ -11,7 +11,6 @@ const LAYOUT = {
   resources: {},
   'targets.js': 'module.exports = [];',
   'tasks.js': 'module.exports = [];',
-  'task-schedules.json': {},
   '.eslintrc': `{
   "env": {
     "node": true,
