@@ -27,7 +27,6 @@ describe('initialise-project-layout', () => {
     assertExists('tasks.js');
     assertExists('targets.js');
     assertExists('.eslintrc');
-    assertExists('task-schedules.json');
     assertExists('translations');
   });
 });
