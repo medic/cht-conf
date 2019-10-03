@@ -87,7 +87,7 @@ describe('main', () => {
     expect(main.__get__('process').env.NODE_TLS_REJECT_UNAUTHORIZED).to.eq('0');
   });
 
-  it.only('errors if you do not provide an instance when required', async () => {
+  it('errors if you do not provide an instance when required', async () => {
     mocks.getApiUrl.returns();
 
     await main([...normalArgv, 'backup-all-forms'], {});
