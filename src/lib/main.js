@@ -195,6 +195,6 @@ const executeAction = actionName => {
   if (typeof actionLib === 'function') {
     return actionLib();
   } else {
-    return actionLib.action();
+    return actionLib.execute();
   }
 };

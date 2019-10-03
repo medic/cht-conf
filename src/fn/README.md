@@ -2,7 +2,7 @@
 
 Actions are defined as usable if they exist in this directory.
 
-The API is that they should export something like this:
+Their module should look something like this:
 
 ```js
 module.exports = {
@@ -13,7 +13,7 @@ module.exports = {
 }
 ```
 
-**OR** just:
+We still support the legacy version, which will use the defaults noted below:
 
 ```js
 module.exports = async (projectDir, couchUrl, extraArgs) => {
@@ -21,6 +21,9 @@ module.exports = async (projectDir, couchUrl, extraArgs) => {
 }
 ```
 
-In which case defaults will be used.
- - `requiresInstance` means that this action requires that the user provides a configured instance. Optional, defaults to true.
- - `execute` is the function that is run when the action is executed, and is passed the paremeters noted above. Required, obviously.
+## Module Exports
+
+|Field|Required|Notes|
+|---|---|---|
+|`requiresInstance`|Optional, defaults to `true`|The action needs the user to have provided a instance location, e.g. via `--local` or `--instance`|
+|`execute`|Required|the function that is run when the action is executed. Is passed `projectDir`, `couchUrl` and any `extraArgs`|

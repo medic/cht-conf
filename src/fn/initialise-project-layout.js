@@ -45,7 +45,7 @@ function createRecursively(dir, layout) {
   }
 }
 
-function action() {
+function execute() {
   const { extraArgs } = environment;
   if(extraArgs && extraArgs.length) extraArgs.forEach(createProject);
   else createProject('.');
@@ -59,5 +59,5 @@ function action() {
 
 module.exports = {
   requiresInstance: false,
-  action: action
+  execute: execute
 };

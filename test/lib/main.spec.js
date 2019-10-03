@@ -87,6 +87,14 @@ describe('main', () => {
     expect(main.__get__('process').env.NODE_TLS_REJECT_UNAUTHORIZED).to.eq('0');
   });
 
+  it.only('errors if you do not provide an instance when required', async () => {
+    mocks.getApiUrl.returns();
+
+    await main([...normalArgv, 'backup-all-forms'], {});
+
+    expect(mocks.executeAction.called).to.be.false;
+  });
+
   it('supports actions that do not require an instance', async () => {
     await main([...normalArgv, 'initialise-project-layout'], {});
     expect(mocks.executeAction.callCount).to.deep.eq(1);
