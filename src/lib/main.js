@@ -183,18 +183,20 @@ const requiresInstance = actions => actions.find(actionName => {
   const actionLib = require(`../fn/${actionName}`);
   if (typeof actionLib === 'function') {
     return true;
-  } else if (typeof actionLib.requiresInstance === 'boolean') {
-    return actionLib.requiresInstance;
-  } else {
-    return true;
   }
+
+  if (typeof actionLib.requiresInstance === 'boolean') {
+    return actionLib.requiresInstance;
+  }
+
+  return true;
 });
 
 const executeAction = actionName => {
   const actionLib = require(`../fn/${actionName}`);
   if (typeof actionLib === 'function') {
     return actionLib();
-  } else {
-    return actionLib.execute();
   }
+
+  return actionLib.execute();
 };

@@ -7,7 +7,7 @@ Their module should look something like this:
 ```js
 module.exports = {
     requiresInstance: true,
-    execute: async (projectDir, couchUrl, extraArgs) => {
+    execute: async () => {
         ...
     }
 }
@@ -16,7 +16,7 @@ module.exports = {
 We still support the legacy version, which will use the defaults noted below:
 
 ```js
-module.exports = async (projectDir, couchUrl, extraArgs) => {
+module.exports = async () => {
     ...
 }
 ```
@@ -26,4 +26,4 @@ module.exports = async (projectDir, couchUrl, extraArgs) => {
 |Field|Required|Notes|
 |---|---|---|
 |`requiresInstance`|Optional, defaults to `true`|The action needs the user to have provided a instance location, e.g. via `--local` or `--instance`|
-|`execute`|Required|the function that is run when the action is executed. Is passed `projectDir`, `couchUrl` and any `extraArgs`|
+|`execute`|Required|the function that is run when the action is executed.|
