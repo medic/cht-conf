@@ -185,7 +185,7 @@ const requiresInstance = actions => actions.find(actionName => {
     return true;
   }
 
-  if (typeof actionLib.requiresInstance === 'boolean') {
+  if (Object.keys(actionLib).includes('requiresInstance')) {
     return actionLib.requiresInstance;
   }
 
