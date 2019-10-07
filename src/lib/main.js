@@ -3,7 +3,7 @@
 const opn = require('opn');
 
 const checkForUpdates = require('../lib/check-for-updates');
-const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
+const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-dependency-version');
 const environment = require('./environment');
 const fs = require('../lib/sync-fs');
 const getApiUrl = require('../lib/get-api-url');
@@ -124,13 +124,28 @@ module.exports = async (argv, env) => {
     return -1;
   }
 
+  actions = actions.map(actionName => {
+    const action = require(`../fn/${actionName}`);
+    if (typeof action === 'function') {
+      return {
+        name: actionName,
+        requiresInstance: true,
+        execute: action
+      };
+    }
+
+    action.name = actionName;
+
+    return action;
+  });
+
   //
   // Initialize the environment
   //
   const projectName = fs.path.basename(pathToProject);
 
   let apiUrl;
-  if (requiresInstance(actions)) {
+  if (actions.some(action => action.requiresInstance)) {
     apiUrl = getApiUrl(cmdArgs, env);
     if (!apiUrl) {
       error('Failed to obtain a url to the API');
@@ -160,17 +175,17 @@ module.exports = async (argv, env) => {
   // GO GO GO
   //
   info(`Processing config in ${projectName}.`);
-  info('Actions:\n     -', actions.join('\n     - '));
+  info('Actions:\n     -', actions.map(({name}) => name).join('\n     - '));
 
   const skipCheckForUpdates = cmdArgs.check === false;
-  if (actions.includes('check-for-updates') && !skipCheckForUpdates) {
+  if (actions.find(action => action.name === 'check-for-updates') && !skipCheckForUpdates) {
     await checkForUpdates({ nonFatal: true });
   }
 
   for (let action of actions) {
-    info(`Starting action: ${action}…`);
+    info(`Starting action: ${action.name}…`);
     await executeAction(action);
-    info(`${action} complete.`);
+    info(`${action.name} complete.`);
   }
 
   if (actions.length > 1) {
@@ -178,25 +193,5 @@ module.exports = async (argv, env) => {
   }
 };
 
-
-const requiresInstance = actions => actions.find(actionName => {
-  const actionLib = require(`../fn/${actionName}`);
-  if (typeof actionLib === 'function') {
-    return true;
-  }
-
-  if (Object.keys(actionLib).includes('requiresInstance')) {
-    return actionLib.requiresInstance;
-  }
-
-  return true;
-});
-
-const executeAction = actionName => {
-  const actionLib = require(`../fn/${actionName}`);
-  if (typeof actionLib === 'function') {
-    return actionLib();
-  }
-
-  return actionLib.execute();
-};
+// Exists for generic mocking purposes
+const executeAction = action => action.execute();
