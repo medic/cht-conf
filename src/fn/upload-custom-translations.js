@@ -59,7 +59,7 @@ module.exports = () => {
 function languageCodeValid(code) {
   // valid CSS selector name to avoid https://github.com/medic/medic/issues/5982
   var regex = /^[_a-zA-Z]+[_a-zA-Z0-9-]+$/;
-  return regex.test(code)
+  return regex.test(code);
 }
 
 function propertiesAsObject(path) {

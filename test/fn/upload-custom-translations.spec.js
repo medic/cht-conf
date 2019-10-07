@@ -434,7 +434,17 @@ describe('upload-custom-translations', () => {
       });
 
     });
+    
 
+  });
 
+  describe('medic-x.x', () => {
+    it('should crash for invalid language code', () => {
+      mockTestDir(`invalid-lang`);
+      return uploadCustomTranslations()
+        .catch(err => {
+          assert.equal(err.message, `The language code 'bad(code' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.`);
+        });
+    });
   });
 });
