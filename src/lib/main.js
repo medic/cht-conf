@@ -178,7 +178,7 @@ module.exports = async (argv, env) => {
   info('Actions:\n     -', actions.map(({name}) => name).join('\n     - '));
 
   const skipCheckForUpdates = cmdArgs.check === false;
-  if (actions.find(action => action.name === 'check-for-updates') && !skipCheckForUpdates) {
+  if (actions.some(action => action.name === 'check-for-updates') && !skipCheckForUpdates) {
     await checkForUpdates({ nonFatal: true });
   }
 
