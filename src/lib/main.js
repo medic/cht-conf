@@ -3,7 +3,7 @@
 const opn = require('opn');
 
 const checkForUpdates = require('../lib/check-for-updates');
-const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-depdency-version');
+const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-dependency-version');
 const environment = require('./environment');
 const fs = require('../lib/sync-fs');
 const getApiUrl = require('../lib/get-api-url');
@@ -111,35 +111,6 @@ module.exports = async (argv, env) => {
   }
 
   //
-  // Initialize the environment
-  //
-  const projectName = fs.path.basename(pathToProject);
-
-  const apiUrl = getApiUrl(cmdArgs, env);
-  if (!apiUrl) {
-    error('Failed to obtain a url to the API');
-    return -1;
-  }
-
-  let extraArgs = cmdArgs['--'];
-  if (!extraArgs.length) {
-    extraArgs = undefined;
-  }
-
-  environment.initialize(pathToProject, !!cmdArgs.archive, cmdArgs.destination, extraArgs, apiUrl);
-
-  const productionUrlMatch = environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
-  const expectedOptions = ['alpha', projectName];
-  if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
-    warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
-        `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
-    if(!readline.keyInYN()) {
-      error('User failed to confirm action.');
-      return false;
-    }
-  }
-
-  //
   // Build up actions
   //
   let actions = cmdArgs._;
@@ -153,21 +124,68 @@ module.exports = async (argv, env) => {
     return -1;
   }
 
+  actions = actions.map(actionName => {
+    const action = require(`../fn/${actionName}`);
+    if (typeof action === 'function') {
+      return {
+        name: actionName,
+        requiresInstance: true,
+        execute: action
+      };
+    }
+
+    action.name = actionName;
+
+    return action;
+  });
+
+  //
+  // Initialize the environment
+  //
+  const projectName = fs.path.basename(pathToProject);
+
+  let apiUrl;
+  if (actions.some(action => action.requiresInstance)) {
+    apiUrl = getApiUrl(cmdArgs, env);
+    if (!apiUrl) {
+      error('Failed to obtain a url to the API');
+      return -1;
+    }
+  }
+
+  let extraArgs = cmdArgs['--'];
+  if (!extraArgs.length) {
+    extraArgs = undefined;
+  }
+
+  environment.initialize(pathToProject, !!cmdArgs.archive, cmdArgs.destination, extraArgs, apiUrl);
+
+  const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
+  const expectedOptions = ['alpha', projectName];
+  if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
+    warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
+        `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
+    if(!readline.keyInYN()) {
+      error('User failed to confirm action.');
+      return false;
+    }
+  }
+
   //
   // GO GO GO
   //
   info(`Processing config in ${projectName}.`);
-  info('Actions:\n     -', actions.join('\n     - '));
+  info('Actions:\n     -', actions.map(({name}) => name).join('\n     - '));
 
   const skipCheckForUpdates = cmdArgs.check === false;
-  if (actions.includes('check-for-updates') && !skipCheckForUpdates) {
+  if (actions.some(action => action.name === 'check-for-updates') && !skipCheckForUpdates) {
     await checkForUpdates({ nonFatal: true });
   }
 
   for (let action of actions) {
-    info(`Starting action: ${action}…`);
+    info(`Starting action: ${action.name}…`);
     await executeAction(action);
-    info(`${action} complete.`);
+    info(`${action.name} complete.`);
   }
 
   if (actions.length > 1) {
@@ -175,4 +193,5 @@ module.exports = async (argv, env) => {
   }
 };
 
-const executeAction = action => require(`../fn/${action}`)();
+// Exists for generic mocking purposes
+const executeAction = action => action.execute();

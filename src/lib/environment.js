@@ -21,7 +21,7 @@ module.exports = {
   get pathToProject() { return state.pathToProject || '.'; },
   get isArchiveMode() { return !!state.isArchiveMode; },
   get archiveDestination() { return state.archiveDestination; },
-  get instanceUrl() { return this.apiUrl.replace(/\/medic$/, ''); },
+  get instanceUrl() { return this.apiUrl && this.apiUrl.replace(/\/medic$/, ''); },
   get extraArgs() { return state.extraArgs; },
   get apiUrl() { return state.apiUrl; },
 };

@@ -28,19 +28,6 @@ const LAYOUT = {
   translations: {},
 };
 
-
-module.exports = () => {
-  const { extraArgs } = environment;
-  if(extraArgs && extraArgs.length) extraArgs.forEach(createProject);
-  else createProject('.');
-
-  function createProject(root) {
-    const dir = path.join(environment.pathToProject, root);
-    info(`Initialising project at ${dir}`);
-    createRecursively(dir, LAYOUT);
-  }
-};
-
 function createRecursively(dir, layout) {
   fs.mkdir(dir);
 
@@ -57,3 +44,20 @@ function createRecursively(dir, layout) {
     } else fs.write(path, val);
   }
 }
+
+function execute() {
+  const { extraArgs } = environment;
+  if(extraArgs && extraArgs.length) extraArgs.forEach(createProject);
+  else createProject('.');
+
+  function createProject(root) {
+    const dir = path.join(environment.pathToProject, root);
+    info(`Initialising project at ${dir}`);
+    createRecursively(dir, LAYOUT);
+  }
+}
+
+module.exports = {
+  requiresInstance: false,
+  execute: execute
+};

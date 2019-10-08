@@ -1,27 +1,7 @@
-module.exports = [
-  'backup-all-forms',
-  'backup-app-settings',
-  'check-for-updates',
-  'compile-app-settings',
-  'compress-pngs',
-  'compress-svgs',
-  'convert-app-forms',
-  'convert-collect-forms',
-  'convert-contact-forms',
-  'create-users',
-  'csv-to-docs',
-  'delete-all-forms',
-  'delete-forms',
-  'fetch-csvs-from-google-drive',
-  'fetch-forms-from-google-drive',
-  'initialise-project-layout',
-  'move-contacts',
-  'upload-app-forms',
-  'upload-app-settings',
-  'upload-collect-forms',
-  'upload-contact-forms',
-  'upload-custom-translations',
-  'upload-docs',
-  'upload-resources',
-  'upload-sms-from-csv',
-];
+const fs = require('fs');
+
+const actions = fs.readdirSync(`${__dirname}/../fn`)
+                  .filter(name => name.endsWith('.js'))
+                  .map(name => name.substring(0, name.length - 3));
+
+module.exports = actions;

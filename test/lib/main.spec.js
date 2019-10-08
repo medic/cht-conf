@@ -40,7 +40,7 @@ describe('main', () => {
     }
   });
   afterEach(() => {
-    environment.initialize.restore(); 
+    environment.initialize.restore();
   });
 
   it('no argv yields usage', async () => {
@@ -87,11 +87,25 @@ describe('main', () => {
     expect(main.__get__('process').env.NODE_TLS_REJECT_UNAUTHORIZED).to.eq('0');
   });
 
+  it('errors if you do not provide an instance when required', async () => {
+    mocks.getApiUrl.returns();
+
+    await main([...normalArgv, 'backup-all-forms'], {});
+
+    expect(mocks.executeAction.called).to.be.false;
+  });
+
+  it('supports actions that do not require an instance', async () => {
+    await main([...normalArgv, 'initialise-project-layout'], {});
+    expect(mocks.executeAction.callCount).to.deep.eq(1);
+    expect(mocks.executeAction.args[0][0].name).to.eq('initialise-project-layout');
+  });
+
   const expectExecuteActionBehavior = (expectedActions, expectedExtraParams) => {
     if (Array.isArray(expectedActions)) {
-      expect(mocks.executeAction.args.map(args => args[0])).to.deep.eq(expectedActions);
+      expect(mocks.executeAction.args.map(args => args[0].name)).to.deep.eq(expectedActions);
     } else {
-      expect(mocks.executeAction.args[0][0]).to.eq(expectedActions);
+      expect(mocks.executeAction.args[0][0].name).to.eq(expectedActions);
     }
 
     expect(mocks.environment.initialize.args[0][3]).to.deep.eq(expectedExtraParams);
@@ -113,7 +127,7 @@ describe('main', () => {
     await main([...normalArgv, '--instance=test.app', 'convert-app-forms', 'compile-app-settings'], {});
     expect(mocks.executeAction.callCount).to.deep.eq(2);
     expectExecuteActionBehavior('convert-app-forms', undefined);
-    expect(mocks.executeAction.args[1][0]).to.eq('compile-app-settings');
+    expect(mocks.executeAction.args[1][0].name).to.eq('compile-app-settings');
   });
 
   it('convert one form', async () => {
@@ -131,7 +145,7 @@ describe('main', () => {
   describe('--archive', () => {
     it('default actions', async () => {
       await main([...normalArgv, '--archive', '--destination=foo'], {});
-      const executed = mocks.executeAction.args.map(args => args[0]);
+      const executed = mocks.executeAction.args.map(args => args[0].name);
       expect(executed).to.include('upload-app-settings');
       expect(executed).to.not.include('delete-all-forms');
     });
