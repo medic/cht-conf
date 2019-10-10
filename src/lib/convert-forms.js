@@ -1,8 +1,9 @@
 const { execSync } = require('child_process');
 
-const exec = require('../lib/exec-promise');
-const fs = require('../lib/sync-fs');
-const { info, trace, warn } = require('../lib/log');
+const argsFormFilter = require('./args-form-filter');
+const exec = require('./exec-promise');
+const fs = require('./sync-fs');
+const { info, trace, warn } = require('./log');
 
 const XLS2XFORM = 'xls2xform-medic';
 const INSTALLATION_INSTRUCTIONS = `\nE To install the latest pyxform, try one of the following:
@@ -28,7 +29,9 @@ module.exports = async (projectDir, subDirectory, options) => {
     return Promise.resolve();
   }
 
-  const filesToConvert = getPathsToConvert(formsDir, options);
+  const filesToConvert = argsFormFilter(formsDir, '.xlsx', options)
+    .filter(name => !name.startsWith('~$')) // ignore Excel "owner files"
+    .filter(name => name !== 'PLACE_TYPE-create.xlsx' && name !== 'PLACE_TYPE-edit.xlsx');
 
   for (let xls of filesToConvert) {
     const originalSourcePath = `${formsDir}/${xls}`;
@@ -48,24 +51,6 @@ module.exports = async (projectDir, subDirectory, options) => {
     await fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
     trace('Converted form', originalSourcePath);
   }
-};
-
-const getPathsToConvert = (formsDir, options) => {
-  const candidateFiles = fs.readdir(formsDir)
-    .filter(name => name.endsWith('.xlsx'))
-    .filter(name => !name.startsWith('~$')) // ignore Excel "owner files"
-    .filter(name => name !== 'PLACE_TYPE-create.xlsx' && name !== 'PLACE_TYPE-edit.xlsx');
-  
-  const formAllowList = options && options.forms && options.forms.filter(form => !form.startsWith('--'));
-  if (!formAllowList || !formAllowList.length) {
-    return candidateFiles;
-  }
-
-  const filteredFiles = candidateFiles.filter(name => formAllowList.includes(fs.withoutExtension(name)));
-  if (candidateFiles.length && !filteredFiles.length) {
-    warn(`No matches found for files matching form filter: ${formAllowList.join('.xlsx,')}.xlsx`);
-  }
-  return filteredFiles;
 };
 
 const xls2xform = (sourcePath, targetPath) =>
