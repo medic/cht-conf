@@ -23,8 +23,7 @@ module.exports = () => {
         .map(fileName => {
           const id = idFor(fileName);
           const languageCode = id.substring('messages-'.length);
-          const languageCodeIsValid = isLanguageCodeValid(languageCode);
-          if (!languageCodeIsValid) {
+          if (!isLanguageCodeValid(languageCode)) {
             throw new Error(`The language code '${languageCode}' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.`);
           }
 
