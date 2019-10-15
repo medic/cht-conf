@@ -247,7 +247,9 @@ function parseColumn(rawCol, rawVal) {
     const type = parts[1];
     switch(type) {
       case 'date': val = new Date(rawVal); break;
+      case 'rel-date': val = new Date(new Date().getTime() + (parseInt(rawVal) * 24 * 60 * 60 * 1000)); break;
       case 'timestamp': val = parseTimestamp(rawVal); break;
+      case 'rel-timestamp': val = new Date().getTime() + (parseInt(rawVal) * 24 * 60 * 60 * 1000); break;
       case 'int': val = int(rawVal); break;
       case 'bool': val = parseBool(rawVal); break;
       case 'string': val = rawVal; break;

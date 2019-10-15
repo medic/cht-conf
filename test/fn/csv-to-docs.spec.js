@@ -8,6 +8,8 @@ const fs = require('../../src/lib/sync-fs');
 describe('csv-to-docs', function() {
   this.timeout(30000); // allow time for slow things
 
+  sinon.useFakeTimers();
+
   const testDir = `data/csv-to-docs`;
 
   fs.dirs(testDir)
