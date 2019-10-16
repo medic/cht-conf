@@ -46,8 +46,8 @@ const compileDeclarativeFiles = async (projectDir, options) => {
   
   const code = await pack(projectDir, pathToDeclarativeLib, baseEslintPath, options);
   return `define Target { _id: null, deleted: null, type: null, pass: null, date: null }
-define Contact { contact: null, reports: null }
-define Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }
+define Contact { contact: null, reports: null, tasks: null }
+define Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, startTime: null, endTime: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }
 rule GenerateEvents {
   when { c: Contact } then { ${code} }
 }`;
