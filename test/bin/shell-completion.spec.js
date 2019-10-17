@@ -22,7 +22,7 @@ describe('shell-completion', () => {
 
     exec(cmd, { encoding: 'utf8' }, (err, stdout) => {
 
-      assert.equal(stdout, 'compile-app-settings compress-pngs compress-svgs\n');
+      assert.equal(stdout, 'compile-app-settings compress-images compress-pngs compress-svgs\n');
 
     });
 
