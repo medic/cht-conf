@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const redactBasicAuth = require('redact-basic-auth');
 
 const NONE  = -1;
@@ -14,7 +15,8 @@ module.exports.LEVEL_WARN  = WARN;
 module.exports.LEVEL_INFO  = INFO;
 module.exports.LEVEL_TRACE = TRACE;
 
-module.exports.level = ERROR;
+// Log everything by default
+module.exports.level = TRACE;
 
 module.exports.error = (...args) => module.exports.level >= ERROR && logAtLevel('\x1b[31m', 'ERROR', ...args);
 module.exports.info = (...args)  => module.exports.level >= INFO  && logAtLevel('\x1b[32m', 'INFO', ...args);

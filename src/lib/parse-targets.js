@@ -1,6 +1,7 @@
 const path = require('path');
 const filterProperties = require('../lib/filter-properties');
 const fs = require('./sync-fs');
+const { warn } = require('./log');
 
 function warnOnUnexpectedProperties (targets) {
   const EXPECTED_KEYS = [
@@ -27,22 +28,14 @@ function warnOnUnexpectedProperties (targets) {
   targets.forEach((target, targetIndex) => {
     Object.keys(target)
       .filter(key => !EXPECTED_KEYS.includes(key))
-      .forEach(key => console.warn(`Unexpected key found on target "${target.id || targetIndex}": ${key}`));
+      .forEach(key => warn(`Unexpected key found on target "${target.id || targetIndex}": ${key}`));
   });
 }
 
 const getTargets = (projectDir) => {
-  const pathToNoolsExtras = path.join(projectDir, 'nools-extras.js');
   const pathToTargetJs = path.join(projectDir, 'targets.js');
-  
-  let targets;
-  try {
-    global.extras = require(pathToNoolsExtras);
-    targets = require(pathToTargetJs);  
-  } finally {
-    delete global.extras;
-  }
 
+  const targets = require(pathToTargetJs);
   warnOnUnexpectedProperties(targets);
 
   return targets;
@@ -61,15 +54,24 @@ module.exports = {
     const jsonExists = fs.exists(jsonPath);
     const jsExists   = fs.exists(jsPath);
 
-    const err = m => { throw new Error(`Error loading targets: ${m}`); };
+    const throwError = err => {
+      throw new Error(`Error loading targets: ${err}`);
+    };
 
-    if(!jsonExists && !jsExists) err(`Expected to find targets defined at one of ${jsonPath} or ${jsPath}, but could not find either.`);
-    if(jsonExists  && jsExists)  err(`Targets are defined at both ${jsonPath} and ${jsPath}.  Only one of these files should exist.`);
+    if (!jsonExists && !jsExists) {
+      throwError(`Expected to find targets defined at one of ${jsonPath} or ${jsPath}, but could not find either.`);
+    }
 
-    if(jsonExists) return fs.readJson(jsonPath);
+    if (jsonExists && jsExists) {
+      throwError(`Targets are defined at both ${jsonPath} and ${jsPath}.  Only one of these files should exist.`);
+    }
+
+    if (jsonExists) return fs.readJson(jsonPath);
 
     const targets = getTargets(projectDir);
-    if(!targets) err(`No array named 'targets' was defined in ${jsPath}`);
+    if (!targets || !Array.isArray(targets)) {
+      throwError(`Targets.js is expected to module.exports=[] an array of targets. ${jsPath}`);
+    }
 
     return {
       enabled: true,

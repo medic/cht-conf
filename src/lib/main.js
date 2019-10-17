@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 
 const opn = require('opn');
-const readline = require('readline-sync');
-const redactBasicAuth = require('redact-basic-auth');
-const url = require('url');
 
 const checkForUpdates = require('../lib/check-for-updates');
-const emoji = require('../lib/emoji');
-const log = require('../lib/log');
+const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-dependency-version');
+const environment = require('./environment');
 const fs = require('../lib/sync-fs');
-const supportedActions = require('../cli/supported-actions');
+const getApiUrl = require('../lib/get-api-url');
+const log = require('../lib/log');
+const readline = require('readline-sync');
+const redactBasicAuth = require('redact-basic-auth');
 const shellCompletionSetup = require('../cli/shell-completion-setup');
+const supportedActions = require('../cli/supported-actions');
 const usage = require('../cli/usage');
 
 const { error, info, warn } = log;
@@ -28,8 +29,18 @@ const defaultActions = [
   'upload-contact-forms',
   'upload-resources',
   'upload-custom-translations',
-  'csv-to-docs',
-  'upload-docs',
+];
+const defaultArchiveActions = [
+  'compile-app-settings',
+  'upload-app-settings',
+  'convert-app-forms',
+  'convert-collect-forms',
+  'convert-contact-forms',
+  'upload-app-forms',
+  'upload-collect-forms',
+  'upload-contact-forms',
+  'upload-resources',
+  'upload-custom-translations',
 ];
 
 module.exports = async (argv, env) => {
@@ -57,18 +68,23 @@ module.exports = async (argv, env) => {
   }
 
   if (cmdArgs['supported-actions']) {
-    console.log('Supported actions:\n', supportedActions.join('\n  '));
+    info('Supported actions:\n', supportedActions.join('\n  '));
     return 0;
   }
 
   if (cmdArgs.version) {
-    console.log(require('../../package.json').version);
+    info(require('../../package.json').version);
     return 0;
   }
 
   if (cmdArgs.changelog) {
-      opn('https://github.com/medic/medic-conf/releases');
-      return process.exit(0);
+    opn('https://github.com/medic/medic-conf/releases');
+    return process.exit(0);
+  }
+
+  if (cmdArgs.archive && !cmdArgs.destination) {
+    error('--destination=<path to save files> is required with --archive.');
+    return -1;
   }
 
   if (cmdArgs['accept-self-signed-certs']) {
@@ -87,56 +103,11 @@ module.exports = async (argv, env) => {
   }
 
   //
-  // Compile instance information
+  // Dependency check
   //
-  if (cmdArgs.user && !cmdArgs.instance) {
-    error('The --user switch can only be used if followed by --instance');
-    return -1;
-  }
-
-  let instanceUrl;
-  if (cmdArgs.local) {
-    const { COUCH_URL } = env;
-    if (COUCH_URL) {
-      instanceUrl = parseCouchUrl(COUCH_URL);
-
-      info('Using local url from COUCH_URL environment variable');
-      info(instanceUrl);
-      if (instanceUrl.hostname !== 'localhost') {
-        error(`You asked to configure a local instance, but the COUCH_URL env var is set to '${COUCH_URL}'.  This may be a remote server.`);
-        return -1;
-      }
-    } else {
-      instanceUrl = url.parse('http://admin:pass@localhost:5988');
-      info('Using default local url');
-    }
-  } else if (cmdArgs.instance) {
-    const password = readline.question(`${emoji.key}  Password: `, { hideEchoBack: true });
-    const instanceUsername = cmdArgs.user || 'admin';
-    const encodedPassword = encodeURIComponent(password);
-    instanceUrl = url.parse(`https://${instanceUsername}:${encodedPassword}@${cmdArgs.instance}.medicmobile.org`);
-  } else if (cmdArgs.url) {
-    instanceUrl = url.parse(cmdArgs.url);
-  } else {
-    error('Missing one of these required parameter: --local --instance --url');
-    usage();
-    return -1;
-  }
-
-  const projectName = fs.path.basename(fs.path.resolve('.'));
-
-  if (instanceUrl) {
-    const productionUrlMatch = instanceUrl.href.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
-    if (productionUrlMatch &&
-        productionUrlMatch[1] !== projectName &&
-        productionUrlMatch[1] !== 'alpha') {
-      warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
-          `against non-matching instance: \x1b[31m${redactBasicAuth(instanceUrl.href)}\x1b[33m`);
-      if(!readline.keyInYN()) {
-        error('User failed to confirm action.');
-        return -1;
-      }
-    }
+  const pathToProject = fs.path.resolve(cmdArgs.source || '.');
+  if (!cmdArgs['skip-dependency-check']) {
+    checkMedicConfDependencyVersion(pathToProject);
   }
 
   //
@@ -144,12 +115,7 @@ module.exports = async (argv, env) => {
   //
   let actions = cmdArgs._;
   if (!actions.length) {
-    actions = defaultActions;
-  }
-
-  let extraArgs = cmdArgs['--'];
-  if (!extraArgs.length) {
-    extraArgs = undefined;
+    actions = !cmdArgs.archive ? defaultActions : defaultArchiveActions;
   }
 
   const unsupported = actions.filter(a => !supportedActions.includes(a));
@@ -158,22 +124,68 @@ module.exports = async (argv, env) => {
     return -1;
   }
 
+  actions = actions.map(actionName => {
+    const action = require(`../fn/${actionName}`);
+    if (typeof action === 'function') {
+      return {
+        name: actionName,
+        requiresInstance: true,
+        execute: action
+      };
+    }
+
+    action.name = actionName;
+
+    return action;
+  });
+
+  //
+  // Initialize the environment
+  //
+  const projectName = fs.path.basename(pathToProject);
+
+  let apiUrl;
+  if (actions.some(action => action.requiresInstance)) {
+    apiUrl = getApiUrl(cmdArgs, env);
+    if (!apiUrl) {
+      error('Failed to obtain a url to the API');
+      return -1;
+    }
+  }
+
+  let extraArgs = cmdArgs['--'];
+  if (!extraArgs.length) {
+    extraArgs = undefined;
+  }
+
+  environment.initialize(pathToProject, !!cmdArgs.archive, cmdArgs.destination, extraArgs, apiUrl);
+
+  const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
+  const expectedOptions = ['alpha', projectName];
+  if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
+    warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
+        `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
+    if(!readline.keyInYN()) {
+      error('User failed to confirm action.');
+      return false;
+    }
+  }
+
   //
   // GO GO GO
   //
-  info(`Processing config in ${projectName} for ${instanceUrl.href}.`);
-  info('Actions:\n     -', actions.join('\n     - '));
-  info('Extra args:', extraArgs);
+  info(`Processing config in ${projectName}.`);
+  info('Actions:\n     -', actions.map(({name}) => name).join('\n     - '));
 
   const skipCheckForUpdates = cmdArgs.check === false;
-  if (actions.includes('check-for-updates') && !skipCheckForUpdates) {
-    await checkForUpdates({ nonFatal:true });
+  if (actions.some(action => action.name === 'check-for-updates') && !skipCheckForUpdates) {
+    await checkForUpdates({ nonFatal: true });
   }
 
   for (let action of actions) {
-    info(`Starting action: ${action}…`);
-    await executeAction(action, `${instanceUrl.href}medic`, extraArgs);
-    info(`${action} complete.`);
+    info(`Starting action: ${action.name}…`);
+    await executeAction(action);
+    info(`${action.name} complete.`);
   }
 
   if (actions.length > 1) {
@@ -181,11 +193,6 @@ module.exports = async (argv, env) => {
   }
 };
 
-const parseCouchUrl = COUCH_URL => {
-  const parsed = url.parse(COUCH_URL);
-  parsed.path = parsed.pathname = '';
-  parsed.host = `${parsed.hostname}:5988`;
-  return url.parse(url.format(parsed));
-};
+// Exists for generic mocking purposes
+const executeAction = action => action.execute();
 
-const executeAction = (action, instanceUrl, extraArgs) => require(`../fn/${action}`)('.', instanceUrl, extraArgs);

@@ -74,25 +74,31 @@ function withoutExtension(fileName) {
   return extensionStart === -1 ? fileName : fileName.substring(0, extensionStart);
 }
 
+function copy(from, to, { overwrite=true }={}) {
+  if (overwrite || !fs.existsSync(to)) {
+    fs.copyFileSync(from, to);
+  }
+}
+
 module.exports = {
-  copy: (from, to) => fs.writeFileSync(to, fs.readFileSync(from)),
-  dirs: dirs,
+  copy,
+  dirs,
   exists: fs.existsSync,
-  extension: extension,
-  fs: fs,
+  extension,
+  fs,
   mkdir: path => { try { mkdirp(path); } catch(e) { warn(e); } },
   mkdtemp: () => fs.mkdtempSync(`${os.tmpdir()}/medic-conf`),
-  path: path,
+  path,
   posixPath: p => p.split(path.sep).join('/'),
-  read: read,
+  read,
   readBinary: path => fs.readFileSync(path),
-  readCsv: readCsv,
-  readJson: readJson,
-  recurseFiles: recurseFiles,
+  readCsv,
+  readJson,
+  recurseFiles,
   deleteFilesInFolder: folderPath => recurseFiles(folderPath).forEach(filePath => fs.unlinkSync(filePath)),
   readdir: fs.readdirSync,
-  withoutExtension: withoutExtension,
-  write: (path, content) => fs.writeFileSync(path, content, 'utf8'),
+  withoutExtension,
+  write: (path, data, options = 'utf8') => fs.writeFileSync(path, data, options),
   writeBinary: (path, content) => fs.writeFileSync(path, content),
   writeJson: (path, json) => module.exports.write(path, JSON.stringify(json, null, 2) + '\n'),
 };

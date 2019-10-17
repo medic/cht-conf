@@ -1,17 +1,20 @@
-const assert = require('chai').assert;
+const { assert } = require('chai');
+const path = require('path');
+const sinon = require('sinon');
+
+const environment = require('../../src/lib/environment');
 const fs = require('../../src/lib/sync-fs');
 
-const TARGET_DIR = 'initialise-project-layout';
+const TARGET_DIR = path.join(__dirname, '../../build/initialise-project-layout');
 
 const initialiseProjectLayout = require('../../src/fn/initialise-project-layout');
 
-
 describe('initialise-project-layout', () => {
-
   it('should create a project with the desired layout', () => {
-
     // when
-    initialiseProjectLayout(TARGET_DIR);
+
+    sinon.stub(environment, 'pathToProject').get(() => TARGET_DIR);
+    initialiseProjectLayout.execute();
 
     // then
     assertExists('app_settings.json');
@@ -23,12 +26,9 @@ describe('initialise-project-layout', () => {
     assertExists('resources.json');
     assertExists('tasks.js');
     assertExists('targets.js');
-    assertExists('nools-extras.js');
-    assertExists('task-schedules.json');
+    assertExists('.eslintrc');
     assertExists('translations');
-
   });
-
 });
 
 

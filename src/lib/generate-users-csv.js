@@ -1,5 +1,5 @@
 const Json2csvParser = require('json2csv').Parser;
-const fs = require('fs');
+const fs = require('./sync-fs');
 const info = require('./log').info;
 
 module.exports = (data, csvPath) => {
@@ -19,10 +19,6 @@ module.exports = (data, csvPath) => {
     delete user.type;
   });
   const csv = json2csvParser.parse(data);
-  fs.writeFile(csvPath, csv, function(err) {
-    if (err) {
-      throw err;
-    }
-    info('Users csv has been saved');
-  });
+  fs.write(csvPath, csv);
+  info('Users csv has been saved');
 };

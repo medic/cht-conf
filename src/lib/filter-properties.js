@@ -5,14 +5,14 @@ module.exports = (objects, props) => {
     const filtered = {};
 
     if(props.required) props.required.forEach(prop => {
-      if(!original.hasOwnProperty(prop)) {
+      if(!Object.prototype.hasOwnProperty.call(original, prop)) {
         throw new Error(`missing required property: ${prop} in object:\n${prettyPrint(original)}`);
       }
       cp(original, filtered, prop);
     });
 
     if(props.recommended) props.recommended.forEach(prop => {
-      if(!original.hasOwnProperty(prop)) {
+      if(!Object.prototype.hasOwnProperty.call(original, prop)) {
         warn(`missing recommended property: ${prop} in object:\n${prettyPrint(original)}`);
       }
       cp(original, filtered, prop);
@@ -25,7 +25,9 @@ module.exports = (objects, props) => {
 };
 
 function cp(original, filtered, prop) {
-  if(original.hasOwnProperty(prop)) filtered[prop] = original[prop];
+  if(Object.prototype.hasOwnProperty.call(original, prop)) {
+    filtered[prop] = original[prop];
+  }
 }
 
 function prettyPrint(o) {

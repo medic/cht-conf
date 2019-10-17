@@ -1,5 +1,8 @@
+const path = require('path');
+
+const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
-const info = require('../lib/log').info;
+const { info } = require('../lib/log');
 
 const LAYOUT = {
   'app_settings.json': {},
@@ -8,8 +11,15 @@ const LAYOUT = {
   resources: {},
   'targets.js': 'module.exports = [];',
   'tasks.js': 'module.exports = [];',
-  'nools-extras.js': 'module.exports = {};',
-  'task-schedules.json': {},
+  '.eslintrc': `{
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6
+  }
+}`,
   forms: {
     app: {},
     collect: {},
@@ -18,28 +28,36 @@ const LAYOUT = {
   translations: {},
 };
 
+function createRecursively(dir, layout) {
+  fs.mkdir(dir);
 
-module.exports = (projectDir, couchUrl, extraArgs) => {
+  for (const k in layout) {
+    const path = `${dir}/${k}`;
+
+    const val = layout[k];
+    if (typeof val === 'object') {
+      if (k.match(/.json$/)) {
+        fs.writeJson(path, val);
+      } else {
+        createRecursively(path, val);
+      }
+    } else fs.write(path, val);
+  }
+}
+
+function execute() {
+  const { extraArgs } = environment;
   if(extraArgs && extraArgs.length) extraArgs.forEach(createProject);
   else createProject('.');
 
   function createProject(root) {
-    const dir = `${projectDir}/${root}`;
+    const dir = path.join(environment.pathToProject, root);
     info(`Initialising project at ${dir}`);
     createRecursively(dir, LAYOUT);
   }
-};
-
-function createRecursively(dir, layout) {
-  fs.mkdir(dir);
-
-  for(const k in layout) {
-    const path = `${dir}/${k}`;
-
-    const val = layout[k];
-    if(typeof val === 'object') {
-      if(k.match(/.json$/)) fs.writeJson(path, val);
-      else createRecursively(path, val);
-    } else fs.write(path, val);
-  }
 }
+
+module.exports = {
+  requiresInstance: false,
+  execute: execute
+};
