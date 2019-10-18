@@ -23,6 +23,10 @@ module.exports = () => {
         .map(fileName => {
           const id = idFor(fileName);
           const languageCode = id.substring('messages-'.length);
+          if (!isLanguageCodeValid(languageCode)) {
+            throw new Error(`The language code '${languageCode}' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.`);
+          }
+
           let languageName = iso639.getName(languageCode);
           if (!languageName){
             warn(`'${languageCode}' is not a recognized ISO 639 language code, please ask admin to set the name`);
@@ -50,6 +54,12 @@ module.exports = () => {
     });
 
 };
+
+function isLanguageCodeValid(code) {
+  // valid CSS selector name to avoid https://github.com/medic/medic/issues/5982
+  var regex = /^[_a-zA-Z]+[_a-zA-Z0-9-]+$/;
+  return regex.test(code);
+}
 
 function propertiesAsObject(path) {
   const vals = {};

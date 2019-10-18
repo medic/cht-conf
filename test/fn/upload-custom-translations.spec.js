@@ -1,4 +1,4 @@
-const { assert } = require('chai');
+const { assert, expect } = require('chai');
 const sinon = require('sinon');
 
 const api = require('../api-stub');
@@ -436,5 +436,16 @@ describe('upload-custom-translations', () => {
     });
 
 
+  });
+
+  it('should crash for invalid language code', () => {
+    mockTestDir(`invalid-lang`);
+    return uploadCustomTranslations()
+      .then(() => {
+        throw new Error('ensures uploadCustomTranslations throws');
+      })
+      .catch(err => {
+        expect(err.message).to.include('bad(code');
+      });
   });
 });
