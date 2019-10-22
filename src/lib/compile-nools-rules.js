@@ -71,6 +71,8 @@ function compileWithDefaultLayout(projectDir) {
       contact: null,
       icon: null,
       date: null,
+      startTime: null,
+      endTime: null,
       title: null,
       fields: null,
       resolved: null,

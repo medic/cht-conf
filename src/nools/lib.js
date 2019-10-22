@@ -148,11 +148,16 @@ function emitTasksForSchedule(c, schedule, r) {
           dueDate = new Date(Utils.addDate(defaultDueDate, event.days));
         }
       }
-
+      
       const isTimely = Utils.isTimely(dueDate, event);
       if (!isTimely) {
         continue;
       }
+
+      var start = new Date(dueDate);
+      start.setDate(start.getDate() - event.start);
+      var end = new Date(dueDate);
+      end.setDate(end.getDate() + event.end + 1);
 
       task = {
         // One task instance for each event per form that triggers a task, not per contact
@@ -164,6 +169,8 @@ function emitTasksForSchedule(c, schedule, r) {
         icon: schedule.icon,
         date: dueDate,
         title: schedule.title,
+        startTime: start.getTime(),
+        endTime: end.getTime(),
         resolved: (!!schedule.maxVisibleTasks && emitted >= schedule.maxVisibleTasks) || schedule.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
         actions: schedule.actions.map(initActions),
       };
