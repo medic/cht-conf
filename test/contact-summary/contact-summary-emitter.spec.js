@@ -29,6 +29,17 @@ describe('contact-summary-emitter', function() {
       expect(appliesIf.args[0]).to.deep.eq([undefined]);
       expect(appliesIf.args[1]).to.deep.eq([report]);
     });
+
+    it('allows appliesToType to be an array', () => {
+      const appliesIf = sinon.stub().returns(false);
+      const cards = [
+        { appliesIf, appliesToType: ['report'] },
+      ];
+      const report = { report: true };
+      emitter({ cards }, {}, [report]);
+
+      expect(appliesIf.args[0]).to.deep.eq([report]);
+    });
   });
 
   describe('isReportValid', function() {

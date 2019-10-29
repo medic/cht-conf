@@ -8,8 +8,14 @@ function emitter(contactSummary, contact, reports) {
   var result = {
     cards: [],
     fields: fields.filter(function(f) {
-      if (f.appliesToType === contactType ||
-          (f.appliesToType.charAt(0) === '!' && f.appliesToType.slice(1) !== contactType)) {
+      var appliesToType = Array.isArray(f.appliesToType) ? 
+                          f.appliesToType : 
+                          (f.appliesToType ? f.appliesToType.split() : [undefined]);
+      var appliesToNotType = appliesToType.filter(function(type) {
+        return type.charAt(0) === '!';
+      });
+      if (appliesToType.includes(contact.type) ||
+          (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
         if (!f.appliesIf || f.appliesIf()) {
           delete f.appliesToType;
           delete f.appliesIf;
@@ -22,7 +28,11 @@ function emitter(contactSummary, contact, reports) {
   cards.forEach(function(card) {
     var idx1, r, added;
 
-    if (card.appliesToType === 'report') {
+    var appliesToType = Array.isArray(card.appliesToType) ? 
+                        card.appliesToType : 
+                        (card.appliesToType ? card.appliesToType.split() : [undefined]);
+    
+    if (appliesToType.includes('report')) {
       for (idx1=0; idx1<reports.length; ++idx1) {
         r = reports[idx1];
         if (!isReportValid(r)) {
@@ -35,7 +45,7 @@ function emitter(contactSummary, contact, reports) {
         }
       }
     } else {
-      if (contactType !== card.appliesToType) {
+      if (!appliesToType.includes(contactType)) {
         return;
       }
 
