@@ -210,6 +210,10 @@ function parseBool(b) {
   else return b.toLowerCase() === 'true';
 }
 
+function calcRelTimestamp(b) {
+  return new Date().getTime() + (parseInt(b) * 24 * 60 * 60 * 1000);
+}
+
 function isIntegerString(s) {
   return int(s).toString() === s;
 }
@@ -247,9 +251,9 @@ function parseColumn(rawCol, rawVal) {
     const type = parts[1];
     switch(type) {
       case 'date': val = new Date(rawVal); break;
-      case 'rel-date': val = new Date(new Date().getTime() + (parseInt(rawVal) * 24 * 60 * 60 * 1000)); break;
+      case 'rel-date': val = new Date(calcRelTimestamp(rawVal)); break;
       case 'timestamp': val = parseTimestamp(rawVal); break;
-      case 'rel-timestamp': val = new Date().getTime() + (parseInt(rawVal) * 24 * 60 * 60 * 1000); break;
+      case 'rel-timestamp': val = calcRelTimestamp(rawVal); break;
       case 'int': val = int(rawVal); break;
       case 'bool': val = parseBool(rawVal); break;
       case 'string': val = rawVal; break;
