@@ -12,9 +12,29 @@ module.exports = {
       filter: 'age',
       width: 3,
     },
+    {
+      appliesToType: '!person',
+      label: 'not.a.person',
+      value: contact.type,
+      width: 3,
+    },
   ],
 
-  cards: [],
+  cards: [
+    {
+      appliesToType: 'person',
+      appliesIf: () => true,
+      fields: [],
+      label: 'card1'
+    },
+    {
+      appliesToType: 'clinic',
+      appliesIf: () => true,
+      fields: [],
+      label: 'card2'
+    }
+  ],
+
 
   context: {
     foo: 'bar',

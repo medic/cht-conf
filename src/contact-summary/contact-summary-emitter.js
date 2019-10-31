@@ -2,24 +2,26 @@ function emitter(contactSummary, contact, reports) {
   var fields = contactSummary.fields || [];
   var context = contactSummary.context || {};
   var cards = contactSummary.cards || [];
-  
+
+  var contactType = contact && (contact.contact_type || contact.type);
+
   var result = {
     cards: [],
     fields: fields.filter(function(f) {
-          if (f.appliesToType === contact.type ||
-              (f.appliesToType.charAt(0) === '!' && f.appliesToType.slice(1) !== contact.type)) {
-            if (!f.appliesIf || f.appliesIf()) {
-              delete f.appliesToType;
-              delete f.appliesIf;
-              return true;
-            }
-          }
-        }),
+      if (f.appliesToType === contactType ||
+          (f.appliesToType.charAt(0) === '!' && f.appliesToType.slice(1) !== contactType)) {
+        if (!f.appliesIf || f.appliesIf()) {
+          delete f.appliesToType;
+          delete f.appliesIf;
+          return true;
+        }
+      }
+    }),
   };
 
   cards.forEach(function(card) {
     var idx1, r, added;
-    
+
     if (card.appliesToType === 'report') {
       for (idx1=0; idx1<reports.length; ++idx1) {
         r = reports[idx1];
@@ -33,7 +35,7 @@ function emitter(contactSummary, contact, reports) {
         }
       }
     } else {
-      if (contact.type !== card.appliesToType) {
+      if (contactType !== card.appliesToType) {
         return;
       }
 
@@ -43,9 +45,9 @@ function emitter(contactSummary, contact, reports) {
       }
     }
   });
-  
+
   result.context = context;
-  
+
   // return the result for 2.13+ as per #2635
   return result;
 }
