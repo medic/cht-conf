@@ -1,6 +1,8 @@
 const PouchDB = require('pouchdb-core');
+const sinon = require('sinon');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 
+const environment = require('../src/lib/environment');
 const express = require('express');
 const expressPouch = require('express-pouchdb');
 const ExpressSpy = require('./express-spy');
@@ -24,9 +26,10 @@ app.all('/api/*', mockMiddleware.requestHandler);
 app.use('/', stripAuth, expressPouch(PouchDB, opts));
 
 let server;
+const db = new PouchDB('medic', { adapter: 'memory' });
 
 module.exports = {
-  db: new PouchDB('medic', { adapter: 'memory' }),
+  db,
   giveResponses: mockMiddleware.setResponses,
   requestLog: () => mockMiddleware.requests.map(r => ({ method:r.method, url:r.originalUrl, body:r.body })),
   start: () => {
@@ -34,28 +37,26 @@ module.exports = {
     server = app.listen();
 
     const port = server.address().port;
-    module.exports.couchUrl = `http://admin:pass@localhost:${port}/medic`;
-
+    const couchUrl = `http://admin:pass@localhost:${port}/medic`;
+    sinon.stub(environment, 'apiUrl').get(() => couchUrl);
+    module.exports.couchUrl = couchUrl;
     module.exports.gatewayRequests = [];
   },
-  stop: () => {
+  stop: async () => {
     server.close();
     server = null;
     delete module.exports.couchUrl;
 
     // empty DB.  For some reason this seems simpler than re-initialising it -
     // probably due to express-pouchdb
-    const dbClear = module.exports.db
-      .allDocs()
-      .then(res => res.rows.map(r => r.id))
-      .then(ids => Promise.all(ids.map(id =>
-        module.exports.db
-          .get(id)
-          .then(doc => module.exports.db.remove(doc)))));
+    const res = await db.allDocs();
+    for (let id of res.rows.map(r => r.id)) {
+      const doc = await db.get(id);
+      await db.remove(doc);
+    }
+
     mockMiddleware.clearRequests();    
     mockMiddleware.reset();
-
-    return dbClear;
   },
 };
 

@@ -1,18 +1,18 @@
-const info = require('../lib/log').info;
+const environment = require('../lib/environment');
+const { info, warn } = require('../lib/log');
 const pouch = require('../lib/db');
-const warn = require('../lib/log').warn;
 
-module.exports = (projectDir, couchUrl, extras) => {
-  const db = pouch(couchUrl);
-
-  if(!extras || !extras.length) {
+module.exports = () => {
+  const db = pouch();
+  const { extraArgs } = environment;
+  if (!extraArgs || !extraArgs.length) {
     warn('No forms specified for deleting.');
     return;
   }
 
-  return Promise.all(extras.map(formName => {
+  return Promise.all(extraArgs.map(formName => {
     const docId = `form:${formName}`;
-    db.get(docId)
+    return db.get(docId)
       .then(doc => db.remove(doc))
       .then(() => info('Deleted form:', formName))
       .catch(e => warn(`Failed to remove form with doc ID ${docId}`, e));

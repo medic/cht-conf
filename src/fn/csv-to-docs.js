@@ -1,8 +1,9 @@
-const fs = require('../lib/sync-fs');
-const info = require('../lib/log').info;
 const stringify = require('canonical-json/index2');
 const uuid5 = require('uuid/v5');
-const warn = require('../lib/log').warn;
+
+const environment = require('../lib/environment');
+const fs = require('../lib/sync-fs');
+const { info, warn } = require('../lib/log');
 const generateCsv = require('../lib/generate-users-csv');
 
 const pretty = o => JSON.stringify(o, null, 2);
@@ -13,16 +14,16 @@ const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
 
 require('../lib/polyfill');
 
-module.exports = (projectDir)=> {
+module.exports = ()=> {
   const couchUrlUuid = uuid5('http://medicmobile.org/configurer/csv-to-docs/permanent-hash', uuid5.URL);
 
-  const csvDir = `${projectDir}/csv`;
+  const csvDir = `${environment.pathToProject}/csv`;
   if(!fs.exists(csvDir)) {
     warn(`No csv directory found at ${csvDir}.`);
     return Promise.resolve();
   }
 
-  const jsonDir = `${projectDir}/json_docs`;
+  const jsonDir = `${environment.pathToProject}/json_docs`;
   fs.mkdir(jsonDir);
 
   const saveJsonDoc = doc => fs.write(`${jsonDir}/${doc._id}.doc.json`, toSafeJson(doc) + '\n');
@@ -32,14 +33,16 @@ module.exports = (projectDir)=> {
     docs: {},
     references: [],
     exclusions: [],
+    users: []
   };
   const addToModel = (csvFile, docs) => {
     csvFile = csvFile.match(/^(?:.*[\/\\])?csv[\/\\](.*)\.csv$/)[1]; // eslint-disable-line no-useless-escape
     model.csvFiles[csvFile] = docs;
     docs.forEach(doc => {
       model.docs[doc._id] = doc;
-      if(!model[doc.type]) model[doc.type] = [];
-      model[doc.type].push(doc);
+      if (doc.type === 'user') {
+        model.users.push(doc);
+      }
     });
   };
 
@@ -53,10 +56,11 @@ module.exports = (projectDir)=> {
             const nameParts = fs.path.basename(csv).split('.');
             const prefix = nameParts[0];
             switch(prefix) {
-              case 'person': return processPersons(csv);
-              case 'place':  return processPlaces(csv);
-              case 'report': return processReports(nameParts[1], csv);
-              case 'users' : return processUsers(csv);
+              case 'contact': return processContacts('contact', csv);
+              case 'person':  return processPersons(csv);
+              case 'place':   return processPlaces(csv);
+              case 'report':  return processReports(nameParts[1], csv);
+              case 'users' :  return processUsers(csv);
               default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
             }
           })
@@ -65,9 +69,9 @@ module.exports = (projectDir)=> {
 
     .then(() => model.references.forEach(updateRef))
     .then(() => model.exclusions.forEach(removeExcludedField))
-    .then(() => { 
-      if(model.user) { 
-        generateCsv(model.user,projectDir + '/users.csv'); 
+    .then(() => {
+      if(model.users.length) {
+        generateCsv(model.users, environment.pathToProject + '/users.csv');
       }
     })
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));

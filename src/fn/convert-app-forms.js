@@ -1,7 +1,8 @@
 const convertForms = require('../lib/convert-forms');
+const environment = require('../lib/environment');
 
-module.exports = (projectDir, couchUrl, extras) => convertForms(projectDir, 'app', {
+module.exports = () => convertForms(environment.pathToProject, 'app', {
   enketo: true,
-  forms: extras,
+  forms: environment.extraArgs,
   transformer: xml => xml.replace('</instance>', '</instance>\n      <instance id="contact-summary"/>'),
 });

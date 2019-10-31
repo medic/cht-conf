@@ -17,11 +17,13 @@ describe('shell-completion', () => {
         '--supported-actions',
         '--version',
         '--accept-self-signed-certs',
+        '--skip-dependency-check',
 
         'backup-all-forms',
         'backup-app-settings',
         'check-for-updates',
         'compile-app-settings',
+        'compress-images',
         'compress-pngs',
         'compress-svgs',
         'convert-app-forms',

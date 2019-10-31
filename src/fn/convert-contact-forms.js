@@ -1,9 +1,10 @@
 const convertForms = require('../lib/convert-forms');
+const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 
-module.exports = (projectDir, couchUrl, extras) => {
+module.exports = () => {
 
-  const dir = `${projectDir}/forms/contact`;
+  const dir = `${environment.pathToProject}/forms/contact`;
   const placeTypesJson = `${dir}/place-types.json`;
 
   let PLACE_TYPES;
@@ -11,15 +12,15 @@ module.exports = (projectDir, couchUrl, extras) => {
     PLACE_TYPES = fs.readJson(placeTypesJson);
     Object.keys(PLACE_TYPES)
       .forEach(type => {
-        fs.copy(`${dir}/PLACE_TYPE-create.xlsx`, `${dir}/${type}-create.xlsx`);
-        fs.copy(`${dir}/PLACE_TYPE-edit.xlsx`, `${dir}/${type}-edit.xlsx`);
+        fs.copy(`${dir}/PLACE_TYPE-create.xlsx`, `${dir}/${type}-create.xlsx`,{ overwrite: false });
+        fs.copy(`${dir}/PLACE_TYPE-edit.xlsx`, `${dir}/${type}-edit.xlsx`, { overwrite: false });
       });
   }
 
-  return convertForms(projectDir, 'contact', {
+  return convertForms(environment.pathToProject, 'contact', {
       enketo: true,
       force_data_node: 'data',
-      forms: extras,
+      forms: environment.extraArgs,
       transformer: (xml, path) => {
         const type = path.replace(/.*\/(.*?)(-(create|edit))?\.xml/, '$1');
 
