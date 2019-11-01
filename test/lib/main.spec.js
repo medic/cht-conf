@@ -101,7 +101,7 @@ describe('main', () => {
     expect(mocks.executeAction.args[0][0].name).to.eq('initialise-project-layout');
   });
 
-  const expectExecuteActionBehavior = (expectedActions, expectedExtraParams) => {
+  const expectExecuteActionBehavior = (expectedActions, expectedExtraParams, needsApi) => {
     if (Array.isArray(expectedActions)) {
       expect(mocks.executeAction.args.map(args => args[0].name)).to.deep.eq(expectedActions);
     } else {
@@ -109,18 +109,19 @@ describe('main', () => {
     }
 
     expect(mocks.environment.initialize.args[0][3]).to.deep.eq(expectedExtraParams);
-    expect(mocks.environment.initialize.args[0][4]).to.eq('http://api');
+
+    expect(mocks.environment.initialize.args[0][4]).to.eq(needsApi ? 'http://api' : undefined);
   };
 
   it('--local no COUCH_URL', async () => {
     await main([...normalArgv, '--local'], {});
-    expectExecuteActionBehavior(defaultActions, undefined);
+    expectExecuteActionBehavior(defaultActions, undefined, true);
   });
 
   it('--local with COUCH_URL to localhost', async () => {
     const COUCH_URL = 'http://user:pwd@localhost:5988/medic';
     await main([...normalArgv, '--local'], { COUCH_URL });
-    expectExecuteActionBehavior(defaultActions, undefined);
+    expectExecuteActionBehavior(defaultActions, undefined, true);
   });
 
   it('--instance + 2 ordered actions', async () => {
@@ -152,7 +153,7 @@ describe('main', () => {
 
     it('single action', async () => {
       await main([...normalArgv, '--archive', '--destination=foo', 'upload-app-settings'], {});
-      expectExecuteActionBehavior('upload-app-settings');
+      expectExecuteActionBehavior('upload-app-settings', undefined, true);
       expect(mocks.readline.keyInYN.callCount).to.eq(0);
     });
 

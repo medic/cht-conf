@@ -19,7 +19,7 @@ describe('csv-to-docs', function() {
         sinon.stub(environment, 'pathToProject').get(() => dir);
 
         // when
-        csvToDocs()
+        csvToDocs.execute()
           .then(() => {
             const generatedDocsDir = `${dir}/json_docs`;
             const expectedDocsDir  = `${dir}/expected-json_docs`;

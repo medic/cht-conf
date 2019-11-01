@@ -1,3 +1,6 @@
 const checkForUpdates = require('../lib/check-for-updates');
 
-module.exports = () => checkForUpdates();
+module.exports = {
+  requiresInstance: false,
+  execute: () => checkForUpdates()
+};

@@ -33,7 +33,7 @@ module.exports = {
 
       before(() => {
         sinon.stub(environment, 'pathToProject').get(() => projectDir);
-        return convertForms();
+        return convertForms.execute();
       });
 
     });
