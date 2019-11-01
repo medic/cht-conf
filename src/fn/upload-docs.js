@@ -13,7 +13,7 @@ const { info, trace, warn, error } = log;
 const FILE_EXTENSION = '.doc.json';
 const INITIAL_BATCH_SIZE = 100;
 
-module.exports = async () => {
+const execute = async () => {
   const args = minimist(environment.extraArgs || [], { boolean: true });
 
   const docDir = path.resolve(environment.pathToProject, args.docDirectoryPath || 'json_docs');
@@ -108,3 +108,8 @@ const getErrorsWhereDocIdDiffersFromFilename = filePaths =>
       }
     })
     .filter(err => err);
+
+module.exports = {
+  requiresInstance: true,
+  execute: execute
+};
