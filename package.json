@@ -44,6 +44,7 @@
     "pouchdb-adapter-http": "^7.1.1",
     "pouchdb-core": "^7.1.1",
     "pouchdb-mapreduce": "^7.1.1",
+    "properties": "^1.2.1",
     "readline-sync": "^1.4.10",
     "redact-basic-auth": "^1.0.0",
     "request": "^2.88.0",

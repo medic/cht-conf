@@ -433,6 +433,21 @@ describe('upload-custom-translations', () => {
           });
       });
 
+      it('should properly upload translations containing escaped exclamation marks', () => {
+        mockTestDir(`escaped-exclamation`);
+        return uploadCustomTranslations()
+          .then(() => expectTranslationDocs('en'))
+          .then(() => getTranslationDoc('en'))
+          .then(messagesEn => {
+            assert.deepEqual(messagesEn.custom, {
+              'one.escaped.exclamation':'one equals one!',
+              'two.escaped.exclamation':'one equals one!!',
+            });
+            assert.deepEqual(messagesEn.generic, {});
+            assert(!messagesEn.values);
+          });
+      });
+
     });
 
 
