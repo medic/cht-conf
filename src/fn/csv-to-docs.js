@@ -270,5 +270,5 @@ function parseColumn(rawCol, rawVal) {
 
 module.exports = {
   requiresInstance: false,
-  execute: execute
+  execute
 };

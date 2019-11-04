@@ -91,5 +91,5 @@ const execute = async () => {
 
 module.exports = {
   requiresInstance: true,
-  execute: execute
+  execute
 };

@@ -111,5 +111,5 @@ const getErrorsWhereDocIdDiffersFromFilename = filePaths =>
 
 module.exports = {
   requiresInstance: true,
-  execute: execute
+  execute
 };

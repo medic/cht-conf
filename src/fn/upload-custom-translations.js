@@ -124,5 +124,5 @@ async function genericTranslationsStructure(db) {
 
 module.exports = {
   requiresInstance: true,
-  execute: execute
+  execute
 };
