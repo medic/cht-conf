@@ -1,13 +1,24 @@
+const minimist = require('minimist');
 const stringify = require('canonical-json/index2');
 const uuid5 = require('uuid/v5');
-
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { info, warn } = require('../lib/log');
+const generateCsv = require('../lib/generate-users-csv');
+const pouch = require('../lib/db');
+
+
+const pretty = o => JSON.stringify(o, null, 2);
+
+const RESERVED_COL_NAMES = [ 'type', 'form' ];
+const REF_MATCHER = /^(?:GET )?((\w+) OF )?(\w+) WHERE (.*)$/i;
+const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
 
 
 
 module.exports = ()=> {
+  // const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
+   const db = pouch();
   const couchUrlUuid = uuid5('http://medicmobile.org/configurer/csv-to-docs/permanent-hash', uuid5.URL);
 
   const csvDir = `${environment.pathToProject}/csv`;
@@ -46,10 +57,15 @@ module.exports = ()=> {
           .then(() => {
             info('Processing CSV file:', csv, '…');
 
+
             const nameParts = fs.path.basename(csv).split('.');
             const prefix = nameParts[0];
+            info('Processing CSV file:', prefix, '…');
+
             switch(prefix) {
-              case 'supervisor': return processContacts('contact', csv);
+              case 'contact': 
+              // info(processContacts('contact', csv));
+              return processContacts('contact', csv);
               case 'workflow':  return processWorkflow(nameParts[1], csv);
               default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
             }
@@ -137,16 +153,103 @@ module.exports = ()=> {
     json._id = id;
     return json;
   }
-};
 
-const writeDocumentToDisk = ({ docDirectoryPath }, doc) => {
-  const destinationPath = path.join(docDirectoryPath, `${doc._id}.doc.json`);
-  if (fs.exists(destinationPath)) {
-    warn(`File at ${destinationPath} already exists and is being overwritten.`);
+ function parseColumn(rawCol, rawVal) {
+  let val, reference, excluded = false;
+
+  const parts = rawCol.split(/[:>]/);
+  const col = parts[0];
+
+  if(parts.length === 1) {
+    val = rawVal;
+  } else if(parts.length === 2) {
+    const type = parts[1];
+    switch(type) {
+      case 'date': val = new Date(rawVal); break;
+      case 'timestamp': val = parseTimestamp(rawVal); break;
+      case 'int': val = int(rawVal); break;
+      case 'bool': val = parseBool(rawVal); break;
+      case 'string': val = rawVal; break;
+      case 'float': val = Number.parseFloat(rawVal); break;
+      case 'excluded': val = rawVal; excluded = true; break;
+      default: {
+        if(isReference(type)) {
+          val = rawVal;
+          reference = type;
+        } else {
+          throw new Error(`Unrecognised column type: ${type} for ${rawCol}`);
+        }
+      }
+    }
+   } else {
+    throw new Error(`Wrong number of parts in column definition: ${rawCol} (should be 1, 2 or 4, but found ${parts.length}).`);
+   }
+   return { col:col, val:val, reference:reference, excluded:excluded };
   }
 
-  trace(`Writing updated document to ${destinationPath}`);
-  fs.writeJson(destinationPath, doc);
+  function setCol(doc, col, val) {
+	  const colParts = col.split('.');
+
+	  if(RESERVED_COL_NAMES.includes(colParts[0]))
+	    throw new Error(`Cannot set property defined by column '${col}' - this property name is protected.`);
+	  while(colParts.length > 1) {
+	    col = colParts.shift();
+	    if(!doc[col]) doc[col] = {};
+	    doc = doc[col];
+	  }
+	  doc[colParts[0]] = val;
+  }
+
+	function removeExcludedField(exclusion) {
+	  delete exclusion.doc[exclusion.propertyName];
+	}
+
+	/** @return JSON string with circular references ignored */
+	function toSafeJson(o, depth, seen) {
+	  if(!depth) depth = 0;
+	  if(!seen) seen = [];
+
+	  const TAB = '  ';
+	  let i = depth, indent = '';
+	  while(--i >= 0) indent += TAB;
+
+	  switch(typeof o) {
+	    case 'boolean':
+	    case 'number':
+	      return o;
+	    case 'string':
+	      return `"${o}"`;
+	    case 'object':
+	      if(Array.isArray(o)) {
+	        return `${indent}[\n` +
+	            o.map(el => toSafeJson(el, depth + 1)) +
+	            `\n${indent}]`;
+	      } else if(o instanceof Date) {
+	        return `"${o.toJSON()}"`;
+	      }
+	      return '{' +
+	          Object.keys(o)
+	              .map(k => {
+	                const v = o[k];
+	                if(seen.includes(v)) return;
+	                return `\n${TAB}${indent}"${k}": ` +
+	                    toSafeJson(v, depth+1, seen.concat(o));
+	              })
+	              .filter(el => el) +
+	          '\n' + indent + '}';
+	    default: throw new Error(`Unknown type/val: ${typeof o}/${o}`);
+	  }
+	}
+	};
+
+	const writeDocumentToDisk = ({ docDirectoryPath }, doc) => {
+	  const destinationPath = path.join(docDirectoryPath, `${doc._id}.doc.json`);
+	  if (fs.exists(destinationPath)) {
+	    warn(`File at ${destinationPath} already exists and is being overwritten.`);
+	  }
+
+	  trace(`Writing updated document to ${destinationPath}`);
+	  fs.writeJson(destinationPath, doc);
 };
 
 const fetch = {
@@ -195,10 +298,10 @@ const fetch = {
   const replacementLineage = lineageManipulation.createLineageFromDoc(parentDoc);
 
 
-const finalList = [...contactDocs, ...usersDocs]
-for (let contactId of finalList) {
+  const finalList = [...contactDocs, ...usersDocs]
+   for (let contactId of finalList) {
 
-}
+  }
 
 
   for (let contactId of options.contactIds) {
@@ -234,4 +337,33 @@ for (let contactId of finalList) {
   }
 
   info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);
+};
+
+
+
+
+  // Parses extraArgs and asserts if required parameters are not present
+const parseExtraArgs = (projectDir, extraArgs = []) => {
+  const args = minimist(extraArgs, { boolean: true });
+
+  const contactIds = (args.contacts || args.contact || '')
+    .split(',')
+    .filter(id => id);
+
+  if (contactIds.length === 0) {
+    // usage();
+    throw Error('Action "move-contacts" is missing required list of contact_id to be moved');
+  }
+
+  if (!args.parent) {
+    // usage();
+    throw Error('Action "move-contacts" is missing required parameter parent');
+  }
+
+  return {
+    parentId: args.parent,
+    contactIds,
+    docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
+    force: !!args.force,
+  };
 };
