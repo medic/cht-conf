@@ -1,10 +1,11 @@
-const abortPromiseChain = require('../lib/abort-promise-chain');
-const attachmentsFromDir = require('../lib/attachments-from-dir');
-const attachmentFromFile = require('../lib/attachment-from-file');
-const fs = require('../lib/sync-fs');
-const { info, warn } = require('../lib/log');
-const insertOrReplace = require('../lib/insert-or-replace');
-const pouch = require('../lib/db');
+const abortPromiseChain = require('./abort-promise-chain');
+const argsFormFilter = require('./args-form-filter');
+const attachmentsFromDir = require('./attachments-from-dir');
+const attachmentFromFile = require('./attachment-from-file');
+const fs = require('./sync-fs');
+const { info, warn } = require('./log');
+const insertOrReplace = require('./insert-or-replace');
+const pouch = require('./db');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 
@@ -18,16 +19,7 @@ module.exports = (projectDir, subDirectory, options) => {
     return Promise.resolve();
   }
 
-  const formFilter = name => {
-    if (options && Array.isArray(options) && options.length) {
-      return options.includes(fs.withoutExtension(name));
-    }
-    return true;
-  };
-
-  return fs.readdir(formsDir)
-    .filter(name => name.endsWith('.xml'))
-    .filter(formFilter)
+  return argsFormFilter(formsDir, '.xml', options)
     .reduce((promiseChain, fileName) => {
       info(`Preparing form for upload: ${fileName}…`);
 
