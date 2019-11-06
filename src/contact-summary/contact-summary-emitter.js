@@ -12,7 +12,7 @@ function emitter(contactSummary, contact, reports) {
                           f.appliesToType : 
                           (f.appliesToType ? f.appliesToType.split() : [undefined]);
       var appliesToNotType = appliesToType.filter(function(type) {
-        return type.charAt(0) === '!';
+        return type && type.charAt(0) === '!';
       });
       if (appliesToType.includes(contact.type) ||
           (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {

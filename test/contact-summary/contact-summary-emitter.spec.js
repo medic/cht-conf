@@ -40,6 +40,96 @@ describe('contact-summary-emitter', function() {
 
       expect(appliesIf.args[0]).to.deep.eq([report]);
     });
+
+    it('does not add cards with appliesToType different than contact type', () => {
+      const appliesIf = sinon.stub().returns(false);
+      const cards = [
+        { appliesIf, appliesToType: ['r', 'a'] },
+      ];
+      const report = { report: true };
+      emitter({ cards }, { type: 'x' }, [report]);
+
+      assert.equal(appliesIf.callCount, 0);
+    });
+
+    it('does not add cards with undefined appliesToType and existing contact type', () => {
+      const appliesIf = sinon.stub().returns(false);
+      const cards = [
+        { appliesIf },
+      ];
+      const report = { report: true };
+      emitter({ cards }, { type: 'x' }, [report]);
+
+      assert.equal(appliesIf.callCount, 0);
+    });
+
+    it('adds cards with undefined appliesToType and undefined contact type', () => {
+      const appliesIf = sinon.stub().returns(false);
+      const cards = [
+        { appliesIf },
+      ];
+      const report = { report: true };
+      emitter({ cards }, {}, [report]);
+
+      expect(appliesIf.args[0]).to.deep.eq([undefined]);
+    });
+  });
+
+  describe('fields', () => {
+    it('adds fields with appliesToType being the negative of a type different than the contact type', () => {
+      const appliesIf = sinon.stub().returns(true);
+      const fields = [
+        { appliesIf, appliesToType: ['!r'] },
+      ];
+      const report = { report: true };
+      const result = emitter({ fields }, { type: 'z' }, [report]);
+
+      expect(result.fields).to.deep.eq(fields);
+    });
+
+    it('does not add fields with appliesToType being the negative of contact type', () => {
+      const appliesIf = sinon.stub().returns(true);
+      const fields = [
+        { appliesIf, appliesToType: ['!r'] },
+      ];
+      const report = { report: true };
+      const result = emitter({ fields }, { type: 'r' }, [report]);
+
+      expect(result.fields).to.deep.eq([]);
+    });
+
+    it('does not add fields with one of appliesToType being the negative of the contact type', () => {
+      const appliesIf = sinon.stub().returns(true);
+      const fields = [
+        { appliesIf, appliesToType: ['!r', 'x'] },
+      ];
+      const report = { report: true };
+      const result = emitter({ fields }, { type: 'r' }, [report]);
+
+      expect(result.fields).to.deep.eq([]);
+    });
+
+    it('does not add fields with undefined appliesToType and defined contact type', () => {
+      const appliesIf = sinon.stub().returns(true);
+      const fields = [
+        { appliesIf },
+      ];
+      const report = { report: true };
+      const result = emitter({ fields }, { type: 'r' }, [report]);
+
+      expect(result.fields).to.deep.eq([]);
+    });
+
+    it('does add fields with undefined appliesToType and undefined contact type', () => {
+      const appliesIf = sinon.stub().returns(true);
+      const fields = [
+        { appliesIf },
+      ];
+      const report = { report: true };
+      const result = emitter({ fields }, {}, [report]);
+
+      expect(result.fields).to.deep.eq(fields);
+    });
   });
 
   describe('isReportValid', function() {
