@@ -32,7 +32,7 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
   var i;
 
   if (taskDefinition.appliesToType) {
-    var contactType = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
+    var contactType = c.contact && (c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type);
     var shouldApply = taskDefinition.appliesTo === 'contacts' ?
       taskDefinition.appliesToType.indexOf(contactType) !== -1 :
       r && taskDefinition.appliesToType.indexOf(r.form) !== -1;
@@ -96,14 +96,13 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
       }
 
       // if (!Utils.isTimely(dueDate, event)) {
-      //   continue;
+        // continue;
       // }
 
       var start = new Date(dueDate);
       start.setDate(start.getDate() - event.start);
       var end = new Date(dueDate);
       end.setDate(end.getDate() + event.end + 1);
-      console.log(event.id, i);
 
       task = {
         // One task instance for each event per form that triggers a task, not per contact
