@@ -14,7 +14,7 @@ function emitter(contactSummary, contact, reports) {
       var appliesToNotType = appliesToType.filter(function(type) {
         return type && type.charAt(0) === '!';
       });
-      if (appliesToType.includes(contact.type) ||
+      if (appliesToType.includes(contactType) ||
           (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
         if (!f.appliesIf || f.appliesIf()) {
           delete f.appliesToType;
