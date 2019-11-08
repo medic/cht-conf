@@ -4,7 +4,7 @@ const path = require('path');
 const { info, error } = require('../lib/log');
 const environment = require('../lib/environment');
 
-module.exports = async () => {
+module.exports = () => {
   const settings = fs.read(path.join(environment.pathToProject, 'app_settings.json'));
   return api().updateAppSettings(settings)
     .then(res => {
