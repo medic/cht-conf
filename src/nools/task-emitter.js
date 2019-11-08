@@ -95,14 +95,9 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         }
       }
 
-      // if (!Utils.isTimely(dueDate, event)) {
-        // continue;
-      // }
-
-      var start = new Date(dueDate);
-      start.setDate(start.getDate() - event.start);
-      var end = new Date(dueDate);
-      end.setDate(end.getDate() + event.end + 1);
+      if (!Utils.isTimely(dueDate, event)) {
+        continue;
+      }
 
       task = {
         // One task instance for each event per form that triggers a task, not per contact
@@ -113,8 +108,8 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         contact: obtainContactLabelFromSchedule(taskDefinition, c, r),
         icon: taskDefinition.icon,
         date: dueDate,
-        startTime: start.getTime(),
-        endTime: end.getTime(),
+        displayDaysBefore: event.start,
+        displayDaysAfter: event.end,
         title: taskDefinition.title,
         resolved: taskDefinition.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
         actions: taskDefinition.actions.map(initActions),
