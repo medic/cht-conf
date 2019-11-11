@@ -8,9 +8,7 @@ function emitter(contactSummary, contact, reports) {
   var result = {
     cards: [],
     fields: fields.filter(function(f) {
-      var appliesToType = Array.isArray(f.appliesToType) ? 
-                          f.appliesToType : 
-                          (f.appliesToType ? f.appliesToType.split() : [undefined]);
+      var appliesToType = convertToArray(f.appliesToType);
       var appliesToNotType = appliesToType.filter(function(type) {
         return type && type.charAt(0) === '!';
       });
@@ -28,9 +26,7 @@ function emitter(contactSummary, contact, reports) {
   cards.forEach(function(card) {
     var idx1, r, added;
 
-    var appliesToType = Array.isArray(card.appliesToType) ? 
-                        card.appliesToType : 
-                        (card.appliesToType ? card.appliesToType.split() : [undefined]);
+    var appliesToType = convertToArray(card.appliesToType);
     
     if (appliesToType.includes('report')) {
       for (idx1=0; idx1<reports.length; ++idx1) {
@@ -60,6 +56,12 @@ function emitter(contactSummary, contact, reports) {
 
   // return the result for 2.13+ as per #2635
   return result;
+}
+
+function convertToArray(appliesToType) {
+  return Array.isArray(appliesToType) ? 
+                        appliesToType : 
+                        (appliesToType ? appliesToType.split() : [undefined]);  
 }
 
 function isReportValid(report) {
