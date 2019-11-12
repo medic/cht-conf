@@ -90,10 +90,7 @@ module.exports = ()=> {
 
   function processContacts(contactType, csv, ids, contactDocs, args){
     const { rows, cols } = fs.readCsv(csv);
-    var colNames = (args.columns || args.column || '')
-    .split(',')
-    .filter(id => id);
-
+    var colNames = args.colNames;
 	if (colNames.length === 0) {
 		warn(' No columns specified, the script will add all the columns in the CSV!');
 		colNames = cols;
