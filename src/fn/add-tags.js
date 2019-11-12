@@ -3,52 +3,25 @@ const stringify = require('canonical-json/index2');
 const uuid5 = require('uuid/v5');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
-const { info, warn } = require('../lib/log');
+const path = require('path');
+const { warn, trace, info, error } = require('../lib/log');
 const generateCsv = require('../lib/generate-users-csv');
 const pouch = require('../lib/db');
 
-
 const pretty = o => JSON.stringify(o, null, 2);
 
-const RESERVED_COL_NAMES = [ 'type', 'form' ];
-const REF_MATCHER = /^(?:GET )?((\w+) OF )?(\w+) WHERE (.*)$/i;
-const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
-
+const RESERVED_COL_NAMES = [ 'type', 'form', '_id' ];
 
 
 module.exports = ()=> {
-  // const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
-   const db = pouch();
-  const couchUrlUuid = uuid5('http://medicmobile.org/configurer/csv-to-docs/permanent-hash', uuid5.URL);
+  const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
+  const db = pouch();
 
   const csvDir = `${environment.pathToProject}/csv`;
   if(!fs.exists(csvDir)) {
     warn(`No csv directory found at ${csvDir}.`);
     return Promise.resolve();
   }
-
-  const jsonDir = `${environment.pathToProject}/json_docs`;
-  fs.mkdir(jsonDir);
-
-  const saveJsonDoc = doc => fs.write(`${jsonDir}/${doc._id}.doc.json`, toSafeJson(doc) + '\n');
-
-  const model = {
-    csvFiles: {},
-    docs: {},
-    references: [],
-    exclusions: [],
-    users: []
-  };
-  const addToModel = (csvFile, docs) => {
-    csvFile = csvFile.match(/^(?:.*[\/\\])?csv[\/\\](.*)\.csv$/)[1]; // eslint-disable-line no-useless-escape
-    model.csvFiles[csvFile] = docs;
-    docs.forEach(doc => {
-      model.docs[doc._id] = doc;
-      if (doc.type === 'user-settings') {
-        model.users.push(doc);
-      }
-    });
-  };
 
   return fs.recurseFiles(csvDir)
     .filter(name => name.endsWith('.csv'))
@@ -63,17 +36,14 @@ module.exports = ()=> {
             info('Processing CSV file:', prefix, '…');
 
             switch(prefix) {
-              case 'contact': 
-              // info(processContacts('contact', csv));
-              return processContacts('contact', csv);
-              case 'workflow':  return processWorkflow(nameParts[1], csv);
+              case 'contact':  return downloadDocs(csv, getIDs(csv),db, args);
+              case 'users' :  return processUsers(csv);
               default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
             }
           })
           .then(docs => addToModel(csv, docs)),
       Promise.resolve())
 
-    .then(() => model.references.forEach(updateRef))
     .then(() => model.exclusions.forEach(removeExcludedField))
     .then(() => {
       if(model.users.length) {
@@ -81,54 +51,69 @@ module.exports = ()=> {
       }
     })
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));
+};
 
 
-  function updateRef(ref) {
-    const match = ref.matcher.match(REF_MATCHER);
-    const [, , propertyName, type, where] = match;
+  const jsonDir = `${environment.pathToProject}/json_docs`;
+  fs.mkdir(jsonDir);
 
-    const referencedDoc = Object.values(model.docs)
-      .find(doc => (doc.type === type ||
-              (type === 'place' && PLACE_TYPES.includes(doc.type))) &&
-          matchesWhereClause(where, doc, ref.colVal));
+  const saveJsonDoc = doc => fs.write(`${jsonDir}/${doc._id}.doc.json`, toSafeJson(doc) + '\n');
 
-    if(!referencedDoc) {
-      throw new Error(`Failed to match reference ${pretty(ref)}`);
-    }
+  const model = {
+    csvFiles: {},
+    docs: {},
+    references: [],
+    exclusions: [],
+    users: []
+  };
 
-    ref.doc[ref.targetProperty] = propertyName ? referencedDoc[propertyName] : referencedDoc;
-  }
+  const addToModel = (csvFile, docs) => {
+    csvFile = csvFile.match(/^(?:.*[\/\\])?csv[\/\\](.*)\.csv$/)[1]; // eslint-disable-line no-useless-escape
+    model.csvFiles[csvFile] = docs;
+    docs.forEach(doc => {
+      model.docs[doc._id] = doc;
+      if (doc.type === 'user-settings') {
+        model.users.push(doc);
+      }
+    });
+  };
 
-  function processPersons(csv) {
-    return processContacts('person', csv);
-  }
-
-  function processPlaces(csv) {
-    const placeType = fs.path.basename(csv).split('.')[1];
-    return processContacts(placeType, csv);
-  }
-
-  function processReports(report_type, csv) {
+  function getIDs(csv) {
     const { rows, cols } = fs.readCsv(csv);
-    return rows
-      .map(r => processCsv('data_record', cols, r, { form:report_type }));
+    var index = cols.indexOf('uuid');
+   	if (index == -1){
+   		throw Error('missing "uuid" column.');
+   	}
+    return rows.map((item, i) => item[index]);
+      // .map(r => processCsv('data_record', cols, r, { form:report_type }));
   }
 
-  function processContacts(contactType, csv) {
+  function processContacts(contactType, csv, ids, contactDocs, args){
     const { rows, cols } = fs.readCsv(csv);
+    var colNames = (args.columns || args.column || '')
+    .split(',')
+    .filter(id => id);
+
+	if (colNames.length === 0) {
+		warn(' No columns specified, the script will add all the columns in the CSV!');
+		colNames = cols;
+	}
+    var index = cols.indexOf('uuid');
     return rows
-      .map(r => processCsv(contactType, cols, r));
+      .map(r => processCsv(contactType, colNames, r, ids, index, contactDocs));
+
   }
 
-  function processUsers(csv){
-    const { rows, cols } = fs.readCsv(csv);
-    return rows
-      .map(r => processCsv('user', cols, r));
-  }
+  // function processUsers(csv){
+  //   const { rows, cols } = fs.readCsv(csv);
+  //   return rows
+  //     .map(r => processCsv('user', cols, r));
+  // }
 
-  function processCsv(docType, cols, row, baseDoc) {
-    const doc = baseDoc || {};
-    doc.type = docType;
+  function processCsv(docType, cols, row, ids, index, contactDocs) {
+  	const contactId = row[index];
+  	const doc = contactDocs[contactId];
+  	cols.filter(arrayItem => arrayItem !== 'uuid');
 
     for(let i=0; i<cols.length; ++i) {
       const { col, val, reference, excluded } = parseColumn(cols[i], row[i]);
@@ -145,13 +130,7 @@ module.exports = ()=> {
       });
     }
 
-    return withId(doc);
-  }
-
-  function withId(json) {
-    const id = uuid5(stringify(json), couchUrlUuid);
-    json._id = id;
-    return json;
+    return doc;
   }
 
  function parseColumn(rawCol, rawVal) {
@@ -240,23 +219,14 @@ module.exports = ()=> {
 	    default: throw new Error(`Unknown type/val: ${typeof o}/${o}`);
 	  }
 	}
-	};
-
-	const writeDocumentToDisk = ({ docDirectoryPath }, doc) => {
-	  const destinationPath = path.join(docDirectoryPath, `${doc._id}.doc.json`);
-	  if (fs.exists(destinationPath)) {
-	    warn(`File at ${destinationPath} already exists and is being overwritten.`);
-	  }
-
-	  trace(`Writing updated document to ${destinationPath}`);
-	  fs.writeJson(destinationPath, doc);
-};
 
 const fetch = {
   /*
   Fetches all of the documents associated with the "contactIds" and confirms they exist.
   */
+
   contactList: async (db, ids) => {
+  	info("downloading doc(s)");
     const contactDocs = await db.allDocs({
       keys: ids,
       include_docs: true,
@@ -285,84 +255,21 @@ const fetch = {
   }
  }
 
-
-
- const updateDocs = async (options, db) => {
-  trace(`Fetching contact details for parent: ${options.parentId}`);
-
-  const contactDocs = await fetch.contactList(db, options.contactIds);
-  const usersDocs = await fetch.contactList(db, options.usernameIds);
-
-  let affectedContactCount = 1, affectedUserNamesCount = 0;
-
-  const replacementLineage = lineageManipulation.createLineageFromDoc(parentDoc);
-
-
-  const finalList = [...contactDocs, ...usersDocs]
-   for (let contactId of finalList) {
-
-  }
-
-
-  for (let contactId of options.contactIds) {
-    const contactDoc = contactDocs[contactId];
-    const descendantsAndSelf = await fetch.descendantsOf(db, contactId);
-
-    // Check that primary contact is not removed from areas where they are required
-    const invalidPrimaryContactDoc = await constraints.getPrimaryContactViolations(contactDoc, descendantsAndSelf);
-    if (invalidPrimaryContactDoc) {
-      throw Error(`Cannot remove contact ${prettyPrintDocument(invalidPrimaryContactDoc)} from the hierarchy for which they are a primary contact.`);
-    }
-
-    trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)}.`);
-    const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, contactId);
-
-    const ancestors = await fetch.ancestorsOf(db, contactDoc);
-    trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
-    const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
-
-    const reportsCreatedByDescendants = await fetch.reportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
-    trace(`${reportsCreatedByDescendants.length} report(s) created by these affected contact(s) will update`);
-    const updatedReports = replaceLineageInReports(reportsCreatedByDescendants, replacementLineage, contactId);
-
-    [...updatedDescendants, ...updatedReports, ...updatedAncestors].forEach(updatedDoc => {
-      lineageManipulation.minifyLineagesInDoc(updatedDoc);
-      writeDocumentToDisk(options, updatedDoc);
-    });
-
-    affectedContactCount += updatedDescendants.length + updatedAncestors.length;
-    affectedReportCount += updatedReports.length;
-
-    info(`Staged updates to ${prettyPrintDocument(contactDoc)}. ${updatedDescendants.length} contact(s) and ${updatedReports.length} report(s).`);
-  }
-
-  info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);
-};
-
-
-
+const downloadDocs = async (csv, ids, db, args) => {
+	const contactDocs = await fetch.contactList(db, ids);
+	return processContacts('contact', csv, ids, contactDocs, args);
+}
 
   // Parses extraArgs and asserts if required parameters are not present
 const parseExtraArgs = (projectDir, extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
-
-  const contactIds = (args.contacts || args.contact || '')
+  var colNames = (args.columns || args.column || '')
     .split(',')
     .filter(id => id);
 
-  if (contactIds.length === 0) {
-    // usage();
-    throw Error('Action "move-contacts" is missing required list of contact_id to be moved');
-  }
-
-  if (!args.parent) {
-    // usage();
-    throw Error('Action "move-contacts" is missing required parameter parent');
-  }
 
   return {
-    parentId: args.parent,
-    contactIds,
+    colNames,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
   };
