@@ -6,6 +6,7 @@ const pouch = require('../lib/db');
 const getApiVersion = require('../lib/get-api-version');
 const iso639 = require('iso-639-1');
 const { warn } = require('../lib/log');
+const properties = require('properties');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
@@ -38,18 +39,19 @@ module.exports = () => {
             }
           }
 
-          var translations = propertiesAsObject(`${dir}/${fileName}`);
-
-          return db.get(id)
-            .catch(e => {
-              if(e.status === 404) {
-                return newDocFor(fileName, db, languageName, languageCode);
-              }
-              
-              throw e;
-            })
-            .then(doc => overwriteProperties(doc, translations))
-            .then(doc => db.put(doc));
+          return parse(`${dir}/${fileName}`, { path: true })
+            .then(parsed =>
+              db.get(id)
+                .catch(e => {
+                  if(e.status === 404) {
+                    return newDocFor(fileName, db, languageName, languageCode);
+                  }
+                  
+                  throw e;
+                })
+                .then(doc => overwriteProperties(doc, parsed))
+                .then(doc => db.put(doc))
+          );
         }));
     });
 
@@ -61,14 +63,13 @@ function isLanguageCodeValid(code) {
   return regex.test(code);
 }
 
-function propertiesAsObject(path) {
-  const vals = {};
-  fs.read(path)
-    .split('\n')
-    .filter(line => line.includes('='))
-    .map(line => line.split(/=(.*)/, 2).map(it => it.trim()))
-    .map(([k, v]) => vals[k] = v);
-  return vals;
+function parse(filePath, options) {
+  return new Promise((resolve, reject) => {
+    properties.parse(filePath, options, (err, parsed) => {
+      if (err) return reject(err);
+      resolve(parsed);
+    });
+  });
 }
 
 function overwriteProperties(doc, props) {
