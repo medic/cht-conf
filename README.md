@@ -53,11 +53,17 @@ To upgrade to the latest version
 
 ## Specifying the server to configure
 
+If you are using the default actionset, or performing any actions that require a CHT instance to function (e.g. `upload-xyz` or `backup-xyz` actions) you must specify the server you'd like to function against.
+
 ### localhost
+
+For developers, this is the instance defined in your `COUCH_URL` environment variable.
 
 	medic-conf --local
 
 ### A specific Medic instance
+
+For configuring against Medic Mobile-hosted instances.
 
 	medic-conf --instance=instance-name.dev
 

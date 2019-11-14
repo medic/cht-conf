@@ -1,6 +1,6 @@
 # Release Notes
 
-## 3.0.6
+## 3.0.7
 
 ### Polish for CHT developent guide
 
