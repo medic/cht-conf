@@ -39,7 +39,7 @@ As Administrator:
 
 To enable tab completion in bash, add the following to your `.bashrc`/`.bash_profile`:
 
-	eval "$(medic-conf --shell-completion bash)"
+	eval "$(medic-conf --shell-completion=bash)"
 
 ## Upgrading
 
@@ -176,7 +176,7 @@ Refered to CSV Example:
 | district_2            | false             | D2   | 1544031155715           |
 | district_3            | false             | D3   | 1544031155715           |
 
-### CSV Using Reference 
+### CSV Using Reference
 
 | reference_id:excluded | parent:place WHERE reference_id=COL_VAL | is_name_generated | name | reported_date:timestamp |
 | --------------------- | --------------------------------------- | ----------------- | ---- | ----------------------- |
@@ -219,7 +219,7 @@ To reference specific properties of other docs:
 
 In this example the `health_ccenter` doc will have a `property` of `parent` set to the `_id` of the refered to doc `district_1` property of `_id`
 
-NOTE: `_id` is a generated value that is inside the generated docs. 
+NOTE: `_id` is a generated value that is inside the generated docs.
 
 Refered to CSV Example:
 
@@ -229,7 +229,7 @@ Refered to CSV Example:
 | district_2            | false             | D2   | 1544031155715           |
 | district_3            | false             | D3   | 1544031155715           |
 
-CSV Using Reference 
+CSV Using Reference
 
 | reference_id:excluded | parent:GET _id OF place WHERE reference_id=COL_VAL | is_name_generated | name | reported_date:timestamp |
 | --------------------- | -------------------------------------------------- | ----------------- | ---- | ----------------------- |
@@ -376,7 +376,7 @@ Contacts are organized into a hierarchy. It is not straight-forward to move cont
 
 **Offline users who have contacts removed from their visible hierarchy will not automatically see those contacts disappear. The contact remains on the user's device. Any updates made to the contact (or any reports created for that contact) will silently fail to sync (medic/medic/#5701). These users must be encouraged to clear cache and resync!** Also impactful, but less serious - this script can cause significant amounts of changes to the database and offline users who have contacts moved into their visible hierarchy may experience lengthy and bandwidth-intensive synchronizations.
 
-Parameter | Description | Required 
+Parameter | Description | Required
 -- | -- | --
 contacts | Comma delimited list of contact IDs which will be moved | Yes
 parent | ID of the new parent which will be assigned to the provided contacts | Yes
@@ -435,11 +435,11 @@ This tool expects a project to be structured as follows:
 		translations/
 			messages-xx.properties
 			…
-			
+
 If you are starting from scratch you can initialise the file layout using the `initialise-project-layout` action:
 
     medic-conf initialise-project-layout
-    
+
 ## Derived configs
 
 Configuration can be inherited from another project, and then modified.  This allows the `app_settings.json` and contained files (`task-schedules.json`, `targets.json` etc.) to be imported, and then modified.
