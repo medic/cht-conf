@@ -275,13 +275,13 @@ bob,Secret_1,district-admin,bob Example,+123456789,bob,p_val_a,health_center,bob
 To create user accounts for contacts that are created while running csv-to-docs action follow these steps.
 
 1. Create a `users.csv` file in the `csv` folder with the rest of the csvs needed for `csv-to-docs` action.
-1. Add columns for username, password, roles, phone, contact, place, and any other additional fields you want to populate. 
+1. Add columns for username, password, roles, phone, contact, place, and any other additional fields you want to populate.
 1. Use the following query language as the header names: for contact contact:person WHERE reference_id=COL_VAL and place place:GET _id OF place WHERE reference_id=COL_VAL. This feature is also supported in the csv-to-docs csv files.
-1. Run `medic-conf csv-to-docs upload-docs create-users` 
+1. Run `medic-conf csv-to-docs upload-docs create-users`
 	1. This will generate the contacts, places, and users associated to those contacts. The users are placed into a users.csv file in your working directory. Then upload the json docs creating your data and creating users associated.
 
 
-Here is a example of how the three csvs need to be configured to setup a user linked to existing place and contact.  
+Here is a example of how the three csvs need to be configured to setup a user linked to existing place and contact.
 
 **csv/place.health_center.csv**
 
@@ -493,8 +493,8 @@ Accepted log types:
 
 1. Clone the project locally
 1. Make changes to medic-conf or checkout a branch for testing
-1. Test changes 
-	1. To test CLI changes locally you can run `node <project_dir>/src/bin/medic-conf.js`. This will run as if you installed via npm. 
+1. Test changes
+	1. To test CLI changes locally you can run `node <project_dir>/src/bin/medic-conf.js`. This will run as if you installed via npm.
 	1. To test changes that are imported in code run `npm install <project_dir>` to use the local version of medic-conf.
 
 ## compress images
@@ -510,9 +510,13 @@ To compress PNGs and SVGs in the current directory and its subdirectories, two c
 
 # Releasing
 
-1. Create a pull request. Get it reviewed and approved.
-1. Run `npm version patch`, `npm version minor`, or `npm version major` as appropriate.
-1. Merge the pull request.
+1. Create a pull request with prep for the new release. This should contain changes to release notes and anything else that needs to be done.
+1. Get it reviewed and approved, and merge the pull request.
+1. Run `npm version patch`, `npm version minor`, or `npm version major` as appropriate. This will:
+  - Update versions in `package.json` and `package-lock.json`
+  - Commit those changes locally and tag that commit with the new version
+  - "Compile" and publish the changes (**based on what is in your local working tree**, so make sure you're cleanly on master with no local changes) to npm
+1. `git push && git push --tags` to push the npm generated commit and tag up to origin
 
 # Copyright
 
