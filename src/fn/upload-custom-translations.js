@@ -10,7 +10,7 @@ const properties = require('properties');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
-module.exports = () => {
+const execute = () => {
   const db = pouch(environment.apiUrl);
 
   const dir = `${environment.pathToProject}/translations`;
@@ -46,12 +46,11 @@ module.exports = () => {
                   if(e.status === 404) {
                     return newDocFor(fileName, db, languageName, languageCode);
                   }
-                  
+
                   throw e;
                 })
                 .then(doc => overwriteProperties(doc, parsed))
-                .then(doc => db.put(doc))
-          );
+                .then(doc => db.put(doc)));
         }));
     });
 
@@ -122,3 +121,8 @@ async function genericTranslationsStructure(db) {
     .then(doc => doc.generic)
     .catch(() => false);
 }
+
+module.exports = {
+  requiresInstance: true,
+  execute
+};

@@ -11,11 +11,14 @@ const { warn, trace, info, error } = require('../lib/log');
 
 const HIERARCHY_ROOT = 'root';
 
-module.exports = () => {
-  const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
-  const db = pouch();
-  prepareDocumentDirectory(args);
-  return updateLineagesAndStage(args, db);
+module.exports = {
+  requiresInstance: true,
+  execute: () => {
+    const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
+    const db = pouch();
+    prepareDocumentDirectory(args);
+    return updateLineagesAndStage(args, db);
+  }
 };
 
 const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;

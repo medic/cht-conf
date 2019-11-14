@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
 const testProjectDir = './data/upload-custom-translations/';
-const uploadCustomTranslations = require('../../src/fn/upload-custom-translations');
+const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
 
 const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => `${testProjectDir}${testDir}`);
 

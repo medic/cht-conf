@@ -43,7 +43,7 @@ describe('create-users', () => {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers())
+      .then(() => /* when */ createUsers.execute())
       .then(() => {
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
@@ -73,7 +73,7 @@ describe('create-users', () => {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers())
+      .then(() => /* when */ createUsers.execute())
       .then(() => {
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
@@ -103,7 +103,7 @@ describe('create-users', () => {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers())
+      .then(() => /* when */ createUsers.execute())
       .then(() => {
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
@@ -134,7 +134,7 @@ describe('create-users', () => {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers())
+      .then(() => /* when */ createUsers.execute())
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.deepEqual(api.requestLog(), [
@@ -166,7 +166,7 @@ describe('create-users', () => {
       role: JSON.stringify(todd.roles),
     };
     return assertDbEmpty()
-      .then(() => /* when */ createUsers())
+      .then(() => /* when */ createUsers.execute())
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.equal(process.exit.callCount, 1);
@@ -192,7 +192,7 @@ describe('create-users', () => {
       role: JSON.stringify(todd.roles),
     };
     return assertDbEmpty()
-      .then(() => /* when */ createUsers())
+      .then(() => /* when */ createUsers.execute())
       .then(r => assert.equal(r, 'Expected to reject'))
       .catch(err => {
         assert.deepEqual(err.error, { code: 500, error: 'boom' });
@@ -224,7 +224,7 @@ describe('create-users', () => {
     const john = { username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4' };
     const qs = (user) => querystring.stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
     return assertDbEmpty()
-      .then(() => createUsers())
+      .then(() => createUsers.execute())
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.deepEqual(api.requestLog(), [
@@ -258,7 +258,7 @@ describe('create-users', () => {
     const john = { username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4' };
     const qs = (user) => querystring.stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
     return assertDbEmpty()
-      .then(() => createUsers())
+      .then(() => createUsers.execute())
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.equal(process.exit.callCount, 1);
@@ -311,7 +311,7 @@ describe('create-users', () => {
     };
 
     return assertDbEmpty()
-      .then(() => /* when */ createUsers())
+      .then(() => /* when */ createUsers.execute())
 
       .then(() =>
         assert.deepEqual(api.requestLog(), [
