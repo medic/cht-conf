@@ -130,4 +130,7 @@ const parseExtraArgs = (extraArgs = []) => {
   };
 };
 
-module.exports = compileAppSettings;
+module.exports = {
+  requiresInstance: false,
+  execute: compileAppSettings
+};

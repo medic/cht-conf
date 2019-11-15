@@ -126,12 +126,13 @@ module.exports = async (argv, env) => {
 
   actions = actions.map(actionName => {
     const action = require(`../fn/${actionName}`);
-    if (typeof action === 'function') {
-      return {
-        name: actionName,
-        requiresInstance: true,
-        execute: action
-      };
+
+    if (typeof action.execute !== 'function') {
+      throw new Error(`${actionName} has not been implemented correctly: no 'execute' function`);
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(action, 'requiresInstance')) {
+      action.requiresInstance = true;
     }
 
     action.name = actionName;
@@ -195,3 +196,4 @@ module.exports = async (argv, env) => {
 
 // Exists for generic mocking purposes
 const executeAction = action => action.execute();
+

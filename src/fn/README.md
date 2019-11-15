@@ -13,14 +13,6 @@ module.exports = {
 }
 ```
 
-We still support the legacy version, which will use the defaults noted below:
-
-```js
-module.exports = async () => {
-    ...
-}
-```
-
 ## Module Exports
 
 |Field|Required|Notes|

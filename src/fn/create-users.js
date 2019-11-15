@@ -59,7 +59,7 @@ const getUserInfo = async (user) => {
   return result;
 };
 
-module.exports = async () => {
+const execute = async () => {
   const csvPath = `${environment.pathToProject}/users.csv`;
   if(!fs.exists(csvPath)) {
     throw new Error(`User csv file not found at ${csvPath}`);
@@ -87,4 +87,9 @@ module.exports = async () => {
     info(`Creating user ${user.username}`);
     await api().createUser(user);
   }
+};
+
+module.exports = {
+  requiresInstance: true,
+  execute
 };

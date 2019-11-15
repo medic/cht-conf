@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
 const testProjectDir = './data/upload-custom-translations/';
-const uploadCustomTranslations = require('../../src/fn/upload-custom-translations');
+const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
 
 const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => `${testProjectDir}${testDir}`);
 
@@ -430,6 +430,21 @@ describe('upload-custom-translations', () => {
           .then(() => getTranslationDoc('qp'))
           .then(messagesQp => {
             assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
+          });
+      });
+
+      it('should properly upload translations containing escaped exclamation marks', () => {
+        mockTestDir(`escaped-exclamation`);
+        return uploadCustomTranslations()
+          .then(() => expectTranslationDocs('en'))
+          .then(() => getTranslationDoc('en'))
+          .then(messagesEn => {
+            assert.deepEqual(messagesEn.custom, {
+              'one.escaped.exclamation':'one equals one!',
+              'two.escaped.exclamation':'one equals one!!',
+            });
+            assert.deepEqual(messagesEn.generic, {});
+            assert(!messagesEn.values);
           });
       });
 
