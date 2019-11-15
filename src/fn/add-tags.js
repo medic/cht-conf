@@ -84,169 +84,170 @@ const addToModel = (csvFile, docs) => {
    }
 
 
+   function processContacts(contactType, csv, ids, contactDocs, args){
+    const { rows, cols } = fs.readCsv(csv);
+    var colNames = args.colNames;
+
+    if (colNames.length === 0) {
+      warn(' No columns specified, the script will add all the columns in the CSV!');
+      colNames = cols;
+    }  
+    else {
+      var splitFileColumns = [];
+
+      for(fileColumn of cols) {
+        if (fileColumn !== null) {
+          splitFileColumns.push(fileColumn.split(':')[0]);
+        }      
+      }
+      columnsValid = colNames.every(function(column) { return splitFileColumns.includes(column);});
+      if (!columnsValid){
+        throw Error('The column name(s) specified do not exist.');
+      }
+    }
+    var index = cols.indexOf('uuid');
+    return rows
+    .map(r => processCsv(contactType, cols, r, ids, index, contactDocs));
+
+  }
+
+
   function processContacts(contactType, csv, ids, contactDocs, args){
     const { rows, cols } = fs.readCsv(csv);
     var colNames = args.colNames;
-	if (colNames.length === 0) {
-		warn(' No columns specified, the script will add all the columns in the CSV!');
-		colNames = cols;
-	} else {
-		// columnsValid = colNames.every(function(column) {return cols.split(/[:>]/)[0].indexOf(column) >= 0;});
-		columnsValid = cols.every(function(column) {
-			info(column)
-			return colNames.indexOf(column.split(/[:>]/)[0])
-			 >= 0;});
 
+    if (colNames.length === 0) {
+      warn(' No columns specified, the script will add all the columns in the CSV!');
+      colNames = cols;
+    }  
+    else {
+      var splitFileColumns = [];
 
-		info(columnsValid);
-		if (!columnsValid){
-			throw Error('The column name(s) specified do not exist.');
-		}
-	}
-    var index = cols.indexOf('uuid');
-    return rows
-      .map(r => processCsv(contactType, colNames, r, ids, index, contactDocs));
-
-   return rows.map((item, i) => item[index]);
- }
-
-
- function processContacts(contactType, csv, ids, contactDocs, args){
-  const { rows, cols } = fs.readCsv(csv);
-  var colNames = args.colNames;
-
-  if (colNames.length === 0) {
-    warn(' No columns specified, the script will add all the columns in the CSV!');
-    colNames = cols;
-  }  
-  else {
-    var splitFileColumns = [];
-
-    for(fileColumn of cols) {
-      if (fileColumn !== null) {
-        splitFileColumns.push(fileColumn.split(':')[0]);
-      }      
-    }
-    columnsValid = colNames.every(function(column) { return splitFileColumns.includes(column);});
-    if (!columnsValid){
-      throw Error('The column name(s) specified do not exist.');
-    }
-  }
-  var index = cols.indexOf('uuid');
-  return rows
-  .map(r => processCsv(contactType, cols, r, ids, index, contactDocs));
-
-}
-
-function processCsv(docType, cols, row, ids, index, contactDocs) {
- const contactId = row[index];
- const doc = contactDocs[contactId];
- row.splice(index,1);
- cols.splice(index,1);
-
- for(let i=0; i<cols.length; ++i) {
-  const { col, val, reference, excluded } = parseColumn(cols[i], row[i]);
-  setCol(doc, col, val);
-  if(reference) model.references.push({
-    doc: doc,
-    matcher: reference,
-    colVal: val,
-    targetProperty: col,
-  });
-    if(excluded) model.exclusions.push({
-      doc: doc,
-      propertyName: col,
-    });
-  }
-
-  return doc;
-}
-
-function parseColumn(rawCol, rawVal) {
-  let val, reference, excluded = false;
-  const parts = rawCol.split(/[:>]/);
-  const col = parts[0];
-
-  if(parts.length === 1) {
-    val = rawVal;
-  } else if(parts.length === 2) {
-    const type = parts[1];
-    switch(type) {
-      case 'date': val = new Date(rawVal); break;
-      case 'timestamp': val = parseTimestamp(rawVal); break;
-      case 'int': val = int(rawVal); break;
-      case 'bool': val = toDocs.parseBool(rawVal); break;
-      case 'string': val = rawVal; break;
-      case 'float': val = Number.parseFloat(rawVal); break;
-      case 'excluded': val = rawVal; excluded = true; break;
-      default: {
-        if(isReference(type)) {
-          val = rawVal;
-          reference = type;
-        } else {
-          throw new Error(`Unrecognised column type: ${type} for ${rawCol}`);
-        }
+      for(fileColumn of cols) {
+        if (fileColumn !== null) {
+          splitFileColumns.push(fileColumn.split(':')[0]);
+        }      
+      }
+      columnsValid = colNames.every(function(column) { return splitFileColumns.includes(column);});
+      if (!columnsValid){
+        throw Error('The column name(s) specified do not exist.');
       }
     }
-  } else {
-    throw new Error(`Wrong number of parts in column definition: ${rawCol} (should be 1, 2 or 4, but found ${parts.length}).`);
+    var index = cols.indexOf('uuid');
+    return rows
+    .map(r => processCsv(contactType, cols, r, ids, index, contactDocs));
+
   }
-  return { col:col, val:val, reference:reference, excluded:excluded };
-}
 
-function setCol(doc, col, val) {
- const colParts = col.split('.');
+  function processCsv(docType, cols, row, ids, index, contactDocs) {
+   const contactId = row[index];
+   const doc = contactDocs[contactId];
+   row.splice(index,1);
+   cols.splice(index,1);
 
- if(RESERVED_COL_NAMES.includes(colParts[0]))
-   throw new Error(`Cannot set property defined by column '${col}' - this property name is protected.`);
- while(colParts.length > 1) {
-   col = colParts.shift();
-   if(!doc[col]) doc[col] = {};
-   doc = doc[col];
- }
- doc[colParts[0]] = val;
-}
+   for(let i=0; i<cols.length; ++i) {
+    const { col, val, reference, excluded } = parseColumn(cols[i], row[i]);
+    setCol(doc, col, val);
+    if(reference) model.references.push({
+      doc: doc,
+      matcher: reference,
+      colVal: val,
+      targetProperty: col,
+    });
+      if(excluded) model.exclusions.push({
+        doc: doc,
+        propertyName: col,
+      });
+    }
 
-function removeExcludedField(exclusion) {
- delete exclusion.doc[exclusion.propertyName];
-}
+    return doc;
+  }
 
-/** @return JSON string with circular references ignored */
-function toSafeJson(o, depth, seen) {
- if(!depth) depth = 0;
- if(!seen) seen = [];
+  function parseColumn(rawCol, rawVal) {
+    let val, reference, excluded = false;
+    const parts = rawCol.split(/[:>]/);
+    const col = parts[0];
 
- const TAB = '  ';
- let i = depth, indent = '';
- while(--i >= 0) indent += TAB;
+    if(parts.length === 1) {
+      val = rawVal;
+    } else if(parts.length === 2) {
+      const type = parts[1];
+      switch(type) {
+        case 'date': val = new Date(rawVal); break;
+        case 'timestamp': val = parseTimestamp(rawVal); break;
+        case 'int': val = int(rawVal); break;
+        case 'bool': val = toDocs.parseBool(rawVal); break;
+        case 'string': val = rawVal; break;
+        case 'float': val = Number.parseFloat(rawVal); break;
+        case 'excluded': val = rawVal; excluded = true; break;
+        default: {
+          if(isReference(type)) {
+            val = rawVal;
+            reference = type;
+          } else {
+            throw new Error(`Unrecognised column type: ${type} for ${rawCol}`);
+          }
+        }
+      }
+    } else {
+      throw new Error(`Wrong number of parts in column definition: ${rawCol} (should be 1, 2 or 4, but found ${parts.length}).`);
+    }
+    return { col:col, val:val, reference:reference, excluded:excluded };
+  }
 
- switch(typeof o) {
-   case 'boolean':
-   case 'number':
-   return o;
-   case 'string':
-   return `"${o}"`;
-   case 'object':
-   if(Array.isArray(o)) {
-     return `${indent}[\n` + o.map(el => toSafeJson(el, depth + 1)) + `\n${indent}]`;
-   } else if(o instanceof Date) {
-     return `"${o.toJSON()}"`;
+  function setCol(doc, col, val) {
+   const colParts = col.split('.');
+
+   if(RESERVED_COL_NAMES.includes(colParts[0]))
+     throw new Error(`Cannot set property defined by column '${col}' - this property name is protected.`);
+   while(colParts.length > 1) {
+     col = colParts.shift();
+     if(!doc[col]) doc[col] = {};
+     doc = doc[col];
    }
-   return '{' +
-   Object.keys(o)
-   .map(k => {
-     const v = o[k];
-     if(seen.includes(v)) return;
-     return `\n${TAB}${indent}"${k}": ` +
-     toSafeJson(v, depth+1, seen.concat(o));
-   })
-   .filter(el => el) +
-   '\n' + indent + '}';
-   default: throw new Error(`Unknown type/val: ${typeof o}/${o}`);
+   doc[colParts[0]] = val;
  }
-}
 
-const fetch = {
+ function removeExcludedField(exclusion) {
+   delete exclusion.doc[exclusion.propertyName];
+ }
+
+ /** @return JSON string with circular references ignored */
+ function toSafeJson(o, depth, seen) {
+   if(!depth) depth = 0;
+   if(!seen) seen = [];
+
+   const TAB = '  ';
+   let i = depth, indent = '';
+   while(--i >= 0) indent += TAB;
+
+   switch(typeof o) {
+     case 'boolean':
+     case 'number':
+     return o;
+     case 'string':
+     return `"${o}"`;
+     case 'object':
+     if(Array.isArray(o)) {
+       return `${indent}[\n` + o.map(el => toSafeJson(el, depth + 1)) + `\n${indent}]`;
+     } else if(o instanceof Date) {
+       return `"${o.toJSON()}"`;
+     }
+     return '{' +
+     Object.keys(o)
+     .map(k => {
+       const v = o[k];
+       if(seen.includes(v)) return;
+       return `\n${TAB}${indent}"${k}": ` +
+       toSafeJson(v, depth+1, seen.concat(o));
+     })
+     .filter(el => el) +
+     '\n' + indent + '}';
+     default: throw new Error(`Unknown type/val: ${typeof o}/${o}`);
+   }
+ }
+
+ const fetch = {
   /*
   Fetches all of the documents associated with the "contactIds" and confirms they exist.
   */
