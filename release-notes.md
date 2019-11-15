@@ -1,13 +1,5 @@
 # Release Notes
 
-## 3.0.7
-
-### Polish for CHT developent guide
-
-Clean up and polish for: https://docs.communityhealthtoolkit.org/docs/application_development/guides/from_scratch/001_introduction.html
- - Fixes `initialise-project-layout` for today's best practices
- - Clean up requirements for passing an instance, see #218
-
 ## 3.0.5
 
 ### Updates to purge configuration
