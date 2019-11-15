@@ -94,6 +94,18 @@ module.exports = ()=> {
 	if (colNames.length === 0) {
 		warn(' No columns specified, the script will add all the columns in the CSV!');
 		colNames = cols;
+	} else {
+		// columnsValid = colNames.every(function(column) {return cols.split(/[:>]/)[0].indexOf(column) >= 0;});
+		columnsValid = cols.every(function(column) {
+			info(column)
+			return colNames.indexOf(column.split(/[:>]/)[0])
+			 >= 0;});
+
+
+		info(columnsValid);
+		if (!columnsValid){
+			throw Error('The column name(s) specified do not exist.');
+		}
 	}
     var index = cols.indexOf('uuid');
     return rows
