@@ -1,6 +1,6 @@
 const { assert, expect } = require('chai');
 const sinon = require('sinon');
-
+const readline = require('readline-sync');
 const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
 const testProjectDir = './data/upload-custom-translations/';

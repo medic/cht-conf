@@ -6,6 +6,7 @@ const fs = require('./sync-fs');
 const { info, warn } = require('./log');
 const insertOrReplace = require('./insert-or-replace');
 const pouch = require('./db');
+const warnUploadOverwrite = require('./warn-upload-overwrite');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
 
@@ -56,6 +57,7 @@ module.exports = (projectDir, subDirectory, options) => {
       doc._attachments.xml = attachmentFromFile(xformPath);
 
       return promiseChain
+        .then(() => warnUploadOverwrite.preUploadByXml(db, doc._id, xml))
         .then(() => insertOrReplace(db, doc))
         .then(() => info(`Uploaded form ${formsDir}/${fileName}`));
     }, Promise.resolve());

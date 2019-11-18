@@ -4,6 +4,9 @@ const readline = require('readline-sync');
 const crypto = require('crypto');
 const url = require('url');
 const log = require('./log');
+const environment = require('./environment');
+const { compare, GroupingReporter } = require('dom-compare');
+const DOMParser = require('xmldom').DOMParser;
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -12,13 +15,13 @@ const responseChoicesWithoutDiff = [
 ];
 const responseChoicesWithDiff = responseChoicesWithoutDiff.concat([ 'View diff' ]);
 
-const getRevsDocKey = (couchUrl) => {
-  const parsed = url.parse(couchUrl);
+const getRevsDocKey = () => {
+  const parsed = url.parse(environment.apiUrl);
   const key = `${parsed.hostname}${parsed.pathname || 'medic'}`;
   return key;
 };
 
-const preUpload = async (projectDir, db, doc, couchUrl) => {
+const preUploadByRev = async (projectDir, db, doc) => {
   let localDoc = JSON.parse(JSON.stringify(doc));
 
   // Pull remote _rev
@@ -35,7 +38,7 @@ const preUpload = async (projectDir, db, doc, couchUrl) => {
   // Pull local _rev
   let localRev;
   try {
-    localRev = JSON.parse(fs.read(`${projectDir}/._revs/${localDoc._id}.json`).trim())[getRevsDocKey(couchUrl)];
+    localRev = JSON.parse(fs.read(`${projectDir}/._revs/${localDoc._id}.json`).trim())[getRevsDocKey()];
   } catch (e) {
     // continue regardless of error
     log.trace('Trying to fetch local _rev', e);
@@ -84,7 +87,7 @@ const preUpload = async (projectDir, db, doc, couchUrl) => {
   return doc;
 };
 
-const postUpload = async (projectDir, db, doc, couchUrl) => {
+const postUploadByRev = async (projectDir, db, doc) => {
   const remoteDoc = await db.get(doc._id);
 
   const revsDir = `${projectDir}/._revs`;
@@ -98,14 +101,46 @@ const postUpload = async (projectDir, db, doc, couchUrl) => {
   if (fs.exists(revsFile)) {
     Object.assign(revs, JSON.parse(fs.read(revsFile).trim()));
   }
-  revs[getRevsDocKey(couchUrl)] = remoteDoc._rev;
+  revs[getRevsDocKey()] = remoteDoc._rev;
 
   fs.write(revsFile, JSON.stringify(revs));
 
   return doc;
 };
 
+const preUploadByXml = async (db, docId, localXml) => {
+  let remoteXml;
+  try {
+    const buffer = await db.getAttachment(docId, 'xml');
+    remoteXml = buffer.toString('utf8');
+  } catch (e) {
+    // continue regardless of error
+    log.trace('Trying to fetch remote xml', e);
+    throw e;
+  }
+
+  const localDom = new DOMParser().parseFromString(localXml);
+  const remoteDom = new DOMParser().parseFromString(remoteXml);
+
+  const diff = compare(localDom, remoteDom);
+  const hasNoDiff = diff.getResult();
+  if (!hasNoDiff) {
+    let index = readline.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
+    if (index === 2) { // diff
+      log.info(GroupingReporter.report(diff));
+
+      index = readline.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
+    }
+    if (index === 1) { // abort
+      throw new Error('configuration modified');
+    }
+  }
+
+  return Promise.resolve();
+};
+
 module.exports = {
-  preUpload, 
-  postUpload
+  preUploadByRev, 
+  postUploadByRev,
+  preUploadByXml
 };
