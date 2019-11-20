@@ -27,6 +27,11 @@ function emitter(contactSummary, contact, reports) {
     var idx1, r, added;
 
     var appliesToType = convertToArray(card.appliesToType);
+
+    var appliesToTypeWithoutReport = appliesToType.filter(function(t) { return t !== 'report'; });
+    if (appliesToType.includes('report') && appliesToTypeWithoutReport.length > 0) {
+      throw new Error("You cannot set appliesToType to an array which includes the type 'report' and another type.");
+    }
     
     if (appliesToType.includes('report')) {
       for (idx1=0; idx1<reports.length; ++idx1) {

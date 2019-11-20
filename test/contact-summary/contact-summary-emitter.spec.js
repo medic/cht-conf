@@ -73,6 +73,19 @@ describe('contact-summary-emitter', function() {
 
       expect(appliesIf.args[0]).to.deep.eq([undefined]);
     });
+
+    it('thows an error if appliesToType includes the type report and another type', () => {
+      const appliesIf = sinon.stub().returns(false);
+      const cards = [
+        { appliesIf, appliesToType: ['report', 'a'] },
+      ];
+      const report = { report: true };
+      try {
+        emitter({ cards }, { type: 'a' }, [report]);
+      } catch(e) {
+        expect(e.message).to.include('You cannot set appliesToType');
+      }
+    });
   });
 
   describe('fields', () => {
