@@ -287,5 +287,12 @@ function setNOW(t) {
 module.exports = {
   requiresInstance: false,
   execute,
-  setNOW
+  setNOW,
+  parseFloat,
+  parseBool,
+  parseTimestamp,
+  int,
+  toSafeJson,
+  setCol,
+  parseColumn
 };
