@@ -65,7 +65,7 @@ module.exports = (projectDir, subDirectory, options) => {
           if (!e.message.includes('No changes')) {
             throw e;
           } else {
-            info(`Form ${formsDir}/${fileName} not uploaded, no changes`)
+            info(`Form ${formsDir}/${fileName} not uploaded, no changes`);
           }
         });
     }, Promise.resolve());
