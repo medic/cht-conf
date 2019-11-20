@@ -277,5 +277,6 @@ module.exports = {
   int,
   toSafeJson,
   setCol,
-  parseColumn
+  parseColumn,
+  removeExcludedField
 };
