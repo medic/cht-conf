@@ -70,7 +70,10 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
           },
         },
       ],
-    }
+    },
+    plugins: [
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/), // Ignore all optional deps of moment.js
+    ]
   }]);
 
   return new Promise((resolve, reject) => {
