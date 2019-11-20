@@ -17,9 +17,9 @@ const RESERVED_COL_NAMES = [ 'type', 'form', '_id' ];
 module.exports = ()=> {
   const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
   const db = pouch();
-  const docDirectoryPath = args.docDirectoryPath
-  fs.mkdir(docDirectoryPath)
-  const saveJsonDoc = doc => fs.write(`${docDirectoryPath}/${doc._id}.doc.json`, toSafeJson(doc) + '\n');
+  const docDirectoryPath = args.docDirectoryPath;
+  fs.mkdir(docDirectoryPath);
+  const saveJsonDoc = doc => fs.write(`${docDirectoryPath}/${doc._id}.doc.json`, toDocs.toSafeJson(doc) + '\n');
 
   const csvDir = `${environment.pathToProject}/csv`;
   if(!fs.exists(csvDir)) {
@@ -82,12 +82,12 @@ const addToModel = (csvFile, docs) => {
     if (index == -1){
      throw Error('missing "uuid" column.');
    }
+   return rows.map((item, i) => item[index]);
  }
 
  function processContacts(contactType, csv, ids, contactDocs, args){
   const { rows, cols } = fs.readCsv(csv);
   var colNames = args.colNames;
-
   if (colNames.length === 0) {
     warn(' No columns specified, the script will add all the columns in the CSV!');
     colNames = cols;
@@ -115,11 +115,12 @@ function processCsv(docType, cols, row, ids, index, contactDocs) {
  const contactId = row[index];
  const doc = contactDocs[contactId];
  row.splice(index,1);
- cols.splice(index,1);
-
+ if (cols.includes('uuid')) {
+  cols.splice(cols.indexOf('uuid'),1);
+ }
  for(let i=0; i<cols.length; ++i) {
-  const { col, val, reference, excluded } = parseColumn(cols[i], row[i]);
-  setCol(doc, col, val);
+  const { col, val, reference, excluded } = toDocs.parseColumn(cols[i], row[i]);
+  toDocs.setCol(doc, col, val);
   if(reference) model.references.push({
     doc: doc,
     matcher: reference,
@@ -131,92 +132,11 @@ function processCsv(docType, cols, row, ids, index, contactDocs) {
       propertyName: col,
     });
   }
-
   return doc;
-}
-
-function parseColumn(rawCol, rawVal) {
-  let val, reference, excluded = false;
-  const parts = rawCol.split(/[:>]/);
-  const col = parts[0];
-
-  if(parts.length === 1) {
-    val = rawVal;
-  } else if(parts.length === 2) {
-    const type = parts[1];
-    switch(type) {
-      case 'date': val = new Date(rawVal); break;
-      case 'timestamp': val = parseTimestamp(rawVal); break;
-      case 'int': val = int(rawVal); break;
-      case 'bool': val = toDocs.parseBool(rawVal); break;
-      case 'string': val = rawVal; break;
-      case 'float': val = Number.parseFloat(rawVal); break;
-      case 'excluded': val = rawVal; excluded = true; break;
-      default: {
-        if(isReference(type)) {
-          val = rawVal;
-          reference = type;
-        } else {
-          throw new Error(`Unrecognised column type: ${type} for ${rawCol}`);
-        }
-      }
-    }
-  } else {
-    throw new Error(`Wrong number of parts in column definition: ${rawCol} (should be 1, 2 or 4, but found ${parts.length}).`);
-  }
-  return { col:col, val:val, reference:reference, excluded:excluded };
-}
-
-function setCol(doc, col, val) {
- const colParts = col.split('.');
-
- if(RESERVED_COL_NAMES.includes(colParts[0]))
-   throw new Error(`Cannot set property defined by column '${col}' - this property name is protected.`);
- while(colParts.length > 1) {
-   col = colParts.shift();
-   if(!doc[col]) doc[col] = {};
-   doc = doc[col];
- }
- doc[colParts[0]] = val;
 }
 
 function removeExcludedField(exclusion) {
  delete exclusion.doc[exclusion.propertyName];
-}
-
-/** @return JSON string with circular references ignored */
-function toSafeJson(o, depth, seen) {
- if(!depth) depth = 0;
- if(!seen) seen = [];
-
- const TAB = '  ';
- let i = depth, indent = '';
- while(--i >= 0) indent += TAB;
-
- switch(typeof o) {
-   case 'boolean':
-   case 'number':
-   return o;
-   case 'string':
-   return `"${o}"`;
-   case 'object':
-   if(Array.isArray(o)) {
-     return `${indent}[\n` + o.map(el => toSafeJson(el, depth + 1)) + `\n${indent}]`;
-   } else if(o instanceof Date) {
-     return `"${o.toJSON()}"`;
-   }
-   return '{' +
-   Object.keys(o)
-   .map(k => {
-     const v = o[k];
-     if(seen.includes(v)) return;
-     return `\n${TAB}${indent}"${k}": ` +
-     toSafeJson(v, depth+1, seen.concat(o));
-   })
-   .filter(el => el) +
-   '\n' + indent + '}';
-   default: throw new Error(`Unknown type/val: ${typeof o}/${o}`);
- }
 }
 
 const fetch = {
@@ -225,12 +145,12 @@ const fetch = {
   */
 
   contactList: async (db, ids) => {
-  	info("downloading doc(s)");
+  	info("Downloading doc(s)...");
     const contactDocs = await db.allDocs({
       keys: ids,
       include_docs: true,
     });
-
+    
     const missingContactErrors = contactDocs.rows.filter(row => !row.doc).map(row => `Contact with id '${row.key}' could not be found.`);
     if (missingContactErrors.length > 0) {
       throw Error(missingContactErrors);
@@ -257,28 +177,6 @@ const fetch = {
 const downloadDocs = async (csv, ids, db, args) => {
 	const contactDocs = await fetch.contactList(db, ids);
 	return processContacts('contact', csv, ids, contactDocs, args);
-}
-
-function parseTimestamp(t) {
-  if(isIntegerString(t)) return int(t);
-  else return Date.parse(t);
-}
-
-function parseBool(b) {
-  if(isIntegerString(b)) return b !== '0';
-  else return b.toLowerCase() === 'true';
-}
-
-function isIntegerString(s) {
-  return int(s).toString() === s;
-}
-
-function int(s) {
-  return Number.parseInt(s, 10);
-}
-
-function isReference(s) {
-  return s.match(REF_MATCHER);
 }
 
 // Parses extraArgs and asserts if required parameters are not present

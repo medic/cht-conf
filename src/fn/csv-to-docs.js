@@ -14,7 +14,7 @@ const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
 
 require('../lib/polyfill');
 
-module.exports = ()=> {
+const execute = () => {
   const couchUrlUuid = uuid5('http://medicmobile.org/configurer/csv-to-docs/permanent-hash', uuid5.URL);
 
   const csvDir = `${environment.pathToProject}/csv`;
@@ -267,3 +267,15 @@ function parseColumn(rawCol, rawVal) {
   }
   return { col:col, val:val, reference:reference, excluded:excluded };
 }
+
+module.exports = {
+  requiresInstance: false,
+  execute,
+  parseFloat,
+  parseBool,
+  parseTimestamp,
+  int,
+  toSafeJson,
+  setCol,
+  parseColumn
+};
