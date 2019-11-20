@@ -82,6 +82,7 @@ describe('contact-summary-emitter', function() {
       const report = { report: true };
       try {
         emitter({ cards }, { type: 'a' }, [report]);
+        throw new Error('Ensures it throws');
       } catch(e) {
         expect(e.message).to.include('You cannot set appliesToType');
       }
