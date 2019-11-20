@@ -15,7 +15,7 @@ const responseChoicesWithoutDiff = [
 ];
 const responseChoicesWithDiff = responseChoicesWithoutDiff.concat([ 'View diff' ]);
 
-const getRevsDocKey = () => {
+const getRevsAndHashesDocKey = () => {
   const parsed = url.parse(environment.apiUrl);
   const key = `${parsed.hostname}${parsed.pathname || 'medic'}`;
   return key;
@@ -38,7 +38,7 @@ const preUploadByRev = async (db, doc) => {
   // Pull local _rev
   let localRev;
   try {
-    localRev = JSON.parse(fs.read(`${environment.pathToProject}/._revs/${localDoc._id}.json`).trim())[getRevsDocKey()];
+    localRev = JSON.parse(fs.read(`${environment.pathToProject}/._revs/${localDoc._id}.json`).trim())[getRevsAndHashesDocKey()];
   } catch (e) {
     // continue regardless of error
     log.trace('Trying to fetch local _rev', e);
@@ -101,7 +101,7 @@ const postUploadByRev = async (db, doc) => {
   if (fs.exists(revsFile)) {
     Object.assign(revs, JSON.parse(fs.read(revsFile).trim()));
   }
-  revs[getRevsDocKey()] = remoteDoc._rev;
+  revs[getRevsAndHashesDocKey()] = remoteDoc._rev;
 
   fs.write(revsFile, JSON.stringify(revs));
 
@@ -109,6 +109,19 @@ const postUploadByRev = async (db, doc) => {
 };
 
 const preUploadByXml = async (db, docId, localXml) => {
+  let storedHash;
+  try {
+    storedHash = JSON.parse(fs.read(`${environment.pathToProject}/.hashes/${docId}.json`).trim())[getRevsAndHashesDocKey()];
+  } catch (e) {
+    // continue regardless of error
+    log.trace('Trying to fetch stored hash', e);
+  }
+
+  const localHash = crypto.createHash('md5').update(localXml, 'binary').digest('base64');
+  if (storedHash === localHash) {
+    throw new Error('No changes');
+  }
+
   let remoteXml;
   try {
     const buffer = await db.getAttachment(docId, 'xml');
@@ -139,8 +152,28 @@ const preUploadByXml = async (db, docId, localXml) => {
   return Promise.resolve();
 };
 
+const postUploadByXml = async (docId, localXml) => {
+  const hashesDir = `${environment.pathToProject}/.hashes`;
+  if (!fs.exists(hashesDir)){
+    fs.mkdir(hashesDir);
+  }
+
+  let hashes = {};
+
+  const hashesFile = `${hashesDir}/${docId}.json`;
+  if (fs.exists(hashesFile)) {
+    Object.assign(hashes, JSON.parse(fs.read(hashesFile).trim()));
+  }
+  hashes[getRevsAndHashesDocKey()] = crypto.createHash('md5').update(localXml, 'binary').digest('base64');
+
+  fs.write(hashesFile, JSON.stringify(hashes));
+
+  return Promise.resolve();
+};
+
 module.exports = {
   preUploadByRev, 
   postUploadByRev,
-  preUploadByXml
+  preUploadByXml,
+  postUploadByXml
 };
