@@ -53,15 +53,13 @@ const execute = async () => {
 
     overwriteProperties(doc, translations);
 
-    await warnUploadOverwrite.preUploadByRev(environment.pathToProject, db, doc);
+    await warnUploadOverwrite.preUploadByRev(db, doc);
 
     info(`Uploaded translation ${dir}/${fileName}`);
     await db.put(doc);
 
-    await warnUploadOverwrite.postUploadByRev(environment.pathToProject, db, doc);
+    await warnUploadOverwrite.postUploadByRev(db, doc);
   }
-
-  return Promise.resolve();
 };
 
 function isLanguageCodeValid(code) {

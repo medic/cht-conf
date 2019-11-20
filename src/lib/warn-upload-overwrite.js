@@ -21,7 +21,7 @@ const getRevsDocKey = () => {
   return key;
 };
 
-const preUploadByRev = async (projectDir, db, doc) => {
+const preUploadByRev = async (db, doc) => {
   let localDoc = JSON.parse(JSON.stringify(doc));
 
   // Pull remote _rev
@@ -38,7 +38,7 @@ const preUploadByRev = async (projectDir, db, doc) => {
   // Pull local _rev
   let localRev;
   try {
-    localRev = JSON.parse(fs.read(`${projectDir}/._revs/${localDoc._id}.json`).trim())[getRevsDocKey()];
+    localRev = JSON.parse(fs.read(`${environment.pathToProject}/._revs/${localDoc._id}.json`).trim())[getRevsDocKey()];
   } catch (e) {
     // continue regardless of error
     log.trace('Trying to fetch local _rev', e);
@@ -87,10 +87,10 @@ const preUploadByRev = async (projectDir, db, doc) => {
   return doc;
 };
 
-const postUploadByRev = async (projectDir, db, doc) => {
+const postUploadByRev = async (db, doc) => {
   const remoteDoc = await db.get(doc._id);
 
-  const revsDir = `${projectDir}/._revs`;
+  const revsDir = `${environment.pathToProject}/._revs`;
   if (!fs.exists(revsDir)){
     fs.mkdir(revsDir);
   }

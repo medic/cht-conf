@@ -24,11 +24,11 @@ module.exports = {
 
     const db = pouch();
 
-    await warnUploadOverwrite.preUploadByRev(environment.pathToProject, db, doc);
+    await warnUploadOverwrite.preUploadByRev(db, doc);
 
     await insertOrReplace(db, doc);
 
-    await warnUploadOverwrite.postUploadByRev(environment.pathToProject, db, doc);
+    await warnUploadOverwrite.postUploadByRev(db, doc);
 
     return Promise.resolve();
   }
