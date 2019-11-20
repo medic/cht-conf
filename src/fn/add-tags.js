@@ -48,7 +48,7 @@ module.exports = ()=> {
     .then(docs => addToModel(csv, docs)),
     Promise.resolve())
 
-  .then(() => model.exclusions.forEach(removeExcludedField))
+  .then(() => model.exclusions.forEach(toDocs.removeExcludedField))
   .then(() => {
     if(model.users.length) {
       generateCsv(model.users, environment.pathToProject + '/users.csv');
@@ -133,10 +133,6 @@ function processCsv(docType, cols, row, ids, index, contactDocs) {
     });
   }
   return doc;
-}
-
-function removeExcludedField(exclusion) {
- delete exclusion.doc[exclusion.propertyName];
 }
 
 const fetch = {
