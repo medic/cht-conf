@@ -28,8 +28,7 @@ function emitter(contactSummary, contact, reports) {
 
     var appliesToType = convertToArray(card.appliesToType);
 
-    var appliesToTypeWithoutReport = appliesToType.filter(function(t) { return t !== 'report'; });
-    if (appliesToType.includes('report') && appliesToTypeWithoutReport.length > 0) {
+    if (appliesToType.includes('report') && appliesToType.length > 1) {
       throw new Error("You cannot set appliesToType to an array which includes the type 'report' and another type.");
     }
     
@@ -64,9 +63,7 @@ function emitter(contactSummary, contact, reports) {
 }
 
 function convertToArray(appliesToType) {
-  return Array.isArray(appliesToType) ? 
-                        appliesToType : 
-                        (appliesToType ? appliesToType.split() : [undefined]);  
+  return Array.isArray(appliesToType) ? appliesToType : [appliesToType];  
 }
 
 function isReportValid(report) {
