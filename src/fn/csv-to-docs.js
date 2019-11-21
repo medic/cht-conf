@@ -11,7 +11,8 @@ const pretty = o => JSON.stringify(o, null, 2);
 const RESERVED_COL_NAMES = [ 'type', 'form' ];
 const REF_MATCHER = /^(?:GET )?((\w+) OF )?(\w+) WHERE (.*)$/i;
 const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
-const NOW = new Date().getTime();
+
+let NOW = new Date().getTime();
 
 require('../lib/polyfill');
 
@@ -279,7 +280,12 @@ function parseColumn(rawCol, rawVal) {
   return { col:col, val:val, reference:reference, excluded:excluded };
 }
 
+function setNOW(t) {
+  NOW = t;
+}
+
 module.exports = {
   requiresInstance: false,
-  execute
+  execute,
+  setNOW
 };

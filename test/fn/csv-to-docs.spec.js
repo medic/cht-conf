@@ -12,6 +12,7 @@ describe('csv-to-docs', function() {
   
   beforeEach(function () {
     clock = sinon.useFakeTimers();
+    csvToDocs.setNOW(new Date().getTime());
   });
 
   afterEach(function () {
