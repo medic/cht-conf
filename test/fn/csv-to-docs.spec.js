@@ -1,11 +1,11 @@
 const { assert } = require('chai');
 const sinon = require('sinon');
+
+const csvToDocs = require('../../src/fn/csv-to-docs');
 const environment = require('../../src/lib/environment');
 const fs = require('../../src/lib/sync-fs');
 
-let clock = sinon.useFakeTimers();
-
-const csvToDocs = require('../../src/fn/csv-to-docs');
+let clock;
 
 describe('csv-to-docs', function() {
   this.timeout(30000); // allow time for slow things
