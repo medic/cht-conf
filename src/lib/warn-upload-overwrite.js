@@ -132,6 +132,11 @@ const preUploadByXml = async (db, docId, localXml) => {
     throw e;
   }
 
+  const remoteHash = crypto.createHash('md5').update(remoteXml, 'binary').digest('base64');
+  if (storedHash === remoteHash) {
+    throw new Error('No changes');
+  }
+
   const localDom = new DOMParser().parseFromString(localXml);
   const remoteDom = new DOMParser().parseFromString(remoteXml);
 
