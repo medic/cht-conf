@@ -11,6 +11,7 @@ const pretty = o => JSON.stringify(o, null, 2);
 const RESERVED_COL_NAMES = [ 'type', 'form' ];
 const REF_MATCHER = /^(?:GET )?((\w+) OF )?(\w+) WHERE (.*)$/i;
 const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
+const NOW = new Date().getTime();
 
 require('../lib/polyfill');
 
@@ -211,11 +212,11 @@ function parseBool(b) {
 }
 
 function calcRelTimestampInDays(b) {
-  return new Date().getTime() + (parseInt(b) * 24 * 60 * 60 * 1000);
+  return NOW + (parseInt(b) * 24 * 60 * 60 * 1000);
 }
 
 function calcRelTimestampInMilliseconds(b) {
-  return new Date().getTime() + parseInt(b);
+  return NOW + parseInt(b);
 }
 
 function isIntegerString(s) {
