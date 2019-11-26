@@ -124,6 +124,32 @@ The list of available actions can be seen via `medic-conf --help`.
 * upload JSON files as docs on instance
 * compress PNGs and SVGs in the current directory and its subdirectories
 
+## Editing contacts across the hierarchy. 
+To edit existing couchdb documents, create a CSV file that contains the id's of the document you wish to update, and the columns of the document attribute(s) you wish to add/edit. By default, values are parsed as strings. To parse a CSV column as a JSON type, refer to the [Property Types](#property-types) section to see how you can parse the values to different types. Also refer to the [Excluded Columns](#excluded-columns)section to see how to exclude column(s) from being added to the docs.
+
+Parameter | Description | Required 
+-- | -- | --
+column(s) | Comma delimited list of columns you wish to add/edit. If this is not specified all columns will be added. | No
+docDirectoryPath | This action outputs files to local disk at this destination | No. Default `json-docs`
+
+
+### Example
+1. Create a contact.csv file with your columns in the csv folder in your current path. The uuid column is a requirement. (The uuid column contains the document IDs to be fetched from couchdb.) 
+
+| uuid | is_in_emnch:bool |
+| ----------------- | ---------------- |
+| uuid_1            | false            |
+| uuid_2            | false            |
+| uuid_3            | true             |
+
+1. Use the following command to download and edit the documents:
+
+```
+medic-conf --instance=*instance* edit-contacts -- --column=*is_in_emnch* --docDirectoryPath=*my_folder*
+```
+1. Then upload the edited documents using the [upload-docs ](#examples) command.
+
+
 # Project Layout
 
 This tool expects a project to be structured as follows:
