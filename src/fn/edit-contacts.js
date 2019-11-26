@@ -41,7 +41,6 @@ module.exports = ()=> {
 
       switch(prefix) {
         case 'contact':  return downloadDocs(csv, getIDs(csv),db, args);
-        case 'users' :  return processUsers(csv);
         default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
       }
     })
