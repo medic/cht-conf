@@ -1,16 +1,10 @@
 const minimist = require('minimist');
-const stringify = require('canonical-json/index2');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const path = require('path');
-const { warn, trace, info, error } = require('../lib/log');
+const { warn, info } = require('../lib/log');
 const pouch = require('../lib/db');
 const toDocs = require('./csv-to-docs');
-
-const pretty = o => JSON.stringify(o, null, 2);
-
-const RESERVED_COL_NAMES = [ 'type', 'form', '_id' ];
-
 
 module.exports = ()=> {
   const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
@@ -67,10 +61,10 @@ const addToModel = (csvFile, docs) => {
 function getIDs(csv) {
     const { rows, cols } = fs.readCsv(csv);
     var index = cols.indexOf('uuid');
-    if (index == -1){
+    if (index === -1){
      throw Error('missing "uuid" column.');
    }
-   return rows.map((item, i) => item[index]);
+   return rows.map((item) => item[index]);
 }
 
 function processContacts(contactType, csv, ids, contactDocs, args){
@@ -78,18 +72,18 @@ function processContacts(contactType, csv, ids, contactDocs, args){
   var colNames = args.colNames;
   var index = cols.indexOf('uuid');
   var toIncludeIndex = [];
-  var includedCols = [];
   if (colNames.length === 0) {
     warn(' No columns specified, the script will add all the columns in the CSV!');
     colNames = cols;
   } else {
     var splitFileColumns = [];
+    var fileColumn;
     for(fileColumn of cols) {
       if (fileColumn !== null) {
         splitFileColumns.push(fileColumn.split(':')[0]);
       }      
     }
-    columnsValid = colNames.every(function(column) { return splitFileColumns.includes(column);});
+    const columnsValid = colNames.every(function(column) { return splitFileColumns.includes(column);});
     if (!columnsValid){
       throw Error('The column name(s) specified do not exist.');
     }
@@ -140,25 +134,25 @@ const fetch = {
   */
 
   contactList: async (db, ids) => {
-  	info("Downloading doc(s)...");
-    const contactDocs = await db.allDocs({
+   info('Downloading doc(s)...');
+   const contactDocs = await db.allDocs({
       keys: ids,
       include_docs: true,
-    });
+   });
     
-    const missingContactErrors = contactDocs.rows.filter(row => !row.doc).map(row => `Contact with id '${row.key}' could not be found.`);
+   const missingContactErrors = contactDocs.rows.filter(row => !row.doc).map(row => `Contact with id '${row.key}' could not be found.`);
     if (missingContactErrors.length > 0) {
       throw Error(missingContactErrors);
     }
 
     return contactDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
   }
-}
+};
 
 const downloadDocs = async (csv, ids, db, args) => {
 	const contactDocs = await fetch.contactList(db, ids);
 	return processContacts('contact', csv, ids, contactDocs, args);
-}
+};
 
 // Parses extraArgs and asserts if required parameters are not present
 const parseExtraArgs = (projectDir, extraArgs = []) => {
