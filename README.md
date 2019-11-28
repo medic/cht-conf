@@ -117,11 +117,12 @@ The list of available actions can be seen via `medic-conf --help`.
 * upload all app or contact forms to server
 * upload specified app or contact forms to server
 
-## Modifying data
+## Managing data and images
 
 * convert CSV files with contacts and reports to JSON docs
 * move contacts by downloading and making the changes locally first
-* upload JSON files to instance
+* upload JSON files as docs on instance
+* compress PNGs and SVGs in the current directory and its subdirectories
 
 # Project Layout
 
@@ -219,13 +220,6 @@ Accepted log types:
 1. Test changes
 	1. To test CLI changes locally you can run `node <project_dir>/src/bin/medic-conf.js`. This will run as if you installed via npm.
 	1. To test changes that are imported in code run `npm install <project_dir>` to use the local version of medic-conf.
-
-## compress images
-
-To compress PNGs and SVGs in the current directory and its subdirectories, two commands are available:
-
-	compress-pngs
-	compress-svgs
 
 ## Wishlist
 
