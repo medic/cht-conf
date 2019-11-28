@@ -221,10 +221,6 @@ Accepted log types:
 	1. To test CLI changes locally you can run `node <project_dir>/src/bin/medic-conf.js`. This will run as if you installed via npm.
 	1. To test changes that are imported in code run `npm install <project_dir>` to use the local version of medic-conf.
 
-## Wishlist
-
-* only upload things which have changed (this could be a separate mode - e.g. `update` vs `configure`)
-
 # Releasing
 
 ## Do I need to update `release-notes.md`?
