@@ -223,20 +223,16 @@ Accepted log types:
 
 # Releasing
 
-## Do I need to update `release-notes.md`?
-
-As we strive to have clear, readable commit messages for every change, [release-notes.md](./release-notes.md) should not be updated for every single change. Instead, it should be used as a forum for deep information about significant changes, breaking changes, changes to interfaces, changes in behavior, new feature details, etc.
-
-## Performing the release
-
 1. Create a pull request with prep for the new release. This should contain changes to release notes if required and anything else that needs to be done:
 1. Get it reviewed and approved
 1. Run `npm version patch`, `npm version minor`, or `npm version major` as appropriate. This will:
-  - Update versions in `package.json` and `package-lock.json`
-  - Commit those changes locally and tag that commit with the new version
-  - "Compile" and publish the changes to npm
+    - Update versions in `package.json` and `package-lock.json`
+    - Commit those changes locally and tag that commit with the new version
+    - "Compile" and publish the changes to npm
 1. `git push && git push --tags` to push the npm generated commit and tag up to your pre-approved pull request
 1. Merge the pull request back into master
+
+Note that as we strive to have clear, readable commit messages for every change, [release-notes.md](./release-notes.md) should not be updated for every single change. Instead, it should be used as a forum for deep information about significant changes, breaking changes, changes to interfaces, changes in behavior, new feature details, etc.
 
 # Build Status
 
