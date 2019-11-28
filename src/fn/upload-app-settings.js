@@ -12,18 +12,18 @@ module.exports = {
       .then(JSON.parse)
       .then(response => {
         if (!response.success){
+          // legacy support for older webapp versions which always return a 200
+          // status even with an error
           throw new Error(response.error);
-        } else {
-          info(`app_settings uploaded successfully`);
         }
+        info(`app_settings uploaded successfully`);
       })
       .catch(e => {
         if (e.statusCode && e.statusCode === 400){
           error(JSON.parse(e.error));
           throw new Error('Check app_settings.json for invalid fields above');
-        } else {
-          throw e;
         }
+        throw e;
       });
   }
 };
