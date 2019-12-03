@@ -1,6 +1,6 @@
 {
   "name": "medic-conf",
-  "version": "3.0.7",
+  "version": "3.1.0",
   "description": "Configure Medic Mobile deployments",
   "main": "./src/lib/main.js",
   "engines": {
@@ -31,6 +31,7 @@
   },
   "homepage": "https://github.com/medic/medic-conf#readme",
   "dependencies": {
+    "@hapi/joi": "^16.1.8",
     "canonical-json": "0.0.4",
     "csv-parse": "^4.4.3",
     "eslint": "^6.5.0",

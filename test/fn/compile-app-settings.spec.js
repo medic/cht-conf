@@ -29,6 +29,9 @@ describe('compile-app-settings', () => {
   it('should handle config with combined targets.js definition', () =>
     test('targets.js/project'));
 
+  it('should reject declarative config with invalid schema', () =>
+    testFails('invalid-declarative-schema/project'));
+
   it('should reject a project with both old and new nools config', () =>
     testFails('unexpected-legacy-nools-rules/project'));
 
