@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('./sync-fs');
 const pack = require('./package-lib');
 const minifyNools = require('./minify-nools');
+const validateDeclarativeSchema = require('./validate-declarative-schema');
 
 const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js' ];
 
@@ -40,6 +41,8 @@ const compileDeclarativeFiles = async (projectDir, options) => {
   if (missingFiles.length > 0) {
     throw new Error(`Missing required declarative configuration file(s): ${missingFiles}`);
   }
+
+  validateDeclarativeSchema(projectDir, options.haltOnSchemaError);
 
   const pathToDeclarativeLib = path.join(__dirname, '../nools/lib.js');
   const baseEslintPath = path.join(__dirname, '../nools/.eslintrc');

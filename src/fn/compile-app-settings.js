@@ -44,7 +44,7 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   appSettings.tasks = {
     rules: await compileNoolsRules(projectDir, options),
     schedules: readOptionalJson(taskSchedulesPath),
-    targets: parseTargets.json(projectDir),
+    targets: parseTargets(projectDir),
   };
 
   const purgeConfig = parsePurge(projectDir);
@@ -127,6 +127,7 @@ const parseExtraArgs = (extraArgs = []) => {
     minifyScripts: !args.debug,
     haltOnWebpackWarning: !args.debug,
     haltOnLintMessage: !args.debug,
+    haltOnSchemaError: !args.debug,
   };
 };
 

@@ -131,7 +131,7 @@ module.exports = async (argv, env) => {
       throw new Error(`${actionName} has not been implemented correctly: no 'execute' function`);
     }
 
-    if (!Object.prototype.hasOwnProperty.call(action, 'requiresInstance')) {
+    if (!Object.hasOwnProperty.call(action, 'requiresInstance')) {
       action.requiresInstance = true;
     }
 
