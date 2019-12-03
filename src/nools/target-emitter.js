@@ -42,6 +42,7 @@ function emitTargetFor(targetConfig, Target, Utils, emit, c, r) {
   var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c, r);
   var instance = new Target({
     _id: instanceId + '~' + targetConfig.id,
+    contact: c.contact,
     deleted: !!instanceDoc.deleted,
     type: targetConfig.id,
     pass: pass,
