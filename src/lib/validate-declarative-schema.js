@@ -4,11 +4,11 @@ const { error, warn } = require('./log');
 
 const TargetSchema = Joi.array().items(
   Joi.object({
-    id: Joi.string().required(),
-    icon: Joi.string().optional(),
-    translation_key: Joi.string().optional(),
-    subtitle_translation_key: Joi.string().optional(),
-    percentage_count_translation_key: Joi.string().optional(),
+    id: Joi.string().min(1).required(),
+    icon: Joi.string().min(1).optional(),
+    translation_key: Joi.string().min(1).optional(),
+    subtitle_translation_key: Joi.string().min(1).optional(),
+    percentage_count_translation_key: Joi.string().min(1).optional(),
     context: Joi.string().optional(),
 
     type: Joi.string().valid('count', 'percent').required(),
@@ -42,13 +42,13 @@ const EventSchema = idPresence => Joi.object({
 
 const TaskSchema = Joi.array().items(
   Joi.object({
-    name: Joi.string().required(),
-    icon: Joi.string().optional(),
-    title: Joi.string().required(),
+    name: Joi.string().min(1).required(),
+    icon: Joi.string().min(1).optional(),
+    title: Joi.string().min(1).required(),
     appliesTo: Joi.string().valid('contacts', 'reports').required(),
     appliesIf: Joi.function().optional(),
     appliesToType: Joi.array().items(Joi.string()).optional(),
-    contactLabel: Joi.alternatives().try( Joi.string(), Joi.function() ).optional(),
+    contactLabel: Joi.alternatives().try( Joi.string().min(1), Joi.function() ).optional(),
     resolvedIf: Joi.function().required(),
     events: Joi.alternatives().conditional('events', {
       is: Joi.array().length(1),
@@ -58,12 +58,12 @@ const TaskSchema = Joi.array().items(
     actions: Joi.array().items(
       Joi.object({
         type: Joi.string().valid('report', 'contacts').optional(),
-        form: Joi.string().required(),
-        label: Joi.string().optional(),
+        form: Joi.string().min(1).required(),
+        label: Joi.string().min(1).optional(),
         modifyContent: Joi.function().optional(),
         priority: Joi.object({
           level: Joi.string().valid('high', 'medium').optional(),
-          label: Joi.string().optional(),
+          label: Joi.string().min(1).optional(),
         }).optional(),
       })
     )
