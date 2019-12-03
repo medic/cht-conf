@@ -1,5 +1,22 @@
 # Release Notes
 
+## 3.1
+
+### Declarative Configuration Support for Cht-Core v3.8
+
+The Task and Target Improvements (Rules-Engine v2) in the Cht-Core 3.8 release requires additional data about each task emitted by partner rules code. After upgrading to v3.8, the task and analytics tabs won't function until partner code is updated to send this new data. **Declarative configuration projects must deploy their configuration using medic-conf v3.1 or later for tasks and targets to function in cht-core v3.8.**
+
+It is still safe to deploy declarative configuration to any cht-core version, including those prior to v3.8.
+
+### Declarative Configuration Tasks/Targets Schema Validation
+The Task and Target Improvements (Rules-Engine v2) in the Cht-Core 3.8 release allow for project members to write impact queries against Postgres to understand how tasks are behaving on users' phones. In previous versions of the declarative configuration system, some identification attributes were optional or able to be reused. This becomes problematic with the Rules-Engine v2 because it will lead to data integrity issues if elements are reorderd or removed from within the configuration.
+
+Medic-conf v3.1 guarantees clearer data integrity with the following changes to the declarative configuration schema:
+
+* Task.name is now a required unique attribute
+* Task.event[n].id is now a required unique attribute when there is more than one event
+* Target.id although previously required, is now a required to be unique
+
 ## 3.0.5
 
 ### Updates to purge configuration
