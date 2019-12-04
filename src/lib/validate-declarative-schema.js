@@ -1,30 +1,30 @@
 const path = require('path');
-const Joi = require('@hapi/joi');
+const joi = require('@hapi/joi');
 const { error, warn } = require('./log');
 
-const TargetSchema = Joi.array().items(
-  Joi.object({
-    id: Joi.string().min(1).required(),
-    icon: Joi.string().min(1).optional(),
-    translation_key: Joi.string().min(1).optional(),
-    subtitle_translation_key: Joi.string().min(1).optional(),
-    percentage_count_translation_key: Joi.string().min(1).optional(),
-    context: Joi.string().optional(),
+const TargetSchema = joi.array().items(
+  joi.object({
+    id: joi.string().min(1).required(),
+    icon: joi.string().min(1).optional(),
+    translation_key: joi.string().min(1).optional(),
+    subtitle_translation_key: joi.string().min(1).optional(),
+    percentage_count_translation_key: joi.string().min(1).optional(),
+    context: joi.string().optional(),
 
-    type: Joi.string().valid('count', 'percent').required(),
-    goal: Joi.number().min(-1).max(100).required(),
-    appliesTo: Joi.string().valid('contacts', 'reports').required(),
-    appliesToType: Joi.array().items(Joi.string()).optional(),
-    appliesIf: Joi.function().optional(),
-    passesIf: Joi.alternatives().conditional('type', { is: 'percent', then: Joi.function().required(), otherwise: Joi.function().forbidden() }),
-    date: Joi.alternatives().try(
-        Joi.string().valid('reported', 'now'),
-        Joi.function(),
+    type: joi.string().valid('count', 'percent').required(),
+    goal: joi.number().min(-1).max(100).required(),
+    appliesTo: joi.string().valid('contacts', 'reports').required(),
+    appliesToType: joi.array().items(joi.string()).optional(),
+    appliesIf: joi.function().optional(),
+    passesIf: joi.alternatives().conditional('type', { is: 'percent', then: joi.function().required(), otherwise: joi.function().forbidden() }),
+    date: joi.alternatives().try(
+        joi.string().valid('reported', 'now'),
+        joi.function(),
       ).optional(),
-    emitCustom: Joi.function().optional(),
-    idType: Joi.alternatives().try(
-      Joi.string().valid('report', 'contact'),
-      Joi.function(),
+    emitCustom: joi.function().optional(),
+    idType: joi.alternatives().try(
+      joi.string().valid('report', 'contact'),
+      joi.function(),
     ).optional()
   })
   .required()
@@ -32,39 +32,42 @@ const TargetSchema = Joi.array().items(
   .unique('id')
   .required();
 
-const EventSchema = idPresence => Joi.object({
-    id: Joi.string().presence(idPresence),
-    days: Joi.alternatives().conditional('dueDate', { is: Joi.exist(), then: Joi.forbidden(), otherwise: Joi.number().required() }),
-    dueDate: Joi.alternatives().conditional('days', { is: Joi.exist(), then: Joi.forbidden(), otherwise: Joi.function().required() }),
-    start: Joi.number().min(0).required(),
-    end: Joi.number().min(0).required(),
+const EventSchema = idPresence => joi.object({
+    id: joi.string().presence(idPresence),
+    days: joi.alternatives().conditional('dueDate', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.number().required() }),
+    dueDate: joi.alternatives().conditional('days', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.function().required() }),
+    start: joi.number().min(0).required(),
+    end: joi.number().min(0).required(),
   });
 
-const TaskSchema = Joi.array().items(
-  Joi.object({
-    name: Joi.string().min(1).required(),
-    icon: Joi.string().min(1).optional(),
-    title: Joi.string().min(1).required(),
-    appliesTo: Joi.string().valid('contacts', 'reports').required(),
-    appliesIf: Joi.function().optional(),
-    appliesToType: Joi.array().items(Joi.string()).optional(),
-    contactLabel: Joi.alternatives().try( Joi.string().min(1), Joi.function() ).optional(),
-    resolvedIf: Joi.function().required(),
-    events: Joi.alternatives().conditional('events', {
-      is: Joi.array().length(1),
-      then: Joi.array().items(EventSchema('optional')).min(1).required(),
-      otherwise: Joi.array().items(EventSchema('required')).unique('id').required(),
+const TaskSchema = joi.array().items(
+  joi.object({
+    name: joi.string().min(1).required(),
+    icon: joi.string().min(1).optional(),
+    title: joi.string().min(1).required(),
+    appliesTo: joi.string().valid('contacts', 'reports', 'scheduled_tasks').required(),
+    appliesIf: joi.function().optional(),
+    appliesToType: joi.array().items(joi.string()).optional(),
+    contactLabel: joi.alternatives().try( joi.string().min(1), joi.function() ).optional(),
+    resolvedIf: joi.function().required(),
+    events: joi.alternatives().conditional('events', {
+      is: joi.array().length(1),
+      then: joi.array().items(EventSchema('optional')).min(1).required(),
+      otherwise: joi.array().items(EventSchema('required')).unique('id').required(),
     }),
-    actions: Joi.array().items(
-      Joi.object({
-        type: Joi.string().valid('report', 'contacts').optional(),
-        form: Joi.string().min(1).required(),
-        label: Joi.string().min(1).optional(),
-        modifyContent: Joi.function().optional(),
-        priority: Joi.object({
-          level: Joi.string().valid('high', 'medium').optional(),
-          label: Joi.string().min(1).optional(),
-        }).optional(),
+    priority: joi.alternatives().try(
+      joi.object({
+        level: joi.string().valid('high', 'medium').optional(),
+        label: joi.string().min(1).optional(),
+      }),
+      joi.function(),
+    ).optional(),
+    actions: joi.array().items(
+      joi.object({
+        type: joi.string().valid('report', 'contacts').optional(),
+        form: joi.string().min(1).required(),
+        label: joi.string().min(1).optional(),
+        modifyContent: joi.function().optional(),
       })
     )
       .min(1)
@@ -80,7 +83,8 @@ const validate = (logEvent, projectDir, filename, schema) => {
   try {
     tasks = require(pathToTasks);
   } catch (err) {
-    return `Failed to parse file ${pathToTasks}. ${err}`;
+    logEvent(`Failed to parse file ${pathToTasks}. ${err}`);
+    return false;
   }
 
   const result = schema.validate(tasks, { abortEarly: false });
@@ -88,6 +92,7 @@ const validate = (logEvent, projectDir, filename, schema) => {
     const { message } = result.error;
     logEvent(`${filename} invalid schema: ${message}`);
   }
+  
   return !result.error;
 };
 
