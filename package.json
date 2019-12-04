@@ -33,10 +33,12 @@
   "dependencies": {
     "canonical-json": "0.0.4",
     "csv-parse": "^4.4.3",
+    "dom-compare": "^0.6.0",
     "eslint": "^6.5.0",
     "eslint-loader": "^3.0.2",
     "googleapis": "^43.0.0",
     "iso-639-1": "^2.1.0",
+    "json-diff": "^0.5.4",
     "json2csv": "^4.5.1",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
@@ -52,7 +54,8 @@
     "semver": "^6.1.1",
     "svgo": "^1.2.2",
     "uuid": "^3.3.3",
-    "webpack": "^4.41.0"
+    "webpack": "^4.41.0",
+    "xmldom": "^0.1.27"
   },
   "devDependencies": {
     "chai": "^4.2.0",
