@@ -108,6 +108,8 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         contact: obtainContactLabelFromSchedule(taskDefinition, c, r),
         icon: taskDefinition.icon,
         date: dueDate,
+        readyStart: event.start || 0,
+        readyEnd: event.end || 0,
         title: taskDefinition.title,
         resolved: taskDefinition.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
         actions: taskDefinition.actions.map(initActions),
