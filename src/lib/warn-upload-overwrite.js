@@ -127,9 +127,13 @@ const preUploadByXml = async (db, docId, localXml) => {
     const buffer = await db.getAttachment(docId, 'xml');
     remoteXml = buffer.toString('utf8');
   } catch (e) {
-    // continue regardless of error
-    log.trace('Trying to fetch remote xml', e);
-    throw e;
+    if (e.status === 404) {
+      return Promise.resolve();
+    } else {
+      // continue regardless of error
+      log.trace('Trying to fetch remote xml', e);
+      throw new Error(`Unable to fetch xml attachment of doc with id ${docId}, returned status code = ${e.status}`);
+    }
   }
 
   const remoteHash = crypto.createHash('md5').update(remoteXml, 'binary').digest('base64');
