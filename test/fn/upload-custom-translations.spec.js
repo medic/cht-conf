@@ -1,6 +1,6 @@
 const { assert, expect } = require('chai');
 const sinon = require('sinon');
-
+const readline = require('readline-sync');
 const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
 const testProjectDir = './data/upload-custom-translations/';
@@ -28,7 +28,10 @@ const expectTranslationDocs = (...expectedLangs) => {
 };
 
 describe('upload-custom-translations', () => {
-  beforeEach(api.start);
+  beforeEach(() => {
+    readline.keyInYN = () => true;
+    return api.start();
+  });
   afterEach(api.stop);
 
   describe('medic-2.x', () => {
@@ -125,8 +128,12 @@ describe('upload-custom-translations', () => {
 
   describe('medic-3.x', () => {
     describe('3.0.0', () => {
-      beforeEach(() => api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.0.0' } }));
-
+      beforeEach(() => {
+        readline.keyInYN = () => true;
+        readline.keyInSelect = () => 0;
+        return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.0.0' } });
+      });
+      
       it('should upload simple translations', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
