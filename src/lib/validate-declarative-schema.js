@@ -2,6 +2,17 @@ const path = require('path');
 const joi = require('@hapi/joi');
 const { error, warn } = require('./log');
 
+const err = (filename, message) => details => {
+  const acceptedValues = details[0].local.valids ? ` but only ${JSON.stringify(details[0].local.valids)} are allowed` : '';
+  return new Error(`Invalid schema at ${filename}${details[0].local.label}
+${message}
+Value is ${JSON.stringify(details[0].value)}${acceptedValues}
+`);
+};
+const targetError = message => err('targets', message);
+const taskError = message => err('tasks', message);
+
+
 const TargetSchema = joi.array().items(
   joi.object({
     id: joi.string().min(1).required(),
@@ -14,18 +25,33 @@ const TargetSchema = joi.array().items(
     type: joi.string().valid('count', 'percent').required(),
     goal: joi.number().min(-1).max(100).required(),
     appliesTo: joi.string().valid('contacts', 'reports').required(),
-    appliesToType: joi.array().items(joi.string()).optional(),
-    appliesIf: joi.function().optional(),
-    passesIf: joi.alternatives().conditional('type', { is: 'percent', then: joi.function().required(), otherwise: joi.function().forbidden() }),
+    appliesToType: joi.array().items(joi.string()).optional().min(1),
+    appliesIf: joi.function().optional()
+      .error(targetError('"appliesIf" should be of type function(contact, report)')),
+    passesIf: joi.alternatives().conditional('groupBy', {
+      is: joi.exist(),
+      then: joi.function().forbidden(),
+      otherwise: joi.alternatives().conditional('type', {
+        is: 'percent',
+        then: joi.function().required(),
+        otherwise: joi.function().forbidden(),
+      })
+    })
+      .error(targetError('"passesIf" is required only when "type=percent" and "groupBy" is not defined')),
     date: joi.alternatives().try(
         joi.string().valid('reported', 'now'),
         joi.function(),
-      ).optional(),
-    emitCustom: joi.function().optional(),
+      )
+      .optional()
+      .error(targetError('"date" should be either ["reported", "now"] or "function(contact, report)" returning timestamp')),
+    emitCustom: joi.function().optional()
+      .error(targetError('"emitCustom" should be a function')),
     idType: joi.alternatives().try(
-      joi.string().valid('report', 'contact'),
-      joi.function(),
-    ).optional()
+        joi.string().valid('report', 'contact'),
+        joi.function(),
+      )
+      .optional()
+      .error(targetError('idType should be either "report" or "contact" or "function(contact, report)"')),
   })
   .required()
 )
@@ -34,8 +60,10 @@ const TargetSchema = joi.array().items(
 
 const EventSchema = idPresence => joi.object({
     id: joi.string().presence(idPresence),
-    days: joi.alternatives().conditional('dueDate', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.number().required() }),
-    dueDate: joi.alternatives().conditional('days', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.function().required() }),
+    days: joi.alternatives().conditional('dueDate', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.number().required() })
+      .error(taskError('"event.days" is a required integer field only when "event.dueDate" is absent')),
+    dueDate: joi.alternatives().conditional('days', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.function().required() })
+      .error(taskError('"event.dueDate" is required to be "function(event, contact, report)" only when "event.days" is absent')),
     start: joi.number().min(0).required(),
     end: joi.number().min(0).required(),
   });
@@ -46,10 +74,14 @@ const TaskSchema = joi.array().items(
     icon: joi.string().min(1).optional(),
     title: joi.string().min(1).required(),
     appliesTo: joi.string().valid('contacts', 'reports', 'scheduled_tasks').required(),
-    appliesIf: joi.function().optional(),
-    appliesToType: joi.array().items(joi.string()).optional(),
-    contactLabel: joi.alternatives().try( joi.string().min(1), joi.function() ).optional(),
-    resolvedIf: joi.function().required(),
+    appliesIf: joi.function().optional()
+      .error(taskError('"appliesIf" should be of type function(contact, report)')),
+    appliesToType: joi.array().items(joi.string()).optional().min(1),
+    contactLabel:
+      joi.alternatives().try( joi.string().min(1), joi.function() ).optional()
+      .error(taskError('"contactLabel" should either be a non-empty string or function(contact, report)')),
+    resolvedIf: joi.function().required()
+      .error(taskError('"resolvedIf" should be of type function(contact, report)')),
     events: joi.alternatives().conditional('events', {
       is: joi.array().length(1),
       then: joi.array().items(EventSchema('optional')).min(1).required(),
@@ -61,13 +93,16 @@ const TaskSchema = joi.array().items(
         label: joi.string().min(1).optional(),
       }),
       joi.function(),
-    ).optional(),
+    )
+      .optional()
+      .error(taskError('"priority" should be an object with optional fields "level" and "label" or a function which returns the same')),
     actions: joi.array().items(
       joi.object({
         type: joi.string().valid('report', 'contacts').optional(),
         form: joi.string().min(1).required(),
         label: joi.string().min(1).optional(),
-        modifyContent: joi.function().optional(),
+        modifyContent: joi.function().optional()
+          .error(taskError('"actions.modifyContent" should be "function (content, contact, report)')),
       })
     )
       .min(1)
@@ -77,29 +112,54 @@ const TaskSchema = joi.array().items(
   .unique('name')
   .required();
 
-const validate = (logEvent, projectDir, filename, schema) => {
+const validateFile = (logEvent, projectDir, filename, schema) => {
   const pathToTasks = path.join(projectDir, filename);
-  let tasks;
+  let fileContent;
   try {
-    tasks = require(pathToTasks);
+    fileContent = require(pathToTasks);
   } catch (err) {
     logEvent(`Failed to parse file ${pathToTasks}. ${err}`);
     return false;
   }
 
-  const result = schema.validate(tasks, { abortEarly: false });
-  if (result.error) {
-    const { message } = result.error;
-    logEvent(`${filename} invalid schema: ${message}`);
+  const errors = validate(filename, fileContent, schema);
+  if (errors.length) {
+    logEvent(`${filename} invalid schema:`);
+    errors.forEach(err => logEvent(err));
   }
-  
-  return !result.error;
+  return errors.length === 0;
+};
+
+const validate = (filename, fileContent, schema) => {
+  const result = schema.validate(fileContent, { abortEarly: false });
+  if (!result.error) {
+    return [];
+  }
+
+  if (!result.error.details) {
+    return [result.error.message];
+  }
+
+  return result.error.details.map(detail => formatJoiError(filename, detail));
+};
+
+const formatJoiError = (desc, detail) => {
+  const { context } = detail;
+  if (detail.type === 'array.unique') {
+    return `${desc}${context.label} contains duplicate value for the "${context.path}" field: "${context.value[context.path]}"`;
+  }
+
+  let result = detail.message;
+  if (context.value) {
+    result += `. Value is: "${context.value}"`;
+  }
+  return result;
 };
 
 module.exports = (projectDir, errorOnValidation) => {
   const logEvent = errorOnValidation ? error : warn;
-  const tasksValid = validate(logEvent, projectDir, 'tasks.js', TaskSchema);
-  const targetsValid = validate(logEvent, projectDir, 'targets.js', TargetSchema);
+  const tasksValid = validateFile(logEvent, projectDir, 'tasks.js', TaskSchema);
+  const targetsValid = validateFile(logEvent, projectDir, 'targets.js', TargetSchema);
 
   const success = tasksValid && targetsValid;
   if (errorOnValidation && !success) {
