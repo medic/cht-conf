@@ -53,7 +53,6 @@ const TargetSchema = joi.array().items(
       .optional()
       .error(targetError('idType should be either "report" or "contact" or "function(contact, report)"')),
   })
-  .required()
 )
   .unique('id')
   .required();
