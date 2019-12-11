@@ -5,8 +5,19 @@ const csvToDocs = require('../../src/fn/csv-to-docs');
 const environment = require('../../src/lib/environment');
 const fs = require('../../src/lib/sync-fs');
 
+let clock;
+
 describe('csv-to-docs', function() {
   this.timeout(30000); // allow time for slow things
+  
+  beforeEach(function () {
+    clock = sinon.useFakeTimers();
+    csvToDocs.setNOW(new Date().getTime());
+  });
+
+  afterEach(function () {
+    clock.restore();
+  });
 
   const testDir = `data/csv-to-docs`;
 

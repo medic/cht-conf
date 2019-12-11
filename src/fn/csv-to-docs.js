@@ -12,6 +12,8 @@ const RESERVED_COL_NAMES = [ 'type', 'form' ];
 const REF_MATCHER = /^(?:GET )?((\w+) OF )?(\w+) WHERE (.*)$/i;
 const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
 
+let NOW = new Date().getTime();
+
 require('../lib/polyfill');
 
 const execute = () => {
@@ -210,6 +212,14 @@ function parseBool(b) {
   else return b.toLowerCase() === 'true';
 }
 
+function calcRelTimestampInDays(b) {
+  return NOW + (parseInt(b) * 24 * 60 * 60 * 1000);
+}
+
+function calcRelTimestampInMilliseconds(b) {
+  return NOW + parseInt(b);
+}
+
 function isIntegerString(s) {
   return int(s).toString() === s;
 }
@@ -247,7 +257,9 @@ function parseColumn(rawCol, rawVal) {
     const type = parts[1];
     switch(type) {
       case 'date': val = new Date(rawVal); break;
+      case 'rel-date': val = (new Date(calcRelTimestampInDays(rawVal))).toISOString().substring(0, 10); break;
       case 'timestamp': val = parseTimestamp(rawVal); break;
+      case 'rel-timestamp': val = calcRelTimestampInMilliseconds(rawVal); break;
       case 'int': val = int(rawVal); break;
       case 'bool': val = parseBool(rawVal); break;
       case 'string': val = rawVal; break;
@@ -268,7 +280,12 @@ function parseColumn(rawCol, rawVal) {
   return { col:col, val:val, reference:reference, excluded:excluded };
 }
 
+function setNOW(t) {
+  NOW = t;
+}
+
 module.exports = {
   requiresInstance: false,
-  execute
+  execute,
+  setNOW
 };
