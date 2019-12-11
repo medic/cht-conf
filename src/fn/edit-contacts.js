@@ -32,7 +32,8 @@ module.exports = ()=> {
       info('Processing CSV file:', prefix, '…');
 
       switch(prefix) {
-        case 'contact':  return downloadDocs(csv, getIDs(csv),db, args);
+        case 'contact':  return processContacts(csv, getIDs(csv, prefix), db, args);
+        case 'users': return processUsers(csv, getIDs(csv, prefix), db, args);
         default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
       }
     })
@@ -58,74 +59,80 @@ const addToModel = (csvFile, docs) => {
     });
   };
 
-function getIDs(csv) {
+  function getIDs(csv, docType) {
     const { rows, cols } = fs.readCsv(csv);
-    var index = cols.indexOf('uuid');
+    var index = cols.indexOf('documentID');
     if (index === -1){
-     throw Error('missing "uuid" column.');
+     throw Error('missing "documentID" column.');
    }
-   return rows.map((item) => item[index]);
-}
 
-function processContacts(contactType, csv, ids, contactDocs, args){
-  const { rows, cols } = fs.readCsv(csv);
-  var colNames = args.colNames;
-  var index = cols.indexOf('uuid');
-  var toIncludeIndex = [];
-  if (colNames.length === 0) {
-    warn(' No columns specified, the script will add all the columns in the CSV!');
-    colNames = cols;
-  } else {
-    var splitFileColumns = [];
-    var fileColumn;
-    for(fileColumn of cols) {
-      if (fileColumn !== null) {
-        splitFileColumns.push(fileColumn.split(':')[0]);
-      }      
-    }
-    const columnsValid = colNames.every(function(column) { return splitFileColumns.includes(column);});
-    if (!columnsValid){
-      throw Error('The column name(s) specified do not exist.');
-    }
-
-    colNames = cols.filter(e => colNames.includes(e.split(':')[0]));
-    colNames.forEach(function(e){
-      toIncludeIndex.push(cols.indexOf(e));
-    });
-
-  }
-  if (colNames.includes('uuid')) {
-    colNames.splice(colNames.indexOf('uuid'),1);
-  }
-  return rows
-  .map(r => processCsv(contactType, colNames, r, ids, index, toIncludeIndex, contactDocs));
-
-}
-
-function processCsv(docType, columnNames, rowItem, ids, index, toIncludeIndex, contactDocs) {
- var row = [];
- var cols = columnNames;
- const contactId = rowItem[index];
- const doc = contactDocs[contactId];
-
- if(toIncludeIndex.length > 0){
-  toIncludeIndex.forEach(function(index){
-    row.push(rowItem[index]);
-  });
- } else {
-  rowItem.splice(index,1);
-  row=rowItem;
+   const idPrefix =  docType === 'contact' ? '' : 'org.couchdb.user:';
+   return rows.map((item) => idPrefix + item[index]);
  }
 
- for(let i=0; i<cols.length; ++i) {
+ function processDocs(docType, csv, contactDocs, args) {
+  const { rows, cols } = fs.readCsv(csv);
+  var inputColumns = args.colNames;
+  var index = cols.indexOf('documentID');
+  var toIncludeIndex = [];
+  if (!inputColumns.length) {
+    warn(' No columns specified, the script will add all the columns in the CSV!');
+    inputColumns = cols;
+
+  } else {
+    if (!columnsAreValid(cols,inputColumns)) {
+      throw Error('The column name(s) specified do not exist.');
+    }   
+
+    inputColumns = cols.filter(e => inputColumns.includes(e.split(':')[0]));
+    const toIncludeIndex = inputColumns.map(column => cols.indexOf(column));
+  }
+
+  if (inputColumns.includes('documentID')) {
+    inputColumns.splice(inputColumns.indexOf('documentID'),1);
+  }
+  return rows
+  .map(r => processCsv(docType, inputColumns, r, index, toIncludeIndex, contactDocs));
+
+}
+
+function columnsAreValid(csvColumns, inputColumns) {
+  const splitCsvColumns = csvColumns.map(column => column && column.split(':')[0]);
+  return inputColumns.every(column => splitCsvColumns.includes(column));    
+}
+
+function processCsv(docType, cols, rowItem, index, toIncludeIndex, contactDocs) {
+ var row = [];
+ const contactId = rowItem[index];
+ const idPrefix =  docType === 'contact' ? '' : 'org.couchdb.user:';
+ const doc = contactDocs[idPrefix + contactId];
+
+ if(toIncludeIndex.length > 0){
+  row = toIncludeIndex.map(index => rowItem[index]);
+} else {
+  rowItem.splice(index,1);
+  row=rowItem;
+}
+
+for(let i=0; i<cols.length; ++i) {
   const { col, val, excluded } = toDocs.parseColumn(cols[i], row[i]);
   toDocs.setCol(doc, col, val);
-    if(excluded) model.exclusions.push({
-      doc: doc,
-      propertyName: col,
-    });
-  }
-  return doc;
+  if(excluded) model.exclusions.push({
+    doc: doc,
+    propertyName: col,
+  });
+}
+return doc;
+}
+
+const processUsers =  async (csv, ids, db, args) => {
+  const contactDocs = await fetch.contactList(db, ids);
+  return  processDocs('user', csv, contactDocs, args);
+}
+
+const processContacts =  async (csv, ids, db, args) => {
+  const contactDocs = await fetch.contactList(db, ids);
+  return  processDocs('contact', csv, contactDocs, args);
 }
 
 const fetch = {
@@ -136,22 +143,17 @@ const fetch = {
   contactList: async (db, ids) => {
    info('Downloading doc(s)...');
    const contactDocs = await db.allDocs({
-      keys: ids,
-      include_docs: true,
-   });
-    
+    keys: ids,
+    include_docs: true,
+  });
+
    const missingContactErrors = contactDocs.rows.filter(row => !row.doc).map(row => `Contact with id '${row.key}' could not be found.`);
-    if (missingContactErrors.length > 0) {
-      throw Error(missingContactErrors);
-    }
-
-    return contactDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
+   if (missingContactErrors.length > 0) {
+    throw Error(missingContactErrors);
   }
-};
 
-const downloadDocs = async (csv, ids, db, args) => {
-	const contactDocs = await fetch.contactList(db, ids);
-	return processContacts('contact', csv, ids, contactDocs, args);
+  return contactDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
+}
 };
 
 // Parses extraArgs and asserts if required parameters are not present
