@@ -23,7 +23,11 @@ const TargetSchema = joi.array().items(
     context: joi.string().optional(),
 
     type: joi.string().valid('count', 'percent').required(),
-    goal: joi.number().min(-1).max(100).required(),
+    goal: joi.alternatives().conditional('type', {
+      is: 'percent',
+      then: joi.number().min(-1).max(100).required(),
+      otherwise: joi.number().min(-1).required(),
+    }),
     appliesTo: joi.string().valid('contacts', 'reports').required(),
     appliesToType: joi.array().items(joi.string()).optional().min(1),
     appliesIf: joi.function().optional()
