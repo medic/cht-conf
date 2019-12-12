@@ -1,5 +1,6 @@
 const api = require('../api-stub');
 const assert = require('chai').assert;
+const sinon = require('sinon');
 const fs = require('../../src/lib/sync-fs');
 const readline = require('readline-sync');
 const warnUploadOverwrite = require('../../src/lib/warn-upload-overwrite');
@@ -110,6 +111,19 @@ describe('prompts when attempting to overwrite (by xml)', () => {
     return warnUploadOverwrite.preUploadByXml(api.db, 'x', localXml)
     .catch(e => {
       assert.equal('configuration modified', e.message);
+    });
+  });
+
+  it('uploads the local xml if remote xml does not exist', () => {
+    let error = new Error('No attachment');
+    error.status = 404;
+    api.db.getAttachment = sinon.stub().throws(error);
+    fs.read = () => '{"localhost/medic":"y"}';
+    const localXml = '<?xml version="1.0"?><x />';
+
+    return warnUploadOverwrite.preUploadByXml(api.db, 'x', localXml)
+    .then(() => {
+      assert(api.db.getAttachment.calledOnce);
     });
   });
 

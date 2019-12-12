@@ -62,7 +62,7 @@ module.exports = (projectDir, subDirectory, options) => {
         .then(() => info(`Uploaded form ${formsDir}/${fileName}`))
         .then(() => warnUploadOverwrite.postUploadByXml(doc._id, xml))
         .catch(e => {
-          if (!e.message.includes('No changes')) {
+          if (!e.message || !e.message.includes('No changes')) {
             throw e;
           } else {
             info(`Form ${formsDir}/${fileName} not uploaded, no changes`);
