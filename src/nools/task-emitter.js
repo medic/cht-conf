@@ -6,7 +6,6 @@ function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
   var taskDefinition, r;
   for (var idx1 = 0; idx1 < taskDefinitions.length; ++idx1) {
     taskDefinition = taskDefinitions[idx1];
-    taskDefinition.index = idx1;
     prepareDefinition(taskDefinition);
 
     switch (taskDefinition.appliesTo) {
@@ -102,7 +101,7 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
       task = {
         // One task instance for each event per form that triggers a task, not per contact
         // Otherwise they collide when contact has multiple reports of the same form
-        _id: (r ? r._id : c.contact && c.contact._id) + '~' + (event.id || i) + '~' + (taskDefinition.name || taskDefinition.index),
+        _id: (r ? r._id : c.contact && c.contact._id) + '~' + (event.id || i) + '~' + taskDefinition.name,
         deleted: !!((c.contact && c.contact.deleted) || r ? r.deleted : false),
         doc: c,
         contact: obtainContactLabelFromSchedule(taskDefinition, c, r),
