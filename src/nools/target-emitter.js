@@ -24,7 +24,8 @@ function targetEmitter(targets, c, Utils, Target, emit) {
 function emitTargetFor(targetConfig, Target, Utils, emit, c, r) {
   var isEmittingForReport = !!r;
   if (!c.contact) return;
-  var appliesToKey = isEmittingForReport ? r.form : c.contact.type;
+  var contactType = c.contact.contact_type || c.contact.type;
+  var appliesToKey = isEmittingForReport ? r.form : contactType;
   if (targetConfig.appliesToType && targetConfig.appliesToType.indexOf(appliesToKey) < 0) return;
   if (targetConfig.appliesIf && !targetConfig.appliesIf (c, r)) return;
 
@@ -36,11 +37,12 @@ function emitTargetFor(targetConfig, Target, Utils, emit, c, r) {
   } else {
     instanceId = c.contact && c.contact._id;
   }
-  
+
   var instanceDoc = isEmittingForReport ? r : c.contact;
   var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c, r);
   var instance = new Target({
     _id: instanceId + '~' + targetConfig.id,
+    contact: c.contact,
     deleted: !!instanceDoc.deleted,
     type: targetConfig.id,
     pass: pass,

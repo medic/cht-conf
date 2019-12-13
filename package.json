@@ -1,6 +1,6 @@
 {
   "name": "medic-conf",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "description": "Configure Medic Mobile deployments",
   "main": "./src/lib/main.js",
   "engines": {
@@ -10,7 +10,7 @@
     "clean": "rm -rf ./build/",
     "generate-changelog": "echo 'Generating changelog...' && ./scripts/changelog > CHANGELOG.md && echo 'Changelog generated.'",
     "eslint": "eslint src/**/*.js test/*.js test/**/*.js",
-    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js && cd ../.. && npx @medic/audit-dependencies check",
+    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js && cd ../..",
     "postversion": "npm publish",
     "postpublish": "git push --all; git push --tags"
   },
@@ -33,10 +33,12 @@
   "dependencies": {
     "canonical-json": "0.0.4",
     "csv-parse": "^4.4.3",
+    "dom-compare": "^0.6.0",
     "eslint": "^6.5.0",
     "eslint-loader": "^3.0.2",
     "googleapis": "^43.0.0",
     "iso-639-1": "^2.1.0",
+    "json-diff": "^0.5.4",
     "json2csv": "^4.5.1",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
@@ -44,6 +46,7 @@
     "pouchdb-adapter-http": "^7.1.1",
     "pouchdb-core": "^7.1.1",
     "pouchdb-mapreduce": "^7.1.1",
+    "properties": "^1.2.1",
     "readline-sync": "^1.4.10",
     "redact-basic-auth": "^1.0.0",
     "request": "^2.88.0",
@@ -51,7 +54,8 @@
     "semver": "^6.1.1",
     "svgo": "^1.2.2",
     "uuid": "^3.3.3",
-    "webpack": "^4.41.0"
+    "webpack": "^4.41.0",
+    "xmldom": "^0.1.27"
   },
   "devDependencies": {
     "chai": "^4.2.0",

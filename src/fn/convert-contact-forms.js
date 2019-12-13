@@ -2,8 +2,7 @@ const convertForms = require('../lib/convert-forms');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 
-module.exports = () => {
-
+const execute = () => {
   const dir = `${environment.pathToProject}/forms/contact`;
   const placeTypesJson = `${dir}/place-types.json`;
 
@@ -85,5 +84,9 @@ module.exports = () => {
         return xml;
       },
     });
+};
 
+module.exports = {
+  requiresInstance: false,
+  execute
 };

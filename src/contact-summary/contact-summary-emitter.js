@@ -2,25 +2,37 @@ function emitter(contactSummary, contact, reports) {
   var fields = contactSummary.fields || [];
   var context = contactSummary.context || {};
   var cards = contactSummary.cards || [];
-  
+
+  var contactType = contact && (contact.contact_type || contact.type);
+
   var result = {
     cards: [],
     fields: fields.filter(function(f) {
-          if (f.appliesToType === contact.type ||
-              (f.appliesToType.charAt(0) === '!' && f.appliesToType.slice(1) !== contact.type)) {
-            if (!f.appliesIf || f.appliesIf()) {
-              delete f.appliesToType;
-              delete f.appliesIf;
-              return true;
-            }
-          }
-        }),
+      var appliesToType = convertToArray(f.appliesToType);
+      var appliesToNotType = appliesToType.filter(function(type) {
+        return type && type.charAt(0) === '!';
+      });
+      if (appliesToType.includes(contactType) ||
+          (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
+        if (!f.appliesIf || f.appliesIf()) {
+          delete f.appliesToType;
+          delete f.appliesIf;
+          return true;
+        }
+      }
+    }),
   };
 
   cards.forEach(function(card) {
     var idx1, r, added;
+
+    var appliesToType = convertToArray(card.appliesToType);
+
+    if (appliesToType.includes('report') && appliesToType.length > 1) {
+      throw new Error("You cannot set appliesToType to an array which includes the type 'report' and another type.");
+    }
     
-    if (card.appliesToType === 'report') {
+    if (appliesToType.includes('report')) {
       for (idx1=0; idx1<reports.length; ++idx1) {
         r = reports[idx1];
         if (!isReportValid(r)) {
@@ -33,7 +45,7 @@ function emitter(contactSummary, contact, reports) {
         }
       }
     } else {
-      if (contact.type !== card.appliesToType) {
+      if (!appliesToType.includes(contactType)) {
         return;
       }
 
@@ -43,11 +55,15 @@ function emitter(contactSummary, contact, reports) {
       }
     }
   });
-  
+
   result.context = context;
-  
+
   // return the result for 2.13+ as per #2635
   return result;
+}
+
+function convertToArray(appliesToType) {
+  return Array.isArray(appliesToType) ? appliesToType : [appliesToType];  
 }
 
 function isReportValid(report) {

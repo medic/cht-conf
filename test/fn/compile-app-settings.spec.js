@@ -71,7 +71,7 @@ async function test(relativeProjectDir) {
   sinon.stub(environment, 'pathToProject').get(() => testDir);
 
   // when
-  await compileAppSettings();
+  await compileAppSettings.execute();
 
   // then
   const actual = JSON.parse(JSON.stringify(writeJson.args[0][1]));
@@ -86,7 +86,7 @@ async function testFails(relativeProjectDir) {
 
   // when
   try {
-    await compileAppSettings(testDir);
+    await compileAppSettings.execute(testDir);
     assert.fail('Expected assertion');
   } catch (err) {
     if (err.name === 'AssertionError') {

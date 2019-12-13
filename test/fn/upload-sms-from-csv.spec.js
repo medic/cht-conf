@@ -20,7 +20,7 @@ describe('upload-sms-from-csv', function() {
     sinon.stub(environment, 'pathToProject').get(() => testDir);
 
     // when
-    return csvToSms()
+    return csvToSms.execute()
       .then(() => {
         const expected = fs.readJson(`${testDir}/expected.json`);
         assert.deepEqualExcludingEvery(api.gatewayRequests, expected, ['id', 'sms_sent', 'sms_received']);

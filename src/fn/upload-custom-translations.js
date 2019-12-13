@@ -5,60 +5,76 @@ const fs = require('../lib/sync-fs');
 const pouch = require('../lib/db');
 const getApiVersion = require('../lib/get-api-version');
 const iso639 = require('iso-639-1');
-const { warn } = require('../lib/log');
+const { warn, info } = require('../lib/log');
+const properties = require('properties');
+const warnUploadOverwrite = require('../lib/warn-upload-overwrite');
 
 const FILE_MATCHER = /messages-.*\.properties/;
 
-module.exports = () => {
+const execute = async () => {
   const db = pouch(environment.apiUrl);
 
   const dir = `${environment.pathToProject}/translations`;
 
-  return Promise.resolve()
-    .then(() => {
-      if(!fs.exists(dir)) return warn('Could not find custom translations dir:', dir);
+  if(!fs.exists(dir)) return warn('Could not find custom translations dir:', dir);
 
-      return Promise.all(fs.readdir(dir)
-        .filter(name => FILE_MATCHER.test(name))
-        .map(fileName => {
-          const id = idFor(fileName);
-          const languageCode = id.substring('messages-'.length);
-          let languageName = iso639.getName(languageCode);
-          if (!languageName){
-            warn(`'${languageCode}' is not a recognized ISO 639 language code, please ask admin to set the name`);
-            languageName = 'TODO: please ask admin to set this in settings UI';
-          } else {
-            let languageNativeName = iso639.getNativeName(languageCode);
-            if (languageNativeName !== languageName){
-              languageName = `${languageNativeName} (${languageName})`;
-            }
-          }
+  const fileNames = fs.readdir(dir)
+                      .filter(name => FILE_MATCHER.test(name));
 
-          var translations = propertiesAsObject(`${dir}/${fileName}`);
+  for (let fileName of fileNames) {
+    const id = idFor(fileName);
+    const languageCode = id.substring('messages-'.length);
+    if (!isLanguageCodeValid(languageCode)) {
+      throw new Error(`The language code '${languageCode}' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.`);
+    }
 
-          return db.get(id)
-            .catch(e => {
-              if(e.status === 404) {
-                return newDocFor(fileName, db, languageName, languageCode);
-              }
-              
-              throw e;
-            })
-            .then(doc => overwriteProperties(doc, translations))
-            .then(doc => db.put(doc));
-        }));
-    });
+    let languageName = iso639.getName(languageCode);
+    if (!languageName){
+      warn(`'${languageCode}' is not a recognized ISO 639 language code, please ask admin to set the name`);
+      languageName = 'TODO: please ask admin to set this in settings UI';
+    } else {
+      let languageNativeName = iso639.getNativeName(languageCode);
+      if (languageNativeName !== languageName){
+        languageName = `${languageNativeName} (${languageName})`;
+      }
+    }
 
+    const translations = await parse(`${dir}/${fileName}`, { path: true });
+
+    let doc;
+    try {
+      doc = await db.get(idFor(fileName));
+    } catch(e) {
+      if (e.status === 404) {
+        doc = await newDocFor(fileName, db, languageName, languageCode);
+      }
+      else throw e;
+    }
+
+    overwriteProperties(doc, translations);
+
+    await warnUploadOverwrite.preUploadByRev(db, doc);
+
+    info(`Uploaded translation ${dir}/${fileName}`);
+    await db.put(doc);
+
+    await warnUploadOverwrite.postUploadByRev(db, doc);
+  }
 };
 
-function propertiesAsObject(path) {
-  const vals = {};
-  fs.read(path)
-    .split('\n')
-    .filter(line => line.includes('='))
-    .map(line => line.split(/=(.*)/, 2).map(it => it.trim()))
-    .map(([k, v]) => vals[k] = v);
-  return vals;
+function isLanguageCodeValid(code) {
+  // valid CSS selector name to avoid https://github.com/medic/medic/issues/5982
+  var regex = /^[_a-zA-Z]+[_a-zA-Z0-9-]+$/;
+  return regex.test(code);
+}
+
+function parse(filePath, options) {
+  return new Promise((resolve, reject) => {
+    properties.parse(filePath, options, (err, parsed) => {
+      if (err) return reject(err);
+      resolve(parsed);
+    });
+  });
 }
 
 function overwriteProperties(doc, props) {
@@ -111,3 +127,8 @@ async function genericTranslationsStructure(db) {
     .then(doc => doc.generic)
     .catch(() => false);
 }
+
+module.exports = {
+  requiresInstance: true,
+  execute
+};

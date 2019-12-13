@@ -4,18 +4,32 @@ const fs = require('../lib/sync-fs');
 const pouch = require('../lib/db');
 const { warn } = require('../lib/log');
 const insertOrReplace = require('../lib/insert-or-replace');
+const warnUploadOverwrite = require('../lib/warn-upload-overwrite');
 
-module.exports = () => {
-  const resourcesPath = fs.path.resolve(`${environment.pathToProject}/resources.json`);
+module.exports = {
+  requiresInstance: true,
+  execute: async () => {
+    const resourcesPath = fs.path.resolve(`${environment.pathToProject}/resources.json`);
 
-  if(!fs.exists(resourcesPath)) {
-    warn(`No resources file found at path: ${resourcesPath}`);
+    if(!fs.exists(resourcesPath)) {
+      warn(`No resources file found at path: ${resourcesPath}`);
+      return Promise.resolve();
+    }
+
+    const doc = {
+      _id: 'resources',
+      resources: fs.readJson(resourcesPath),
+      _attachments: attachmentsFromDir(`${environment.pathToProject}/resources`),
+    };
+
+    const db = pouch();
+
+    await warnUploadOverwrite.preUploadByRev(db, doc);
+
+    await insertOrReplace(db, doc);
+
+    await warnUploadOverwrite.postUploadByRev(db, doc);
+
     return Promise.resolve();
   }
-
-  return insertOrReplace(pouch(), {
-    _id: 'resources',
-    resources: fs.readJson(resourcesPath),
-    _attachments: attachmentsFromDir(`${environment.pathToProject}/resources`),
-  });
 };

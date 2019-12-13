@@ -1,9 +1,9 @@
-const execSync = require('child_process').execSync;
-const exec = require('../lib/exec-promise');
-const fs = require('../lib/sync-fs');
-const info = require('../lib/log').info;
-const trace = require('../lib/log').trace;
-const warn = require('../lib/log').warn;
+const { execSync } = require('child_process');
+
+const argsFormFilter = require('./args-form-filter');
+const exec = require('./exec-promise');
+const fs = require('./sync-fs');
+const { info, trace, warn } = require('./log');
 
 const XLS2XFORM = 'xls2xform-medic';
 const INSTALLATION_INSTRUCTIONS = `\nE To install the latest pyxform, try one of the following:
@@ -19,7 +19,7 @@ E
 E	pip uninstall pyxform-medic
 E` + INSTALLATION_INSTRUCTIONS;
 
-module.exports = (projectDir, subDirectory, options) => {
+module.exports = async (projectDir, subDirectory, options) => {
   if(!options) options = {};
 
   const formsDir = `${projectDir}/forms/${subDirectory}`;
@@ -29,31 +29,28 @@ module.exports = (projectDir, subDirectory, options) => {
     return Promise.resolve();
   }
 
-  return fs.readdir(formsDir)
-    .filter(name => name.endsWith('.xlsx'))
+  const filesToConvert = argsFormFilter(formsDir, '.xlsx', options)
     .filter(name => !name.startsWith('~$')) // ignore Excel "owner files"
-    .filter(name => name !== 'PLACE_TYPE-create.xlsx' && name !== 'PLACE_TYPE-edit.xlsx')
-    .filter(name => !options.forms || options.forms.includes(fs.withoutExtension(name)))
-    .reduce((promiseChain, xls) => {
-        const originalSourcePath = `${formsDir}/${xls}`;
-        let sourcePath;
+    .filter(name => name !== 'PLACE_TYPE-create.xlsx' && name !== 'PLACE_TYPE-edit.xlsx');
 
-        if(options.force_data_node) {
-          const temporaryPath = `${fs.mkdtemp()}/${options.force_data_node}.xlsx`;
-          fs.copy(originalSourcePath, temporaryPath);
-          sourcePath = temporaryPath;
-        } else sourcePath = originalSourcePath;
+  for (let xls of filesToConvert) {
+    const originalSourcePath = `${formsDir}/${xls}`;
+    let sourcePath;
 
-        const targetPath = `${fs.withoutExtension(originalSourcePath)}.xml`;
+    if(options.force_data_node) {
+      const temporaryPath = `${fs.mkdtemp()}/${options.force_data_node}.xlsx`;
+      fs.copy(originalSourcePath, temporaryPath);
+      sourcePath = temporaryPath;
+    } else sourcePath = originalSourcePath;
 
-        return promiseChain
-          .then(() => info('Converting form', originalSourcePath, '…'))
-          .then(() => xls2xform(sourcePath, targetPath))
-          .then(() => getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`))
-          .then(hiddenFields => fixXml(targetPath, hiddenFields, options.transformer, options.enketo))
-          .then(() => trace('Converted form', originalSourcePath));
-      },
-      Promise.resolve());
+    const targetPath = `${fs.withoutExtension(originalSourcePath)}.xml`;
+
+    info('Converting form', originalSourcePath, '…');
+    await xls2xform(sourcePath, targetPath);
+    const hiddenFields = await getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`);
+    await fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
+    trace('Converted form', originalSourcePath);
+  }
 };
 
 const xls2xform = (sourcePath, targetPath) =>

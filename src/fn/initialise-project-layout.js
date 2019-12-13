@@ -59,5 +59,5 @@ function execute() {
 
 module.exports = {
   requiresInstance: false,
-  execute: execute
+  execute
 };

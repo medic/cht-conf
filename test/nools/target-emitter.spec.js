@@ -14,6 +14,7 @@ const {
   placeWithoutReports,
   placeWithReports,
   aRandomTimestamp,
+  configurableHierarchyPersonWithReports,
 } = require('./mocks');
 
 const { expect, assert } = chai;
@@ -463,6 +464,26 @@ describe('target emitter', () => {
 
       // throws
       assert.throws(() => runNoolsLib(config), Error, 'Unrecognised target.appliesTo: unknown');
+    });
+
+    it('configurable contact type', () => {
+      const target = aPersonBasedTarget();
+      target.appliesToType = ['custom'];
+
+      const config = {
+        c: configurableHierarchyPersonWithReports(aReport()),
+        targets: [ target ],
+        tasks: [],
+      };
+
+      // when
+      const emitted = runNoolsLib(config).emitted;
+
+      // then
+      assert.deepEqual(emitted, [
+        { _id: 'c-3~pT-1', _type:'target', date: TEST_DATE },
+        { _type:'_complete', _id: true },
+      ]);
     });
   });
 });
