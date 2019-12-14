@@ -85,7 +85,7 @@ function processDocs(docType, csv, contactDocs, args) {
     inputColumns = cols.filter(e => inputColumns.includes(e.split(':')[0]));
     toIncludeIndex = inputColumns.map(column => cols.indexOf(column));
 
-    if (toIncludeIndex.includes('documentID')) {
+    if (inputColumns.includes('documentID')) {
       toIncludeIndex.splice(inputColumns.indexOf('documentID'),1);
     }
   }
