@@ -19,8 +19,9 @@ const execute = () => {
     warn(`No csv directory found at ${csvDir}.`);
     return Promise.resolve();
   }
+  const csvFiles = args.csvFiles;
 
-  return fs.recurseFiles(csvDir)
+  return csvFiles.map(fileName => `${csvDir}/${fileName}`)
   .filter(name => name.endsWith('.csv'))
   .reduce((promiseChain, csv) =>
     promiseChain
@@ -160,8 +161,13 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
   .split(',')
   .filter(id => id);
 
+  const csvFiles = (args.files || args.file || 'contact.csv')
+  .split(',')
+  .filter(id => id);
+
   return {
     colNames,
+    csvFiles,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
   };
