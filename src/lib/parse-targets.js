@@ -41,7 +41,8 @@ module.exports = projectDir => {
       'id',
       'type',
       'goal',
-      'translation_key',
+      'translation_key',  
+      'passGroupWithCount',
       'icon',
       'context',
       'subtitle_translation_key'

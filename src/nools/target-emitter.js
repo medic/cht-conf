@@ -21,6 +21,39 @@ function targetEmitter(targets, c, Utils, Target, emit) {
   }
 }
 
+function determineDate(targetConfig, Utils, c, r) {
+  if (typeof targetConfig.date === 'function') {
+    return targetConfig.date(c, r);
+  }
+  
+  if (targetConfig.date === undefined || targetConfig.date === 'now') {
+    return Utils.now().getTime();
+  }
+
+  if (targetConfig.date === 'reported') {
+    return r ? r.reported_date : c.contact.reported_date;
+  }
+  
+  throw new Error('Unrecognised value for target.date: ' + targetConfig.date);
+}
+
+function determineInstanceIds(targetConfig, c, r) {
+  var instanceIds;
+  if (typeof targetConfig.idType === 'function') {
+    instanceIds = targetConfig.idType(c, r);
+  } else if (targetConfig.idType === 'report') {
+    instanceIds = r && r._id;
+  } else {
+    instanceIds = c.contact && c.contact._id;
+  }
+
+  if (!Array.isArray(instanceIds)) {
+    instanceIds = [instanceIds];
+  }
+
+  return instanceIds;
+}
+
 function emitTargetFor(targetConfig, Target, Utils, emit, c, r) {
   var isEmittingForReport = !!r;
   if (!c.contact) return;
@@ -29,46 +62,33 @@ function emitTargetFor(targetConfig, Target, Utils, emit, c, r) {
   if (targetConfig.appliesToType && targetConfig.appliesToType.indexOf(appliesToKey) < 0) return;
   if (targetConfig.appliesIf && !targetConfig.appliesIf (c, r)) return;
 
-  var instanceId;
-  if (typeof targetConfig.idType === 'function') {
-    instanceId = targetConfig.idType(c, r);
-  } else if (targetConfig.idType === 'report') {
-    instanceId = r && r._id;
-  } else {
-    instanceId = c.contact && c.contact._id;
-  }
-
   var instanceDoc = isEmittingForReport ? r : c.contact;
+  var instanceIds = determineInstanceIds(targetConfig, c, r);
   var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c, r);
-  var instance = new Target({
-    _id: instanceId + '~' + targetConfig.id,
-    contact: c.contact,
-    deleted: !!instanceDoc.deleted,
-    type: targetConfig.id,
-    pass: pass,
-    date: instanceDoc.reported_date,
-  });
-
-  if (typeof targetConfig.date === 'function') {
-    instance.date = targetConfig.date(c, r);
-  } else if (targetConfig.date === undefined || targetConfig.date === 'now') {
-    instance.date = Utils.now().getTime();
-  } else if (targetConfig.date === 'reported') {
-    instance.date = isEmittingForReport ? r.reported_date : c.contact.reported_date;
-  } else {
-    throw new Error('Unrecognised value for target.date: ' + targetConfig.date);
-  }
+  var date = determineDate(targetConfig, Utils, c, r);
+  var groupBy = targetConfig.groupBy && targetConfig.groupBy(c, r);
 
   function emitTargetInstance(i) {
     emit('target', i);
   }
 
-  if (targetConfig.emitCustom) {
-    targetConfig.emitCustom(emitTargetInstance, instance, c, r);
-    return;
-  }
+  for (var i = 0; i < instanceIds.length; ++i) {
+    var instance = new Target({
+      _id: instanceIds[i] + '~' + targetConfig.id,
+      contact: c.contact,
+      deleted: !!instanceDoc.deleted,
+      type: targetConfig.id,
+      pass: pass,
+      groupBy: groupBy,
+      date: date,
+    });
 
-  emitTargetInstance(instance);
+    if (targetConfig.emitCustom) {
+      targetConfig.emitCustom(emitTargetInstance, instance, c, r);
+    } else {
+      emitTargetInstance(instance);
+    }
+  }
 }
 
 module.exports = targetEmitter;

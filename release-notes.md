@@ -15,7 +15,10 @@ Medic-conf v3.1 guarantees clearer data integrity with the following changes to 
 
 * Task.name is now a required unique attribute
 * Task.event[n].id is now a required unique attribute when there is more than one event
-* Target.id although previously required, is now a required to be unique
+* Target.id although previously required, is now required to be unique
+
+### Declarative Configuration Target "GroupBy"
+Two new optional variables `groupBy` and `passGroupWithCount` in the [declarative Target configuration schema](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#targets) allows for target emissions to be counted and scored in groups. This allows targets to support more complex scenarios like the number of families receiving n household visits/family/month.
 
 ## 3.0.5
 
