@@ -22,6 +22,10 @@ const runNoolsLib = ({ c, targets, tasks }) => {
     },
     Target: function(props) {
       this._id = props._id;
+      this.date = props.date;
+      if (props.groupBy) {
+        this.groupBy = props.groupBy;
+      }
     },
     Task: function(props) {
       // Any property whose value you want to assert in tests needs to be

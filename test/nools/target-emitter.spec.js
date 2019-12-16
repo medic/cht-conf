@@ -167,6 +167,31 @@ describe('target emitter', () => {
         expect(emitted).to.have.property('length', 1);
       });
 
+      it('groupBy propogates onto instance', () => {
+        // given
+        const target = aReportBasedTarget();
+        const groupBy = sinon.stub().returns('agg');
+        target.groupBy = groupBy;
+
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [ target ],
+          tasks: [],
+        };
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted).to.have.property('length', 2);
+        expect(emitted[0]).to.deep.include({
+          _id: 'c-3~rT-1',
+          _type: 'target',
+          groupBy: 'agg',
+        });
+        expect(groupBy.args).to.deep.eq([[config.c, config.c.reports[0]]]);
+      });
+
       describe('idType', () => {
         it('as report', () => {
           // given
@@ -211,6 +236,27 @@ describe('target emitter', () => {
             _id: 'func~rT-1',
             _type: 'target',
           });
+          expect(idType.args[0]).to.deep.eq([config.c, config.c.reports[0]]);
+        });
+
+        it('as function returning array', () => {
+          // given
+          const target = aReportBasedTarget();
+          const idType = sinon.stub().returns(['a', 'b', 'c']);
+          target.idType = idType;
+
+          const config = {
+            c: personWithReports(aReport()),
+            targets: [ target ],
+            tasks: [],
+          };
+
+          // when
+          const { emitted } = runNoolsLib(config);
+
+          // then
+          expect(emitted).to.have.property('length', 4);
+          expect(emitted.map(e => e._id)).to.deep.eq(['a~rT-1', 'b~rT-1', 'c~rT-1', true]);
           expect(idType.args[0]).to.deep.eq([config.c, config.c.reports[0]]);
         });
 

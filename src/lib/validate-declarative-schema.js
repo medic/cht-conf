@@ -42,6 +42,14 @@ const TargetSchema = joi.array().items(
       })
     })
       .error(targetError('"passesIf" is required only when "type=percent" and "groupBy" is not defined')),
+    groupBy: joi.function().optional()
+      .error(targetError('"groupBy" should be of type function(contact, report)')),
+    passGroupWithCount: joi.alternatives().conditional('groupBy', {
+      is: joi.exist(),
+      then: joi.number().required(),
+      otherwise: joi.forbidden(),
+    })
+      .error(targetError('"passGroupWithCount" is a required number only when "groupBy" is defined')),
     date: joi.alternatives().try(
         joi.string().valid('reported', 'now'),
         joi.function(),
