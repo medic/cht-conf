@@ -6,7 +6,7 @@ const err = (filename, message) => details => {
   const acceptedValues = details[0].local.valids ? ` but only ${JSON.stringify(details[0].local.valids)} are allowed` : '';
   return new Error(`Invalid schema at ${filename}${details[0].local.label}
 ${message}
-Value is ${JSON.stringify(details[0].value)}${acceptedValues}
+Current value of ${filename}${details[0].local.label} is ${JSON.stringify(details[0].value)}${acceptedValues}
 `);
 };
 const targetError = message => err('targets', message);
@@ -41,15 +41,16 @@ const TargetSchema = joi.array().items(
         otherwise: joi.function().forbidden(),
       })
     })
-      .error(targetError('"passesIf" is required only when "type=percent" and "groupBy" is not defined')),
+      .error(targetError('"passesIf" is required only "type=percent" and "groupBy" is not defined. Otherwise, it is forbidden.')),
     groupBy: joi.function().optional()
       .error(targetError('"groupBy" should be of type function(contact, report)')),
-    passGroupWithCount: joi.alternatives().conditional('groupBy', {
+    passesIfGroupCount: joi.alternatives().conditional('groupBy', {
       is: joi.exist(),
-      then: joi.number().required(),
+      then: joi.object({
+        gte: joi.number().required(),
+      }).required(),
       otherwise: joi.forbidden(),
-    })
-      .error(targetError('"passGroupWithCount" is a required number only when "groupBy" is defined')),
+    }),
     date: joi.alternatives().try(
         joi.string().valid('reported', 'now'),
         joi.function(),
