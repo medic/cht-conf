@@ -169,7 +169,6 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
     colNames,
     csvFiles,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
-    force: !!args.force,
   };
 };
 
