@@ -117,10 +117,10 @@ function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs)
 
   for(let i=0; i<cols.length; ++i) {
     const { col, val, excluded } = toDocs.parseColumn(cols[i], row[i]);
-    const colParts = col.split('.');
     
-    if(EDIT_RESERVED_COL_NAMES.includes(colParts[0]))
+    if(EDIT_RESERVED_COL_NAMES.includes(col.split('.')[0])) {
       throw new Error(`Cannot set property defined by column '${col}' - this property name is protected.`);
+    }
 
     toDocs.setCol(doc, col, val);
     if(excluded) { 
