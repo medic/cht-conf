@@ -6,6 +6,7 @@ const { warn, info } = require('../lib/log');
 const pouch = require('../lib/db');
 const toDocs = require('./csv-to-docs');
 const EDIT_RESERVED_COL_NAMES = [ 'parent', '_id', 'name', 'reported_date' ];
+const DOC_TYPES = ['district_hospital', 'health_center', 'clinic', 'person', 'user', 'user-settings'];
 const DOCUMENT_ID =  'documentID';
 
 const execute = () => {
@@ -65,7 +66,7 @@ function getIDs(csv, docType) {
    throw Error('missing "documentID" column.');
   }
 
-  const idPrefix =  docType === 'document' ? '' : 'org.couchdb.user:';
+  const idPrefix =  docType === 'contact' ? '' : 'org.couchdb.user:';
   return rows.map((item) => idPrefix + item[index]);
 }
 
@@ -105,7 +106,7 @@ function columnsAreValid(csvColumns, toIncludeColums) {
 
 function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs) {
   const documentId = row[uuidIndex];
-  const idPrefix =  docType === 'document' ? '' : 'org.couchdb.user:';
+  const idPrefix =  docType === 'contact' ? '' : 'org.couchdb.user:';
   const doc = documentDocs[idPrefix + documentId];
 
   if(toIncludeIndex.length > 0){
@@ -139,7 +140,7 @@ const processUsers =  async (csv, ids, db, args) => {
 
 const processDocuments =  async (csv, ids, db, args) => {
   const documentDocs = await fetchDocumentList(db, ids);
-  return  processDocs('document', csv, documentDocs, args);
+  return  processDocs('contact', csv, documentDocs, args);
 };
 
 const fetchDocumentList = async (db, ids) => {
@@ -150,8 +151,13 @@ const fetchDocumentList = async (db, ids) => {
   });
 
   const missingDocumentErrors = documentDocs.rows.filter(row => !row.doc).map(row => `Document with id '${row.key}' could not be found.`);
-  if (missingDocumentErrors.length > 0) {
+  if (missingDocumentErrors && missingDocumentErrors.length) {
     throw Error(missingDocumentErrors);
+  }
+
+  const documentTypeErrors = documentDocs.rows.filter(row => !DOC_TYPES.includes(row.doc.type)).map(row => ` Document with id ${row.key} of type ${row.doc.type} cannot be edited`);
+  if (documentTypeErrors && documentTypeErrors.length) {
+    throw Error(documentTypeErrors);
   }
 
   return documentDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
