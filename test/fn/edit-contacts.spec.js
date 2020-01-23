@@ -1,6 +1,5 @@
 const { expect } = require('chai');
 const rewire = require('rewire');
-const { info } = require('../../src/lib/log');
 const toDocs = require('../../src/fn/csv-to-docs');
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -27,49 +26,51 @@ const docs = filesToUpload
     return doc;
   });
 
-const uploadDocuments = async (docs) => {
-  return await pouchDb.bulkDocs(docs);
+const uploadDocuments = (docs) => {
+  return pouchDb.bulkDocs(docs);
 };
 
 const fetchDocuments = async () => {
-  return await pouchDb.allDocs({include_docs: true, attachments: true}).then(JSON.stringify);
+  return await pouchDb.allDocs({include_docs: true});
 };
 
-const processDocuments = async(docType, csv, contactDocs, args) => {
-  return await processDocs(docType, csv, contactDocs, args);
+const processDocuments = (docType, csv, contactDocs, args) => {
+  return processDocs(docType, csv, contactDocs, args);
 };
 
-uploadDocuments(docs)
- .then(() => {
+describe('edit-contacts', function() {
 
-  csvFiles.map(fileName => `${csvDir}/${fileName}`)
-    .filter(name => name.endsWith('.csv'))
-    .forEach(csv => {
-        info('Processing CSV file::', csv, '…');
-        fetchDocuments()
-          .then( docs => {
+  it(`should process csv and edit the associated docs well`, function() {
 
-            const jsonData = JSON.parse(docs);
-            const parsedDocuments = jsonData.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
+    uploadDocuments(docs)
+      .then(() => {
+        csvFiles.map(fileName => `${csvDir}/${fileName}`)
+          .filter(name => name.endsWith('.csv'))
+          .forEach(csv => {
+              fetchDocuments()
+                .then( docs => {
 
-            // Calling processDocs in edit-contacts to test if it edits documents well.
-            processDocuments('contact', csv, parsedDocuments, {colNames: ''})
-              .then(function(result) {
+                  const jsonData = JSON.parse(docs);
+                  const parsedDocuments = jsonData.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
 
-                // Saving edited docs to disk 
-                // then comparing between the expected JSON files and generated JSON files that have been processed using edit-contacts
-                Object.values(result).map(saveJsonDoc);
-                fs.recurseFiles(expectedDocsDir)
-                    .map(file => fs.path.basename(file))
-                    .forEach(file => {
-                      const expected  = fs.readJson(`${expectedDocsDir}/${file}`);
-                      const generated = fs.readJson(`${saveDocsDir}/${file}`);
-                      delete generated._rev;
-                      expect(generated).to.deep.eq(expected);
+                  // Calling processDocs in edit-contacts to test if it edits documents well.
+                  processDocuments('contact', csv, parsedDocuments, {colNames: ''})
+                    .then(function(result) {
+
+                      // Saving edited docs to disk 
+                      // then comparing between the expected JSON files and generated JSON files that have been processed using edit-contacts
+                      Object.values(result).map(saveJsonDoc);
+                      fs.recurseFiles(expectedDocsDir)
+                          .map(file => fs.path.basename(file))
+                          .forEach(file => {
+                            const expected  = fs.readJson(`${expectedDocsDir}/${file}`);
+                            const generated = fs.readJson(`${saveDocsDir}/${file}`);
+                            delete generated._rev;
+                            expect(generated).to.deep.eq(expected);
+                      });
+                    });
                 });
-              });
-          }).catch(function(err) {
-              throw err;
-          });
-    });
- });
+            });
+        });
+      });
+});
