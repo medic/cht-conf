@@ -73,35 +73,35 @@ function getIDs(csv, docType) {
 function processDocs(docType, csv, documentDocs, args) {
   const { rows, cols } = fs.readCsv(csv);
   const uuidIndex = cols.indexOf(DOCUMENT_ID);
-  let toIncludeColums = args.colNames;
+  let toIncludeColumns = args.colNames;
   let toIncludeIndex = [];
-  if (!toIncludeColums.length) {
+  if (!toIncludeColumns.length) {
     warn(' No columns specified, the script will add all the columns in the CSV!');
-    toIncludeColums = cols;
+    toIncludeColumns = cols;
 
   } else {
-    if (!columnsAreValid(cols,toIncludeColums)) {
+    if (!columnsAreValid(cols,toIncludeColumns)) {
       throw Error('The column name(s) specified do not exist.');
     }
 
-    toIncludeColums = cols.filter(e => toIncludeColums.includes(e.split(':')[0]));
-    toIncludeIndex = toIncludeColums.map(column => cols.indexOf(column));
+    toIncludeColumns = cols.filter(column => toIncludeColumns.includes(column.split(':')[0]));
+    toIncludeIndex = toIncludeColumns.map(column => cols.indexOf(column));
 
-    if (toIncludeColums.includes(DOCUMENT_ID)) {
-      toIncludeIndex.splice(toIncludeColums.indexOf(DOCUMENT_ID),1);
+    if (toIncludeColumns.includes(DOCUMENT_ID)) {
+      toIncludeIndex.splice(toIncludeColumns.indexOf(DOCUMENT_ID),1);
     }
   }
 
-  if (toIncludeColums.includes(DOCUMENT_ID)) {
-    toIncludeColums.splice(toIncludeColums.indexOf(DOCUMENT_ID),1);
+  if (toIncludeColumns.includes(DOCUMENT_ID)) {
+    toIncludeColumns.splice(toIncludeColumns.indexOf(DOCUMENT_ID),1);
   }
   return rows
-    .map(r => processCsv(docType, toIncludeColums, r, uuidIndex, toIncludeIndex, documentDocs));
+    .map(r => processCsv(docType, toIncludeColumns, r, uuidIndex, toIncludeIndex, documentDocs));
 }
 
-function columnsAreValid(csvColumns, toIncludeColums) {
+function columnsAreValid(csvColumns, toIncludeColumns) {
   const splitCsvColumns = csvColumns.map(column => column && column.split(':')[0]);
-  return toIncludeColums.every(column => splitCsvColumns.includes(column));    
+  return toIncludeColumns.every(column => splitCsvColumns.includes(column));    
 }
 
 function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs) {

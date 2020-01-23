@@ -131,16 +131,17 @@ Parameter | Description | Required
 -- | -- | --
 column(s) | Comma delimited list of columns you wish to add/edit. If this is not specified all columns will be added. | No
 docDirectoryPath | This action outputs files to local disk at this destination | No. Default `json-docs`
+file(s) | Comma delimited list of files you wish to process using edit-contacts. By default, contact.csv is searched for in the current directory and processed. | No.
 
 
 ### Example
-1. Create a contact.csv file with your columns in the csv folder in your current path. The uuid column is a requirement. (The uuid column contains the document IDs to be fetched from couchdb.) 
+1. Create a contact.csv file with your columns in the csv folder in your current path. The documentID column is a requirement. (The documentID column contains the document IDs to be fetched from couchdb.) 
 
-| uuid | is_in_emnch:bool |
+| documentID | is_in_emnch:bool |
 | ----------------- | ---------------- |
-| uuid_1            | false            |
-| uuid_2            | false            |
-| uuid_3            | true             |
+| documentID1            | false            |
+| documentID2            | false            |
+| documentID3            | true             |
 
 1. Use the following command to download and edit the documents:
 
