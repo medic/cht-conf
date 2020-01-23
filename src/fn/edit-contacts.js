@@ -6,6 +6,7 @@ const { warn, info } = require('../lib/log');
 const pouch = require('../lib/db');
 const toDocs = require('./csv-to-docs');
 const EDIT_RESERVED_COL_NAMES = [ 'parent', '_id', 'name', 'reported_date' ];
+const DOC_TYPES = ['district_hospital', 'health_center', 'clinic', 'person', 'user', 'user-settings'];
 const DOCUMENT_ID =  'documentID';
 
 const execute = () => {
@@ -150,8 +151,13 @@ const fetchDocumentList = async (db, ids) => {
   });
 
   const missingDocumentErrors = documentDocs.rows.filter(row => !row.doc).map(row => `Document with id '${row.key}' could not be found.`);
-  if (missingDocumentErrors.length > 0) {
+  if (missingDocumentErrors && missingDocumentErrors.length) {
     throw Error(missingDocumentErrors);
+  }
+
+  const documentTypeErrors = documentDocs.rows.filter(row => !DOC_TYPES.includes(row.doc.type)).map(row => ` Document with id ${row.key} of type ${row.doc.type} cannot be edited`);
+  if (documentTypeErrors && documentTypeErrors.length) {
+    throw Error(documentTypeErrors);
   }
 
   return documentDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
