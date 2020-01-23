@@ -32,7 +32,7 @@ const execute = () => {
         const nameParts = fs.path.basename(csv).split('.');
         const prefix = nameParts[0];
         switch(prefix) {
-          case 'documents':  return processDocuments(csv, getIDs(csv, prefix), db, args);
+          case 'contact':  return processDocuments(csv, getIDs(csv, prefix), db, args);
           case 'users': return processUsers(csv, getIDs(csv, prefix), db, args);
           default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
         }
@@ -164,7 +164,7 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
     .split(',')
     .filter(id => id);
 
-  const csvFiles = (args.files || args.file || 'documents.csv')
+  const csvFiles = (args.files || args.file || 'contact.csv')
     .split(',')
     .filter(id => id);
 
