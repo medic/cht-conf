@@ -15,7 +15,8 @@ const taskError = message => err('tasks', message);
 const DhisSchema = joi.object({
   dataSet: joi.string().min(1).max(15).optional(),
   dataElement: joi.string().min(1).max(15).required(),
-});
+})
+  .unknown(true);
 
 const TargetSchema = joi.array().items(
   joi.object({
