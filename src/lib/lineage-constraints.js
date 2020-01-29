@@ -43,9 +43,9 @@ Ensure we are not creating a circular hierarchy
 */
 const getHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) => {
   const { type: contactType } = contactDoc;
-  const { type: parentType } = parentDoc || {};
+  const parentType = parentDoc && (parentDoc.type === 'contact' ? parentDoc.contact_type : parentDoc.type);
   if (!contactType) return 'contact required attribute "type" is undefined';
-  if (parentDoc && !parentType) return 'parent required attribute "type" is undefined';
+  if (parentDoc && !parentType) return `parent contact "${parentDoc._id}" required attribute "type" is undefined`;
   if (!mapTypeToAllowedParents) return 'hierarchy constraints are undefined';
 
   const rulesForContact = mapTypeToAllowedParents[contactType];

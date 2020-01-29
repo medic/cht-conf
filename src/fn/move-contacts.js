@@ -124,7 +124,7 @@ const prepareDocumentDirectory = ({ docDirectoryPath, force }) => {
   if (!fs.exists(docDirectoryPath)) {
     fs.mkdir(docDirectoryPath);
   } else if (!force && fs.recurseFiles(docDirectoryPath).length > 0) {
-    warn(`The document folder '${docDirectoryPath}' already contains files. It is recommended you start with a clean folder. Do you clear this folder and continue?`);
+    warn(`The document folder '${docDirectoryPath}' already contains files. It is recommended you start with a clean folder. Do you want to delete the contents of this folder and continue?`);
     if(readline.keyInYN()) {
       fs.deleteFilesInFolder(docDirectoryPath);
     } else {
@@ -144,7 +144,7 @@ ${bold('USAGE')}
 medic-conf --local move-contacts -- --contactIds=<id1>,<id2> --parent=<parent_id>
 
 ${bold('OPTIONS')}
---contactIds=<id1>,<id2>
+--contacts=<id1>,<id2>
   A comma delimited list of ids of ocntacts to be moved.
 
 --parent=<parent_id>
