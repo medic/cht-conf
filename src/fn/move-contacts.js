@@ -145,7 +145,7 @@ medic-conf --local move-contacts -- --contactIds=<id1>,<id2> --parent=<parent_id
 
 ${bold('OPTIONS')}
 --contacts=<id1>,<id2>
-  A comma delimited list of ids of ocntacts to be moved.
+  A comma delimited list of ids of contacts to be moved.
 
 --parent=<parent_id>
   Specifies the ID of the new parent. Use '${HIERARCHY_ROOT}' to identify the top of the hierarchy (no parent).
