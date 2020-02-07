@@ -40,33 +40,8 @@ const processDocuments = (docType, csv, contactDocs, args) => {
   return processDocs(docType, csv, contactDocs, args);
 };
 
-describe('edit-contacts', function() {
-
-  before(async () => {
-    await uploadDocuments(docs);
-    sinon.stub(environment, 'pathToProject').get(() => editContactsPath);
-    const pouchDb = sinon.stub();
-    pouchDb.returns(pouch);
-    editContactsModule.__set__('pouch', pouchDb);
-    editContactsModule.__set__('args', {
-      colNames: '',
-      csvFiles: 'contact.csv',
-      docDirectoryPath: 'json_docs',
-      force: false,
-    });
-  });
-
-  after(async () => pouch.destroy());
-
-  it(`should do top to down test well`, async function(){
-
-    await editContactsModule.execute();
-     
-    assert.equal(countFilesInDir(saveDocsDir),
-                countFilesInDir(expectedDocsDir),
-                `Different number of files in ${saveDocsDir} and ${expectedDocsDir}.`);
-
-    fs.recurseFiles(expectedDocsDir)
+function compareDocuments(){
+  fs.recurseFiles(expectedDocsDir)
       .map(file => fs.path.basename(file))
       .forEach(file => {
         const expected  = fs.readJson(`${expectedDocsDir}/${file}`);
@@ -74,7 +49,84 @@ describe('edit-contacts', function() {
         delete generated._rev;
         expect(generated).to.deep.eq(expected);
       });
+}
+
+describe('edit-contacts', function() {
+
+  let pouchDb;
+  before(async () => {
+    await uploadDocuments(docs);
+    sinon.stub(environment, 'pathToProject').get(() => editContactsPath);
+    pouchDb = sinon.stub();
+    pouchDb.returns(pouch);
+    editContactsModule.__set__('pouch', pouchDb);
   });
+
+  after(async () => pouch.destroy());
+
+  it(`should do top down test well`, async function(){
+
+    await editContactsModule.execute();
+     
+    assert.equal(countFilesInDir(saveDocsDir),
+                countFilesInDir(expectedDocsDir),
+                `Different number of files in ${saveDocsDir} and ${expectedDocsDir}.`);
+    compareDocuments();
+  }); 
+  
+  it(`should fail when wrong column names are provided`, async function(){
+
+    sinon.stub(environment, 'extraArgs').get(() => ['--column=enmch', '--file=contact.csv']);
+    
+    try {
+    await editContactsModule.execute();
+      assert.fail('should throw an error when wrong column names are provided');
+    } catch (err) {
+      expect(err.message).to.be.equal('The column name(s) specified do not exist.');
+    }
+  }); 
+
+  it(`should fail when protected column names are provided`, async function(){
+
+    const docs = await fetchDocuments();
+    const processCsv = editContactsModule.__get__('processCsv');
+    
+    try {
+      processCsv('contact',['parent'],['0ebca32d-c1b7-5522-94a3-97dd8b3df146','parent_id'],0, [],docs);
+      assert.fail('should throw an error when protected names are provided');
+    } catch (err) {
+      expect(err.message).to.include('this property name is protected.');
+    }
+  });
+
+  it(`should fail when DB doesn't contain the requested _id's`, async function(){
+
+    const fetchDocumentList = editContactsModule.__get__('fetchDocumentList');
+    
+    try {
+      await fetchDocumentList(pouch,['wrongDocumentID']);
+      assert.fail('should throw an error when protected names are provided');
+    } catch (err) {
+      expect(err.message).to.include('could not be found.');
+    }
+  });
+
+  it(`should fail when document type is not a contact`, async function(){
+
+    const fetchDocumentList = editContactsModule.__get__('fetchDocumentList');
+    await pouch.put({
+      _id: 'documentID',
+      type: 'data_record'
+    });
+    
+    try {
+      await fetchDocumentList(pouch,['documentID']);
+      assert.fail('should throw an error when document is not a contact');
+    } catch (err) {
+      expect(err.message).to.include('cannot be edited');
+    }
+  });
+
 
   it(`should process csv and edit the associated docs well`, async function() {
     
@@ -92,14 +144,7 @@ describe('edit-contacts', function() {
       // Saving edited docs to disk 
       // then comparing between the expected JSON files and generated JSON files that have been processed using edit-contacts
       Object.values(result).map(saveJsonDoc);
-      fs.recurseFiles(expectedDocsDir)
-          .map(file => fs.path.basename(file))
-          .forEach(file => {
-            const expected  = fs.readJson(`${expectedDocsDir}/${file}`);
-            const generated = fs.readJson(`${saveDocsDir}/${file}`);
-            delete generated._rev;
-            expect(generated).to.deep.eq(expected);
-      });
+      compareDocuments();
     }
   });
 });
