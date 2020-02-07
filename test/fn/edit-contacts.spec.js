@@ -66,8 +66,7 @@ describe('edit-contacts', function() {
 
   it(`should do a top-down test well`, async function(){
 
-    await editContactsModule.execute();
-     
+    await editContactsModule.execute();    
     assert.equal(countFilesInDir(saveDocsDir),
                 countFilesInDir(expectedDocsDir),
                 `Different number of files in ${saveDocsDir} and ${expectedDocsDir}.`);
@@ -87,7 +86,7 @@ describe('edit-contacts', function() {
     editContactsModule.__set__('parseExtraArgs', extraArgs);
     
     try {
-    await editContactsModule.execute();
+      await editContactsModule.execute();
       assert.fail('should throw an error when wrong column names are provided');
     } catch (err) {
       expect(err.message).to.be.equal('The column name(s) specified do not exist.');
