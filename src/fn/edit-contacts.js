@@ -6,7 +6,7 @@ const { warn, info } = require('../lib/log');
 const pouch = require('../lib/db');
 const toDocs = require('./csv-to-docs');
 const EDIT_RESERVED_COL_NAMES = [ 'parent', '_id', 'name', 'reported_date' ];
-const DOC_TYPES = ['district_hospital', 'health_center', 'clinic', 'person', 'user', 'user-settings'];
+const DOC_TYPES = ['district_hospital', 'health_center', 'clinic', 'person', 'user', 'user-settings', 'contact'];
 const DOCUMENT_ID =  'documentID';
 
 const execute = () => {
@@ -73,14 +73,15 @@ function getIDs(csv, docType) {
 function processDocs(docType, csv, documentDocs, args) {
   const { rows, cols } = fs.readCsv(csv);
   const uuidIndex = cols.indexOf(DOCUMENT_ID);
-  let toIncludeColumns = args.colNames;
-  let toIncludeIndex = [];
-  if (!toIncludeColumns.length) {
+  const colNames = args.colNames;
+  let toIncludeColumns, toIncludeIndex;
+  if (!colNames.length) {
     warn(' No columns specified, the script will add all the columns in the CSV!');
     toIncludeColumns = cols;
+    toIncludeIndex = [];
 
   } else {
-    if (!columnsAreValid(cols,toIncludeColumns)) {
+    if (!columnsAreValid(cols,colNames)) {
       throw Error('The column name(s) specified do not exist.');
     }
 
@@ -110,7 +111,7 @@ function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs)
   const doc = documentDocs[idPrefix + documentId];
 
   if(toIncludeIndex.length > 0){
-    row = toIncludeIndex.map(uuidIndex => row[uuidIndex]);
+    row = toIncludeIndex.map(index => row[index]);
   } else {
     row.splice(uuidIndex,1);
   }
