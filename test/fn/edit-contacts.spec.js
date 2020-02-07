@@ -6,6 +6,7 @@ PouchDB.plugin(require('pouchdb-adapter-memory'));
 const fs = require('../../src/lib/sync-fs');
 const editContactsModule = rewire('../../src/fn/edit-contacts');
 const processDocs = editContactsModule.__get__('processDocs');
+const fetchDocumentList = editContactsModule.__get__('fetchDocumentList');
 const environment = require('../../src/lib/environment');
 const sinon = require('sinon');
 
@@ -53,18 +54,17 @@ function compareDocuments(){
 
 describe('edit-contacts', function() {
 
-  let pouchDb;
   before(async () => {
     await uploadDocuments(docs);
     sinon.stub(environment, 'pathToProject').get(() => editContactsPath);
-    pouchDb = sinon.stub();
+    const pouchDb = sinon.stub();
     pouchDb.returns(pouch);
     editContactsModule.__set__('pouch', pouchDb);
   });
 
   after(async () => pouch.destroy());
 
-  it(`should do top down test well`, async function(){
+  it(`should do a top-down test well`, async function(){
 
     await editContactsModule.execute();
      
@@ -76,7 +76,15 @@ describe('edit-contacts', function() {
   
   it(`should fail when wrong column names are provided`, async function(){
 
-    sinon.stub(environment, 'extraArgs').get(() => ['--column=enmch', '--file=contact.csv']);
+    const parseResult = {
+      colNames: ['enmch'],
+      csvFiles: ['contact.csv'],
+      docDirectoryPath: 'json_docs',
+      force: false,
+    };
+    const extraArgs = sinon.stub();
+    extraArgs.returns(parseResult);
+    editContactsModule.__set__('parseExtraArgs', extraArgs);
     
     try {
     await editContactsModule.execute();
@@ -100,12 +108,10 @@ describe('edit-contacts', function() {
   });
 
   it(`should fail when DB doesn't contain the requested _id's`, async function(){
-
-    const fetchDocumentList = editContactsModule.__get__('fetchDocumentList');
     
     try {
       await fetchDocumentList(pouch,['wrongDocumentID']);
-      assert.fail('should throw an error when protected names are provided');
+      assert.fail('should throw an error when requested ID cannot be found on the database');
     } catch (err) {
       expect(err.message).to.include('could not be found.');
     }
@@ -113,7 +119,6 @@ describe('edit-contacts', function() {
 
   it(`should fail when document type is not a contact`, async function(){
 
-    const fetchDocumentList = editContactsModule.__get__('fetchDocumentList');
     await pouch.put({
       _id: 'documentID',
       type: 'data_record'
