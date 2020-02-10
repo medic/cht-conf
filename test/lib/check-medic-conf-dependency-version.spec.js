@@ -1,8 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
-//const fs = require('../../src/lib/sync-fs');
-//const { warn} = require('../../src/lib/log');
 
 const projectDir = rewire('../../src/lib/check-medic-conf-dependency-version');
 
