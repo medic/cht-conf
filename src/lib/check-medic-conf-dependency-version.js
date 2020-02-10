@@ -5,66 +5,37 @@
  * Currently this check is only performed as part of app-settings compilation;
  * if required in more places then we might move the check to the main CLI
  * script.
+ * Is this second part true?
  */
 
-const error = require('./log').error;
 const fs = require('./sync-fs');
-const readline = require('readline-sync');
 const semver = require('semver');
-const { warn } = require('./log');
+const { warn} = require('./log');
+
+const runningVersion = require('../../package.json').version;
 
 module.exports = projectDir => {
-  const myVersion = require('../../package.json').version;
-
-  const theirPackageVersion = readRequestedVersion(projectDir);
-  if(!theirPackageVersion) {
+  const projectVersion = readRequestedVersion(projectDir);
+  if(!projectVersion) {
     warn('Project has no dependency on medic-conf.');
     return;
   }
 
-  if(!semver.satisfies(myVersion, theirPackageVersion)) {
-    throw new Error(`medic-conf version ${myVersion} does not match the project's required version: ${theirPackageVersion}`);
+  const majorRunningVersion = semver.major(runningVersion);
+  if(semver.satisfies(projectVersion, `<${majorRunningVersion}.x || >${runningVersion}`)) {
+    throw new Error(`medic-conf version ${runningVersion} does not match the project's required version: ${projectVersion}. To ignore this error, use --skip-dependency-check.`);
   }
-
-  const theirLockedVersion = readLockedVersion(projectDir);
-  if(!theirLockedVersion) throw new Error('medic-conf requested in package.json but not found in package-lock.json!');
-  if(myVersion !== theirLockedVersion) requestUserConfirmation(myVersion, theirLockedVersion);
 };
-
-function requestUserConfirmation(myVersion, theirLockedVersion) {
-  warn(`medic-conf version is ${myVersion}, but project is tested against ${theirLockedVersion}.  Are you sure you want to continue?`);
-  if(!readline.keyInYN()) {
-    error('User failed to confirm action.');
-    process.exit(-1);
-  }
-}
-
-function readLockedVersion(projectDir) {
-  const path = `${projectDir}/package-lock.json`;
-
-  if(!fs.exists(path)) {
-    warn('No package-lock.json found.  This file should be committed!');
-    return;
-  }
-
-  const json = fs.readJson(path);
-
-  return json &&
-         json.dependencies &&
-         json.dependencies['medic-conf'] &&
-         json.dependencies['medic-conf'].version;
-}
 
 function readRequestedVersion(projectDir) {
   const path = `${projectDir}/package.json`;
 
   if(!fs.exists(path)) {
-    warn('No package.json file found.  This project may be missing tests, or improperly set up.');
+    warn(`No project package.json file found at ${path}`);
     return;
   }
 
   const json = fs.readJson(path);
-
   return (json.dependencies    && json.dependencies['medic-conf']) ||
          (json.devDependencies && json.devDependencies['medic-conf']);
 }
