@@ -43,7 +43,7 @@
     "json2csv": "^4.5.1",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
-    "opn": "^6.0.0",
+    "open": "^7.0.2",
     "pouchdb-adapter-http": "^7.1.1",
     "pouchdb-core": "^7.1.1",
     "pouchdb-mapreduce": "^7.1.1",
