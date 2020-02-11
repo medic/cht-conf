@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const opn = require('opn');
+const open = require('open');
 
 const checkForUpdates = require('../lib/check-for-updates');
 const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-dependency-version');
@@ -78,7 +78,7 @@ module.exports = async (argv, env) => {
   }
 
   if (cmdArgs.changelog) {
-    opn('https://github.com/medic/medic-conf/releases');
+    await open('https://github.com/medic/medic-conf/releases', { url: true });
     return process.exit(0);
   }
 
