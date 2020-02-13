@@ -5,7 +5,7 @@
 
 const fs = require('./sync-fs');
 const semver = require('semver');
-const {warn} = require('./log');
+const { warn } = require('./log');
 
 const runningVersion = require('../../package.json').version;
 
