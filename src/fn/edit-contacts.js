@@ -85,7 +85,7 @@ function processDocs(docType, csv, documentDocs, args) {
       throw Error('The column name(s) specified do not exist.');
     }
 
-    toIncludeColumns = cols.filter(column => toIncludeColumns.includes(column.split(':')[0]));
+    toIncludeColumns = cols.filter(column => colNames.includes(column.split(':')[0]));
     toIncludeIndex = toIncludeColumns.map(column => cols.indexOf(column));
 
     if (toIncludeColumns.includes(DOCUMENT_ID)) {
