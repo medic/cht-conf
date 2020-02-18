@@ -5,6 +5,7 @@ PouchDB.plugin(require('pouchdb-adapter-memory'));
 const fs = require('../../src/lib/sync-fs');
 const editContactsModule = rewire('../../src/fn/edit-contacts');
 const environment = require('../../src/lib/environment');
+const path = require('path');
 const sinon = require('sinon');
 
 let pouch;
@@ -12,6 +13,8 @@ let pouch;
 // specifying directory paths to use
 const editContactsPath = `data/edit-contacts`;
 const saveDocsDir = `${editContactsPath}/json_docs`;
+const expectedDocsDirNested = `${editContactsPath}/expected-json_docs/nested-columns`;
+const expectedDocsDirOneCol = `${editContactsPath}/expected-json_docs/one-column`;
 const expectedDocsDirAllCols = `${editContactsPath}/expected-json_docs/all-columns`;
 const filesToUpload = fs.recurseFiles(`${editContactsPath}/server-contact_docs`).filter(name => name.endsWith('.json'));
 const countFilesInDir = path => fs.fs.readdirSync(path).length;
@@ -62,13 +65,50 @@ describe('edit-contacts', function() {
     compareDocuments(expectedDocsDirAllCols);
   }); 
 
+  it(`should only add specified column names to the json docs`, async function(){
+
+    const parseResult = {
+      colNames: ['is_in_emnch'],
+      csvFiles: ['contact.csv'],
+      docDirectoryPath: path.resolve(environment.pathToProject, 'json_docs'),
+    };
+    const extraArgs = sinon.stub();
+    extraArgs.returns(parseResult);
+    editContactsModule.__set__('parseExtraArgs', extraArgs);
+
+    await editContactsModule.execute();
+
+    assert.equal(countFilesInDir(saveDocsDir),
+                countFilesInDir(expectedDocsDirOneCol),
+                `Different number of files in ${saveDocsDir} and ${expectedDocsDirOneCol}.`);
+    compareDocuments(expectedDocsDirOneCol);
+  });
+  
+  it(`should add nested columns to the json docs perfectly`, async function(){
+
+    const parseResult = {
+      colNames: [],
+      csvFiles: ['contact.nested.csv'],
+      docDirectoryPath: path.resolve(environment.pathToProject, 'json_docs'),
+    };
+    const extraArgs = sinon.stub();
+    extraArgs.returns(parseResult);
+    editContactsModule.__set__('parseExtraArgs', extraArgs);
+
+    await editContactsModule.execute();
+
+    assert.equal(countFilesInDir(saveDocsDir),
+                countFilesInDir(expectedDocsDirNested),
+                `Different number of files in ${saveDocsDir} and ${expectedDocsDirOneCol}.`);
+    compareDocuments(expectedDocsDirNested);
+  });
+
   it(`should fail when wrong column names are provided`, async function(){
 
     const parseResult = {
       colNames: ['enmch'],
       csvFiles: ['contact.csv'],
-      docDirectoryPath: 'json_docs',
-      force: false,
+      docDirectoryPath: path.resolve(environment.pathToProject, 'json_docs'),
     };
     const extraArgs = sinon.stub();
     extraArgs.returns(parseResult);
@@ -87,8 +127,7 @@ describe('edit-contacts', function() {
     const parseResult = {
       colNames: ['parent'],
       csvFiles: ['contact.test.csv'],
-      docDirectoryPath: 'json_docs',
-      force: false,
+      docDirectoryPath: path.resolve(environment.pathToProject, 'json_docs'),
     };
     const extraArgs = sinon.stub();
     extraArgs.returns(parseResult);
