@@ -1,6 +1,8 @@
 {
   "type": "person",
   "name": "carla",
+  "weird_property":"red",
+  "another_property":"yellow",
   "is_pilot": {
     "rbf": {
       "place": true 
