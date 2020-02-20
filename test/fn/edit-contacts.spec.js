@@ -3,12 +3,10 @@ const rewire = require('rewire');
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 const fs = require('../../src/lib/sync-fs');
-const editContactsModule = rewire('../../src/fn/edit-contacts');
 const environment = require('../../src/lib/environment');
-const path = require('path');
 const sinon = require('sinon');
 
-let pouch;
+let pouch, editContactsModule;
 
 // specifying directory paths to use
 const editContactsPath = `data/edit-contacts`;
@@ -43,6 +41,7 @@ function compareDocuments(expectedDocsDir){
 describe('edit-contacts', function() {
 
   beforeEach(async () => {
+    editContactsModule = rewire('../../src/fn/edit-contacts');
     pouch = new PouchDB('edit-contacts', { adapter: 'memory' });
     await uploadDocuments(docs);
     sinon.stub(environment, 'pathToProject').get(() => editContactsPath);
@@ -54,6 +53,7 @@ describe('edit-contacts', function() {
   afterEach(async () => {
     pouch.destroy();
     fs.deleteFilesInFolder(saveDocsDir);
+    sinon.restore();
   });
 
   it(`should do a top-down test well and add all available columns to the docs since they are not specified`, async function(){
@@ -67,14 +67,7 @@ describe('edit-contacts', function() {
 
   it(`should only add specified column names to the json docs`, async function(){
 
-    const parseResult = {
-      colNames: ['is_in_emnch'],
-      csvFiles: ['contact.csv'],
-      docDirectoryPath: path.resolve(environment.pathToProject, 'json_docs'),
-    };
-    const extraArgs = sinon.stub();
-    extraArgs.returns(parseResult);
-    editContactsModule.__set__('parseExtraArgs', extraArgs);
+    sinon.stub(environment, 'extraArgs').get(() => ['--columns=is_in_emnch', '--files=contact.csv']);
 
     await editContactsModule.execute();
 
@@ -86,14 +79,7 @@ describe('edit-contacts', function() {
   
   it(`should add nested columns to the json docs perfectly`, async function(){
 
-    const parseResult = {
-      colNames: [],
-      csvFiles: ['contact.nested.csv'],
-      docDirectoryPath: path.resolve(environment.pathToProject, 'json_docs'),
-    };
-    const extraArgs = sinon.stub();
-    extraArgs.returns(parseResult);
-    editContactsModule.__set__('parseExtraArgs', extraArgs);
+    sinon.stub(environment, 'extraArgs').get(() => ['--files=contact.nested.csv']);
 
     await editContactsModule.execute();
 
@@ -105,14 +91,7 @@ describe('edit-contacts', function() {
 
   it(`should fail when wrong column names are provided`, async function(){
 
-    const parseResult = {
-      colNames: ['enmch'],
-      csvFiles: ['contact.csv'],
-      docDirectoryPath: path.resolve(environment.pathToProject, 'json_docs'),
-    };
-    const extraArgs = sinon.stub();
-    extraArgs.returns(parseResult);
-    editContactsModule.__set__('parseExtraArgs', extraArgs);
+    sinon.stub(environment, 'extraArgs').get(() => ['--columns=enmch', '--files=contact.csv']);
     
     try {
       await editContactsModule.execute();
@@ -124,14 +103,7 @@ describe('edit-contacts', function() {
 
   it(`should fail when protected column names are provided`, async function(){
 
-    const parseResult = {
-      colNames: ['parent'],
-      csvFiles: ['contact.test.csv'],
-      docDirectoryPath: path.resolve(environment.pathToProject, 'json_docs'),
-    };
-    const extraArgs = sinon.stub();
-    extraArgs.returns(parseResult);
-    editContactsModule.__set__('parseExtraArgs', extraArgs);
+    sinon.stub(environment, 'extraArgs').get(() => ['--columns=parent', '--files=contact.test.csv']);
     
     try {
       await editContactsModule.execute();
@@ -143,9 +115,8 @@ describe('edit-contacts', function() {
 
   it(`should fail when DB doesn't contain the requested _id's`, async function(){
     
-    const getIDs = sinon.stub();
-    getIDs.returns(['wrongDocumentID']);
-    editContactsModule.__set__('getIDs', getIDs);
+    sinon.stub(environment, 'extraArgs').get(() => ['--files=contact.wrong.id.csv']);
+
     try {
       await editContactsModule.execute();
       assert.fail('should throw an error when requested ID cannot be found on the database');
@@ -160,10 +131,9 @@ describe('edit-contacts', function() {
       _id: 'documentID',
       type: 'data_record'
     });
-    const getIDs = sinon.stub();
-    getIDs.returns(['documentID']);
-    editContactsModule.__set__('getIDs', getIDs);
-    
+
+    sinon.stub(environment, 'extraArgs').get(() => ['--files=contact.protected.type.csv']);
+   
     try {
       await editContactsModule.execute();
       assert.fail('should throw an error when document is not a contact');
