@@ -42,10 +42,11 @@ Enforce the whitelist of allowed parents for each contact type
 Ensure we are not creating a circular hierarchy
 */
 const getHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) => {
-  const { type: contactType } = contactDoc;
-  const { type: parentType } = parentDoc || {};
+  const getContactType = doc => doc && (doc.type === 'contact' ? doc.contact_type : doc.type);
+  const contactType = getContactType(contactDoc);
+  const parentType = getContactType(parentDoc);
   if (!contactType) return 'contact required attribute "type" is undefined';
-  if (parentDoc && !parentType) return 'parent required attribute "type" is undefined';
+  if (parentDoc && !parentType) return `parent contact "${parentDoc._id}" required attribute "type" is undefined`;
   if (!mapTypeToAllowedParents) return 'hierarchy constraints are undefined';
 
   const rulesForContact = mapTypeToAllowedParents[contactType];
