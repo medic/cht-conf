@@ -18,7 +18,17 @@ module.exports = projectDir => {
 
   const majorRunningVersion = semver.major(runningVersion);
   if(semver.satisfies(projectVersion, `<${majorRunningVersion}.x || >${runningVersion}`)) {
-    throw new Error(`medic-conf version ${runningVersion} does not match the project's required version: ${projectVersion}. To ignore this error, use --skip-dependency-check.`);
+    throw new Error(`Your medic-conf version is incompatible with the project's medic-conf version:
+    Yours:  ${runningVersion}
+    Theirs: ${projectVersion}
+    
+    Continuing without updating could cause this project to not compile or work as expected.
+    
+    Update your local medic-conf with:
+     npm i -g medic-conf@${projectVersion}
+    and try again, or update the project to your current version, or ignore this warning with --skip-dependency-check
+    `);
+  
   }
 };
 
