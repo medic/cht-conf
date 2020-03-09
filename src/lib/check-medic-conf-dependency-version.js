@@ -17,16 +17,29 @@ module.exports = projectDir => {
   }
 
   const majorRunningVersion = semver.major(runningVersion);
+  let upgradeDowngradeLocalMsg = '';
+  let upgradeDowngradeProjectMsg = '';
   if(semver.satisfies(projectVersion, `<${majorRunningVersion}.x || >${runningVersion}`)) {
+    
+    if(semver.satisfies(projectVersion, `<${majorRunningVersion}.x`)) {
+      upgradeDowngradeLocalMsg = 'Downgrade';
+      upgradeDowngradeProjectMsg = 'Update';
+    }
+    else if(semver.satisfies(projectVersion, `>${runningVersion}`))
+    {
+      upgradeDowngradeLocalMsg = 'Upgrade';
+      upgradeDowngradeProjectMsg = 'downgrade';
+    }
+
     throw new Error(`Your medic-conf version is incompatible with the project's medic-conf version:
-    Yours:  ${runningVersion}
-    Theirs: ${projectVersion}
+    Your local medi-conf version:   ${runningVersion}
+    The project medic-conf version: ${projectVersion}
     
     Continuing without updating could cause this project to not compile or work as expected.
     
-    Update your local medic-conf with:
-     npm i -g medic-conf@${projectVersion}
-    and try again, or update the project to your current version, or ignore this warning with --skip-dependency-check
+    ${upgradeDowngradeLocalMsg} your local medic-conf with:
+        npm i -g medic-conf@${projectVersion}
+    and try again, or ${upgradeDowngradeProjectMsg} the project medic-conf version to ${runningVersion}, or ignore this warning with --skip-dependency-check
     `);
   
   }
