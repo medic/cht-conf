@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const open = require('open');
 
 const checkForUpdates = require('../lib/check-for-updates');
