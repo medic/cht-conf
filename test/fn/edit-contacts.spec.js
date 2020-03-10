@@ -5,7 +5,6 @@ PouchDB.plugin(require('pouchdb-adapter-memory'));
 const fs = require('../../src/lib/sync-fs');
 const environment = require('../../src/lib/environment');
 const sinon = require('sinon');
-// const info = require('../../src/lib/log');
 
 let pouch, editContactsModule;
 
@@ -30,8 +29,8 @@ const uploadDocuments = (docs) => {
   return pouch.bulkDocs(docs);
 };
 
-function compareDocuments(expectedDocsDir){
-  fs.recurseFiles(expectedDocsDir)
+const compareDocuments = (expectedDocsDir) => {
+      fs.recurseFiles(expectedDocsDir)
       .map(file => fs.path.basename(file))
       .forEach(file => {
         const expected  = fs.readJson(`${expectedDocsDir}/${file}`);
@@ -39,7 +38,7 @@ function compareDocuments(expectedDocsDir){
         delete generated._rev;
         expect(expected).to.deep.eq(generated);
       });
-}
+};
 
 describe('edit-contacts', function() {
 
