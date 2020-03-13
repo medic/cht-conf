@@ -45,7 +45,9 @@ module.exports = projectDir => {
       'passesIfGroupCount',
       'icon',
       'context',
-      'subtitle_translation_key'
+      'subtitle_translation_key',
+      'dhis',
+      'visible',
     ])),
   };
 };

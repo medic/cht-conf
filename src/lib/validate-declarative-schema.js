@@ -12,6 +12,11 @@ Current value of ${filename}${details[0].local.label} is ${JSON.stringify(detail
 const targetError = message => err('targets', message);
 const taskError = message => err('tasks', message);
 
+const DhisSchema = joi.object({
+  dataSet: joi.string().min(1).max(15).optional(),
+  dataElement: joi.string().min(1).max(15).required(),
+})
+  .unknown(true);
 
 const TargetSchema = joi.array().items(
   joi.object({
@@ -59,6 +64,12 @@ const TargetSchema = joi.array().items(
       .error(targetError('"date" should be either ["reported", "now"] or "function(contact, report)" returning timestamp')),
     emitCustom: joi.function().optional()
       .error(targetError('"emitCustom" should be a function')),
+    dhis: joi.alternatives().try(
+        DhisSchema,
+        joi.array().items(DhisSchema),
+      )
+        .optional(),
+    visible: joi.boolean().optional(),
     idType: joi.alternatives().try(
         joi.string().valid('report', 'contact'),
         joi.function(),
