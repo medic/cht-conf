@@ -49,6 +49,7 @@ function aScheduledTaskBasedTask() {
     } ],
     resolvedIf: function() { return false; },
     appliesIf: function() { return true; },
+    date: 'reported',
   };
 }
 
@@ -58,6 +59,7 @@ function aPersonBasedTarget() {
     id: `pT-${idCounter}`,
     appliesTo: 'contacts',
     appliesToType: ['person'],
+    date: 'reported',
   };
 }
 
@@ -67,6 +69,7 @@ function aPlaceBasedTarget() {
     id: `plT-${idCounter}`,
     appliesTo: 'contacts',
     appliesToType: ['clinic'],
+    date: 'reported',
   };
 }
 
@@ -75,6 +78,7 @@ function aReportBasedTarget() {
   return {
     id: `rT-${idCounter}`,
     appliesTo: 'reports',
+    date: 'reported',
   };
 }
 

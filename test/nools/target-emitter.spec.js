@@ -142,9 +142,17 @@ describe('target emitter', () => {
         // when
         const emitted = runNoolsLib(config).emitted;
 
+        // TEST_DATE is  May 09 2015
+        const aMonthBefore = new Date(TEST_DATE - 30 * 24 * 60 * 60 * 1000); // Apr 09 2015
+        aMonthBefore.setHours(0, 0, 0, 0);
+        const aMonthAfter =  new Date(TEST_DATE + 31 * 24 * 60 * 60 * 1000); //Jun 09 2015
+        aMonthAfter.setHours(0, 0, 0, 0);
+
         // then
         assert.deepEqual(emitted, [
-          { _id: 'c-2~pT-1', _type:'target', date:TEST_DATE },
+          { _id: 'c-2~pT-1~' + aMonthBefore.getTime(), _type: 'target', date: aMonthBefore.getTime() },
+          { _id: 'c-2~pT-1~' + TEST_DATE, _type: 'target', date: TEST_DATE },
+          { _id: 'c-2~pT-1~' + aMonthAfter.getTime(), _type: 'target', date: aMonthAfter.getTime() },
           { _type:'_complete', _id: true },
         ]);
       });
