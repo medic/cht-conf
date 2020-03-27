@@ -57,10 +57,10 @@ module.exports = (projectDir, subDirectory, options) => {
       doc._attachments.xml = attachmentFromFile(xformPath);
 
       return promiseChain
-        .then(() => warnUploadOverwrite.preUploadByXml(db, doc._id, xml))
+        .then(() => warnUploadOverwrite.preUploadByXml(db, doc, xml))
         .then(() => insertOrReplace(db, doc))
         .then(() => info(`Uploaded form ${formsDir}/${fileName}`))
-        .then(() => warnUploadOverwrite.postUploadByXml(doc._id, xml))
+        .then(() => warnUploadOverwrite.postUploadByXml(doc, xml))
         .catch(e => {
           if (!e.message || !e.message.includes('No changes')) {
             throw e;
