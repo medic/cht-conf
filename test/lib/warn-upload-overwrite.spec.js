@@ -24,51 +24,42 @@ describe('warn-upload-overwrite', () => {
     api.stop();
   });
 
-  describe('prompts when attempting to overwrite (by rev)', () => {
+  describe('prompts when attempting to overwrite docs', () => {
 
-    it('throws an error when no local revs exists and the user aborts the overwrite', () => {
-      sinon.stub(readline, 'keyInYN').returns(false);
-      return warnUploadOverwrite.preUploadByRev(api.db, {}).catch(e => {
-        assert.equal('configuration modified', e.message);
-      });
-    });
-
-    it('shows diff when local rev is different from remote rev and the user requests a diff', () => {
+    it('shows diff when local is different from remote and the user requests a diff', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(readline, 'keyInSelect').returns(2);
-      sinon.stub(api.db, 'get').resolves({ _rev: 'x' });
+      sinon.stub(api.db, 'get').resolves({ _id: 'a', _rev: 'x', value: 1 });
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'localhost/medic': 'y' }}));
-      const localDoc = { _id: 'a', _rev: 'y' };
-      return warnUploadOverwrite.preUploadByRev(api.db, localDoc).then(() => {
+      const localDoc = { _id: 'a', value: 2 };
+      return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
         assert.equal(calls.length, 1);
-        assert.equal(calls[0][0], ' {\n\u001b[32m+  _id: "a"\u001b[39m\n\u001b[31m-  _rev: "x"\u001b[39m\n\u001b[32m+  _rev: "y"\u001b[39m\n }\n');
+        assert.equal(calls[0][0], ' {\n\u001b[31m-  _rev: "x"\u001b[39m\n\u001b[31m-  value: 1\u001b[39m\n\u001b[32m+  value: 2\u001b[39m\n }\n');
       });
     });
 
-    it('aborts when local rev is different from remote rev and the user requests an abort', () => {
+    it('aborts when local is different from remote and the user requests an abort', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(readline, 'keyInSelect').returns(3);
       sinon.stub(api.db, 'get').resolves({ _rev: 'x' });
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'localhost/medic': 'y' }}));
       const localDoc = { _id: 'a', _rev: 'y' };
-      return warnUploadOverwrite.preUploadByRev(api.db, localDoc).catch(e => {
+      return warnUploadOverwrite.preUploadDoc(api.db, localDoc).catch(e => {
         assert.equal('configuration modified', e.message);
       });
     });
 
     it('removes username and password from couchUrl before writing', () => {
-      sinon.stub(api.db, 'get').resolves({ _rev: 'y-23' });
       const write = sinon.stub(fs, 'write').returns();
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'y/m': 'a-12' }}));
       const localDoc = { _id: 'a' };
-      return warnUploadOverwrite.postUploadByRev(api.db, localDoc).then(() => {
-        assert.equal(write.callCount, 1);
-        assert.equal(write.args[0][1], '{"a":{"y/m":"a-12","localhost/medic":"y-23"}}');
-      });
+      warnUploadOverwrite.postUploadDoc(localDoc);
+      assert.equal(write.callCount, 1);
+      assert.equal(write.args[0][1], '{"a":{"y/m":"a-12","localhost/medic":"E/lFVU12AAqbmWbH9LLbtA=="}}');
     });
   });
 
-  describe('prompts when attempting to overwrite (by xml)', () => {
+  describe('prompts when attempting to overwrite forms', () => {
 
     it('shows diff when local xml is different from remote xml and the user requests a diff', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
@@ -78,7 +69,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(fs, 'read').returns('{"x":{"localhost/medic":"y"}}');
       const localXml = '<?xml version="1.0"?><x />';
       const localDoc = { _id: 'x' };
-      return warnUploadOverwrite.preUploadByXml(api.db, localDoc, localXml).then(() => {
+      return warnUploadOverwrite.preUploadForm(api.db, localDoc, localXml).then(() => {
         assert.equal(calls.length, 1);
         assert.equal(calls[0][0], '/\n\tExpected element \'x\' instead of \'y\'');
       });
@@ -92,7 +83,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(fs, 'read').returns('{"localhost/medic":"y"}');
       const localXml = '<?xml version="1.0"?><x />';
       const localDoc = { _id: 'x' };
-      return warnUploadOverwrite.preUploadByXml(api.db, localDoc, localXml).catch(e => {
+      return warnUploadOverwrite.preUploadForm(api.db, localDoc, localXml).catch(e => {
         assert.equal('configuration modified', e.message);
       });
     });
@@ -104,7 +95,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(fs, 'read').returns('{"localhost/medic":"y"}');
       const localXml = '<?xml version="1.0"?><x />';
       const localDoc = { _id: 'x' };
-      return warnUploadOverwrite.preUploadByXml(api.db, localDoc, localXml).then(() => {
+      return warnUploadOverwrite.preUploadForm(api.db, localDoc, localXml).then(() => {
         assert(getAttachment.calledOnce);
       });
     });

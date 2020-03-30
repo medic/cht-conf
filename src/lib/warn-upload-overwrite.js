@@ -16,7 +16,7 @@ const responseChoicesWithoutDiff = [
 ];
 const responseChoicesWithDiff = responseChoicesWithoutDiff.concat([ 'View diff' ]);
 
-const getRevsAndHashesDocKey = () => {
+const getEnvironmentKey = () => {
   const parsed = url.parse(environment.apiUrl);
   const key = `${parsed.hostname}${parsed.pathname || 'medic'}`;
   return key;
@@ -24,13 +24,13 @@ const getRevsAndHashesDocKey = () => {
 
 const getBookmarksDir = () => path.join(environment.pathToProject, '.bookmarks');
 
-const getBookmark = fileName => {
+const getStoredHashes = () => {
   const bookmarksDir = getBookmarksDir();
   if (!fs.exists(bookmarksDir)) {
     fs.mkdir(bookmarksDir);
   }
 
-  const filePath = path.join(bookmarksDir, fileName);
+  const filePath = path.join(bookmarksDir, 'hashes.json');
   if (fs.exists(filePath)) {
     try {
       return JSON.parse(fs.read(filePath).trim());
@@ -42,88 +42,21 @@ const getBookmark = fileName => {
   return {};
 };
 
-const getStoredRevs = () => getBookmark('hashes.json');
-const getStoredHashes = () => getBookmark('revs.json');
-
-const getStoredRev = id => {
-  const revs = getStoredRevs();
-  return revs && revs[id] && revs[id][getRevsAndHashesDocKey()];
-};
-
 const getStoredHash = id => {
   const hashes = getStoredHashes();
-  return hashes && hashes[id] && hashes[id][getRevsAndHashesDocKey()];
+  return hashes && hashes[id] && hashes[id][getEnvironmentKey()];
 };
 
-const preUploadByRev = async (db, doc) => {
-  let localDoc = JSON.parse(JSON.stringify(doc));
-
-  // Pull remote _rev
-  let remoteRev;
-  let remoteDoc;
-  try {
-    remoteDoc = await db.get(localDoc._id);
-    remoteRev = remoteDoc._rev;
-  } catch (e) {
-    // continue regardless of error
-    log.trace('Trying to fetch remote _rev', e);
+const updateStoredHash = (id, hash) => {
+  const hashes = getStoredHashes();
+  if (!hashes[id]) {
+    hashes[id] = {};
   }
-
-  const localRev = getStoredRev(localDoc._id);
-
-  if (localRev) {
-    localDoc._rev = localRev;
-  }
-
-  if (localDoc._attachments) {
-    for (let key in localDoc._attachments) {
-      localDoc._attachments[key] = {
-        'content_type': doc._attachments[key].content_type, 
-        'revpos': localRev ? parseInt(localRev.split('-')[0]) : 0, 
-        'length': doc._attachments[key].data.length,
-        'digest': `md5-${crypto.createHash('md5').update(doc._attachments[key].data, 'binary').digest('base64')}`,
-        'stub': true
-      };
-    }
-  }
-
-  let diff; 
-  if (localDoc._id === 'settings' && remoteDoc._id === 'settings') {
-    diff = jsonDiff.diffString(remoteDoc.settings, localDoc.settings);
-  } else {
-    diff = jsonDiff.diffString(remoteDoc, localDoc);
-  }
-  if (diff) {  
-    if (!localRev) {
-      if (!readline.keyInYN(`We can't determine if you're going to overwrite someone else's changes or not. Would you like to proceed?`)) {
-        throw new Error('configuration modified');
-      }
-    } else if (localRev !== remoteRev) {
-      let index = readline.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
-      if (index === 2) { // diff
-        log.info(diff);
-
-        index = readline.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
-      }
-      if (index === 1) { // abort
-        throw new Error('configuration modified');
-      }
-    }
-  }
-
-  return doc;
+  hashes[id][getEnvironmentKey()] = hash;
+  fs.write(path.join(getBookmarksDir(), 'hashes.json'), JSON.stringify(hashes));
 };
 
-const postUploadByRev = async (db, doc) => {
-  const remoteDoc = await db.get(doc._id);
-  const localRevs = getStoredRevs();
-  if (!localRevs[doc._id]) {
-    localRevs[doc._id] = {};
-  }
-  localRevs[doc._id][getRevsAndHashesDocKey()] = remoteDoc._rev;
-  fs.write(path.join(getBookmarksDir(), 'revs.json'), JSON.stringify(localRevs));
-  return doc;
-};
+const couchDigest = content => 'md5-' + crypto.createHash('md5').update(content, 'binary').digest('base64');
 
 const getXFormAttachment = doc => {
   const name = Object
@@ -133,6 +66,7 @@ const getXFormAttachment = doc => {
 };
 
 const getFormHash = (doc, xml) => {
+  const xFormAttachmentName = getXFormAttachment(doc);
   const crypt = crypto.createHash('md5');
   crypt.update(xml, 'utf8');
   const properties = {
@@ -144,13 +78,9 @@ const getFormHash = (doc, xml) => {
   crypt.update(JSON.stringify(properties), 'utf8');
   if (doc._attachments) {
     Object.keys(doc._attachments).forEach(name => {
-      if (name !== 'form.html' && name !== 'model.xml') {
+      if (name !== 'form.html' && name !== 'model.xml' && name !== xFormAttachmentName) {
         const attachment = doc._attachments[name];
-        let digest = attachment.digest;
-        if (!digest) {
-          // locally generated - build the digest
-          digest = 'md5-' + crypto.createHash('md5').update(attachment.data, 'binary').digest('base64');
-        }
+        const digest = attachment.digest || couchDigest(attachment.data);
         crypt.update(digest, 'utf8');
       }
     });
@@ -158,41 +88,109 @@ const getFormHash = (doc, xml) => {
   return crypt.digest('base64');
 };
 
-const preUploadByXml = async (db, doc, localXml) => {
+const getDocHash = originalDoc => {
+  const doc = JSON.parse(JSON.stringify(originalDoc)); // clone doc
+  delete doc._rev;
+  delete doc._attachments;
+  const crypt = crypto.createHash('md5');
+  crypt.update(JSON.stringify(doc), 'utf8');
+  if (originalDoc._attachments) {
+    Object.values(originalDoc._attachments).forEach(attachment => {
+      crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
+    });
+  }
+  return crypt.digest('base64');
+};
+
+const preUploadDoc = async (db, localDoc) => {
+  let remoteDoc;
+
+  try {
+    remoteDoc = await db.get(localDoc._id);
+  } catch (e) {
+    if (e.status === 404) {
+      // The form doesn't exist on the server so we know we're not overwriting anything
+      return Promise.resolve(true);
+    } else {
+      // Unexpected error, we report it then quit
+      log.trace('Trying to fetch remote doc', e);
+      throw new Error(`Unable to fetch doc with id ${localDoc._id}, returned status code = ${e.status}`);
+    }
+  }
+
+  const remoteHash = getDocHash(remoteDoc);
+  const localHash = getDocHash(localDoc);
+  if (localHash === remoteHash) {
+    // no changes to this form - do not upload
+    return Promise.resolve(false);
+  }
+
+  const storedHash = getStoredHash(localDoc._id);
+  if (storedHash === remoteHash) {
+    // changes made locally based on common starting point - upload
+    return Promise.resolve(true);
+  }
+
+  const diff = jsonDiff.diffString(remoteDoc, localDoc);
+
+  if (diff) {
+    let index = readline.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
+    if (index === 2) { // diff
+      log.info(diff);
+      index = readline.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
+    }
+    if (index === 1) { // abort
+      throw new Error('configuration modified');
+    }
+  } else {
+    // attachments or properties updated - prompt for overwrite or abort
+    const index = readline.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
+    if (index === 1) { // abort
+      throw new Error('configuration modified');
+    }
+  }
+
+  // user chose to overwrite remote form - upload
+  return Promise.resolve(true);
+};
+
+const postUploadDoc = doc => updateStoredHash(doc._id, getDocHash(doc));
+
+const preUploadForm = async (db, localDoc, localXml) => {
 
   let remoteXml;
   let remoteHash;
   try {
-    const remoteDoc = await db.get(doc._id);
+    const remoteDoc = await db.get(localDoc._id);
     const attachmentName = getXFormAttachment(remoteDoc);
     if (!attachmentName) {
       // does not exist so ok to overwrite
-      return Promise.resolve();
+      return Promise.resolve(true);
     }
-    const buffer = await db.getAttachment(doc._id, attachmentName);
+    const buffer = await db.getAttachment(localDoc._id, attachmentName);
     remoteXml = buffer.toString('utf8');
     remoteHash = getFormHash(remoteDoc, remoteXml);
   } catch (e) {
     if (e.status === 404) {
       // The form doesn't exist on the server so we know we're not overwriting anything
-      return Promise.resolve();
+      return Promise.resolve(true);
     } else {
       // Unexpected error, we report it then quit
       log.trace('Trying to fetch remote xml', e);
-      throw new Error(`Unable to fetch xml attachment of doc with id ${doc._id}, returned status code = ${e.status}`);
+      throw new Error(`Unable to fetch xml attachment of doc with id ${localDoc._id}, returned status code = ${e.status}`);
     }
   }
 
-  const localHash = getFormHash(doc, localXml);
+  const localHash = getFormHash(localDoc, localXml);
   if (localHash === remoteHash) {
     // no changes to this form - do not upload
-    throw new Error('No changes');
+    return Promise.resolve(false);
   }
 
-  const storedHash = getStoredHash(doc._id);
+  const storedHash = getStoredHash(localDoc._id);
   if (storedHash === remoteHash) {
     // changes made locally based on common starting point - upload
-    return Promise.resolve();
+    return Promise.resolve(true);
   }
 
   const localDom = new DOMParser().parseFromString(localXml);
@@ -219,22 +217,14 @@ const preUploadByXml = async (db, doc, localXml) => {
   }
 
   // user chose to overwrite remote form - upload
-  return Promise.resolve();
+  return Promise.resolve(true);
 };
 
-const postUploadByXml = async (doc, xml) => {
-  const hashes = getStoredHashes();
-  if (!hashes[doc._id]) {
-    hashes[doc._id] = {};
-  }
-  hashes[doc._id][getRevsAndHashesDocKey()] = getFormHash(doc, xml);
-  fs.write(path.join(getBookmarksDir(), 'hashes.json'), JSON.stringify(hashes));
-  return Promise.resolve();
-};
+const postUploadForm = (doc, xml) => updateStoredHash(doc._id, getFormHash(doc, xml));
 
 module.exports = {
-  preUploadByRev, 
-  postUploadByRev,
-  preUploadByXml,
-  postUploadByXml
+  preUploadDoc,
+  postUploadDoc,
+  preUploadForm,
+  postUploadForm
 };

@@ -57,17 +57,17 @@ module.exports = (projectDir, subDirectory, options) => {
       doc._attachments.xml = attachmentFromFile(xformPath);
 
       return promiseChain
-        .then(() => warnUploadOverwrite.preUploadByXml(db, doc, xml))
-        .then(() => insertOrReplace(db, doc))
-        .then(() => info(`Uploaded form ${formsDir}/${fileName}`))
-        .then(() => warnUploadOverwrite.postUploadByXml(doc, xml))
-        .catch(e => {
-          if (!e.message || !e.message.includes('No changes')) {
-            throw e;
+        .then(() => warnUploadOverwrite.preUploadForm(db, doc, xml))
+        .then(changes => {
+          if (changes) {
+            return insertOrReplace(db, doc)
+              .then(() => info(`Form ${formsDir}/${fileName} uploaded`));
           } else {
             info(`Form ${formsDir}/${fileName} not uploaded, no changes`);
           }
-        });
+        })
+        // update hash regardless
+        .then(() => warnUploadOverwrite.postUploadForm(doc, xml));
     }, Promise.resolve());
 };
 
