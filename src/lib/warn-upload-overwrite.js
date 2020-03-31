@@ -18,19 +18,27 @@ const responseChoicesWithDiff = responseChoicesWithoutDiff.concat([ 'View diff' 
 
 const getEnvironmentKey = () => {
   const parsed = url.parse(environment.apiUrl);
-  const key = `${parsed.hostname}${parsed.pathname || 'medic'}`;
-  return key;
+  const path = parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : '/medic';
+  return `${parsed.hostname}${path}`;
 };
 
-const getBookmarksDir = () => path.join(environment.pathToProject, '.bookmarks');
+const getHashFileName = () => {
+  const parsed = url.parse(environment.apiUrl);
+  if (parsed.hostname === 'localhost') {
+    return 'local.json';
+  }
+  return 'remote.json';
+};
+
+const getSnapshotsDir = () => path.join(environment.pathToProject, '.snapshots');
 
 const getStoredHashes = () => {
-  const bookmarksDir = getBookmarksDir();
-  if (!fs.exists(bookmarksDir)) {
-    fs.mkdir(bookmarksDir);
+  const snapshotsDir = getSnapshotsDir();
+  if (!fs.exists(snapshotsDir)) {
+    fs.mkdir(snapshotsDir);
   }
 
-  const filePath = path.join(bookmarksDir, 'hashes.json');
+  const filePath = path.join(snapshotsDir, getHashFileName());
   if (fs.exists(filePath)) {
     try {
       return JSON.parse(fs.read(filePath).trim());
@@ -53,7 +61,7 @@ const updateStoredHash = (id, hash) => {
     hashes[id] = {};
   }
   hashes[id][getEnvironmentKey()] = hash;
-  fs.write(path.join(getBookmarksDir(), 'hashes.json'), JSON.stringify(hashes));
+  fs.write(path.join(getSnapshotsDir(), getHashFileName()), JSON.stringify(hashes, null, 2));
 };
 
 const couchDigest = content => 'md5-' + crypto.createHash('md5').update(content, 'binary').digest('base64');
@@ -65,17 +73,15 @@ const getXFormAttachment = doc => {
   return name;
 };
 
-const getFormHash = (doc, xml) => {
+const getFormHash = (doc, xml, properties) => {
   const xFormAttachmentName = getXFormAttachment(doc);
   const crypt = crypto.createHash('md5');
   crypt.update(xml, 'utf8');
-  const properties = {
-    context: doc.context,
-    icon: doc.icon,
-    internalId: doc.internalId,
-    title: doc.title
-  };
-  crypt.update(JSON.stringify(properties), 'utf8');
+  const customProperties = {};
+  properties.forEach(key => {
+    customProperties[key] = doc[key];
+  });
+  crypt.update(JSON.stringify(customProperties), 'utf8');
   if (doc._attachments) {
     Object.keys(doc._attachments).forEach(name => {
       if (name !== 'form.html' && name !== 'model.xml' && name !== xFormAttachmentName) {
@@ -156,7 +162,7 @@ const preUploadDoc = async (db, localDoc) => {
 
 const postUploadDoc = doc => updateStoredHash(doc._id, getDocHash(doc));
 
-const preUploadForm = async (db, localDoc, localXml) => {
+const preUploadForm = async (db, localDoc, localXml, properties) => {
 
   let remoteXml;
   let remoteHash;
@@ -169,7 +175,7 @@ const preUploadForm = async (db, localDoc, localXml) => {
     }
     const buffer = await db.getAttachment(localDoc._id, attachmentName);
     remoteXml = buffer.toString('utf8');
-    remoteHash = getFormHash(remoteDoc, remoteXml);
+    remoteHash = getFormHash(remoteDoc, remoteXml, properties);
   } catch (e) {
     if (e.status === 404) {
       // The form doesn't exist on the server so we know we're not overwriting anything
@@ -181,7 +187,7 @@ const preUploadForm = async (db, localDoc, localXml) => {
     }
   }
 
-  const localHash = getFormHash(localDoc, localXml);
+  const localHash = getFormHash(localDoc, localXml, properties);
   if (localHash === remoteHash) {
     // no changes to this form - do not upload
     return Promise.resolve(false);
@@ -220,7 +226,7 @@ const preUploadForm = async (db, localDoc, localXml) => {
   return Promise.resolve(true);
 };
 
-const postUploadForm = (doc, xml) => updateStoredHash(doc._id, getFormHash(doc, xml));
+const postUploadForm = (doc, xml, properties) => updateStoredHash(doc._id, getFormHash(doc, xml, properties));
 
 module.exports = {
   preUploadDoc,
