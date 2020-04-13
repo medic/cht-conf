@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('./sync-fs');
 
 const pick = (obj, attributes) => attributes.reduce((agg, curr) => {
-  if (obj[curr]) {
+  if (curr in obj) {
     agg[curr] = obj[curr];
   }
   return agg;
@@ -41,7 +41,7 @@ module.exports = projectDir => {
       'id',
       'type',
       'goal',
-      'translation_key',  
+      'translation_key',
       'passesIfGroupCount',
       'icon',
       'context',
