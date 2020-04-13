@@ -25,4 +25,18 @@ module.exports = [
     appliesIf: function(c) { return c.age_in_months <= 60; },
     date: function(c) { return c.contact.reported_date; },
   },
+  {
+    id: 'dhis-target',
+    type: 'count',
+    icon: 'icon-follow-up',
+    goal: -1,
+    translation_key: 'targets.dhis1.title',
+    subtitle_translation_key: 'targets.all_time.subtitle',
+    appliesTo: 'contacts',
+    appliesToType: ['person'],
+    appliesIf: function (c) { return c.reported_date > 100; },
+    date: 'now',
+    idType: 'contact',
+    visible: false,
+  },
 ];
