@@ -1,70 +1,62 @@
 /**
  * Attempt to check that the version of medic-conf that a project relies on
  * matches the version of medic-conf being used to configure that project.
- *
- * Currently this check is only performed as part of app-settings compilation;
- * if required in more places then we might move the check to the main CLI
- * script.
  */
 
-const error = require('./log').error;
 const fs = require('./sync-fs');
-const readline = require('readline-sync');
 const semver = require('semver');
 const { warn } = require('./log');
 
-module.exports = projectDir => {
-  const myVersion = require('../../package.json').version;
+const runningVersion = require('../../package.json').version;
 
-  const theirPackageVersion = readRequestedVersion(projectDir);
-  if(!theirPackageVersion) {
+module.exports = projectDir => {
+  const projectVersion = readRequestedVersion(projectDir);
+  if(!projectVersion) {
     warn('Project has no dependency on medic-conf.');
     return;
   }
 
-  if(!semver.satisfies(myVersion, theirPackageVersion)) {
-    throw new Error(`medic-conf version ${myVersion} does not match the project's required version: ${theirPackageVersion}`);
-  }
+  const majorRunningVersion = semver.major(runningVersion);
+  let upgradeDowngradeLocalMsg = '';
+  let upgradeDowngradeProjectMsg = '';
+  let satisfiesLessThanMajorRunningVersion = semver.satisfies(projectVersion, `<${majorRunningVersion}.x`);
+  let satisifiesGreaterThanRunningVersion = semver.satisfies(projectVersion, `>${runningVersion}`);
 
-  const theirLockedVersion = readLockedVersion(projectDir);
-  if(!theirLockedVersion) throw new Error('medic-conf requested in package.json but not found in package-lock.json!');
-  if(myVersion !== theirLockedVersion) requestUserConfirmation(myVersion, theirLockedVersion);
+  if(satisfiesLessThanMajorRunningVersion || satisifiesGreaterThanRunningVersion) {
+    
+    if(satisfiesLessThanMajorRunningVersion) {
+      upgradeDowngradeLocalMsg = 'Downgrade';
+      upgradeDowngradeProjectMsg = 'update';
+    }
+    else if(satisifiesGreaterThanRunningVersion)
+    {
+      upgradeDowngradeLocalMsg = 'Upgrade';
+      upgradeDowngradeProjectMsg = 'downgrade';
+    }
+
+    throw new Error(`Your medic-conf version is incompatible with the project's medic-conf version:
+    Your local medic-conf version:   ${runningVersion}
+    The project medic-conf version: ${projectVersion}
+    
+    Continuing without updating could cause this project to not compile or work as expected.
+    
+    ${upgradeDowngradeLocalMsg} your local medic-conf with:
+        npm i -g medic-conf@${projectVersion}
+    and try again, or ${upgradeDowngradeProjectMsg} the project medic-conf version to ${runningVersion}, or ignore this warning with --skip-dependency-check
+    `);
+  
+  }
 };
-
-function requestUserConfirmation(myVersion, theirLockedVersion) {
-  warn(`medic-conf version is ${myVersion}, but project is tested against ${theirLockedVersion}.  Are you sure you want to continue?`);
-  if(!readline.keyInYN()) {
-    error('User failed to confirm action.');
-    process.exit(-1);
-  }
-}
-
-function readLockedVersion(projectDir) {
-  const path = `${projectDir}/package-lock.json`;
-
-  if(!fs.exists(path)) {
-    warn('No package-lock.json found.  This file should be committed!');
-    return;
-  }
-
-  const json = fs.readJson(path);
-
-  return json &&
-         json.dependencies &&
-         json.dependencies['medic-conf'] &&
-         json.dependencies['medic-conf'].version;
-}
 
 function readRequestedVersion(projectDir) {
   const path = `${projectDir}/package.json`;
 
   if(!fs.exists(path)) {
-    warn('No package.json file found.  This project may be missing tests, or improperly set up.');
+    warn(`No project package.json file found at ${path}`);
     return;
   }
 
   const json = fs.readJson(path);
-
   return (json.dependencies    && json.dependencies['medic-conf']) ||
          (json.devDependencies && json.devDependencies['medic-conf']);
 }

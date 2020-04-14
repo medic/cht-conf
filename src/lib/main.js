@@ -1,5 +1,4 @@
 const open = require('open');
-
 const checkForUpdates = require('../lib/check-for-updates');
 const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-dependency-version');
 const environment = require('./environment');
