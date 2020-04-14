@@ -1,7 +1,7 @@
 const api = require('../lib/api');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
-const { warn, info } = require('../lib/log');
+const { info } = require('../lib/log');
 
 module.exports = {
   requiresInstance: true,
@@ -20,7 +20,7 @@ module.exports = {
           // the `updated` param was added in 3.9
           // https://github.com/medic/cht-core/issues/6315
           if (!json.updated) {
-            warn('Settings not updated - no changes detected');
+            info('Settings not updated - no changes detected');
           } else {
             info('Settings updated successfully');
           }
