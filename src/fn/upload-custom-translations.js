@@ -53,12 +53,16 @@ const execute = async () => {
 
     overwriteProperties(doc, translations);
 
-    await warnUploadOverwrite.preUploadByRev(db, doc);
+    const changes = await warnUploadOverwrite.preUploadDoc(db, doc);
 
-    info(`Uploaded translation ${dir}/${fileName}`);
-    await db.put(doc);
+    if (changes) {
+      await db.put(doc);
+      info(`Translation ${dir}/${fileName} uploaded`);
+    } else {
+      info(`Translation ${dir}/${fileName} not uploaded as no changes were found`);
+    }
 
-    await warnUploadOverwrite.postUploadByRev(db, doc);
+    warnUploadOverwrite.postUploadDoc(doc);
   }
 };
 

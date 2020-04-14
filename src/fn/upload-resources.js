@@ -2,7 +2,7 @@ const attachmentsFromDir = require('../lib/attachments-from-dir');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const pouch = require('../lib/db');
-const { warn } = require('../lib/log');
+const { info, warn } = require('../lib/log');
 const insertOrReplace = require('../lib/insert-or-replace');
 const warnUploadOverwrite = require('../lib/warn-upload-overwrite');
 
@@ -24,11 +24,15 @@ module.exports = {
 
     const db = pouch();
 
-    await warnUploadOverwrite.preUploadByRev(db, doc);
+    const changes = await warnUploadOverwrite.preUploadDoc(db, doc);
+    if (changes) {
+      await insertOrReplace(db, doc);
+      info('Resources file uploaded');
+    } else {
+      info('Resources file not uploaded as no changes found');
+    }
 
-    await insertOrReplace(db, doc);
-
-    await warnUploadOverwrite.postUploadByRev(db, doc);
+    warnUploadOverwrite.postUploadDoc(doc);
 
     return Promise.resolve();
   }

@@ -1,0 +1,10 @@
+{
+	"icon": "example",
+	"context": {
+		"person": true,
+		"place": false
+	},
+  "xml2sms": "hello world",
+  "internalId": "different",
+  "unknown": true
+}

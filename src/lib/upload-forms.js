@@ -3,12 +3,12 @@ const argsFormFilter = require('./args-form-filter');
 const attachmentsFromDir = require('./attachments-from-dir');
 const attachmentFromFile = require('./attachment-from-file');
 const fs = require('./sync-fs');
-const { info, warn } = require('./log');
+const log = require('./log');
 const insertOrReplace = require('./insert-or-replace');
 const pouch = require('./db');
 const warnUploadOverwrite = require('./warn-upload-overwrite');
 
-const SUPPORTED_PROPERTIES = ['context', 'icon', 'internalId', 'title'];
+const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms'];
 
 module.exports = (projectDir, subDirectory, options) => {
   const db = pouch();
@@ -16,20 +16,20 @@ module.exports = (projectDir, subDirectory, options) => {
 
   const formsDir = `${projectDir}/forms/${subDirectory}`;
   if(!fs.exists(formsDir)) {
-    warn(`Forms dir not found: ${formsDir}`);
+    log.warn(`Forms dir not found: ${formsDir}`);
     return Promise.resolve();
   }
 
   return argsFormFilter(formsDir, '.xml', options)
     .reduce((promiseChain, fileName) => {
-      info(`Preparing form for upload: ${fileName}…`);
+      log.info(`Preparing form for upload: ${fileName}…`);
 
       const baseFileName = fs.withoutExtension(fileName);
       const mediaDir = `${formsDir}/${baseFileName}-media`;
       const xformPath = `${formsDir}/${baseFileName}.xml`;
       const baseDocId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
 
-      if(!fs.exists(mediaDir)) info(`No media directory found at ${mediaDir} for form ${xformPath}`);
+      if(!fs.exists(mediaDir)) log.info(`No media directory found at ${mediaDir} for form ${xformPath}`);
 
       const xml = fs.read(xformPath);
 
@@ -39,7 +39,7 @@ module.exports = (projectDir, subDirectory, options) => {
       }
 
       const internalId = readIdFrom(xml);
-      if(internalId !== baseDocId) warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
+      if(internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
 
       const docId = `form:${baseDocId}`;
       const doc = {
@@ -56,18 +56,20 @@ module.exports = (projectDir, subDirectory, options) => {
       doc._attachments = fs.exists(mediaDir) ? attachmentsFromDir(mediaDir) : {};
       doc._attachments.xml = attachmentFromFile(xformPath);
 
+      const properties = SUPPORTED_PROPERTIES.concat('internalId');
+
       return promiseChain
-        .then(() => warnUploadOverwrite.preUploadByXml(db, doc._id, xml))
-        .then(() => insertOrReplace(db, doc))
-        .then(() => info(`Uploaded form ${formsDir}/${fileName}`))
-        .then(() => warnUploadOverwrite.postUploadByXml(doc._id, xml))
-        .catch(e => {
-          if (!e.message || !e.message.includes('No changes')) {
-            throw e;
+        .then(() => warnUploadOverwrite.preUploadForm(db, doc, xml, properties))
+        .then(changes => {
+          if (changes) {
+            return insertOrReplace(db, doc)
+              .then(() => log.info(`Form ${formsDir}/${fileName} uploaded`));
           } else {
-            info(`Form ${formsDir}/${fileName} not uploaded, no changes`);
+            log.info(`Form ${formsDir}/${fileName} not uploaded, no changes`);
           }
-        });
+        })
+        // update hash regardless
+        .then(() => warnUploadOverwrite.postUploadForm(doc, xml, properties));
     }, Promise.resolve());
 };
 
@@ -81,20 +83,27 @@ const readIdFrom = xml =>
        .match(/id="([^"]*)"/)[1];
 
 const updateFromPropertiesFile = (doc, path) => {
-  if(fs.exists(path)) {
+  if (fs.exists(path)) {
+
+    let ignoredKeys = [];
     const properties = fs.readJson(path);
 
-    if(typeof properties.context !== 'undefined') doc.context = properties.context;
-    doc.icon = properties.icon;
-    if(properties.title) doc.title = properties.title;
+    Object.keys(properties).forEach(key => {
+      if (typeof properties[key] !== 'undefined') {
+        if (SUPPORTED_PROPERTIES.includes(key)) {
+          doc[key] = properties[key];
+        } else if (key === 'internalId') {
+          log.warn(`DEPRECATED: ${path}. Please do not manually set internalId in .properties.json for new projects. Support for configuring this value will be dropped. Please see https://github.com/medic/medic-webapp/issues/3342.`);
+          doc.internalId = properties.internalId;
+        } else {
+          ignoredKeys.push(key);
+        }
+      }
+    });
 
-    if(properties.internalId) {
-      warn('DEPRECATED', path, 'Please do not manually set internalId in .properties.json for new projects.  Support for configuring this value will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
-      doc.internalId = properties.internalId;
+    if (ignoredKeys.length) {
+      log.warn(`Ignoring unknown properties in ${path}: ${ignoredKeys.join(', ')}`);
     }
-
-    const ignoredKeys = Object.keys(properties).filter(k => !SUPPORTED_PROPERTIES.includes(k));
-    if(ignoredKeys.length) warn('Ignoring property keys', ignoredKeys, 'in', path);
   }
 };
 
