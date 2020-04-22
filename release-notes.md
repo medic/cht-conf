@@ -1,6 +1,28 @@
 # Release Notes
 
-## 3.1
+## 3.2.0
+
+### Detection for configuration overwrites
+
+In previous versions medic-conf would upload the new configuration overwriting whatever was there previously and there was no way to tell if you were accidentally wiping out someone elses changes. With this feature you will now be warned if another device has updated the configuration since you started making changes.
+
+To detect this the cli will generate two files - `.snapshots/remote.json` and `.snapshots/local.json`. These store the last known configuration on the server. You should commit the `remote.json` with your configuration changes, but add the `local.json` to your .gitignore because everyone's localhost is different. That way if anyone changes the configuration on the server using medic-conf or the App Management webapp without committing the `remote.json` file to your config repo you will be notified about the risk and prompted to overwrite or cancel.
+
+This feature was introduced but not announced in 3.1.0. In this release we have fixed some bugs and improved the overall experience.
+
+### Configuration is only upload if something has changed
+
+As of this release no docs on the server will be touched unless some configuration has actually changed. This means the end users will not have to download docs with no actual difference giving them a better experience with upgrades.
+
+[#271](https://github.com/medic/medic-conf/issues/271)
+
+### New action to bulk-edit contacts
+
+You can now bulk edit contacts at once by providing a CSV. For more information, read [the documentation](https://github.com/medic/medic-conf/blob/master/README.md#editing-contacts-across-the-hierarchy).
+
+[#297](https://github.com/medic/medic-conf/issues/297)
+
+## 3.1.0
 
 ### Declarative Configuration Support for Core Framework v3.8
 
@@ -42,7 +64,7 @@ module.exports = {
 ```
 Storing the purge function in `purging.js` is deprecated.
 
-## 3.0
+## 3.0.0
 
 medic-conf v3.0 contains breaking changes! This release only impacts the `compile-app-settings` action, which impacts the configuration code in `tasks.js`, `targets.js`, `contact-summary.js`, and `contact-summary.templated.js`.
 
@@ -107,7 +129,7 @@ The `--debug` flag will change the behavior of `compile-app-settings` such that:
 1. Webpack warnings are logged as warnings instead of causing errors
 1. Code minification is skipped to make it easier to debug your code
 
-## 2.2
+## 2.2.0
 
 Medic-conf v2.2 includes:
 
@@ -116,7 +138,7 @@ Medic-conf v2.2 includes:
 * The declarative configuration [target schema](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#target-schema) has been updated. The idType attribute can now be a function. [#145](https://github.com/medic/medic-conf/issues/145)
 * Support for Node 12, refactoring, and code cleanup.
 
-## 2.0
+## 2.0.0
 
 Medic-conf v2.0 contains breaking interface changes for the command-line and for the [declarative configuration system](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
 
