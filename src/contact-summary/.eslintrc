@@ -24,6 +24,7 @@
   "globals": {
     "contact": true,
     "reports": true,
-    "lineage": true
+    "lineage": true,
+    "targetDoc": true
   }
 }

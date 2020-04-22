@@ -48,6 +48,7 @@ module.exports = projectDir => {
       'subtitle_translation_key',
       'dhis',
       'visible',
+      'aggregate',
     ])),
   };
 };
