@@ -24,6 +24,15 @@
           "subtitle_translation_key": "targets.this_month.subtitle",
           "icon": "child",
           "context": "user.parent.use_cases.split(\" \").indexOf(\"imm\") !== -1"
+        },
+        {
+          "id": "dhis-target",
+          "type": "count",
+          "icon": "icon-follow-up",
+          "goal": -1,
+          "translation_key": "targets.dhis1.title",
+          "subtitle_translation_key": "targets.all_time.subtitle",
+          "visible": false
         }
       ]
     }
