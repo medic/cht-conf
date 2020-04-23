@@ -2,15 +2,15 @@
 
 ## 3.2.0
 
-### Detection for configuration overwrites
+### Prompt before configuration overwrites
 
-In previous versions medic-conf would upload the new configuration overwriting whatever was there previously and there was no way to tell if you were accidentally wiping out someone elses changes. With this feature you will now be warned if another device has updated the configuration since you started making changes.
+This new feature warns and prompts users when uploading a configuration if the configuration being overwritten is not the last known configuration. These warnings are comparable to a database write conflict. Previous versions of medic-conf would upload the new configuration overwriting whatever was there, resulting in users accidentally wiping out someone elses changes or changes made through the admin console.
 
 To detect this the cli will generate two files - `.snapshots/remote.json` and `.snapshots/local.json`. These store the last known configuration on the server. You should commit the `remote.json` with your configuration changes, but add the `local.json` to your .gitignore because everyone's localhost is different. That way if anyone changes the configuration on the server using medic-conf or the App Management webapp without committing the `remote.json` file to your config repo you will be notified about the risk and prompted to overwrite or cancel.
 
-This feature was introduced but not announced in 3.1.0. In this release we have fixed some bugs and improved the overall experience.
+This feature was introduced but not announced in 3.1.0. In this release we have substantially changed the implementation, fixed some bugs, and improved the overall experience.
 
-### Configuration is only upload if something has changed
+### Configuration is only uploaded if something has changed
 
 As of this release no docs on the server will be touched unless some configuration has actually changed. This means the end users will not have to download docs with no actual difference giving them a better experience with upgrades.
 
@@ -24,7 +24,7 @@ You can now bulk edit contacts at once by providing a CSV. For more information,
 
 ## 3.1.0
 
-### Declarative Configuration Support for Core Framework v3.8
+### Declarative Configuration Support for Core Framework v3.8.0
 
 The updates to tasks and targets in Core Framework v3.8.0 require additional data about the tasks and targets emitted by partner rules code. After upgrading to v3.8, the Tasks tab and Targets tab won't function until partner code is updated to send this new data. **Declarative configuration projects must deploy their configuration using medic-conf v3.1 or later for tasks and targets to function on the Core Framework v3.8.0**
 
