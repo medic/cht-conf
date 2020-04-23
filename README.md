@@ -9,7 +9,6 @@ Medic Conf is a command-line interface tool to manage and configure your apps bu
 * python 2.7
 * or Docker
 
-
 # Installation
 
 ## Docker
@@ -49,7 +48,7 @@ To upgrade to the latest version
 
 # Usage
 
-`medic-conf` will upload the configuration **_from your current directory_**.
+`medic-conf` will upload the configuration **from your current directory**.
 
 ## Specifying the server to configure
 
@@ -92,6 +91,12 @@ The list of available actions can be seen via `medic-conf --help`.
 ## Perform actions for specific forms
 
 	medic-conf <--local|--instance=instance-name|--url=url> <...action> -- <...form>
+
+## Protecting against configuration overwriting
+
+_Added in v3.2.0_
+
+In order to avoid overwriting someone elses configuration medic-conf records the last uploaded configuration snapshot in the `.snapshots` directory. The `remote.json` file should be committed to your repository along with the associated configuration change. When uploading future configuration if medic-conf detects the snapshot doesn't match the configuration on the server you will be prompted to overwrite or cancel.
 
 # Currently supported
 
@@ -151,7 +156,7 @@ medic-conf --instance=*instance* edit-contacts -- --column=*is_in_emnch* --docDi
 1. Then upload the edited documents using the [upload-docs ](#examples) command.
 
 
-# Project Layout
+# Project layout
 
 This tool expects a project to be structured as follows:
 
@@ -222,9 +227,9 @@ To achieve this, create a file called `settings.inherit.json` in your project's 
 		}
 	}
 
-# `medic-logs`
+# Fetching logs
 
-Fetch logs from a production server.
+Fetch logs from a CHT v2.x production server.
 
 This is a standalone command installed alongside `medic-conf`.  For usage information, run `medic-logs --help`.
 
@@ -240,7 +245,7 @@ Accepted log types:
 	nginx
 	sentinel
 
-## Testing Locally
+# Testing locally
 
 1. Clone the project locally
 1. Make changes to medic-conf or checkout a branch for testing
@@ -259,7 +264,7 @@ Accepted log types:
 1. `git push && git push --tags` to push the npm generated commit and tag up to your pre-approved pull request
 1. Merge the pull request back into master
 
-# Build Status
+# Build status
 
 Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/cht-conf).
 
