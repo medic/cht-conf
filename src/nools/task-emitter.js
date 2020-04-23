@@ -118,6 +118,10 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         task._id += '-' + scheduledTaskIdx;
       }
 
+      if (typeof task.icon === 'function') {
+        task.icon = task.icon(c, r);
+      }
+
       priority = taskDefinition.priority;
       if (typeof priority === 'function') {
         priority = priority(c, r);

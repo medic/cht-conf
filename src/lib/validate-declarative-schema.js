@@ -95,7 +95,7 @@ const EventSchema = idPresence => joi.object({
 const TaskSchema = joi.array().items(
   joi.object({
     name: joi.string().min(1).required(),
-    icon: joi.string().min(1).optional(),
+    icon: joi.alternatives().try( joi.string().min(1), joi.function() ).optional(),
     title: joi.string().min(1).required(),
     appliesTo: joi.string().valid('contacts', 'reports', 'scheduled_tasks').required(),
     appliesIf: joi.function().optional()
