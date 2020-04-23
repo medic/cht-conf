@@ -1,8 +1,30 @@
 # Release Notes
 
-## 3.1
+## 3.2.0
 
-### Declarative Configuration Support for Core Framework v3.8
+### Prompt before configuration overwrites
+
+This new feature warns and prompts users when uploading a configuration if the configuration being overwritten is not the last known configuration. These warnings are comparable to a database write conflict. Previous versions of medic-conf would upload the new configuration overwriting whatever was there, resulting in users accidentally wiping out someone elses changes or changes made through the App Management webapp.
+
+To detect this the cli will generate two files - `.snapshots/remote.json` and `.snapshots/local.json`. These store the last known configuration on the server. You should commit the `remote.json` with your configuration changes, but add the `local.json` to your .gitignore because everyone's localhost is different. That way if anyone changes the configuration on the server using medic-conf or the App Management webapp without committing the `remote.json` file to your config repo you will be notified about the risk and prompted to overwrite or cancel.
+
+This feature was introduced but not announced in 3.1.0. In this release we have substantially changed the implementation, fixed some bugs, and improved the overall experience.
+
+### Configuration is only uploaded if something has changed
+
+As of this release no docs on the server will be touched unless some configuration has actually changed. This means the end users will not have to download docs with no actual difference giving them a better experience with upgrades.
+
+[#271](https://github.com/medic/medic-conf/issues/271)
+
+### New action to bulk-edit contacts
+
+You can now bulk edit contacts at once by providing a CSV. For more information, read [the documentation](https://github.com/medic/medic-conf/blob/master/README.md#editing-contacts-across-the-hierarchy).
+
+[#297](https://github.com/medic/medic-conf/issues/297)
+
+## 3.1.0
+
+### Declarative Configuration Support for Core Framework v3.8.0
 
 The updates to tasks and targets in Core Framework v3.8.0 require additional data about the tasks and targets emitted by partner rules code. After upgrading to v3.8, the Tasks tab and Targets tab won't function until partner code is updated to send this new data. **Declarative configuration projects must deploy their configuration using medic-conf v3.1 or later for tasks and targets to function on the Core Framework v3.8.0**
 
@@ -42,7 +64,7 @@ module.exports = {
 ```
 Storing the purge function in `purging.js` is deprecated.
 
-## 3.0
+## 3.0.0
 
 medic-conf v3.0 contains breaking changes! This release only impacts the `compile-app-settings` action, which impacts the configuration code in `tasks.js`, `targets.js`, `contact-summary.js`, and `contact-summary.templated.js`.
 
@@ -107,7 +129,7 @@ The `--debug` flag will change the behavior of `compile-app-settings` such that:
 1. Webpack warnings are logged as warnings instead of causing errors
 1. Code minification is skipped to make it easier to debug your code
 
-## 2.2
+## 2.2.0
 
 Medic-conf v2.2 includes:
 
@@ -116,7 +138,7 @@ Medic-conf v2.2 includes:
 * The declarative configuration [target schema](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md#target-schema) has been updated. The idType attribute can now be a function. [#145](https://github.com/medic/medic-conf/issues/145)
 * Support for Node 12, refactoring, and code cleanup.
 
-## 2.0
+## 2.0.0
 
 Medic-conf v2.0 contains breaking interface changes for the command-line and for the [declarative configuration system](https://github.com/medic/medic-docs/blob/master/configuration/developing-community-health-applications.md).
 
