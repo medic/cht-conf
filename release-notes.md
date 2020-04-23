@@ -4,7 +4,7 @@
 
 ### Prompt before configuration overwrites
 
-This new feature warns and prompts users when uploading a configuration if the configuration being overwritten is not the last known configuration. These warnings are comparable to a database write conflict. Previous versions of medic-conf would upload the new configuration overwriting whatever was there, resulting in users accidentally wiping out someone elses changes or changes made through the admin console.
+This new feature warns and prompts users when uploading a configuration if the configuration being overwritten is not the last known configuration. These warnings are comparable to a database write conflict. Previous versions of medic-conf would upload the new configuration overwriting whatever was there, resulting in users accidentally wiping out someone elses changes or changes made through the App Management webapp.
 
 To detect this the cli will generate two files - `.snapshots/remote.json` and `.snapshots/local.json`. These store the last known configuration on the server. You should commit the `remote.json` with your configuration changes, but add the `local.json` to your .gitignore because everyone's localhost is different. That way if anyone changes the configuration on the server using medic-conf or the App Management webapp without committing the `remote.json` file to your config repo you will be notified about the risk and prompted to overwrite or cancel.
 
