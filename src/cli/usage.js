@@ -8,7 +8,7 @@ ${bold('NAME')}
 ${bold('SYNOPSIS')}
   medic-conf <--local|--instance=instance-name|--url=url>
 Or:
-  medic-conf <--local|--instance=instance-name|--url=url|--archive> <actions> -- <params>
+  medic-conf <--local|--instance=instance-name|--url=url|--archive> <actions> <options> -- <params>
 
 ${bold('DESCRIPTION')}
   This script updates and uploads a project's configuration.
