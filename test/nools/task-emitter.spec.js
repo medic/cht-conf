@@ -12,6 +12,7 @@ const {
   aReportWithScheduledTasks,
   personWithoutReports,
   configurableHierarchyPersonWithReports,
+  unknownContactWithReports,
   personWithReports,
   placeWithoutReports,
 } = require('./mocks');
@@ -157,6 +158,24 @@ describe('task-emitter', () => {
 
         // when
         const { emitted } = runNoolsLib(config);
+
+        // then
+        assert.deepEqual(emitted, [
+          { _type:'_complete', _id: true },
+        ]);
+      });
+
+      it('should not emit unknown contact', () => {
+        // given
+        const config = {
+          c: unknownContactWithReports(aReport()),
+          targets: [],
+          tasks: [ aReportBasedTask() ],
+        };
+        config.tasks[0].appliesToType = 'custom';
+
+        // when
+        const emitted = runNoolsLib(config).emitted;
 
         // then
         assert.deepEqual(emitted, [
