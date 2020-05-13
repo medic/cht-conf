@@ -30,6 +30,20 @@ describe('contact-summary-emitter', function() {
       expect(appliesIf.args[1]).to.deep.eq([report]);
     });
 
+    it('appliesIf defaults to true', () => {
+      const cards = [
+        { appliesToType: 'report', fields: [], label: 'hello' },
+      ];
+      const report = { report: true };
+      const actual = emitter({ cards }, {}, [report]);
+
+      expect(actual).to.deep.eq({
+        fields: [],
+        cards: [{ fields: [], label: 'hello' }],
+        context: {}
+      });
+    });
+
     it('allows appliesToType to be an array', () => {
       const appliesIf = sinon.stub().returns(false);
       const cards = [
@@ -90,6 +104,16 @@ describe('contact-summary-emitter', function() {
   });
 
   describe('fields', () => {
+    it('appliesIf defaults to true', () => {
+      const fields = [
+        { appliesToType: ['z'] },
+      ];
+      const report = { report: true };
+      const result = emitter({ fields }, { type: 'z' }, [report]);
+
+      expect(result.fields).to.deep.eq(fields);
+    });
+
     it('adds fields with appliesToType being the negative of a type different than the contact type', () => {
       const appliesIf = sinon.stub().returns(true);
       const fields = [
