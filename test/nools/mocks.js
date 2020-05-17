@@ -115,6 +115,10 @@ function placeWithReports(...reports) {
   return { contact:{ _id:`c-${idCounter}`, type:'clinic', reported_date:TEST_DATE }, reports };
 }
 
+function unknownContactWithReports(...reports) {
+  return { reports };
+}
+
 function aRandomTimestamp() {
   return Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 }
@@ -138,5 +142,6 @@ module.exports = {
   personWithReports,
   placeWithoutReports,
   placeWithReports,
+  unknownContactWithReports,
   aRandomTimestamp,
 };

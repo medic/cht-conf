@@ -31,12 +31,22 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
   var i;
 
   if (taskDefinition.appliesToType) {
-    var contactType = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
-    var shouldApply = taskDefinition.appliesTo === 'contacts' ?
-      taskDefinition.appliesToType.indexOf(contactType) !== -1 :
-      r && taskDefinition.appliesToType.indexOf(r.form) !== -1;
-
-    if (!shouldApply) {
+    var type;
+    if (taskDefinition.appliesTo === 'contacts') {
+      if (!c.contact) {
+        // no assigned contact - does not apply
+        return;
+      }
+      type = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
+    } else {
+      if (!r) {
+        // no report - does not apply
+        return;
+      }
+      type = r.form;
+    }
+    if (taskDefinition.appliesToType.indexOf(type) === -1) {
+      // does not apply to this type
       return;
     }
   }
