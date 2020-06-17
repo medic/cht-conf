@@ -78,15 +78,13 @@ const execute = () => {
     })
     .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));
 
-
   function updateRef(ref) {
     const match = ref.matcher.match(REF_MATCHER);
     const [, , propertyName, type, where] = match;
 
-    const referencedDoc = Object.values(model.docs)
-      .find(doc => (doc.type === type ||
-              (type === 'place' && PLACE_TYPES.includes(doc.type))) &&
-          matchesWhereClause(where, doc, ref.colVal));
+    const referencedDoc = Object.values(model.docs).find(doc => {
+      return matchesType(type, doc) && matchesWhereClause(where, doc, ref.colVal);
+    });
 
     if(!referencedDoc) {
       throw new Error(`Failed to match reference ${pretty(ref)}`);
@@ -230,6 +228,12 @@ function int(s) {
 
 function isReference(s) {
   return s.match(REF_MATCHER);
+}
+
+function matchesType(type, doc) {
+  return doc.type === type ||
+         doc.contact_type === type ||
+         (type === 'place' && PLACE_TYPES.includes(doc.type));
 }
 
 function matchesWhereClause(where, doc, colVal) {
