@@ -4,6 +4,7 @@ const fs = require('../lib/sync-fs');
 const path = require('path');
 const { warn, info } = require('../lib/log');
 const pouch = require('../lib/db');
+const safeStringify = require('../lib/safe-stringify');
 const toDocs = require('./csv-to-docs');
 const EDIT_RESERVED_COL_NAMES = [ 'parent', '_id', 'name', 'reported_date' ];
 const DOC_TYPES = ['district_hospital', 'health_center', 'clinic', 'person', 'user', 'user-settings', 'contact'];
@@ -14,7 +15,7 @@ const execute = () => {
   const db = pouch();
   const docDirectoryPath = args.docDirectoryPath;
   fs.mkdir(docDirectoryPath);
-  const saveJsonDoc = doc => fs.write(`${docDirectoryPath}/${doc._id}.doc.json`, toDocs.toSafeJson(doc) + '\n');
+  const saveJsonDoc = doc => fs.write(`${docDirectoryPath}/${doc._id}.doc.json`, safeStringify(doc) + '\n');
 
   const csvDir = `${environment.pathToProject}/csv`;
   if(!fs.exists(csvDir)) {

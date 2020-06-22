@@ -5,6 +5,7 @@ const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { info, warn } = require('../lib/log');
 const generateCsv = require('../lib/generate-users-csv');
+const safeStringify = require('../lib/safe-stringify');
 
 const pretty = o => JSON.stringify(o, null, 2);
 
@@ -28,7 +29,7 @@ const execute = () => {
   const jsonDir = `${environment.pathToProject}/json_docs`;
   fs.mkdir(jsonDir);
 
-  const saveJsonDoc = doc => fs.write(`${jsonDir}/${doc._id}.doc.json`, toSafeJson(doc) + '\n');
+  const saveJsonDoc = doc => fs.write(`${jsonDir}/${doc._id}.doc.json`, safeStringify(doc) + '\n');
 
   const model = {
     csvFiles: {},
@@ -165,43 +166,6 @@ function setCol(doc, col, val) {
   doc[colParts[0]] = val;
 }
 
-/** @return JSON string with circular references ignored */
-function toSafeJson(o, depth, seen) {
-  if(!depth) depth = 0;
-  if(!seen) seen = [];
-
-  const TAB = '  ';
-  let i = depth, indent = '';
-  while(--i >= 0) indent += TAB;
-
-  switch(typeof o) {
-    case 'boolean':
-    case 'number':
-      return o.toString();
-    case 'string':
-      return `"${o}"`;
-    case 'object':
-      if(Array.isArray(o)) {
-        return `${indent}[\n` +
-            o.map(el => toSafeJson(el, depth + 1)) +
-            `\n${indent}]`;
-      } else if(o instanceof Date) {
-        return `"${o.toJSON()}"`;
-      }
-      return '{' +
-          Object.keys(o)
-              .map(k => {
-                const v = o[k];
-                if(seen.includes(v)) return;
-                return `\n${TAB}${indent}"${k}": ` +
-                    toSafeJson(v, depth+1, seen.concat(o));
-              })
-              .filter(el => el) +
-          '\n' + indent + '}';
-    default: throw new Error(`Unknown type/val: ${typeof o}/${o}`);
-  }
-}
-
 function parseTimestamp(t) {
   if(isIntegerString(t)) return int(t);
   else return Date.parse(t);
@@ -292,7 +256,6 @@ module.exports = {
   parseBool,
   parseTimestamp,
   int,
-  toSafeJson,
   setCol,
   parseColumn,
   removeExcludedField

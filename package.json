@@ -40,6 +40,7 @@
     "googleapis": "^43.0.0",
     "iso-639-1": "^2.1.0",
     "json-diff": "^0.5.4",
+    "json-stringify-safe": "^5.0.1",
     "json2csv": "^4.5.1",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
