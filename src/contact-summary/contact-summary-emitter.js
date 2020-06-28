@@ -72,8 +72,18 @@ function isReportValid(report) {
   return report && !(report.errors && report.errors.length);
 }
 
+function execAppliesIf(prop, report) {
+  switch(typeof prop) {
+    case 'undefined': return true;
+    case 'function':  return prop(report);
+    default:          return prop;
+  }
+}
+
 function addCard(card, context, r) {
-  if (!card.appliesIf(r)) return;
+  if (!execAppliesIf(card.appliesIf, r)) {
+    return;
+  }
 
   function addValue(src, dst, prop) {
     switch(typeof src[prop]) {
@@ -87,11 +97,7 @@ function addCard(card, context, r) {
       card.fields(r) :
       card.fields
         .filter(function(f) {
-          switch(typeof f.appliesIf) {
-            case 'undefined': return true;
-            case 'function':  return f.appliesIf(r);
-            default:          return f.appliesIf;
-          }
+          return execAppliesIf(f.appliesIf, r);
         })
         .map(function(f) {
           var ret = {};
