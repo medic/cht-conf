@@ -47,7 +47,7 @@ describe('csv-to-docs', function() {
                 const generated = fs.read(`${generatedDocsDir}/${file}`);
 
                 // and
-                assert.equal(generated, expected);
+                assert.equal(generated, expected, `Different contents for "${file}"`);
               });
           })
           .then(done)
