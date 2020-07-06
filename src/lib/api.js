@@ -2,6 +2,35 @@ const request = require('request-promise-native');
 
 const archivingApi = require('./archiving-api');
 const environment = require('./environment');
+const log = require('../lib/log');
+
+const logDeprecatedTransitions = (settings) => {
+  const uri = `${environment.instanceUrl}/api/v1/settings/deprecated-transitions`;
+
+  return request({ uri, method: 'GET', json: true})
+    .then(transitions => {
+      const appSettings = JSON.parse(settings);
+
+      if (appSettings.transitions) {
+        (transitions || []).forEach(transition => {
+          const transitionSetting = appSettings.transitions[transition.name];
+
+          if (transitionSetting === true || (transitionSetting && transitionSetting.disable === false)) {
+            log.warn(transition.deprecationMessage);
+          }
+        });
+      }
+    });
+};
+
+const updateAppSettings = (settings) => {
+  return request.put({
+    method: 'PUT',
+    url: `${environment.apiUrl}/_design/medic/_rewrite/update_settings/medic?replace=1`,
+    headers: {'Content-Type': 'application/json'},
+    body: settings,
+  });
+};
 
 const api = {
   getAppSettings: () => {
@@ -17,12 +46,21 @@ const api = {
       });
   },
 
-  updateAppSettings: (content) => request.put({
-      method: 'PUT',
-      url: `${environment.apiUrl}/_design/medic/_rewrite/update_settings/medic?replace=1`,
-      headers: { 'Content-Type':'application/json' },
-      body: content,
-    }),
+  updateAppSettings: (content) => {
+    return Promise.allSettled([
+      updateAppSettings(content),
+      logDeprecatedTransitions(content)
+    ]).then(([updateSettingsResp, logTransitionResp]) => {
+      if (logTransitionResp.status === 'rejected') {
+        // Log error and continue with the work, this isn't a blocking task.
+        log.error('Error in logging deprecated transitions:', logTransitionResp.reason);
+      }
+      if (updateSettingsResp.status === 'rejected') {
+        throw updateSettingsResp.reason;
+      }
+      return updateSettingsResp.value;
+    });
+  },
 
   createUser(userData) {
     return request({
