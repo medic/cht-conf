@@ -5,16 +5,16 @@ const environment = require('./environment');
 const log = require('../lib/log');
 
 const logDeprecatedTransitions = (settings) => {
+  const appSettings = JSON.parse(settings);
+
+  if (!appSettings.transitions || !Object.keys(appSettings.transitions).length) {
+    return;
+  }
+
   const uri = `${environment.instanceUrl}/api/v1/settings/deprecated-transitions`;
 
   return request({ uri, method: 'GET', json: true})
     .then(transitions => {
-      const appSettings = JSON.parse(settings);
-
-      if (!appSettings.transitions) {
-        return;
-      }
-
       (transitions || []).forEach(transition => {
         const transitionSetting = appSettings.transitions[transition.name];
         const disabled = transitionSetting && transitionSetting.disable;
