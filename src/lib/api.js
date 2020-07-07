@@ -11,14 +11,22 @@ const logDeprecatedTransitions = (settings) => {
     .then(transitions => {
       const appSettings = JSON.parse(settings);
 
-      if (appSettings.transitions) {
-        (transitions || []).forEach(transition => {
-          const transitionSetting = appSettings.transitions[transition.name];
+      if (!appSettings.transitions) {
+        return;
+      }
 
-          if (transitionSetting === true || (transitionSetting && transitionSetting.disable === false)) {
-            log.warn(transition.deprecationMessage);
-          }
-        });
+      (transitions || []).forEach(transition => {
+        const transitionSetting = appSettings.transitions[transition.name];
+        const disabled = transitionSetting && transitionSetting.disable;
+
+        if (transitionSetting && !disabled) {
+          log.warn(transition.deprecationMessage);
+        }
+      });
+    })
+    .catch(error => {
+      if (error.statusCode !== 404) {
+        throw error;
       }
     });
 };
