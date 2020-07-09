@@ -12,8 +12,8 @@ describe('Upload Partners', () => {
   let attachmentsFromDir;
   let partners = {
     resources: {
-      greatCompany: "greatCompany.png",
-      aliasCompany: "aliasCompany.png"
+      greatCompany: 'greatCompany.png',
+      aliasCompany: 'aliasCompany.png'
     }
   };
 
@@ -48,8 +48,8 @@ describe('Upload Partners', () => {
     const partnersDoc = {
       _id: 'partners',
       resources: {
-        greatCompany: "greatCompany.png",
-        aliasCompany: "aliasCompany.png"
+        greatCompany: 'greatCompany.png',
+        aliasCompany: 'aliasCompany.png'
       },
       _attachments: { image: {} }
     };

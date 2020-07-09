@@ -50,8 +50,8 @@ describe('Upload Branding', () => {
       _id: 'branding',
       title: 'Rockstar Clinic',
       resources: {
-        logo: "star.png",
-        favicon: "favicon.ico"
+        logo: 'star.png',
+        favicon: 'favicon.ico'
       },
       _attachments: { image: {} }
     };
