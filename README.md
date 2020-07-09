@@ -112,6 +112,8 @@ In order to avoid overwriting someone elses configuration medic-conf records the
 * upload app settings to server
 * upload resources to server
 * upload custom translations to the server
+* upload branding to server
+* upload partners to server
 
 ## Forms
 
