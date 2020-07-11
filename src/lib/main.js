@@ -25,6 +25,8 @@ const defaultActions = [
   'upload-collect-forms',
   'upload-contact-forms',
   'upload-resources',
+  'upload-branding',
+  'upload-partners',
   'upload-custom-translations',
 ];
 const defaultArchiveActions = [
@@ -37,6 +39,8 @@ const defaultArchiveActions = [
   'upload-collect-forms',
   'upload-contact-forms',
   'upload-resources',
+  'upload-branding',
+  'upload-partners',
   'upload-custom-translations',
 ];
 
