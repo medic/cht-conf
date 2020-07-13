@@ -13,6 +13,7 @@ const usage = require('../cli/usage');
 
 const { error, info, warn } = log;
 const defaultActions = [
+  'check-git',
   'compile-app-settings',
   'backup-app-settings',
   'upload-app-settings',
