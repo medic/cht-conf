@@ -17,7 +17,7 @@ module.exports = (...args) => new Promise((resolve, reject) => {
       { stdio:stdio },
       (err, stdout, stderr) => {
         if(err) reject(stderr);
-        else resolve();
+        else resolve(stdout);
       });
 
     if(log.level >= log.LEVEL_WARN)  sub.stdout.pipe(process.stdout);
