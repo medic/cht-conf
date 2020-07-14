@@ -111,6 +111,11 @@ const getDocHash = originalDoc => {
 const preUploadDoc = async (db, localDoc) => {
   let remoteDoc;
 
+  // Exiting early since we are forcing this to process everything.
+  if (environment.force) {
+    return Promise.resolve(true); 
+  }
+
   try {
     remoteDoc = await db.get(localDoc._id);
   } catch (e) {
@@ -163,6 +168,10 @@ const preUploadDoc = async (db, localDoc) => {
 const postUploadDoc = doc => updateStoredHash(doc._id, getDocHash(doc));
 
 const preUploadForm = async (db, localDoc, localXml, properties) => {
+  // Exiting early since we are forcing this to process everything.
+  if (environment.force) {
+    return Promise.resolve(true); 
+  }
 
   let remoteXml;
   let remoteHash;

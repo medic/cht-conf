@@ -125,7 +125,7 @@ const prepareDocumentDirectory = ({ docDirectoryPath, force }) => {
     fs.mkdir(docDirectoryPath);
   } else if (!force && fs.recurseFiles(docDirectoryPath).length > 0) {
     warn(`The document folder '${docDirectoryPath}' already contains files. It is recommended you start with a clean folder. Do you want to delete the contents of this folder and continue?`);
-    if(readline.keyInYN()) {
+    if(environment.force || readline.keyInYN()) {
       fs.deleteFilesInFolder(docDirectoryPath);
     } else {
       error('User failed to confirm action.');

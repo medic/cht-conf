@@ -34,7 +34,7 @@ const execute = async () => {
   }
 
   warn(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
-  if(!readline.keyInYN()) {
+  if(!environment.force && !readline.keyInYN()) {
     error('User failed to confirm action.');
     process.exit(1);
   }
