@@ -56,6 +56,9 @@ ${bold('OPTIONS')}
 
   --skip-dependency-check
     Skips checking the version running is set to the same version in the package.json
+
+  --force
+    CAN BE DANGEROUS! Passes yes to all commands and when overwrites any config changes. 
 `);
 };
 
