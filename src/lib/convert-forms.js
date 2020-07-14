@@ -3,7 +3,7 @@ const { execSync } = require('child_process');
 const argsFormFilter = require('./args-form-filter');
 const exec = require('./exec-promise');
 const fs = require('./sync-fs');
-const { info, trace, warn } = require('./log');
+const { info, trace, warn, level } = require('./log');
 
 const XLS2XFORM = 'xls2xform-medic';
 const INSTALLATION_INSTRUCTIONS = `\nE To install the latest pyxform, try one of the following:
@@ -54,7 +54,7 @@ module.exports = async (projectDir, subDirectory, options) => {
 };
 
 const xls2xform = (sourcePath, targetPath) =>
-    exec(XLS2XFORM, '--skip_validate', sourcePath, targetPath)
+    exec(level, XLS2XFORM, '--skip_validate', sourcePath, targetPath)
       .catch(e => {
         if(executableAvailable()) {
           if(e.includes('unrecognized arguments: --skip_validate')) {

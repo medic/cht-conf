@@ -9,7 +9,8 @@ module.exports = {
     if (status) {
       warn('There are changes in your local branch to be committed or ' +
            'not staged for commit.');
-      if(!readline.keyInYN('Are you sure you want to push config?')) {
+      warn('Changes untracked or to be committed:\n' + status);
+      if(!readline.keyInYN('Are you sure you want to continue?')) {
         error('User failed to confirm action.');
         process.exit(-1);
       }
@@ -18,7 +19,7 @@ module.exports = {
     const syncStatus = await git.checkUpstream();
     if (syncStatus) {
       warn(syncStatus);
-      if(!readline.keyInYN('Are you sure you want to push config?')) {
+      if(!readline.keyInYN('Are you sure you want to continue?')) {
         error('User failed to confirm action.');
         process.exit(-1);
       }

@@ -1,5 +1,6 @@
 const exec = require('./exec-promise');
 const pluralize = require('pluralize');
+const log = require('./log');
 
 const GIT = 'git';    // Git command path
 
@@ -7,8 +8,8 @@ const GIT = 'git';    // Git command path
  * Returns the working tree status in a string (files to commit),
  * or empty if the working tree is clean.
  */
-module.exports.status = () => {
-  return exec(GIT, 'status', '--porcelain');
+module.exports.status = async () => {
+  return (await exec(log.LEVEL_ERROR, GIT, 'status', '--porcelain')).trim();
 };
 
 /**
@@ -16,7 +17,7 @@ module.exports.status = () => {
  * the upstream repository (but without auto-merge).
  */
 module.exports.fetch = () => {
-  return exec(GIT, 'fetch');
+  return exec(log.LEVEL_ERROR, GIT, 'fetch');
 };
 
 /**
@@ -25,7 +26,7 @@ module.exports.fetch = () => {
  * or returns an empty string if is in sync.
  */
 module.exports.checkUpstream = async () => {
-  const result = await exec(GIT, 'rev-list --left-right --count ...origin');
+  const result = await exec(log.LEVEL_ERROR, GIT, 'rev-list --left-right --count ...origin');
   const [ahead, behind] = result.split('\t').filter(s=>s).map(Number);
   if (ahead && behind) {
     return `branch is behind upstream by ${pluralize('commit', behind, true)} `
