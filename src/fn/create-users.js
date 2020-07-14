@@ -59,25 +59,6 @@ const getUserInfo = async (user) => {
   return result;
 };
 
-const warnForReplicationAmounts = async (users) => {
-  const warnings = [];
-  for (let user of users) {
-    const userInfo = await getUserInfo(user);
-    if (userInfo && userInfo.warn) {
-      warnings.push(`The user "${user.username}" would replicate ${userInfo.total_docs}, which is above the recommended limit of ${userInfo.limit}.`);
-    }
-  }
-  if (warnings.length) {
-    warnings.forEach(warning => warn(warning));
-    warn('Are you sure you want to continue?');
-    if(!readline.keyInYN()) {
-      error('User failed to confirm action.');
-      process.exit(1);
-      return; // stop execution in tests
-    }
-  }
-}
-
 const execute = async () => {
   const csvPath = `${environment.pathToProject}/users.csv`;
   if(!fs.exists(csvPath)) {
@@ -86,7 +67,22 @@ const execute = async () => {
 
   const users = parseUsersData(fs.read(csvPath));
   if(!environment.force) {
-    await warnForReplicationAmounts(users);
+    const warnings = [];
+    for (let user of users) {
+      const userInfo = await getUserInfo(user);
+      if (userInfo && userInfo.warn) {
+        warnings.push(`The user "${user.username}" would replicate ${userInfo.total_docs}, which is above the recommended limit of ${userInfo.limit}.`);
+      }
+    }
+    if (warnings.length) {
+      warnings.forEach(warning => warn(warning));
+      warn('Are you sure you want to continue?');
+      if(!readline.keyInYN()) {
+        error('User failed to confirm action.');
+        process.exit(1);
+        return; // stop execution in tests
+      }
+    }
   }
   
   for (let user of users) {
