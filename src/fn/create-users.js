@@ -59,13 +59,7 @@ const getUserInfo = async (user) => {
   return result;
 };
 
-const execute = async () => {
-  const csvPath = `${environment.pathToProject}/users.csv`;
-  if(!fs.exists(csvPath)) {
-    throw new Error(`User csv file not found at ${csvPath}`);
-  }
-
-  const users = parseUsersData(fs.read(csvPath));
+const warnForReplicationAmounts = async (users) => {
   const warnings = [];
   for (let user of users) {
     const userInfo = await getUserInfo(user);
@@ -82,7 +76,19 @@ const execute = async () => {
       return; // stop execution in tests
     }
   }
+}
 
+const execute = async () => {
+  const csvPath = `${environment.pathToProject}/users.csv`;
+  if(!fs.exists(csvPath)) {
+    throw new Error(`User csv file not found at ${csvPath}`);
+  }
+
+  const users = parseUsersData(fs.read(csvPath));
+  if(!environment.force) {
+    await warnForReplicationAmounts(users);
+  }
+  
   for (let user of users) {
     info(`Creating user ${user.username}`);
     await api().createUser(user);
