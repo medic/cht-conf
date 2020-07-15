@@ -19,12 +19,11 @@ module.exports = async (configPath, directoryPath, dbDocName) => {
   }
 
   const settings = fs.readJson(jsonPath);
-
-  const doc = {
-    ...settings,
+  const baseDocument = {
     _id: dbDocName,
     _attachments: attachmentsFromDir(directoryPath),
   };
+  const doc = Object.assign({}, baseDocument, settings);
 
   const db = pouch();
 
