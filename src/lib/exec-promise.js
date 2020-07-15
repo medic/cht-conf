@@ -8,9 +8,14 @@ module.exports = (args, logLevel=log.level) => new Promise((resolve, reject) => 
 
     // Include stdout at log.LEVEL_WARN because xls2xform outputs warnings on stdout
 
-    const stdio = logLevel >= log.LEVEL_WARN  ? [ 'ignore',  'pipe',   'pipe'  ] :
-                  logLevel >= log.LEVEL_ERROR ? [ 'ignore', 'ignore',  'pipe'  ] :
-                                                [ 'ignore', 'ignore', 'ignore' ];
+    let stdio;
+    if (logLevel >= log.LEVEL_WARN) {
+      stdio = [ 'ignore',  'pipe',   'pipe' ];
+    } else if (logLevel >= log.LEVEL_ERROR) {
+      stdio = [ 'ignore', 'ignore',  'pipe' ];
+    } else {
+      stdio = [ 'ignore', 'ignore', 'ignore' ];
+    }
 
     const sub = exec(
       args.join(' '),
