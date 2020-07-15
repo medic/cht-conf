@@ -5,7 +5,16 @@ const insertOrReplace = require('../lib/insert-or-replace');
 const warnUploadOverwrite = require('../lib/warn-upload-overwrite');
 const { info, warn } = require('../lib/log');
 
-module.exports = async (configPath, directoryPath, dbDocName) => {
+/**
+ * Upload Configuration to DB's document
+ * @param configPath (Mandatory) String. Path to configuration json file.
+ * @param directoryPath (Mandatory) String. Path to directory of attachments.
+ * @param dbDocName (Mandatory) String. DB's document name.
+ * @param processJson (Optional) Function. Receives the content of configuration json and
+ *        returns an object that is used for extending the DB's document.
+ * @return {Promise<void>}
+ */
+module.exports = async (configPath, directoryPath, dbDocName, processJson) => {
   if (!configPath && !directoryPath && !dbDocName) {
     warn('Information missing: Make sure to provide the configuration file path and the directory path.');
     return Promise.resolve();
@@ -18,10 +27,11 @@ module.exports = async (configPath, directoryPath, dbDocName) => {
     return Promise.resolve();
   }
 
-  const settings = fs.readJson(jsonPath);
+  const json = fs.readJson(jsonPath);
+  const settings = processJson ? processJson(json) : json;
   const baseDocument = {
     _id: dbDocName,
-    _attachments: attachmentsFromDir(directoryPath),
+    _attachments: attachmentsFromDir(directoryPath)
   };
   const doc = Object.assign({}, baseDocument, settings);
 

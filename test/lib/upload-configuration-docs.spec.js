@@ -76,6 +76,42 @@ describe('Upload Configuration Docs', () => {
     });
   });
 
+  it('should call processJson when provided', async () => {
+    warnUploadOverwrite.preUploadDoc.returns(true);
+    insertOrReplace.returns(Promise.resolve());
+    attachmentsFromDir.returns({ image: {} });
+
+    const configurationDoc = {
+      _id: 'configurationDoc',
+      customSection: {
+        title: 'ABC Company'
+      },
+      _attachments: { image: {} }
+    };
+    const rewireWith = {
+      fs,
+      pouch,
+      attachmentsFromDir,
+      warnUploadOverwrite,
+      insertOrReplace
+    };
+    const processJson = (json) => {
+      return {
+        customSection: { title: json.title }
+      };
+    };
+
+    return uploadConfigurationDocs.__with__(rewireWith)(async () => {
+      await uploadConfigurationDocs('path/configuration.json', 'path/configuration', 'configurationDoc', processJson);
+
+      expect(attachmentsFromDir.called).to.be.true;
+      expect(pouch.called).to.be.true;
+      expect(warnUploadOverwrite.preUploadDoc.args[0][1]).to.deep.include(configurationDoc);
+      expect(warnUploadOverwrite.postUploadDoc.args[0][0]).to.deep.include(configurationDoc);
+      expect(insertOrReplace.args[0][1]).to.deep.include(configurationDoc);
+    });
+  });
+
   it('should warn when paths no provided', async () => {
     fs.exists = () => false;
     const rewireWith = {
