@@ -9,7 +9,7 @@ const GIT = 'git';    // Git command path
  * or empty if the working tree is clean.
  */
 module.exports.status = async () => {
-  return (await exec(log.LEVEL_ERROR, GIT, 'status', '--porcelain')).trim();
+  return (await exec([GIT, 'status', '--porcelain'], log.LEVEL_ERROR)).trim();
 };
 
 /**
@@ -17,7 +17,7 @@ module.exports.status = async () => {
  * the upstream repository (but without auto-merge).
  */
 module.exports.fetch = () => {
-  return exec(log.LEVEL_ERROR, GIT, 'fetch');
+  return exec([GIT, 'fetch'], log.LEVEL_ERROR);
 };
 
 /**
@@ -26,7 +26,7 @@ module.exports.fetch = () => {
  * or returns an empty string if is in sync.
  */
 module.exports.checkUpstream = async () => {
-  const result = await exec(log.LEVEL_ERROR, GIT, 'rev-list --left-right --count ...origin');
+  const result = await exec([GIT, 'rev-list --left-right --count ...origin'], log.LEVEL_ERROR);
   const [ahead, behind] = result.split('\t').filter(s=>s).map(Number);
   if (ahead && behind) {
     return `branch is behind upstream by ${pluralize('commit', behind, true)} `
