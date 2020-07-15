@@ -15,7 +15,6 @@ module.exports = {
         process.exit(-1);
       }
     }
-    await git.fetch();
     const syncStatus = await git.checkUpstream();
     if (syncStatus) {
       warn(syncStatus);

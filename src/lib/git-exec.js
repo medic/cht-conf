@@ -8,24 +8,17 @@ const GIT = 'git';    // Git command path
  * Returns the working tree status in a string (files to commit),
  * or empty if the working tree is clean.
  */
-module.exports.status = async () => {
-  return (await exec([GIT, 'status', '--porcelain'], log.LEVEL_ERROR)).trim();
+module.exports.status = () => {
+  return exec([GIT, 'status', '--porcelain'], log.LEVEL_ERROR);
 };
 
 /**
- * Sets up to date the local git repository fetching from
- * the upstream repository (but without auto-merge).
- */
-module.exports.fetch = () => {
-  return exec([GIT, 'fetch'], log.LEVEL_ERROR);
-};
-
-/**
- * Compares the current branch against the upstream and returns
- * a message with the result whether it is behind, ahead or both,
- * or returns an empty string if is in sync.
+ * Fetches the upstream repository and compares the current
+ * branch against it, returning a message with the result whether it
+ * is behind, ahead or both. Returns an empty string if it s in sync.
  */
 module.exports.checkUpstream = async () => {
+  await exec([GIT, 'fetch'], log.LEVEL_ERROR);
   const result = await exec([GIT, 'rev-list --left-right --count ...origin'], log.LEVEL_ERROR);
   const [ahead, behind] = result.split('\t').filter(s=>s).map(Number);
   if (ahead && behind) {
