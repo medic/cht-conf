@@ -176,6 +176,37 @@ describe('create-users', () => {
       });
   });
 
+  it('force should create users without interaction', () => {
+    sinon.stub(environment, 'force').get(() => true);
+    mockTestDir(`data/create-users/existing-place`);
+    api.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } });
+    const todd = {
+      username: 'todd',
+      password: 'Secret_1',
+      roles: ['district-admin'],
+      place: 'place_uuid_here',
+      contact: {
+        c_prop: 'c_val_a'
+      },
+      name: 'Alice Example',
+      phone: '+123456789',
+    };
+
+    const qs = {
+      facility_id: todd.place,
+      role: JSON.stringify(todd.roles),
+    };
+
+    return assertDbEmpty()
+      .then(() => /* when */ createUsers.execute())
+      .then(() => {
+        assert.equal(readLine.keyInYN.callCount, 0);
+        assert.deepEqual(api.requestLog(), [
+          { method: 'POST', url: '/api/v1/users', body: todd },
+        ]);
+      });
+  });
+
   it('should throw some users-info errors', () => {
     mockTestDir(`data/create-users/existing-place`);
     const todd = {

@@ -179,4 +179,12 @@ describe('main', () => {
     expect(mocks.readline.keyInYN.callCount).to.eq(1);
     expect(actual).to.eq(false);
   });
+
+  it('force option skips non-matching instance warning', async () => {
+    mocks.getApiUrl.returns('https://admin:pwd@url.app.medicmobile.org/medic');
+    mocks.readline.keyInYN.returns(true);
+    const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/', '--force']);
+    expect(mocks.readline.keyInYN.callCount).to.eq(0);
+    expect(actual).to.be.undefined;
+  });
 });

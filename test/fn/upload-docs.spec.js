@@ -1,4 +1,4 @@
-const { expect } = require('chai');
+const { expect, assert } = require('chai');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
@@ -94,6 +94,24 @@ describe('upload-docs', function() {
     });
   });
 
+  it('should exit if user denies the warning', async () => {
+    uploadDocs.__set__('readline', { keyInYN: () => false });
+    await assertDbEmpty();
+    sinon.stub(process, 'exit');
+    await uploadDocs.execute().then(() => {
+      assert.equal(process.exit.callCount, 1);
+    })
+  });
+
+  it('should not exit if force is set', async () => {
+    uploadDocs.__get__('environment', { force: () => true });
+    await assertDbEmpty();
+    sinon.stub(process, 'exit');
+    await uploadDocs.execute();
+    assert.equal(process.exit.callCount, 0);
+    const res = await api.db.allDocs();
+    expect(res.rows.map(doc => doc.id)).to.deep.eq(['one', 'three', 'two']);
+  });
 });
 
 async function assertDbEmpty() {
