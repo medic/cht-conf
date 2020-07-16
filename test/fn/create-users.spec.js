@@ -5,8 +5,10 @@ const sinon = require('sinon');
 
 const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
+const { readlink } = require('fs');
 
 const createUsers = rewire('../../src/fn/create-users');
+const userPrompt = rewire('../../src/lib/user-prompt');
 
 let readLine;
 const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => testDir);
@@ -14,7 +16,8 @@ const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() =
 describe('create-users', () => {
   beforeEach(() => {
     readLine = { keyInYN: sinon.stub() };
-    createUsers.__set__('readline', readLine);
+    userPrompt.__set__('readline', readLine);
+    createUsers.__set__('userPrompt', userPrompt);
     return api.start();
   });
   afterEach(() => {
@@ -178,8 +181,9 @@ describe('create-users', () => {
 
   it('force should create users without interaction', () => {
     sinon.stub(environment, 'force').get(() => true);
+    sinon.stub(process, 'exit');
     mockTestDir(`data/create-users/existing-place`);
-    api.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } });
+    api.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } },{ body: {} });
     const todd = {
       username: 'todd',
       password: 'Secret_1',
@@ -201,7 +205,9 @@ describe('create-users', () => {
       .then(() => /* when */ createUsers.execute())
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 0);
+        assert.equal(process.exit.callCount, 0);
         assert.deepEqual(api.requestLog(), [
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
           { method: 'POST', url: '/api/v1/users', body: todd },
         ]);
       });

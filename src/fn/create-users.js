@@ -1,5 +1,5 @@
 const csvParse = require('csv-parse/lib/sync');
-const readline = require('readline-sync');
+const userPrompt = require('../../src/lib/user-prompt');
 
 const api = require('../lib/api');
 const environment = require('../lib/environment');
@@ -66,25 +66,23 @@ const execute = async () => {
   }
 
   const users = parseUsersData(fs.read(csvPath));
-  if(!environment.force) {
-    const warnings = [];
-    for (let user of users) {
-      const userInfo = await getUserInfo(user);
-      if (userInfo && userInfo.warn) {
-        warnings.push(`The user "${user.username}" would replicate ${userInfo.total_docs}, which is above the recommended limit of ${userInfo.limit}.`);
-      }
-    }
-    if (warnings.length) {
-      warnings.forEach(warning => warn(warning));
-      warn('Are you sure you want to continue?');
-      if(!readline.keyInYN()) {
-        error('User failed to confirm action.');
-        process.exit(1);
-        return; // stop execution in tests
-      }
+  const warnings = [];
+  for (let user of users) {
+    const userInfo = await getUserInfo(user);
+    if (userInfo && userInfo.warn) {
+      warnings.push(`The user "${user.username}" would replicate ${userInfo.total_docs}, which is above the recommended limit of ${userInfo.limit}.`);
     }
   }
-  
+  if (warnings.length) {
+    warnings.forEach(warning => warn(warning));
+    warn('Are you sure you want to continue?');
+    if(!userPrompt.keyInYN()) {
+      error('User failed to confirm action.');
+      process.exit(1);
+      return; // stop execution in tests
+    }
+  }
+
   for (let user of users) {
     info(`Creating user ${user.username}`);
     await api().createUser(user);
