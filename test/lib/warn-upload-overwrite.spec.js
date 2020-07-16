@@ -5,6 +5,7 @@ const { assert, expect } = require('chai');
 const environment = require('../../src/lib/environment');
 const api = require('../api-stub');
 const fs = require('../../src/lib/sync-fs');
+const userPrompt = rewire('../../src/lib/user-prompt');
 const readline = require('readline-sync');
 const warnUploadOverwrite = rewire('../../src/lib/warn-upload-overwrite');
 const log = require('../../src/lib/log');
@@ -150,13 +151,11 @@ describe('warn-upload-overwrite', () => {
     it('forces execution by returning early', () => {
       sinon.stub(environment, 'force').get(() => true);
       sinon.stub(readline, 'keyInYN').returns(true);
-      sinon.stub(readline, 'keyInSelect').returns(3);
+      sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(api.db, 'get').resolves({ _rev: 'x' });
       const localDoc = { _id: 'x' };
       return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
-        assert(api.db.get.notCalled);
-        assert.equal(readline.keyInYN.callCount, 0);
-        assert.equal(readline.keyInSelect.callCount, 0);
+        assert.equal(0, readline.keyInSelect.callCount);
       });
     });
   });
@@ -202,20 +201,17 @@ describe('warn-upload-overwrite', () => {
       });
     });
 
-    it('returns quickly when force is set', () => {
+    it('overwrites config when force is set', () => {
       sinon.stub(environment, 'force').get(() => true);
-      sinon.stub(readline, 'keyInYN').returns(true);
-      sinon.stub(readline, 'keyInSelect').returns(3);
+      sinon.stub(readline, 'keyInSelect').returns(2);
       sinon.stub(api.db, 'get').resolves({ _rev: 'x', _attachments: { xml: { digest: 'abc' } } });
       sinon.stub(api.db, 'getAttachment').resolves(Buffer.from('<?xml version="1.0"?><y />', 'utf8'));
       sinon.stub(fs, 'read').returns('{"localhost/medic":"y"}');
       const localXml = '<?xml version="1.0"?><x />';
       const localDoc = { _id: 'x' };
       return warnUploadOverwrite.preUploadForm(api.db, localDoc, localXml, []).then(() => {
-        assert(api.db.getAttachment.notCalled);
-        assert(api.db.get.notCalled);
-        assert.equal(readline.keyInYN.callCount, 0);
-        assert.equal(readline.keyInSelect.callCount, 0);
+        assert(1, api.db.get.callCount);
+        assert.equal(0, readline.keyInSelect.callCount);
       });
     });
 
