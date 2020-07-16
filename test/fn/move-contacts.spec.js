@@ -537,12 +537,13 @@ describe('move-contacts', () => {
   
   describe('prepareDocumentDirectory', () => {
     const moveContacts = rewire('../../src/fn/move-contacts');
+    const userPrompt = rewire('../../src/lib/user-prompt');
     const prepareDocDir = moveContacts.__get__('prepareDocumentDirectory');
-    let readLine;
     let docOnj = { docDirectoryPath: '/test/path/for/testing ', force: false }
     beforeEach(() => {
-      readLine = { keyInYN: sinon.stub() };
-      moveContacts.__set__('readline', readLine);
+      readline = { keyInYN: sinon.stub() };
+      userPrompt.__set__('readline', readline);
+      moveContacts.__set__('userPrompt', userPrompt);
       sinon.stub(process, 'exit');
       sinon.stub(fs, "exists").returns(true);
       sinon.stub(fs, "recurseFiles").returns(Array(20));
@@ -553,14 +554,14 @@ describe('move-contacts', () => {
     });
 
     it('does not delete files in directory when user presses n', () => {
-      readLine.keyInYN.returns(false);
+      readline.keyInYN.returns(false);
       prepareDocDir(docOnj);
       assert.equal(fs.deleteFilesInFolder.callCount, 0);
       assert.equal(process.exit.callCount, 1);
     });
 
     it('deletes files in directory when user presses y', () => {
-      readLine.keyInYN.returns(true);
+      readline.keyInYN.returns(true);
       prepareDocDir(docOnj);
       assert.equal(fs.deleteFilesInFolder.callCount, 1);
       assert.equal(process.exit.callCount, 0);
