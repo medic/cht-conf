@@ -1,4 +1,4 @@
-const readline = require('readline-sync');
+const userPrompt = require('./user-prompt')
 const url = require('url');
 const usage = require('../cli/usage');
 
@@ -30,7 +30,7 @@ const getApiUrl = (cmdArgs, env = {}) => {
       return false;
     }
   } else if (cmdArgs.instance) {
-    const password = readline.question(`${emoji.key}  Password: `, { hideEchoBack: true });
+    const password = userPrompt.question(`${emoji.key}  Password: `, { hideEchoBack: true });
     const instanceUsername = cmdArgs.user || 'admin';
     const encodedPassword = encodeURIComponent(password);
     instanceUrl = url.parse(`https://${instanceUsername}:${encodedPassword}@${cmdArgs.instance}.medicmobile.org`);
