@@ -1,4 +1,4 @@
-const userPrompt = require('./user-prompt')
+const userPrompt = require('./user-prompt');
 const url = require('url');
 const usage = require('../cli/usage');
 

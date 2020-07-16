@@ -5,7 +5,6 @@ const { assert, expect } = require('chai');
 const environment = require('../../src/lib/environment');
 const api = require('../api-stub');
 const fs = require('../../src/lib/sync-fs');
-const userPrompt = rewire('../../src/lib/user-prompt');
 const readline = require('readline-sync');
 const warnUploadOverwrite = rewire('../../src/lib/warn-upload-overwrite');
 const log = require('../../src/lib/log');

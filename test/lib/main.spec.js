@@ -4,7 +4,7 @@ const { expect } = require('chai');
 
 const environment = rewire('../../src/lib/environment');
 const main = rewire('../../src/lib/main');
-const userPrompt = rewire('../../src/lib/user-prompt')
+const userPrompt = rewire('../../src/lib/user-prompt');
 
 const defaultActions = main.__get__('defaultActions');
 const normalArgv = ['node', 'medic-conf'];

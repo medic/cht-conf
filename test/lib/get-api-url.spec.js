@@ -3,7 +3,7 @@ const rewire = require('rewire');
 const { expect } = require('chai');
 
 const getApiUrl = rewire('../../src/lib/get-api-url');
-const userPrompt = rewire('../../src/lib/user-prompt')
+const userPrompt = rewire('../../src/lib/user-prompt');
 
 describe('get-api-url', () => {
   let error, readline;
@@ -13,7 +13,7 @@ describe('get-api-url', () => {
       question: sinon.stub().throws('unexpected'),
       keyInYN: sinon.stub().throws('unexpected'),
     };
-    userPrompt.__set__('readline', readline)
+    userPrompt.__set__('readline', readline);
     getApiUrl.__set__('error', error);
     getApiUrl.__set__('userPrompt', userPrompt);
   });

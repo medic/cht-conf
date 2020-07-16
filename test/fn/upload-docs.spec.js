@@ -4,9 +4,9 @@ const sinon = require('sinon');
 
 const api = require('../api-stub');
 const uploadDocs = rewire('../../src/fn/upload-docs');
-const userPrompt = rewire('../../src/lib/user-prompt')
+const userPrompt = rewire('../../src/lib/user-prompt');
 let readLine = { keyInYN: () => true };
-userPrompt.__set__('readline', readLine)
+userPrompt.__set__('readline', readLine);
 uploadDocs.__set__('userPrompt', userPrompt);
 
 describe('upload-docs', function() {
@@ -106,7 +106,7 @@ describe('upload-docs', function() {
     sinon.stub(process, 'exit');
     await uploadDocs.execute().then(() => {
       assert.equal(process.exit.callCount, 1);
-    })
+    });
   });
 
   it('should not exit if force is set', async () => {

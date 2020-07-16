@@ -25,4 +25,4 @@ module.exports = {
   keyInYN,
   question,
   keyInSelect
-}
+};

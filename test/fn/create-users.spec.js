@@ -5,7 +5,6 @@ const sinon = require('sinon');
 
 const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
-const { readlink } = require('fs');
 
 const createUsers = rewire('../../src/fn/create-users');
 const userPrompt = rewire('../../src/lib/user-prompt');
