@@ -2,7 +2,7 @@ const child_process = require('child_process');
 const fs = require('../lib/sync-fs');
 const google = require('googleapis').google;
 const info = require('../lib/log').info;
-const readline = require('readline-sync');
+const userPrompt = require('../lib/user-prompt');
 const warn = require('../lib/log').warn;
 
 const SECRETS_FILE = './.gdrive.secrets.json';
@@ -26,7 +26,7 @@ function newSessionFor(client) {
   });
 
   openBrowserAt(authUrl);
-  const accessCode = readline.question(`Enter access code from browser: `);
+  const accessCode = userPrompt.question(`Enter access code from browser: `);
 
   return new Promise((resolve, reject) => {
     client.getToken(accessCode, function (err, tokens) {
