@@ -26,7 +26,8 @@ module.exports.status = async () => {
         log.warn('git repository not found');
         return null;
       }
-      throw new Error(e);
+      log.warn('git command could not be executed successfully -', e);
+      return null;
     }
     throw e;
   }
