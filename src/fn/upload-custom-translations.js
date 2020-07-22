@@ -12,6 +12,8 @@ const MessageFormat = require('messageformat');
 
 const FILE_MATCHER = /^messages-.*\.properties$/;
 
+const HAS_MUSTACHE_MATCHER = /{{[\s\w.]+}}/;
+
 const transErrorsMsg = new MessageFormat('en')
   .compile('There {ERRORS, plural, one{was 1 error} other{were # errors}} trying to compile the translations');
 
@@ -102,8 +104,10 @@ function checkTranslations(translations, languageCode) {
       try {
         mf.compile(msgSrc);
       } catch (e) {
-        error(`Cannot compile '${languageCode}' translation ${msgKey} = '${msgSrc}' : ` + e.message);
-        foundError++;
+        if (!HAS_MUSTACHE_MATCHER.test(msgSrc)) {
+          error(`Cannot compile '${languageCode}' translation ${msgKey} = '${msgSrc}' : ` + e.message);
+          foundError++;
+        }
       }
     }
   }
