@@ -42,6 +42,7 @@
     "json-diff": "^0.5.4",
     "json-stringify-safe": "^5.0.1",
     "json2csv": "^4.5.1",
+    "messageformat": "^2.3.0",
     "mime-types": "^2.1.27",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",

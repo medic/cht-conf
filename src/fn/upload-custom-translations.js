@@ -5,11 +5,15 @@ const fs = require('../lib/sync-fs');
 const pouch = require('../lib/db');
 const getApiVersion = require('../lib/get-api-version');
 const iso639 = require('iso-639-1');
-const { warn, info } = require('../lib/log');
+const { error, warn, info } = require('../lib/log');
 const properties = require('properties');
 const warnUploadOverwrite = require('../lib/warn-upload-overwrite');
+const MessageFormat = require('messageformat');
 
-const FILE_MATCHER = /messages-.*\.properties/;
+const FILE_MATCHER = /^messages-.*\.properties$/;
+
+const transErrorsMsg = new MessageFormat('en')
+  .compile('There {ERRORS, plural, one{was 1 error} other{were # errors}} trying to compile the translations');
 
 const execute = async () => {
   const db = pouch(environment.apiUrl);
@@ -40,6 +44,8 @@ const execute = async () => {
     }
 
     const translations = await parse(`${dir}/${fileName}`, { path: true });
+
+    checkTranslations(translations, languageCode);
 
     let doc;
     try {
@@ -79,6 +85,32 @@ function parse(filePath, options) {
       resolve(parsed);
     });
   });
+}
+
+function checkTranslations(translations, languageCode) {
+  let mf = null;
+  try {
+    mf = new MessageFormat(languageCode);
+  } catch (e) {
+    warn(`Cannot check '${languageCode}' translations: ${e.message}`);
+  }
+  let foundError = 0;
+  for (const [msgKey, msgSrc] of Object.entries(translations)) {
+    if (!msgSrc) {
+      warn(`Empty '${languageCode}' translation for '${msgKey}' key`);
+    } else if (mf) {
+      try {
+        mf.compile(msgSrc);
+      } catch (e) {
+        error(`Cannot compile '${languageCode}' translation ${msgKey} = '${msgSrc}' : ` + e.message);
+        foundError++;
+      }
+    }
+  }
+  if (foundError > 0) {
+    error(transErrorsMsg({ERRORS: foundError}));
+    process.exit(-1);
+  }
 }
 
 function overwriteProperties(doc, props) {
