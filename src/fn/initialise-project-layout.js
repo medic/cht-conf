@@ -7,6 +7,8 @@ const { info } = require('../lib/log');
 const LAYOUT = {
   'app_settings.json': {},
   'contact-summary.js': '',
+  'privacy-policies.json': {},
+  'privacy-policies': {},
   'resources.json': {},
   resources: {},
   'targets.js': 'module.exports = [];',
