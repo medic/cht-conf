@@ -5,7 +5,7 @@ const environment = require('./environment');
 const fs = require('../lib/sync-fs');
 const getApiUrl = require('../lib/get-api-url');
 const log = require('../lib/log');
-const readline = require('readline-sync');
+const userPrompt = require('../lib/user-prompt');
 const redactBasicAuth = require('redact-basic-auth');
 const shellCompletionSetup = require('../cli/shell-completion-setup');
 const supportedActions = require('../cli/supported-actions');
@@ -156,14 +156,14 @@ module.exports = async (argv, env) => {
     extraArgs = undefined;
   }
 
-  environment.initialize(pathToProject, !!cmdArgs.archive, cmdArgs.destination, extraArgs, apiUrl);
+  environment.initialize(pathToProject, !!cmdArgs.archive, cmdArgs.destination, extraArgs, apiUrl, cmdArgs.force);
 
   const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
   const expectedOptions = ['alpha', projectName];
   if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
     warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
         `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
-    if(!readline.keyInYN()) {
+    if(!userPrompt.keyInYN()) {
       error('User failed to confirm action.');
       return false;
     }
