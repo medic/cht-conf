@@ -67,6 +67,9 @@ describe('compile-app-settings', () => {
 
   it('can overwrite eslint rules with eslintrc file', () =>
     test('eslintrc/project'));
+
+  it('handle a configuration using the base_settings file', () =>
+    test('base-settings/project'));
 });
 
 async function test(relativeProjectDir) {
