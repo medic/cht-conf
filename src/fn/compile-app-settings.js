@@ -39,31 +39,29 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   }
 
   const readOptionalJson = path => fs.exists(path) ? fs.readJson(path) : undefined;
-  // Manual configurations should be done in the basic-settings.json file
+  // Manual configurations should be done in the base-settings.json file
   // This check and warning can be removed when all project configurations have this new file defined
   let appSettings = fs.readJson(path.join(projectDir, 'app_settings.json'));
-  const basicSettingsPath = path.join(projectDir, 'basic-settings.json');
+  const basicSettingsPath = path.join(projectDir, 'base-settings.json');
   if (fs.exists(basicSettingsPath)) {
     appSettings = fs.readJson(basicSettingsPath);
   } else {
     warn(`app_settings.json file should not be edited directly.
-    Please create a basic-settings.json file and move any manually defined configuratu=ions there.`);
+    Please create a basic-settings.json file and move any manually defined configurations there.`);
   }
-  if (appSettings.forms) {
-    const formSettings = readOptionalJson('sms-forms.json');
-    if (formSettings) {
-      appSettings.forms = formSettings;
-    } else {
-      throw new Error(`Missing sms-forms.json file. Please create one with the required forms to continue!`);
+  const formSettings = readOptionalJson('forms.json');
+  if (formSettings) {
+    if (appSettings.forms && Object.keys(appSettings.forms).length !== 0) {
+      throw new Error(`forms is defined in both the base settings and the forms.json file.`);
     }
+    appSettings.forms = formSettings;
   }
-  if (appSettings.schedules) {
-    const scheduleSettings = readOptionalJson('sms-schedules.json');
-    if (scheduleSettings) {
-      appSettings.schedules = scheduleSettings;
-    } else {
-      throw new Error(`Missing sms-schedules.json file. Please create one with the required schedules to continue!`);
+  const scheduleSettings = readOptionalJson('schedules.json');
+  if (scheduleSettings) {
+    if (appSettings.schedules && Object.keys(appSettings.schedules).length !== 0) {
+      throw new Error(`schedules is defined in both the base settings and the schedules.json file.`);
     }
+    appSettings.schedules = scheduleSettings;
   }
   appSettings.contact_summary = await compileContactSummary(projectDir, options);
   appSettings.tasks = {
