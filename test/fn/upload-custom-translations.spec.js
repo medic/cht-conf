@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const readline = require('readline-sync');
 const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
+const log = require('../../src/lib/log');
 const testProjectDir = './data/upload-custom-translations/';
 const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
 
@@ -43,7 +44,7 @@ describe('upload-custom-translations', () => {
     });
 
     it('should upload simple translations', () => {
-      mockTestDir(`simple`);
+      mockTestDir('simple');
       return uploadCustomTranslations()
         .then(() => expectTranslationDocs('en'))
         .then(() => getTranslationDoc('en'))
@@ -55,7 +56,7 @@ describe('upload-custom-translations', () => {
     });
 
     it('should upload translations for multiple languages', () => {
-      mockTestDir(`multi-lang`);
+      mockTestDir('multi-lang');
       return uploadCustomTranslations()
         .then(() => expectTranslationDocs('en', 'fr'))
         .then(() => getTranslationDoc('en'))
@@ -75,7 +76,7 @@ describe('upload-custom-translations', () => {
     });
 
     it('should upload translations containing equals signs', () => {
-      mockTestDir(`contains-equals`);
+      mockTestDir('contains-equals');
       return uploadCustomTranslations()
         .then(() => expectTranslationDocs('en'))
         .then(() => getTranslationDoc('en'))
@@ -90,7 +91,7 @@ describe('upload-custom-translations', () => {
     });
 
     it('should work correctly when falling back to testing messages-en', () => {
-      mockTestDir(`custom-lang`);
+      mockTestDir('custom-lang');
       return api.db
         .put({
           _id: 'messages-en',
@@ -116,7 +117,7 @@ describe('upload-custom-translations', () => {
     });
 
     it('should set default name for unknown language', () => {
-      mockTestDir(`unknown-lang`);
+      mockTestDir('unknown-lang');
       return uploadCustomTranslations()
         .then(() => expectTranslationDocs('qp'))
         .then(() => getTranslationDoc('qp'))
@@ -133,11 +134,11 @@ describe('upload-custom-translations', () => {
         readline.keyInSelect = () => 0;
         return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.0.0' } });
       });
-      
+
       it('should upload simple translations', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        mockTestDir(`simple`);
+        mockTestDir('simple');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
@@ -151,7 +152,7 @@ describe('upload-custom-translations', () => {
       it('should upload translations for multiple languages', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        mockTestDir(`multi-lang`);
+        mockTestDir('multi-lang');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('en', 'fr'))
           .then(() => getTranslationDoc('en'))
@@ -173,7 +174,7 @@ describe('upload-custom-translations', () => {
       it('should upload translations containing equals signs', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        mockTestDir(`contains-equals`);
+        mockTestDir('contains-equals');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
@@ -188,7 +189,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should merge with existent translations', () => {
-        mockTestDir(`with-customs`);
+        mockTestDir('with-customs');
         return api.db
           .put({
             _id: 'messages-en',
@@ -208,7 +209,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should crash for malformed translation files', () => {
-        mockTestDir(`with-customs`);
+        mockTestDir('with-customs');
         return api.db
           .put({
             _id: 'messages-en',
@@ -223,7 +224,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should set default name for unknown language', () => {
-        mockTestDir(`unknown-lang`);
+        mockTestDir('unknown-lang');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('qp'))
           .then(() => getTranslationDoc('qp'))
@@ -239,7 +240,7 @@ describe('upload-custom-translations', () => {
       it('should upload simple translations', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        mockTestDir(`simple`);
+        mockTestDir('simple');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
@@ -253,7 +254,7 @@ describe('upload-custom-translations', () => {
       it('should upload translations for multiple languages', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        mockTestDir(`multi-lang`);
+        mockTestDir('multi-lang');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('en', 'fr'))
           .then(() => getTranslationDoc('en'))
@@ -275,7 +276,7 @@ describe('upload-custom-translations', () => {
       it('should upload translations containing equals signs', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        mockTestDir(`contains-equals`);
+        mockTestDir('contains-equals');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
@@ -290,7 +291,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should replace existent custom values', () => {
-        mockTestDir(`with-customs`);
+        mockTestDir('with-customs');
         return api.db
           .put({
             _id: 'messages-en',
@@ -311,7 +312,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should replace delete custom values', () => {
-        mockTestDir(`no-customs`);
+        mockTestDir('no-customs');
         return api.db
           .put({
             _id: 'messages-en',
@@ -334,7 +335,7 @@ describe('upload-custom-translations', () => {
       it('should work correctly when falling back to testing messages-en', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
-        mockTestDir(`custom-lang`);
+        mockTestDir('custom-lang');
         // for *some* reason, medic-client doesn't have deploy-info
         return api.db
           .get('_design/medic-client')
@@ -366,7 +367,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should set default name for unknown language', () => {
-        mockTestDir(`unknown-lang`);
+        mockTestDir('unknown-lang');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('qp'))
           .then(() => getTranslationDoc('qp'))
@@ -384,7 +385,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should upload simple translations', () => {
-        mockTestDir(`simple`);
+        mockTestDir('simple');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
@@ -396,7 +397,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should upload translations for multiple languages', () => {
-        mockTestDir(`multi-lang`);
+        mockTestDir('multi-lang');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('en', 'fr'))
           .then(() => getTranslationDoc('en'))
@@ -416,7 +417,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should upload translations containing equals signs', () => {
-        mockTestDir(`contains-equals`);
+        mockTestDir('contains-equals');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
@@ -431,7 +432,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should set default name for unknown language', () => {
-        mockTestDir(`unknown-lang`);
+        mockTestDir('unknown-lang');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('qp'))
           .then(() => getTranslationDoc('qp'))
@@ -441,7 +442,7 @@ describe('upload-custom-translations', () => {
       });
 
       it('should properly upload translations containing escaped exclamation marks', () => {
-        mockTestDir(`escaped-exclamation`);
+        mockTestDir('escaped-exclamation');
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs('en'))
           .then(() => getTranslationDoc('en'))
@@ -455,13 +456,46 @@ describe('upload-custom-translations', () => {
           });
       });
 
+      it('should upload translations containing valid messageformat', () => {
+        mockTestDir('contains-messageformat');
+        return uploadCustomTranslations()
+          .then(() => expectTranslationDocs('en'))
+          .then(() => getTranslationDoc('en'))
+          .then(messagesEn => {
+            assert.deepEqual(messagesEn.custom, {
+              'some.words': 'one equals one',
+              'n.month': '{MONTHS, plural, one{1 month} other{# months}}',
+            });
+          });
+      });
+
+      it('upload translations containing empty messages raises warn logs', () => {
+        mockTestDir('contains-empty-messages');
+        sinon.replace(log, 'warn', sinon.fake());
+        return uploadCustomTranslations()
+          .then(() => {
+            assert(log.warn.lastCall.calledWithMatch('Empty \'en\' translation for \'empty.msg\' key'));
+          });
+      });
+
+      it('upload translations containing invalid messageformat raises error logs and exit', () => {
+        mockTestDir('contains-messageformat-wrong');
+        sinon.replace(log, 'error', sinon.fake());
+        sinon.replace(process, 'exit', sinon.fake());
+        return uploadCustomTranslations()
+          .then(() => {
+            assert(log.error.lastCall.calledWithMatch('There was 1 error trying to compile the translations'));
+            assert(process.exit.calledOnce);
+          });
+      });
+
     });
 
 
   });
 
   it('should crash for invalid language code', () => {
-    mockTestDir(`invalid-lang`);
+    mockTestDir('invalid-lang');
     return uploadCustomTranslations()
       .then(() => {
         throw new Error('ensures uploadCustomTranslations throws');

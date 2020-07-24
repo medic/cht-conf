@@ -5,7 +5,7 @@ const fs = require('../lib/sync-fs');
 const pouch = require('../lib/db');
 const getApiVersion = require('../lib/get-api-version');
 const iso639 = require('iso-639-1');
-const { error, warn, info } = require('../lib/log');
+const log = require('../lib/log');
 const properties = require('properties');
 const warnUploadOverwrite = require('../lib/warn-upload-overwrite');
 const MessageFormat = require('messageformat');
@@ -22,7 +22,7 @@ const execute = async () => {
 
   const dir = `${environment.pathToProject}/translations`;
 
-  if(!fs.exists(dir)) return warn('Could not find custom translations dir:', dir);
+  if(!fs.exists(dir)) return log.warn('Could not find custom translations dir:', dir);
 
   const fileNames = fs.readdir(dir)
                       .filter(name => FILE_MATCHER.test(name));
@@ -36,7 +36,7 @@ const execute = async () => {
 
     let languageName = iso639.getName(languageCode);
     if (!languageName){
-      warn(`'${languageCode}' is not a recognized ISO 639 language code, please ask admin to set the name`);
+      log.warn(`'${languageCode}' is not a recognized ISO 639 language code, please ask admin to set the name`);
       languageName = 'TODO: please ask admin to set this in settings UI';
     } else {
       let languageNativeName = iso639.getNativeName(languageCode);
@@ -65,9 +65,9 @@ const execute = async () => {
 
     if (changes) {
       await db.put(doc);
-      info(`Translation ${dir}/${fileName} uploaded`);
+      log.info(`Translation ${dir}/${fileName} uploaded`);
     } else {
-      info(`Translation ${dir}/${fileName} not uploaded as no changes were found`);
+      log.info(`Translation ${dir}/${fileName} not uploaded as no changes were found`);
     }
 
     warnUploadOverwrite.postUploadDoc(doc);
@@ -94,25 +94,25 @@ function checkTranslations(translations, languageCode) {
   try {
     mf = new MessageFormat(languageCode);
   } catch (e) {
-    warn(`Cannot check '${languageCode}' translations: ${e.message}`);
+    log.warn(`Cannot check '${languageCode}' translations: ${e.message}`);
   }
-  let foundError = 0;
+  let errorsFound = 0;
   for (const [msgKey, msgSrc] of Object.entries(translations)) {
     if (!msgSrc) {
-      warn(`Empty '${languageCode}' translation for '${msgKey}' key`);
+      log.warn(`Empty '${languageCode}' translation for '${msgKey}' key`);
     } else if (mf) {
       try {
         mf.compile(msgSrc);
       } catch (e) {
         if (!HAS_MUSTACHE_MATCHER.test(msgSrc)) {
-          error(`Cannot compile '${languageCode}' translation ${msgKey} = '${msgSrc}' : ` + e.message);
-          foundError++;
+          log.error(`Cannot compile '${languageCode}' translation ${msgKey} = '${msgSrc}' : ${e.message}`);
+          errorsFound++;
         }
       }
     }
   }
-  if (foundError > 0) {
-    error(transErrorsMsg({ERRORS: foundError}));
+  if (errorsFound > 0) {
+    log.error(transErrorsMsg({ERRORS: errorsFound}));
     process.exit(-1);
   }
 }
