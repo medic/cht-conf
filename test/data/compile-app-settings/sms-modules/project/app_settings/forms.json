@@ -1,0 +1,8 @@
+{
+  "IMM": {
+    "fields": [ "patient_id", "visit_confirmed" ]
+  },
+  "C": {
+    "fields": [ "weeks_since_birth", "patient_name" ]
+  }
+}
