@@ -42,23 +42,23 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   // Manual configurations should be done in the base-settings.json file
   // This check and warning can be removed when all project configurations have this new file defined
   let appSettings = fs.readJson(path.join(projectDir, 'app_settings.json'));
-  const basicSettingsPath = path.join(projectDir, 'app_settings/base-settings.json');
-  if (fs.exists(basicSettingsPath)) {
-    appSettings = fs.readJson(basicSettingsPath);
+  const baseSettingsPath = path.join(projectDir, 'app-settings/base-settings.json');
+  if (fs.exists(baseSettingsPath)) {
+    appSettings = fs.readJson(baseSettingsPath);
   } else {
     warn(`app_settings.json file should not be edited directly.
-    Please create a basic-settings.json file and move any manually defined configurations there.`);
+    Please create a base-settings.json file and move any manually defined configurations there.`);
   }
-  const formSettings = readOptionalJson(path.join(projectDir, 'app_settings/forms.json'));
+  const formSettings = readOptionalJson(path.join(projectDir, 'app-settings/forms.json'));
   if (formSettings) {
     if (appSettings.forms && Object.keys(appSettings.forms).length !== 0) {
       throw new Error(`forms is defined in both the base settings and the forms.json file.`);
     }
     appSettings.forms = formSettings;
   }
-  const scheduleSettings = readOptionalJson(path.join(projectDir, 'app_settings/schedules.json'));
+  const scheduleSettings = readOptionalJson(path.join(projectDir, 'app-settings/schedules.json'));
   if (scheduleSettings) {
-    if (appSettings.schedules && Object.keys(appSettings.schedules).length !== 0) {
+    if (appSettings.schedules && appSettings.schedules.length !== 0) {
       throw new Error(`schedules is defined in both the base settings and the schedules.json file.`);
     }
     appSettings.schedules = scheduleSettings;
