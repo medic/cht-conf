@@ -39,29 +39,26 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   }
 
   const readOptionalJson = path => fs.exists(path) ? fs.readJson(path) : undefined;
-  // Manual configurations should be done in the base-settings.json file
-  // This check and warning can be removed when all project configurations have this new file defined
-  let appSettings = fs.readJson(path.join(projectDir, 'app_settings.json'));
-  const baseSettingsPath = path.join(projectDir, 'app-settings/base-settings.json');
-  if (fs.exists(baseSettingsPath)) {
+  let appSettings;
+  const baseSettingsPath = path.join(projectDir, 'app_settings/base_settings.json');
+  const appSettingsPath = path.join(projectDir, 'app_settings.json');
+  if (!fs.exists(baseSettingsPath) && !fs.exists(appSettingsPath)) {
+    throw new Error('No configuration defined please create a base_settings.json file in app_settings folder with the desired configuration');
+  } else if (fs.exists(baseSettingsPath)) {
+    // using modular config so should override anything already defined in app_settings.json
     appSettings = fs.readJson(baseSettingsPath);
+    const formSettings = readOptionalJson(path.join(projectDir, 'app_settings/forms.json'));
+    if (formSettings) {
+      appSettings.forms = formSettings;
+    }
+    const scheduleSettings = readOptionalJson(path.join(projectDir, 'app_settings/schedules.json'));
+    if (scheduleSettings) {
+      appSettings.schedules = scheduleSettings;
+    }
   } else {
     warn(`app_settings.json file should not be edited directly.
-    Please create a base-settings.json file and move any manually defined configurations there.`);
-  }
-  const formSettings = readOptionalJson(path.join(projectDir, 'app-settings/forms.json'));
-  if (formSettings) {
-    if (appSettings.forms && Object.keys(appSettings.forms).length !== 0) {
-      throw new Error(`forms is defined in both the base settings and the forms.json file.`);
-    }
-    appSettings.forms = formSettings;
-  }
-  const scheduleSettings = readOptionalJson(path.join(projectDir, 'app-settings/schedules.json'));
-  if (scheduleSettings) {
-    if (appSettings.schedules && appSettings.schedules.length !== 0) {
-      throw new Error(`schedules is defined in both the base settings and the schedules.json file.`);
-    }
-    appSettings.schedules = scheduleSettings;
+    Please create a base_settings.json file in app_settings folder and move any manually defined configurations there.`);
+    appSettings = fs.readJson(appSettingsPath);
   }
   appSettings.contact_summary = await compileContactSummary(projectDir, options);
   appSettings.tasks = {
