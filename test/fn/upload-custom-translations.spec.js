@@ -474,7 +474,8 @@ describe('upload-custom-translations', () => {
         sinon.replace(log, 'warn', sinon.fake());
         return uploadCustomTranslations()
           .then(() => {
-            assert(log.warn.lastCall.calledWithMatch('Empty \'en\' translation for \'empty.msg\' key'));
+            assert(log.warn.lastCall.calledWithMatch(
+              'There was 1 empty translation trying to compile \'en\' translations'));
           });
       });
 
@@ -484,8 +485,33 @@ describe('upload-custom-translations', () => {
         sinon.replace(process, 'exit', sinon.fake());
         return uploadCustomTranslations()
           .then(() => {
-            assert(log.error.lastCall.calledWithMatch('There was 1 error trying to compile the translations'));
+            assert(log.error.lastCall.calledWithMatch('There was 1 error trying to compile \'en\' translations'));
             assert(process.exit.calledOnce);
+            sinon.restore();
+          });
+      });
+
+      it('should upload translations containing valid placeholders', () => {
+        mockTestDir('contains-placeholder');
+        return uploadCustomTranslations()
+          .then(() => expectTranslationDocs('en', 'es'))
+          .then(() => getTranslationDoc('es'))
+          .then(messagesEs => {
+            assert.deepEqual(messagesEs.custom, {
+              'Number in month': '{{count}} en {{month}}'
+            });
+          });
+      });
+
+      it('upload translations containing invalid placeholders raise errors', () => {
+        mockTestDir('contains-placeholder-wrong');
+        sinon.replace(log, 'error', sinon.fake());
+        sinon.replace(process, 'exit', sinon.fake());
+        return uploadCustomTranslations()
+          .then(() => {
+            assert(log.error.lastCall.calledWithMatch('There was 1 error trying to compile \'es\' translations'));
+            assert(process.exit.calledOnce);
+            sinon.restore();
           });
       });
 
