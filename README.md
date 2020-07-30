@@ -112,6 +112,7 @@ In order to avoid overwriting someone elses configuration medic-conf records the
 * upload app settings to server
 * upload resources to server
 * upload custom translations to the server
+* upload privacy policies to server
 
 ## Forms
 
@@ -164,6 +165,10 @@ This tool expects a project to be structured as follows:
 		.eslintrc
 		app_settings.json
 		contact-summary.js
+		privacy-policies.json
+		privacy-policies/
+		    language1.html
+		    …
 		purge.js
 		resources.json
 		resources/

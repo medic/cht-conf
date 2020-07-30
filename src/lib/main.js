@@ -26,6 +26,7 @@ const defaultActions = [
   'upload-contact-forms',
   'upload-resources',
   'upload-custom-translations',
+  'upload-privacy-policies',
 ];
 const defaultArchiveActions = [
   'compile-app-settings',
@@ -38,6 +39,7 @@ const defaultArchiveActions = [
   'upload-contact-forms',
   'upload-resources',
   'upload-custom-translations',
+  'upload-privacy-policies',
 ];
 
 module.exports = async (argv, env) => {

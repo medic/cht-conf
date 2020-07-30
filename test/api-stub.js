@@ -50,12 +50,10 @@ module.exports = {
     // empty DB.  For some reason this seems simpler than re-initialising it -
     // probably due to express-pouchdb
     const res = await db.allDocs();
-    for (let id of res.rows.map(r => r.id)) {
-      const doc = await db.get(id);
-      await db.remove(doc);
-    }
+    const deletes = res.rows.map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+    await db.bulkDocs(deletes);
 
-    mockMiddleware.clearRequests();    
+    mockMiddleware.clearRequests();
     mockMiddleware.reset();
   },
 };
