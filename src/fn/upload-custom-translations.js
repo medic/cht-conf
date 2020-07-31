@@ -1,5 +1,6 @@
 const semver = require('semver');
 
+const _ = require('lodash');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const pouch = require('../lib/db');
@@ -130,8 +131,8 @@ function checkTranslations(translations, lang, templatePlaceholders) {
       emptiesFound++;
     } else if (/{{[\s\w.#^/'|]+}}/.test(msgSrc)) {
       if (templatePlaceholders) {
-        const placeholder = placeholders[msgKey];
-        if (placeholder) {
+        const msgPlaceholders = placeholders[msgKey];
+        if (msgPlaceholders) {
           const templatePlaceholder = templatePlaceholders[msgKey];
           if (!templatePlaceholder) {
             log.error(`Cannot compile '${lang}' translation with key '${msgKey}' ` +
@@ -139,7 +140,7 @@ function checkTranslations(translations, lang, templatePlaceholders) {
               'You can use messages-ex.properties to add placeholders missing from the reference context.');
             placeholderErrorsFound++;
           } else {
-            const foundAllPlaceholders = placeholder.every(el => templatePlaceholder.includes(el));
+            const foundAllPlaceholders = msgPlaceholders.every(el => templatePlaceholder.includes(el));
             if (!foundAllPlaceholders) {
               log.error(`Cannot compile '${lang}' translation with key '${msgKey}' ` +
                 `has placeholders that do not match those of ${EN_FILE}\n` +
@@ -174,11 +175,8 @@ function extractPlaceholdersFromTranslations(translations, extraPlaceholders = {
   for (const [msgKey, msgSrc] of Object.entries(translations)) {
     let placeholders = typeof msgSrc === 'string' ? msgSrc.match(/{{[\s\w.#^/'|]+}}/g) : null;
     if (placeholders) {
-      placeholders = placeholders
-        .sort()
-        .concat(extraPlaceholders[msgKey] ? extraPlaceholders[msgKey] : [])
-        .filter((el, i, a) => i === a.indexOf(el));
-      result[msgKey] = placeholders;
+      const msgExtraPlaceholders = extraPlaceholders[msgKey] ? extraPlaceholders[msgKey] : [];
+      result[msgKey] = _.uniq(placeholders.concat(msgExtraPlaceholders));
     } else if (extraPlaceholders[msgKey]) {
       result[msgKey] = extraPlaceholders[msgKey];
     }
