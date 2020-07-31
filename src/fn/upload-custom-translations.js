@@ -15,6 +15,8 @@ const FILE_MATCHER = /^messages-.*\.properties$/;
 const EN_FILE = 'messages-en.properties';
 const EX_FILE = 'messages-ex.properties';
 
+const MUSTACHE_MATCHER = /{{[\s\w.#^/'|]+}}/g;
+
 const MFORMAT = new MessageFormat('en');
 const transErrorsMsg = MFORMAT
   .compile('There {ERRORS, plural, one{was 1 error} other{were # errors}} trying to compile');
@@ -128,7 +130,7 @@ function checkTranslations(translations, lang, templatePlaceholders) {
   for (const [msgKey, msgSrc] of Object.entries(translations)) {
     if (!msgSrc) {
       emptiesFound++;
-    } else if (/{{[\s\w.#^/'|]+}}/.test(msgSrc)) {
+    } else if (MUSTACHE_MATCHER.test(msgSrc)) {
       if (templatePlaceholders) {
         const placeholder = placeholders[msgKey];
         if (placeholder) {
@@ -172,7 +174,7 @@ function extractPlaceholdersFromTranslations(translations, extraPlaceholders = {
   // Extract from github.com/medic/cht-core/blob/master/scripts/poe/lib/utils.js
   const result = {};
   for (const [msgKey, msgSrc] of Object.entries(translations)) {
-    let placeholders = typeof msgSrc === 'string' ? msgSrc.match(/{{[\s\w.#^/'|]+}}/g) : null;
+    let placeholders = typeof msgSrc === 'string' ? msgSrc.match(MUSTACHE_MATCHER) : null;
     if (placeholders) {
       placeholders = placeholders
         .sort()
