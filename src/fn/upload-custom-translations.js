@@ -122,7 +122,9 @@ function checkTranslations(translations, lang, templatePlaceholders) {
     log.warn(`Cannot check '${lang}' translations: ${e.message}`);
   }
   const placeholders = extractPlaceholdersFromTranslations(translations);
-  let formatErrorsFound = 0,  placeholderErrorsFound = 0, emptiesFound = 0;
+  let formatErrorsFound = 0;
+  let placeholderErrorsFound = 0;
+  let emptiesFound = 0;
   for (const [msgKey, msgSrc] of Object.entries(translations)) {
     if (!msgSrc) {
       emptiesFound++;
