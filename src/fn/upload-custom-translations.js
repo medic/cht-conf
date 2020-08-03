@@ -175,8 +175,7 @@ function extractPlaceholdersFromTranslations(translations, extraPlaceholders = {
   for (const [msgKey, msgSrc] of Object.entries(translations)) {
     let placeholders = typeof msgSrc === 'string' ? msgSrc.match(/{{[\s\w.#^/'|]+}}/g) : null;
     if (placeholders) {
-      const msgExtraPlaceholders = extraPlaceholders[msgKey] ? extraPlaceholders[msgKey] : [];
-      result[msgKey] = _.uniq(placeholders.concat(msgExtraPlaceholders));
+      result[msgKey] = _.uniq(placeholders.concat(extraPlaceholders[msgKey] || []));
     } else if (extraPlaceholders[msgKey]) {
       result[msgKey] = extraPlaceholders[msgKey];
     }
