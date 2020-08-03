@@ -254,7 +254,7 @@ Accepted log types:
 
 ## Testing
 
-Run `npm test` for static analysis checks and the test suite.
+Execute `npm test` to run static analysis checks and the test suite.
 
 ## Executing your local branch
 
