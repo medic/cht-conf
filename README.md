@@ -250,7 +250,13 @@ Accepted log types:
 	nginx
 	sentinel
 
-# Testing locally
+# Development
+
+## Testing
+
+Run `npm test` for static analysis checks and the test suite.
+
+## Executing your local branch
 
 1. Clone the project locally
 1. Make changes to medic-conf or checkout a branch for testing
@@ -258,7 +264,7 @@ Accepted log types:
 	1. To test CLI changes locally you can run `node <project_dir>/src/bin/medic-conf.js`. This will run as if you installed via npm.
 	1. To test changes that are imported in code run `npm install <project_dir>` to use the local version of medic-conf.
 
-# Releasing
+## Releasing
 
 1. Create a pull request with prep for the new release. This should contain changes to release notes if required and anything else that needs to be done. As commit messages should be clear and readable for every change, [release-notes.md](./release-notes.md) does not need to be updated for every single change. Instead, it should include information about significant changes, breaking changes, changes to interfaces, changes in behavior, new feature details, etc.
 1. Get the pull request reviewed and approved
@@ -269,7 +275,7 @@ Accepted log types:
 1. `git push && git push --tags` to push the npm generated commit and tag up to your pre-approved pull request
 1. Merge the pull request back into master
 
-# Build status
+## Build status
 
 Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/cht-conf).
 
