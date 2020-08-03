@@ -48,6 +48,9 @@ const compileDeclarativeFiles = async (projectDir, options) => {
   const baseEslintPath = path.join(__dirname, '../nools/.eslintrc');
   
   const code = await pack(projectDir, pathToDeclarativeLib, baseEslintPath, options);
+  if (code.match(/\/\/(.*)/g)) {
+    throw new Error(`Settings should not have comments or urls`);
+  }
   return `define Target { _id: null, contact: null, deleted: null, type: null, pass: null, date: null, groupBy: null }
 define Contact { contact: null, reports: null, tasks: null }
 define Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, readyStart: null, readyEnd: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }
