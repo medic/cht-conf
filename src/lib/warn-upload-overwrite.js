@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const fs = require('./sync-fs');
 const jsonDiff = require('json-diff');
 const userPrompt = require('./user-prompt');
@@ -8,6 +9,7 @@ const log = require('./log');
 const environment = require('./environment');
 const { compare, GroupingReporter } = require('dom-compare');
 const DOMParser = require('xmldom').DOMParser;
+const zlib = require('zlib');
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -94,16 +96,27 @@ const getFormHash = (doc, xml, properties) => {
   return crypt.digest('base64');
 };
 
-const getDocHash = originalDoc => {
+const getDocHash = async originalDoc => {
   const doc = JSON.parse(JSON.stringify(originalDoc)); // clone doc
   delete doc._rev;
   delete doc._attachments;
   const crypt = crypto.createHash('md5');
   crypt.update(JSON.stringify(doc), 'utf8');
   if (originalDoc._attachments) {
-    Object.values(originalDoc._attachments).forEach(attachment => {
+    for (const attachment of Object.values(originalDoc._attachments)) {
+      console.log(attachment);
+      if (attachment.content_type === 'text/plain' && !attachment.digest) {
+        const getDigest = data => {
+          return new Promise(resolve => {
+            zlib.gzip(data.data, { level: 8 }, (err, res) => {
+              resolve(couchDigest(res));
+            });
+          });
+        };
+        console.log(await getDigest(attachment));
+      }
       crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
-    });
+    }
   }
   return crypt.digest('base64');
 };
@@ -124,8 +137,8 @@ const preUploadDoc = async (db, localDoc) => {
     }
   }
 
-  const remoteHash = getDocHash(remoteDoc);
-  const localHash = getDocHash(localDoc);
+  const remoteHash = await getDocHash(remoteDoc);
+  const localHash = await getDocHash(localDoc);
   if (localHash === remoteHash) {
     // no changes to this form - do not upload
     return Promise.resolve(false);
