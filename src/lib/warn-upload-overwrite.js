@@ -184,7 +184,7 @@ const preUploadDoc = async (db, localDoc) => {
 
 const postUploadDoc = (doc) => {
   getDocHash(doc).then((docHash) => {
-    return updateStoredHash(doc._id, getDocHash(docHash));
+    return updateStoredHash(doc._id, docHash);
   });
 };
 
