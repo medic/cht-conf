@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const fs = require('./sync-fs');
 const jsonDiff = require('json-diff');
 const userPrompt = require('./user-prompt');
@@ -9,7 +8,7 @@ const log = require('./log');
 const environment = require('./environment');
 const { compare, GroupingReporter } = require('dom-compare');
 const DOMParser = require('xmldom').DOMParser;
-const zlib = require('zlib');
+const axios = require('axios');
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -22,6 +21,17 @@ const getEnvironmentKey = () => {
   const parsed = url.parse(environment.apiUrl);
   const path = parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : '/medic';
   return `${parsed.hostname}${path}`;
+};
+
+const getCompressibleTypes = async () => {
+  const parsedUrl = url.parse(environment.apiUrl);
+  const configUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/api/db-config-attachemnts`;
+  try {
+    const resp = await axios.get(configUrl);
+    return resp.data.compressible_types;
+  } catch(e) {
+    log.info('Error trying to get config', e);
+  }
 };
 
 const getHashFileName = () => {
@@ -102,21 +112,20 @@ const getDocHash = async originalDoc => {
   delete doc._attachments;
   const crypt = crypto.createHash('md5');
   crypt.update(JSON.stringify(doc), 'utf8');
+  const compressibleTypes = await getCompressibleTypes();
+  const matchRegex = (pattern, type) => {
+    const rx = new RegExp(pattern.trim());
+    return rx.test(type);
+  };
   if (originalDoc._attachments) {
-    for (const attachment of Object.values(originalDoc._attachments)) {
-      console.log(attachment);
-      if (attachment.content_type === 'text/plain' && !attachment.digest) {
-        const getDigest = data => {
-          return new Promise(resolve => {
-            zlib.gzip(data.data, { level: 8 }, (err, res) => {
-              resolve(couchDigest(res));
-            });
-          });
-        };
-        console.log(await getDigest(attachment));
+    Object.values(originalDoc._attachments).forEach(attachment => {
+      if (compressibleTypes.split(',').some(c => matchRegex(c, attachment.content_type))) {
+        const data = attachment.digest ? Buffer.from(attachment.data, 'base64') : attachment.data;
+        crypt.update(data);
+      } else {
+        crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
       }
-      crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
-    }
+    });
   }
   return crypt.digest('base64');
 };
@@ -125,7 +134,7 @@ const preUploadDoc = async (db, localDoc) => {
   let remoteDoc;
 
   try {
-    remoteDoc = await db.get(localDoc._id);
+    remoteDoc = await db.get(localDoc._id, {attachments: true});
   } catch (e) {
     if (e.status === 404) {
       // The form doesn't exist on the server so we know we're not overwriting anything
@@ -173,7 +182,11 @@ const preUploadDoc = async (db, localDoc) => {
   return Promise.resolve(true);
 };
 
-const postUploadDoc = doc => updateStoredHash(doc._id, getDocHash(doc));
+const postUploadDoc = (doc) => {
+  getDocHash(doc).then((docHash) => {
+    return updateStoredHash(doc._id, getDocHash(docHash));
+  });
+};
 
 const preUploadForm = async (db, localDoc, localXml, properties) => {
   let remoteXml;
