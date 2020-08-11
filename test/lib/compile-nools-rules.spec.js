@@ -107,7 +107,9 @@ describe('compile nools-rules', () => {
   it('comments and urls in fields yields exception', () => {
     const mocks = genMocks();
     mocks.fs.exists
-      .withArgs('/rules.nools.js').returns(false);
+      .withArgs('/rules.nools.js').returns(false)
+      .withArgs('/targets.js').returns(true)
+      .withArgs('/tasks.js').returns(true);
     mocks.fs.read.withArgs('/rules.nools.js').returns('define Task {_id: null, title: "http://foo.bar.com"}');
 
     return compileNoolsRules.__with__(mocks)(() => compileNoolsRules('/'))
