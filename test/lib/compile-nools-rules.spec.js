@@ -115,7 +115,7 @@ describe('compile nools-rules', () => {
     return compileNoolsRules.__with__(mocks)(() => compileNoolsRules('/'))
       .then(() => assert.fail('Expected compilation error'))
       .catch(err => {
-        expect(err.message).to.include('Settings should not have comments');
+        expect(err.message).to.be.equal('Settings should not have comments or urls');
       });
   });
 });
