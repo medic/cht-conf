@@ -107,13 +107,13 @@ describe('compile nools-rules', () => {
   it('comments and urls in fields yields exception', () => {
     const mocks = genMocks();
     mocks.fs.exists
-      .withArgs('/rules.nools.js').returns(true);
+      .withArgs('/rules.nools.js').returns(false);
     mocks.fs.read.withArgs('/rules.nools.js').returns('define Task {_id: null, title: "http://foo.bar.com"}');
 
     return compileNoolsRules.__with__(mocks)(() => compileNoolsRules('/'))
       .then(() => assert.fail('Expected compilation error'))
       .catch(err => {
-        expect(err.message).to.include('Settings should not have comments or urls');
+        expect(err.message).to.include('Settings should not have comments');
       });
   });
 });
