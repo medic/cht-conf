@@ -1,8 +1,9 @@
-const { assert, expect } = require('chai');
+const { assert } = require('chai');
 const sinon = require('sinon');
 const readline = require('readline-sync');
 const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
+const log = require('../../src/lib/log');
 const testProjectDir = './data/upload-custom-translations/';
 const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
 
@@ -117,11 +118,14 @@ describe('upload-custom-translations', () => {
 
     it('should set default name for unknown language', () => {
       mockTestDir(`unknown-lang`);
+      sinon.replace(log, 'warn', sinon.fake());
       return uploadCustomTranslations()
         .then(() => expectTranslationDocs('qp'))
         .then(() => getTranslationDoc('qp'))
         .then(messagesQp => {
           assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
+          assert(log.warn.lastCall.calledWithMatch('\'qp\' is not a recognized ISO 639 language code, please ask admin to set the name'));
+          sinon.restore();
         });
     });
   });
@@ -462,12 +466,13 @@ describe('upload-custom-translations', () => {
 
   it('should crash for invalid language code', () => {
     mockTestDir(`invalid-lang`);
+    sinon.replace(log, 'error', sinon.fake());
+    sinon.replace(process, 'exit', sinon.fake());
     return uploadCustomTranslations()
       .then(() => {
-        throw new Error('ensures uploadCustomTranslations throws');
-      })
-      .catch(err => {
-        expect(err.message).to.include('bad(code');
+        assert(log.error.lastCall.calledWithMatch('The language code \'bad(code\' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.'));
+        assert(process.exit.calledOnce);
+        sinon.restore();
       });
   });
 });
