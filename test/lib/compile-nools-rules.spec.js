@@ -113,9 +113,9 @@ describe('compile nools-rules', () => {
     mocks.fs.read.withArgs('/rules.nools.js').returns('define Task {_id: null, title: "http://foo.bar.com"}');
 
     return compileNoolsRules.__with__(mocks)(() => compileNoolsRules('/'))
-      .then(() => assert.fail('Expected compilation error'))
+      .then(() => assert.fail('Settings should not have comments or urls'))
       .catch(err => {
-        expect(err.message).to.be.equal('Settings should not have comments or urls');
+        expect(err.message).to.include('Expected compilation error');
       });
   });
 });
