@@ -182,11 +182,7 @@ const preUploadDoc = async (db, localDoc) => {
   return Promise.resolve(true);
 };
 
-const postUploadDoc = (doc) => {
-  getDocHash(doc).then((docHash) => {
-    return updateStoredHash(doc._id, docHash);
-  });
-};
+const postUploadDoc = (doc) => getDocHash(doc).then((docHash) => updateStoredHash(doc._id, docHash));
 
 const preUploadForm = async (db, localDoc, localXml, properties) => {
   let remoteXml;

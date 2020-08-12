@@ -31,8 +31,8 @@ module.exports = {
     } else {
       info('Resources file not uploaded as no changes found');
     }
-
-    warnUploadOverwrite.postUploadDoc(doc);
+    
+    await warnUploadOverwrite.postUploadDoc(doc);
 
     return Promise.resolve();
   }

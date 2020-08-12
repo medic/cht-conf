@@ -62,7 +62,7 @@ const execute = async () => {
       info(`Translation ${dir}/${fileName} not uploaded as no changes were found`);
     }
 
-    warnUploadOverwrite.postUploadDoc(doc);
+    await warnUploadOverwrite.postUploadDoc(doc);
   }
 };
 

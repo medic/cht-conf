@@ -139,14 +139,14 @@ describe('warn-upload-overwrite', () => {
       });
     });
 
-    it('removes username and password from couchUrl before writing', () => {
+    it('removes username and password from couchUrl before writing', async () => {
       const write = sinon.stub(fs, 'write').returns();
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'y/m': 'a-12' }}));
       sinon.stub(axios, 'get').returns({
         data: {'compressible_types':'text/*, application/*','compression_level':'8'}
       });
       const localDoc = { _id: 'a' };
-      warnUploadOverwrite.postUploadDoc(localDoc);
+      await warnUploadOverwrite.postUploadDoc(localDoc);
       assert.equal(write.callCount, 1);
       assert.deepEqual(
         JSON.parse(write.args[0][1]),
