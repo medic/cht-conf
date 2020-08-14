@@ -9,6 +9,7 @@ const environment = require('./environment');
 const { compare, GroupingReporter } = require('dom-compare');
 const DOMParser = require('xmldom').DOMParser;
 const request = require('request-promise-native');
+const pouch = require('../lib/db');
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -119,17 +120,24 @@ const getDocHash = async originalDoc => {
     return rx.test(type);
   };
   if (originalDoc._attachments) {
-    Object.values(originalDoc._attachments).forEach(attachment => {
+    for (const key of Object.keys(originalDoc._attachments)) {
+      const attachment = originalDoc._attachments[key];
       const attachmentCompressible = compressibleTypes ?
         compressibleTypes.split(',').some(c => matchRegex(c, attachment.content_type)) :
         false;
       if (attachmentCompressible) {
-        const data = attachment.digest ? Buffer.from(attachment.data, 'base64') : attachment.data;
+        let data;
+        if (attachment.digest) {
+          const db = pouch();
+          data = await db.getAttachment(originalDoc._id, key);
+        } else {
+          data = attachment.data;
+        }
         crypt.update(data);
       } else {
         crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
       }
-    });
+    }
   }
   return crypt.digest('base64');
 };
@@ -138,7 +146,7 @@ const preUploadDoc = async (db, localDoc) => {
   let remoteDoc;
 
   try {
-    remoteDoc = await db.get(localDoc._id, {attachments: true});
+    remoteDoc = await db.get(localDoc._id);
   } catch (e) {
     if (e.status === 404) {
       // The form doesn't exist on the server so we know we're not overwriting anything
