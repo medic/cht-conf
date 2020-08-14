@@ -8,7 +8,7 @@ const log = require('./log');
 const environment = require('./environment');
 const { compare, GroupingReporter } = require('dom-compare');
 const DOMParser = require('xmldom').DOMParser;
-const axios = require('axios');
+const request = require('request-promise-native');
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -25,12 +25,13 @@ const getEnvironmentKey = () => {
 
 const getCompressibleTypes = async () => {
   const parsedUrl = url.parse(environment.apiUrl);
-  const configUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/api/db-config-attachemnts`;
+  const configUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/api/db-config-attachments`;
   try {
-    const resp = await axios.get(configUrl);
-    return resp.data.compressible_types;
+    const resp = await request.get({ url: configUrl, json: true });
+    return resp.compressible_types;
   } catch(e) {
     log.info('Error trying to get config', e);
+    return null;
   }
 };
 
@@ -121,7 +122,7 @@ const getDocHash = async originalDoc => {
     Object.values(originalDoc._attachments).forEach(attachment => {
       if (compressibleTypes.split(',').some(c => matchRegex(c, attachment.content_type))) {
         const data = attachment.digest ? Buffer.from(attachment.data, 'base64') : attachment.data;
-        crypt.update(data);
+          crypt.update(data);
       } else {
         crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
       }
@@ -182,7 +183,7 @@ const preUploadDoc = async (db, localDoc) => {
   return Promise.resolve(true);
 };
 
-const postUploadDoc = (doc) => getDocHash(doc).then((docHash) => updateStoredHash(doc._id, docHash));
+const postUploadDoc = async (doc) => updateStoredHash(doc._id, await getDocHash(doc));
 
 const preUploadForm = async (db, localDoc, localXml, properties) => {
   let remoteXml;

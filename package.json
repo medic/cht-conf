@@ -32,7 +32,6 @@
   "homepage": "https://github.com/medic/medic-conf#readme",
   "dependencies": {
     "@hapi/joi": "^16.1.8",
-    "axios": "^0.19.2",
     "canonical-json": "0.0.4",
     "csv-parse": "^4.4.3",
     "dom-compare": "^0.6.0",
