@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const rewire = require('rewire');
 const { assert, expect } = require('chai');
-const axios = require('axios');
+const request = require('request-promise-native');
 
 const environment = require('../../src/lib/environment');
 const api = require('../api-stub');
@@ -118,9 +118,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(readline, 'keyInSelect').returns(2);
       sinon.stub(api.db, 'get').resolves({ _id: 'a', _rev: 'x', value: 1 });
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'localhost/medic': 'y' }}));
-      sinon.stub(axios, 'get').returns({
-        data: {'compressible_types':'text/*, application/*','compression_level':'8'}
-      });
+      sinon.stub(request, 'get').returns({'compressible_types':'text/*, application/*','compression_level':'8'});
       const localDoc = { _id: 'a', value: 2 };
       return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
         assert.equal(calls.length, 1);
@@ -142,9 +140,7 @@ describe('warn-upload-overwrite', () => {
     it('removes username and password from couchUrl before writing', async () => {
       const write = sinon.stub(fs, 'write').returns();
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'y/m': 'a-12' }}));
-      sinon.stub(axios, 'get').returns({
-        data: {'compressible_types':'text/*, application/*','compression_level':'8'}
-      });
+      sinon.stub(request, 'get').returns({'compressible_types':'text/*, application/*','compression_level':'8'});
       const localDoc = { _id: 'a' };
       await warnUploadOverwrite.postUploadDoc(localDoc);
       assert.equal(write.callCount, 1);
