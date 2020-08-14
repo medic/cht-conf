@@ -120,9 +120,12 @@ const getDocHash = async originalDoc => {
   };
   if (originalDoc._attachments) {
     Object.values(originalDoc._attachments).forEach(attachment => {
-      if (compressibleTypes.split(',').some(c => matchRegex(c, attachment.content_type))) {
+      const attachmentCompressible = compressibleTypes ?
+        compressibleTypes.split(',').some(c => matchRegex(c, attachment.content_type)) :
+        false;
+      if (attachmentCompressible) {
         const data = attachment.digest ? Buffer.from(attachment.data, 'base64') : attachment.data;
-          crypt.update(data);
+        crypt.update(data);
       } else {
         crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
       }
