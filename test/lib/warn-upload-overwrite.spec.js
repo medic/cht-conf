@@ -176,7 +176,7 @@ describe('warn-upload-overwrite', () => {
       });
       sinon.stub(api.db, 'getAttachment').resolves('data');
 
-      it.only('prompts the user if a compressible doc type has changes', () => {
+      it('prompts the user if a compressible doc type has changes', () => {
         sinon.stub(readline, 'keyInSelect').returns(-1);
         const localDoc = {
           _id: 'x',
