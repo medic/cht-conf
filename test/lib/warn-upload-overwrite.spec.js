@@ -142,7 +142,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'y/m': 'a-12' }}));
       sinon.stub(request, 'get').returns({'compressible_types':'text/*, application/*','compression_level':'8'});
       const localDoc = { _id: 'a' };
-      await warnUploadOverwrite.postUploadDoc(localDoc);
+      await warnUploadOverwrite.postUploadDoc(api.db, localDoc);
       assert.equal(write.callCount, 1);
       assert.deepEqual(
         JSON.parse(write.args[0][1]),
