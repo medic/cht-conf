@@ -274,6 +274,7 @@ Execute `npm test` to run static analysis checks and the test suite.
     - "Compile" and publish the changes to npm
 1. `git push && git push --tags` to push the npm generated commit and tag up to your pre-approved pull request
 1. Merge the pull request back into master
+1. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
 
 ## Build status
 
