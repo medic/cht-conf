@@ -32,7 +32,7 @@ module.exports = {
       info('Resources file not uploaded as no changes found');
     }
     
-    await warnUploadOverwrite.postUploadDoc(doc);
+    await warnUploadOverwrite.postUploadDoc(db, doc);
 
     return Promise.resolve();
   }

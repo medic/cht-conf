@@ -9,7 +9,6 @@ const environment = require('./environment');
 const { compare, GroupingReporter } = require('dom-compare');
 const DOMParser = require('xmldom').DOMParser;
 const request = require('request-promise-native');
-const pouch = require('../lib/db');
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -108,7 +107,7 @@ const getFormHash = (doc, xml, properties) => {
   return crypt.digest('base64');
 };
 
-const getDocHash = async originalDoc => {
+const getDocHash = async (db, originalDoc) => {
   const doc = JSON.parse(JSON.stringify(originalDoc)); // clone doc
   delete doc._rev;
   delete doc._attachments;
@@ -128,7 +127,6 @@ const getDocHash = async originalDoc => {
       if (attachmentCompressible) {
         let data;
         if (attachment.digest) {
-          const db = pouch();
           data = await db.getAttachment(originalDoc._id, key);
         } else {
           data = attachment.data;
@@ -158,8 +156,8 @@ const preUploadDoc = async (db, localDoc) => {
     }
   }
 
-  const remoteHash = await getDocHash(remoteDoc);
-  const localHash = await getDocHash(localDoc);
+  const remoteHash = await getDocHash(db, remoteDoc);
+  const localHash = await getDocHash(db, localDoc);
   if (localHash === remoteHash) {
     // no changes to this form - do not upload
     return Promise.resolve(false);
@@ -194,7 +192,7 @@ const preUploadDoc = async (db, localDoc) => {
   return Promise.resolve(true);
 };
 
-const postUploadDoc = async (doc) => updateStoredHash(doc._id, await getDocHash(doc));
+const postUploadDoc = async (db, doc) => updateStoredHash(doc._id, await getDocHash(db, doc));
 
 const preUploadForm = async (db, localDoc, localXml, properties) => {
   let remoteXml;

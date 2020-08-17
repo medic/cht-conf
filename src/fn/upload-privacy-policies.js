@@ -52,7 +52,7 @@ module.exports = {
       log.info('Privacy policies file not uploaded as no changes found');
     }
 
-    await warnUploadOverwrite.postUploadDoc(doc);
+    await warnUploadOverwrite.postUploadDoc(db, doc);
 
     return Promise.resolve();
   }
