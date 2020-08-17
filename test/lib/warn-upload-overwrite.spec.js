@@ -185,7 +185,7 @@ describe('warn-upload-overwrite', () => {
           }
         };
         return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
-          assert.equal(1, readline.keyInSelect.callCount);
+          assert.equal(0, readline.keyInSelect.callCount);
         });
       });
 
