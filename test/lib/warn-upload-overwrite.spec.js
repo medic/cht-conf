@@ -160,6 +160,48 @@ describe('warn-upload-overwrite', () => {
         assert.equal(0, readline.keyInSelect.callCount);
       });
     });
+
+    describe('handles compressible document types', () => {
+      sinon.stub(readline, 'keyInYN').returns(true);
+      sinon.stub(request, 'get').returns({'compressible_types':'text/*, application/*','compression_level':'8'});
+      sinon.stub(api.db, 'get').resolves({
+        _rev: 'x',
+        _id: 'x',
+        _attachments: {
+          'random.txt': {
+            content_type: 'text/plain',
+            digest: 'md5-digest',
+          }
+        }
+      });
+      sinon.stub(api.db, 'getAttachment').resolves('data');
+
+      it('prompts the user if a compressible doc type has changes', () => {
+        sinon.stub(readline, 'keyInSelect').returns(-1);
+        const localDoc = {
+          _id: 'x',
+          _attachments: {
+            'random.txt': { content_type: 'text/plain', data: 'data changed' }
+          }
+        };
+        return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
+          assert.equal(1, readline.keyInSelect.callCount);
+        });
+      });
+
+      it('does not prompt the user if a compressible doc type has no changes', () => {
+        sinon.stub(readline, 'keyInSelect').returns(-1);
+        const localDoc = {
+          _id: 'x',
+          _attachments: {
+            'random.txt': { content_type: 'text/plain', data: 'data' }
+          }
+        };
+        return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
+          assert.equal(0, readline.keyInSelect.callCount);
+        });
+      });
+    });
   });
 
   describe('prompts when attempting to overwrite forms', () => {
