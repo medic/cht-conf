@@ -5,7 +5,6 @@ const fs = require('../lib/sync-fs');
 const { info } = require('../lib/log');
 
 const LAYOUT = {
-  'app_settings.json': {},
   'contact-summary.js': '',
   'resources.json': {},
   resources: {},
@@ -26,6 +25,11 @@ const LAYOUT = {
     contact: {},
   },
   translations: {},
+  app_settings: {
+    'base_settings.json': {},
+    'forms.json': {},
+    'schedules.json': {},
+  },
 };
 
 function createRecursively(dir, layout) {
