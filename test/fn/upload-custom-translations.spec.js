@@ -4,10 +4,7 @@ const readline = require('readline-sync');
 const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
 const log = require('../../src/lib/log');
-const testProjectDir = './data/upload-custom-translations/';
 const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
-
-const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => `${testProjectDir}${testDir}`);
 
 const getTranslationDoc = (lang) => {
   return api.db.get(`messages-${lang}`)
@@ -29,11 +26,20 @@ const expectTranslationDocs = (...expectedLangs) => {
 };
 
 describe('upload-custom-translations', () => {
+
+  const testProjectDir = './data/upload-custom-translations/';
+  let mockTestDir;
+
   beforeEach(() => {
+    mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => `${testProjectDir}${testDir}`);
     readline.keyInYN = () => true;
     return api.start();
   });
-  afterEach(api.stop);
+
+  afterEach(async () => {
+    sinon.restore();
+    await api.stop();
+  });
 
   describe('medic-2.x', () => {
     beforeEach(() => {
@@ -125,7 +131,6 @@ describe('upload-custom-translations', () => {
         .then(messagesQp => {
           assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
           assert(log.warn.lastCall.calledWithMatch('\'qp\' is not a recognized ISO 639 language code, please ask admin to set the name'));
-          sinon.restore();
         });
     });
   });
@@ -472,7 +477,6 @@ describe('upload-custom-translations', () => {
       .then(() => {
         assert(log.error.lastCall.calledWithMatch('The language code \'bad(code\' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.'));
         assert(process.exit.calledOnce);
-        sinon.restore();
       });
   });
 });
