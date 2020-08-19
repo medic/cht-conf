@@ -5,7 +5,6 @@ const pouch = require('../lib/db');
 const getApiVersion = require('../lib/get-api-version');
 const iso639 = require('iso-639-1');
 const log = require('../lib/log');
-const MessageFormat = require('messageformat');
 const properties = require('properties');
 const warnUploadOverwrite = require('../lib/warn-upload-overwrite');
 const {
@@ -13,12 +12,6 @@ const {
   isLanguageCodeValid,
   TranslationException
 } = require('translation-checker');
-
-const MFORMAT = new MessageFormat('en');
-const transErrorsMsg = MFORMAT
-  .compile('There {ERRORS, plural, one{was 1 error} other{were # errors}} trying to compile');
-const transEmptyMsg = MFORMAT
-  .compile('There {EMPTIES, plural, one{was 1 empty translation} other{were # empty translations}} trying to compile');
 
 const execute = async () => {
   const db = pouch(environment.apiUrl);
@@ -59,10 +52,10 @@ const execute = async () => {
         }
       }
       if (emptiesFound > 0) {
-        log.warn(transEmptyMsg({EMPTIES: emptiesFound}));
+        log.warn(`${emptiesFound} empty messages trying to compile translations`);
       }
       if (formatErrorsFound > 0 || placeholderErrorsFound > 0) {
-        let errMsg = transErrorsMsg({ERRORS: formatErrorsFound + placeholderErrorsFound});
+        let errMsg = `${formatErrorsFound + placeholderErrorsFound} errors trying to compile translations`;
         if (placeholderErrorsFound > 0) {
           errMsg += '\nYou can use messages-ex.properties to add placeholders missing from the reference context.';
         }
