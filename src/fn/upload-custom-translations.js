@@ -23,7 +23,13 @@ const execute = async () => {
   let placeholderErrorsFound = 0;
   let emptiesFound = 0;
   try {
-    fileNames = await checkTranslations(dir);
+    // if environment.skipTranslationCheck is true then only
+    // directory access and file names are checked
+    fileNames = await checkTranslations(dir, {
+      checkPlaceholders: !environment.skipTranslationCheck,
+      checkMessageformat: !environment.skipTranslationCheck,
+      checkEmpties: !environment.skipTranslationCheck
+    });
   } catch (err) {
     if (err instanceof TranslationException) {
       fileNames = err.fileNames;
@@ -52,10 +58,10 @@ const execute = async () => {
         }
       }
       if (emptiesFound > 0) {
-        log.warn(`${emptiesFound} empty messages trying to compile translations`);
+        log.warn(`Found ${emptiesFound} empty messages trying to compile translations`);
       }
       if (formatErrorsFound > 0 || placeholderErrorsFound > 0) {
-        let errMsg = `${formatErrorsFound + placeholderErrorsFound} errors trying to compile translations`;
+        let errMsg = `Found ${formatErrorsFound + placeholderErrorsFound} errors trying to compile translations`;
         if (placeholderErrorsFound > 0) {
           errMsg += '\nYou can use messages-ex.properties to add placeholders missing from the reference context.';
         }
