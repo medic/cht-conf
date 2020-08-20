@@ -11,7 +11,7 @@ const {
   checkTranslations,
   isLanguageCodeValid,
   TranslationException
-} = require('translation-checker');
+} = require('@medic/translation-checker');
 
 const execute = async () => {
   const db = pouch(environment.apiUrl);
