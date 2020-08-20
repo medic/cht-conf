@@ -464,6 +464,17 @@ describe('upload-custom-translations', () => {
           });
       });
 
+      it('upload translations containing empty messages raises warn logs but works', () => {
+        mockTestDir('contains-empty-messages');
+        sinon.replace(log, 'warn', sinon.fake());
+        return uploadCustomTranslations()
+          .then(() => expectTranslationDocs('en'))
+          .then(() => {
+            assert(log.warn.lastCall.calledWithMatch(
+              '1 empty messages trying to compile translations'));
+          });
+      });
+
     });
 
 
@@ -477,6 +488,33 @@ describe('upload-custom-translations', () => {
       .then(() => {
         assert(log.error.lastCall.calledWithMatch('The language code \'bad(code\' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.'));
         assert(process.exit.calledOnce);
+      });
+  });
+
+  it('upload translations containing invalid placeholders raise errors', () => {
+    mockTestDir('contains-placeholder-wrong');
+    sinon.replace(log, 'error', sinon.fake());
+    sinon.replace(process, 'exit', sinon.fake());
+    return uploadCustomTranslations()
+      .then(() => {
+        assert(log.error.lastCall.calledWithMatch(
+          '1 errors trying to compile translations\n' +
+          'You can use messages-ex.properties to add placeholders missing from the reference context.'));
+        assert(process.exit.calledOnce);
+      });
+  });
+
+  it('upload translations containing invalid messageformat raises error logs and exit', () => {
+    mockTestDir('contains-messageformat-wrong');
+    sinon.replace(log, 'error', sinon.fake());
+    sinon.replace(process, 'exit', sinon.fake());
+    return uploadCustomTranslations()
+      .then(() => {
+        assert(log.error.calledTwice);
+        assert(log.error.firstCall.calledWithMatch(/Cannot compile 'en' translation n.month/));
+        assert(log.error.lastCall.calledWithMatch('1 errors trying to compile translations'));
+        assert(process.exit.calledOnce);
+        sinon.restore();
       });
   });
 });
