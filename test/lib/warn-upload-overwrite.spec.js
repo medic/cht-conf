@@ -161,9 +161,10 @@ describe('warn-upload-overwrite', () => {
       });
     });
 
-    it('prompts the user if a compressible doc type has changes', () => {
+    it.only('prompts the user if a compressible doc type has changes', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
+      sinon.stub(environment, 'apiUrl').get(() => 'http://admin:pass@localhost:35423/medic');
       sinon.stub(request, 'get').returns({'compressible_types':'text/*, application/*','compression_level':'8'});
       sinon.stub(api.db, 'get').resolves({
         _rev: 'x',
@@ -184,6 +185,11 @@ describe('warn-upload-overwrite', () => {
       };
       return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
         assert.equal(1, readline.keyInSelect.callCount);
+        assert.equal(request.get.args[0][0].url, 'http://admin:pass@localhost:35423/api/couch-config-attachments');
+        assert.equal(request.get.callCount, 2);
+        assert.equal(api.db.getAttachment.args[0][0], 'x');
+        assert.equal(api.db.getAttachment.args[0][1], 'random.txt');
+        assert.equal(api.db.getAttachment.callCount, 1);
       });
     });
 
