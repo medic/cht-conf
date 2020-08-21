@@ -161,7 +161,7 @@ describe('warn-upload-overwrite', () => {
       });
     });
 
-    it.only('prompts the user if a compressible doc type has changes', () => {
+    it('prompts the user if a compressible doc type has changes', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(environment, 'apiUrl').get(() => 'http://admin:pass@localhost:35423/medic');
@@ -170,10 +170,7 @@ describe('warn-upload-overwrite', () => {
         _rev: 'x',
         _id: 'x',
         _attachments: {
-          'random.txt': {
-            content_type: 'text/plain',
-            digest: 'md5-digest',
-          }
+          'random.txt': { content_type: 'text/plain', digest: 'md5-digest' }
         }
       });
       sinon.stub(api.db, 'getAttachment').resolves('data');
@@ -201,10 +198,7 @@ describe('warn-upload-overwrite', () => {
         _rev: 'x',
         _id: 'x',
         _attachments: {
-          'random.txt': {
-            content_type: 'text/plain',
-            digest: 'md5-digest',
-          }
+          'random.txt': { content_type: 'text/plain', digest: 'md5-digest' }
         }
       });
       sinon.stub(api.db, 'getAttachment').resolves('data');
@@ -219,7 +213,37 @@ describe('warn-upload-overwrite', () => {
       });
     });
 
-    it('handles failure of the getAttachment endoint on doc with no changes', () => {
+    it('handles a doc with multiple stacchemnts', () => {
+      sinon.stub(readline, 'keyInSelect').returns(-1);
+      sinon.stub(readline, 'keyInYN').returns(true);
+      sinon.stub(environment, 'apiUrl').get(() => 'http://admin:pass@localhost:35423/medic');
+      sinon.stub(request, 'get').returns({'compressible_types':'text/*, application/*','compression_level':'8'});
+      sinon.stub(api.db, 'get').resolves({
+        _rev: 'x',
+        _id: 'x',
+        _attachments: {
+          'random.txt': { content_type: 'text/plain', digest: 'md5-digest' },
+          'random.png': { content_type: 'image/png', digest: 'md5-digest' }
+        }
+      });
+      sinon.stub(api.db, 'getAttachment').resolves('data');
+      const localDoc = {
+        _id: 'x',
+        _attachments: {
+          'random.txt': { content_type: 'text/plain', data: 'data changed' }
+        }
+      };
+      return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
+        assert.equal(1, readline.keyInSelect.callCount);
+        assert.equal(request.get.args[0][0].url, 'http://admin:pass@localhost:35423/api/couch-config-attachments');
+        assert.equal(request.get.callCount, 4);
+        assert.equal(api.db.getAttachment.args[0][0], 'x');
+        assert.equal(api.db.getAttachment.args[0][1], 'random.txt');
+        assert.equal(api.db.getAttachment.callCount, 1);
+      });
+    });
+
+    it('handles failure of the getAttachment endpoint on doc with no changes', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(request, 'get').returns({ error: 'not_found', reason: 'Database does not exist.' });
@@ -227,10 +251,7 @@ describe('warn-upload-overwrite', () => {
         _rev: 'x',
         _id: 'x',
         _attachments: {
-          'random.txt': {
-            content_type: 'text/plain',
-            digest: 'md5-digest',
-          }
+          'random.txt': { content_type: 'text/plain', digest: 'md5-digest' }
         }
       });
       sinon.stub(api.db, 'getAttachment').resolves('data');
@@ -245,7 +266,7 @@ describe('warn-upload-overwrite', () => {
       });
     });
 
-    it('handles failure of the getAttachment endoint on doc with changes', () => {
+    it('handles failure of the getAttachment endpoint on doc with changes', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(request, 'get').returns({ error: 'not_found', reason: 'Database does not exist.' });
@@ -253,10 +274,7 @@ describe('warn-upload-overwrite', () => {
         _rev: 'x',
         _id: 'x',
         _attachments: {
-          'random.txt': {
-            content_type: 'text/plain',
-            digest: 'md5-digest',
-          }
+          'random.txt': { content_type: 'text/plain', digest: 'md5-digest' }
         }
       });
       sinon.stub(api.db, 'getAttachment').resolves('data');
