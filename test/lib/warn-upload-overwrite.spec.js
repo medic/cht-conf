@@ -223,7 +223,8 @@ describe('warn-upload-overwrite', () => {
         _id: 'x',
         _attachments: {
           'random.txt': { content_type: 'text/plain', digest: 'md5-digest' },
-          'random.png': { content_type: 'image/png', digest: 'md5-digest' }
+          'random.png': { content_type: 'image/png', digest: 'md5-digest' },
+          'anotherRandom.txt': { content_type: 'text/plain', digest: 'md5-digest' },
         }
       });
       sinon.stub(api.db, 'getAttachment').resolves('data');
@@ -236,10 +237,12 @@ describe('warn-upload-overwrite', () => {
       return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
         assert.equal(1, readline.keyInSelect.callCount);
         assert.equal(request.get.args[0][0].url, 'http://admin:pass@localhost:35423/api/couch-config-attachments');
-        assert.equal(request.get.callCount, 4);
+        assert.equal(request.get.callCount, 2);
+        assert.equal(api.db.getAttachment.callCount, 2);
         assert.equal(api.db.getAttachment.args[0][0], 'x');
         assert.equal(api.db.getAttachment.args[0][1], 'random.txt');
-        assert.equal(api.db.getAttachment.callCount, 1);
+        assert.equal(api.db.getAttachment.args[1][0], 'x');
+        assert.equal(api.db.getAttachment.args[1][1], 'anotherRandom.txt');
       });
     });
 
