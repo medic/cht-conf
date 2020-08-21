@@ -25,7 +25,7 @@ const getEnvironmentKey = () => {
 
 const getCompressibleTypes = async () => {
   const parsedUrl = url.parse(environment.apiUrl);
-  const configUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/api/db-config-attachments`;
+  const configUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/api/couch-config-attachments`;
   try {
     const resp = await request.get({ url: configUrl, json: true });
     return resp.compressible_types;
@@ -119,18 +119,13 @@ const getDocHash = async (db, originalDoc) => {
     return rx.test(type);
   };
   if (originalDoc._attachments) {
-    for (const key of Object.keys(originalDoc._attachments)) {
-      const attachment = originalDoc._attachments[key];
+    for (const attachmentName of Object.keys(originalDoc._attachments)) {
+      const attachment = originalDoc._attachments[attachmentName];
       const attachmentCompressible = compressibleTypes ?
         compressibleTypes.split(',').some(c => matchRegex(c, attachment.content_type)) :
-        false;
+        true;
       if (attachmentCompressible) {
-        let data;
-        if (attachment.digest) {
-          data = await db.getAttachment(originalDoc._id, key);
-        } else {
-          data = attachment.data;
-        }
+        const data = attachment.data ? attachment.data : await db.getAttachment(originalDoc._id, attachmentName);
         crypt.update(data);
       } else {
         crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
