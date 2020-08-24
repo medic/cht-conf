@@ -34,16 +34,14 @@ module.exports.status = async () => {
 };
 
 /**
- * Returns a string with the upstream repository name
- * configured in the git repository in the working directory,
- * normally 'origin'.
+ * Returns the name of the remote repository, normally 'origin'.
  *
  * If there is more than one upstream, it returns 'origin' if
  * it is among the list, or the first found.
  *
  * Returns `null` if there are no upstreams repos configured.
  */
-module.exports.getUpstream = async () => {
+module.exports.getDefaultRemote = async () => {
   const result = (await exec([GIT, 'remote'], log.LEVEL_NONE)).trim();
   if (result) {
     const lines = result.split('\n');
@@ -60,6 +58,23 @@ module.exports.getUpstream = async () => {
 };
 
 /**
+ * Returns the upstream of the current branch,
+ * in the form of repo/branch, eg. 'origin/master'.
+ *
+ * Returns `null` if there are no upstreams repos configured.
+ */
+module.exports.getUpstream = async () => {
+  try {
+    return (await exec([GIT, 'rev-parse --abbrev-ref --symbolic-full-name @{u}'], log.LEVEL_NONE)).trim();
+  } catch (err) {
+    if (err.message && err.message.indexOf('no upstream configured') >= 0) {
+      return null;
+    }
+    throw err;
+  }
+};
+
+/**
  * Fetches the upstream repository and compares the current
  * branch against it, returning a message with the result whether it
  * is behind, ahead or both.
@@ -72,12 +87,18 @@ module.exports.getUpstream = async () => {
  */
 module.exports.checkUpstream = async () => {
   await exec([GIT, 'fetch'], log.LEVEL_ERROR);
-  const upstream = await module.exports.getUpstream();
+  let upstream = await module.exports.getUpstream();
   if (upstream === null) {
-    log.warn('git upstream repository not found');
-    return null;
+    upstream = await module.exports.getDefaultRemote();
+    if (upstream === null) {
+      log.warn('git upstream repository not found');
+      return null;
+    }
   }
   try {
+    // Get the commits count from each side that aren't in the other side,
+    // eg. `1    3` means 1 commit is ahead in the local repo (not in upstream)
+    // while 3 commits from upstream aren't in sync yet in local
     const result = await exec([GIT, `rev-list --left-right --count ...${upstream}`], log.LEVEL_ERROR);
     const [ahead, behind] = result.split('\t').filter(s => s).map(Number);
     if (ahead && behind) {

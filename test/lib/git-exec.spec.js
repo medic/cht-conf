@@ -25,47 +25,51 @@ describe('git-exec', () => {
 
   it('`getUpstream` with no upstream repositories returns `null`', async () => {
     git.__set__('exec', () => Promise.resolve(''));
-    const result = await git.getUpstream();
+    const result = await git.getDefaultRemote();
     expect(result).to.be.null;
   });
 
   it('`getUpstream` with upstream repositories returns name`', async () => {
     git.__set__('exec', () => Promise.resolve('origin'));
-    const result = await git.getUpstream();
+    const result = await git.getDefaultRemote();
     expect(result).to.be.eq('origin');
   });
 
   it('`getUpstream` with multiple upstream repositories returns "origin" one`', async () => {
     git.__set__('exec', () => Promise.resolve('first-one\norigin\nother-repo-name'));
-    const result = await git.getUpstream();
+    const result = await git.getDefaultRemote();
     expect(result).to.be.eq('origin');
   });
 
   it('`getUpstream` with multiple upstream repositories returns one`', async () => {
     git.__set__('exec', () => Promise.resolve('first-one\nother-repo-name'));
-    const result = await git.getUpstream();
+    const result = await git.getDefaultRemote();
     expect(result).to.be.eq('first-one');
   });
 
-  it('`checkUpstream` with not upstream changes get empty result', async () => {
+  it('`checkUpstream` with no upstream changes get empty result', async () => {
+    git.__set__('getUpstream', () => Promise.resolve('origin/master'));
     git.__set__('exec', () => Promise.resolve('0\t0'));
     const result = await git.checkUpstream();
     expect(result).to.eq('');
   });
 
   it('`checkUpstream` with branch changes get text with result', async () => {
+    git.__set__('getUpstream', () => Promise.resolve('origin/master'));
     git.__set__('exec', () => Promise.resolve('1\t0'));
     const result = await git.checkUpstream();
     expect(result).to.eq('branch is ahead upstream by 1 commit');
   });
 
   it('`checkUpstream` with upstream changes get text with result', async () => {
+    git.__set__('getUpstream', () => Promise.resolve('origin/master'));
     git.__set__('exec', () => Promise.resolve('0\t2'));
     const result = await git.checkUpstream();
     expect(result).to.eq('branch is behind upstream by 2 commits');
   });
 
   it('`checkUpstream` with upstream and local branch changes get text with result', async () => {
+    git.__set__('getUpstream', () => Promise.resolve('origin/master'));
     git.__set__('exec', () => Promise.resolve('2\t1'));
     const result = await git.checkUpstream();
     expect(result).to.eq('branch is behind upstream by 1 commit and ahead by 2 commits');
