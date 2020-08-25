@@ -7,6 +7,7 @@ const fs = require('../lib/sync-fs');
 const parseTargets = require('../lib/parse-targets');
 const { warn } = require('../lib/log');
 const parsePurge = require('../lib/parse-purge');
+const validateAppSettings = require('../lib/validate-app-settings');
 
 const compileAppSettings = async () => {
   const options = parseExtraArgs(environment.extraArgs);
@@ -55,10 +56,20 @@ const compileAppSettingsForProject = async (projectDir, options) => {
     }
     const formSettings = readOptionalJson(path.join(projectDir, 'app_settings/forms.json'));
     if (formSettings) {
+      // validate forms object
+      const validate = validateAppSettings.validateFormsSchema(formSettings);
+      if (!validate.valid) {
+        throw new Error(`Invalid form settings: ${validate.error}`);
+      }
       appSettings.forms = formSettings;
     }
     const scheduleSettings = readOptionalJson(path.join(projectDir, 'app_settings/schedules.json'));
     if (scheduleSettings) {
+      // validate schedules object
+      const validate = validateAppSettings.validateScheduleSchema(scheduleSettings);
+      if (!validate.valid) {
+        throw new Error(`Invalid schedule settings: ${validate.error}`);
+      }
       appSettings.schedules = scheduleSettings;
     }
   } else {

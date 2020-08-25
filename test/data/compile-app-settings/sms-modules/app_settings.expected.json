@@ -17,11 +17,41 @@
     }
   ],
   "forms": {
-    "IMM": {
-      "fields": [ "patient_id", "visit_confirmed" ]
+    "DR": {
+      "meta": {
+        "code": "DR"
+      },
+      "fields": {
+        "patient_id": {
+          "position": 0,
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "type": "string",
+          "required": true
+        }
+      }
     },
-    "C": {
-      "fields": [ "weeks_since_birth", "patient_name" ]
+    "IMM": {
+      "meta": {
+        "code": "IMM"
+      },
+      "fields": {
+        "patient_id": {
+          "position": 0,
+          "type": "string",
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        }
+      },
+      "public_form": true
     }
   },
   "schedules": [
