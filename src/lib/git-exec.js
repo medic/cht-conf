@@ -15,7 +15,7 @@ const NOT_FOUND_REGEX = new RegExp(`[(Cc)ommand|${GIT}].* not found`);
  */
 module.exports.status = async () => {
   try {
-    return await exec([GIT, 'status', '--porcelain'], log.LEVEL_NONE);
+    return await exec([GIT, 'status', '--porcelain', '.'], log.LEVEL_NONE);
   } catch (e) {
     if (typeof e === 'string') {
       if (NOT_FOUND_REGEX.test(e)) {
@@ -67,7 +67,7 @@ module.exports.getUpstream = async () => {
   try {
     return (await exec([GIT, 'rev-parse --abbrev-ref --symbolic-full-name @{u}'], log.LEVEL_NONE)).trim();
   } catch (err) {
-    if (err.message && err.message.indexOf('no upstream configured') >= 0) {
+    if (typeof err === 'string' && err.indexOf('no upstream configured') >= 0) {
       return null;
     }
     throw err;
