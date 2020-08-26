@@ -118,10 +118,13 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(readline, 'keyInSelect').returns(2);
       sinon.stub(api.db, 'get').resolves({ _id: 'a', _rev: 'x', value: 1 });
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'localhost/medic': 'y' }}));
+      sinon.stub(environment, 'apiUrl').get(() => 'http://admin:pass@localhost:35423/medic');
       sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
       const localDoc = { _id: 'a', value: 2 };
       return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
         assert.equal(calls.length, 1);
+        assert.equal(request.get.args[0][0].url, 'http://admin:pass@localhost:35423/api/couch-config-attachments');
+        assert.equal(request.get.callCount, 1);
         assert.equal(calls[0][0], ' {\n\u001b[31m-  _rev: "x"\u001b[39m\n\u001b[31m-  value: 1\u001b[39m\n\u001b[32m+  value: 2\u001b[39m\n }\n');
       });
     });
@@ -164,7 +167,6 @@ describe('warn-upload-overwrite', () => {
     it('prompts the user if a compressible doc type has changes', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
-      sinon.stub(environment, 'apiUrl').get(() => 'http://admin:pass@localhost:35423/medic');
       sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
       sinon.stub(api.db, 'get').resolves({
         _rev: 'x',
@@ -182,8 +184,7 @@ describe('warn-upload-overwrite', () => {
       };
       return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
         assert.equal(1, readline.keyInSelect.callCount);
-        assert.equal(request.get.args[0][0].url, 'http://admin:pass@localhost:35423/api/couch-config-attachments');
-        assert.equal(request.get.callCount, 2);
+        assert.equal(request.get.callCount, 0); // should get from the cache
         assert.equal(api.db.getAttachment.args[0][0], 'x');
         assert.equal(api.db.getAttachment.args[0][1], 'random.txt');
         assert.equal(api.db.getAttachment.callCount, 1);
@@ -236,8 +237,7 @@ describe('warn-upload-overwrite', () => {
       };
       return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
         assert.equal(1, readline.keyInSelect.callCount);
-        assert.equal(request.get.args[0][0].url, 'http://admin:pass@localhost:35423/api/couch-config-attachments');
-        assert.equal(request.get.callCount, 2);
+        assert.equal(request.get.callCount, 0); // should get from the cache
         assert.equal(api.db.getAttachment.callCount, 2);
         assert.equal(api.db.getAttachment.args[0][0], 'x');
         assert.equal(api.db.getAttachment.args[0][1], 'random.txt');
