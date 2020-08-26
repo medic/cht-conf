@@ -73,6 +73,9 @@ describe('compile-app-settings', () => {
 
   it('should handle a configuration using the forms.json and schedules.json files', () =>
     test('sms-modules/project'));
+
+  it('should reject a configuration using invalid forms.json or schedules.json files', () =>
+    testFails('sms-modules/invalid-files'));
 });
 
 async function test(relativeProjectDir) {
