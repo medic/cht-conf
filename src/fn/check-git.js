@@ -1,10 +1,15 @@
 const git = require('../lib/git-exec');
 const { info, warn, error } = require('../lib/log');
 const userPrompt = require('../lib/user-prompt');
+const environment = require('../lib/environment');
 
 module.exports = {
   requiresInstance: false,
   execute: async () => {
+    if (!environment.isProduction() && environment.instanceUrl) {
+      // is not production and there is an instance URL set
+      return info('No production environment detected: skipping check-git…');
+    }
     const status = await git.status();
     if (status !== null) {
       if (status !== '') {
