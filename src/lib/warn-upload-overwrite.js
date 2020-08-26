@@ -30,7 +30,9 @@ const getCompressibleTypes = async () => {
     const resp = await request.get({ url: configUrl, json: true });
     return resp.compressible_types;
   } catch(e) {
-    log.info('Error trying to get config', e);
+    e.statusCode === 404 ?
+      log.info('couch-config-attachments endpoint not found') :
+      log.info('Error trying to get config', e);
     return null;
   }
 };

@@ -118,7 +118,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(readline, 'keyInSelect').returns(2);
       sinon.stub(api.db, 'get').resolves({ _id: 'a', _rev: 'x', value: 1 });
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'localhost/medic': 'y' }}));
-      sinon.stub(request, 'get').returns({'compressible_types':'text/*, application/*','compression_level':'8'});
+      sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
       const localDoc = { _id: 'a', value: 2 };
       return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
         assert.equal(calls.length, 1);
@@ -140,7 +140,7 @@ describe('warn-upload-overwrite', () => {
     it('removes username and password from couchUrl before writing', async () => {
       const write = sinon.stub(fs, 'write').returns();
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'y/m': 'a-12' }}));
-      sinon.stub(request, 'get').returns({'compressible_types':'text/*, application/*','compression_level':'8'});
+      sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
       const localDoc = { _id: 'a' };
       await warnUploadOverwrite.postUploadDoc(api.db, localDoc);
       assert.equal(write.callCount, 1);
@@ -165,7 +165,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(environment, 'apiUrl').get(() => 'http://admin:pass@localhost:35423/medic');
-      sinon.stub(request, 'get').returns({'compressible_types':'text/*, application/*','compression_level':'8'});
+      sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
       sinon.stub(api.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
@@ -193,7 +193,7 @@ describe('warn-upload-overwrite', () => {
     it('does not prompt the user if a compressible doc type has no changes', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
-      sinon.stub(request, 'get').returns({'compressible_types':'text/*, application/*','compression_level':'8'});
+      sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
       sinon.stub(api.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
@@ -213,11 +213,11 @@ describe('warn-upload-overwrite', () => {
       });
     });
 
-    it('handles a doc with multiple stacchemnts', () => {
+    it('handles a doc with multiple attachments', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(environment, 'apiUrl').get(() => 'http://admin:pass@localhost:35423/medic');
-      sinon.stub(request, 'get').returns({'compressible_types':'text/*, application/*','compression_level':'8'});
+      sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
       sinon.stub(api.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
@@ -249,7 +249,7 @@ describe('warn-upload-overwrite', () => {
     it('handles failure of the getAttachment endpoint on doc with no changes', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
-      sinon.stub(request, 'get').returns({ error: 'not_found', reason: 'Database does not exist.' });
+      sinon.stub(request, 'get').rejects({ error: 'not_found', reason: 'Database does not exist.' });
       sinon.stub(api.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
@@ -272,7 +272,7 @@ describe('warn-upload-overwrite', () => {
     it('handles failure of the getAttachment endpoint on doc with changes', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
-      sinon.stub(request, 'get').returns({ error: 'not_found', reason: 'Database does not exist.' });
+      sinon.stub(request, 'get').resolves({ error: 'not_found', reason: 'Database does not exist.' });
       sinon.stub(api.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
