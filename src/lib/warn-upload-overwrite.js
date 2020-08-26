@@ -9,6 +9,7 @@ const environment = require('./environment');
 const { compare, GroupingReporter } = require('dom-compare');
 const DOMParser = require('xmldom').DOMParser;
 const request = require('request-promise-native');
+const cache = new Map();
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -27,9 +28,14 @@ const getCompressibleTypes = async () => {
   const parsedUrl = url.parse(environment.apiUrl);
   const configUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/api/couch-config-attachments`;
   try {
+    if (cache.has('compressibleTypes')) {
+      return cache.get('compressibleTypes');
+    }
     const resp = await request.get({ url: configUrl, json: true });
+    cache.set('compressibleTypes', resp.compressible_types);
     return resp.compressible_types;
   } catch(e) {
+    cache.set('compressibleTypes', null);
     e.statusCode === 404 ?
       log.info('couch-config-attachments endpoint not found') :
       log.info('Error trying to get config', e);
