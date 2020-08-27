@@ -128,6 +128,10 @@ module.exports = async (argv, env) => {
     return -1;
   }
 
+  if (cmdArgs['skip-git-check']) {
+    actions = actions.filter(a => a !== 'check-git');
+  }
+
   actions = actions.map(actionName => {
     const action = require(`../fn/${actionName}`);
 
