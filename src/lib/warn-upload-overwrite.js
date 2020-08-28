@@ -35,10 +35,11 @@ const getCompressibleTypes = async () => {
     cache.set('compressibleTypes', resp.compressible_types);
     return resp.compressible_types;
   } catch(e) {
-    cache.set('compressibleTypes', null);
-    e.statusCode === 404 ?
-      log.info('couch-config-attachments endpoint not found') :
-      log.info('Error trying to get config', e);
+    if (e.statusCode === 404) {
+      cache.set('compressibleTypes', null);
+    } else {
+      log.error(`Error trying to get couchdb config: ${e}`);
+    }
     return null;
   }
 };

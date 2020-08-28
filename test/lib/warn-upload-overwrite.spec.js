@@ -144,6 +144,7 @@ describe('warn-upload-overwrite', () => {
       const write = sinon.stub(fs, 'write').returns();
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'y/m': 'a-12' }}));
       sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
+      warnUploadOverwrite.__set__('cache', new Map());
       const localDoc = { _id: 'a' };
       await warnUploadOverwrite.postUploadDoc(api.db, localDoc);
       assert.equal(write.callCount, 1);
@@ -182,9 +183,16 @@ describe('warn-upload-overwrite', () => {
           'random.txt': { content_type: 'text/plain', data: 'data changed' }
         }
       };
+      const cacheStub = sinon.stub(new Map());
+      cacheStub.has.onCall(0).returns(false);
+      cacheStub.has.onCall(1).returns(true);
+      cacheStub.get.returns('compressibleTypes', 'text/*, application/*');
+      warnUploadOverwrite.__set__('cache', cacheStub);
       return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
         assert.equal(1, readline.keyInSelect.callCount);
-        assert.equal(request.get.callCount, 0); // should get from the cache
+        assert.equal(request.get.callCount, 1);
+        assert.equal(cacheStub.get.callCount, 1);
+        assert.equal(cacheStub.get.args[0][0], 'compressibleTypes');
         assert.equal(api.db.getAttachment.args[0][0], 'x');
         assert.equal(api.db.getAttachment.args[0][1], 'random.txt');
         assert.equal(api.db.getAttachment.callCount, 1);
@@ -195,6 +203,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
+      warnUploadOverwrite.__set__('cache', new Map());
       sinon.stub(api.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
@@ -219,6 +228,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(environment, 'apiUrl').get(() => 'http://admin:pass@localhost:35423/medic');
       sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
+      warnUploadOverwrite.__set__('cache', new Map());
       sinon.stub(api.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
@@ -237,7 +247,6 @@ describe('warn-upload-overwrite', () => {
       };
       return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
         assert.equal(1, readline.keyInSelect.callCount);
-        assert.equal(request.get.callCount, 0); // should get from the cache
         assert.equal(api.db.getAttachment.callCount, 2);
         assert.equal(api.db.getAttachment.args[0][0], 'x');
         assert.equal(api.db.getAttachment.args[0][1], 'random.txt');
