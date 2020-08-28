@@ -43,13 +43,17 @@ module.exports = {
   get skipTranslationCheck() { return state.skipTranslationCheck; },
 
   /**
-   * Return `true` if the environment seems to be production.
+   * Return `true` if the environment **seems** to be production.
    * @returns {boolean}
    */
   isProduction() {
-    if (!this.instanceUrl) return false;
+    if (!this.instanceUrl) {
+      return false;
+    }
     const hostname = url.parse(this.instanceUrl).hostname;
-    if (LOCAL_MATCHER.test(hostname)) return false;
+    if (LOCAL_MATCHER.test(hostname)) {
+      return false;
+    }
     return !hostname.split('.').some(subdomain => DEV_MATCHER.test(subdomain));
   }
 };
