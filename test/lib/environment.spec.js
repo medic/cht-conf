@@ -59,7 +59,7 @@ describe('environment', () => {
     });
 
     it('dev-SOME.* environment return true', () => {
-      sinon.stub(environment, 'instanceUrl').get(() => 'https://some-demo.dev.medicmobile.org');
+      sinon.stub(environment, 'instanceUrl').get(() => 'https://demo.dev-v1.medicmobile.org');
       expect(environment.isProduction()).to.be.false;
     });
   });
