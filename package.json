@@ -1,6 +1,6 @@
 {
   "name": "medic-conf",
-  "version": "3.3.0-beta.1",
+  "version": "3.2.1",
   "description": "Configure Medic Mobile deployments",
   "main": "./src/lib/main.js",
   "engines": {
@@ -10,9 +10,7 @@
     "clean": "rm -rf ./build/",
     "generate-changelog": "echo 'Generating changelog...' && ./scripts/changelog > CHANGELOG.md && echo 'Changelog generated.'",
     "eslint": "eslint src/**/*.js test/*.js test/**/*.js",
-    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js && cd ../..",
-    "postversion": "npm publish",
-    "postpublish": "git push --all; git push --tags"
+    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js && cd ../.."
   },
   "bin": {
     "medic-conf": "src/bin/medic-conf.js",
