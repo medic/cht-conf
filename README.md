@@ -271,7 +271,7 @@ Execute `npm test` to run static analysis checks and the test suite.
 1. Run `npm version patch`, `npm version minor`, or `npm version major` as appropriate. This will:
     - Update versions in `package.json` and `package-lock.json`
     - Commit those changes locally and tag that commit with the new version
-1. Run `npm publish` to publish the new tag to npm    
+1. Run `npm publish` to publish the new tag to npm
 1. `git push && git push --tags` to push the npm generated commit and tag up to your pre-approved pull request
 1. Merge the pull request back into master
 1. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
@@ -279,7 +279,7 @@ Execute `npm test` to run static analysis checks and the test suite.
 ### Releasing betas
 
 1. Checkout `master`
-1. Run `npm version --no-git-tag-version <major>.<minor>.<patch>-beta.1`. This will only update the versions in `package.json` and `package-lock.json`. It will not create a git tab and not create an associated commit.
+1. Run `npm version --no-git-tag-version <major>.<minor>.<patch>-beta.1`. This will only update the versions in `package.json` and `package-lock.json`. It will not create a git tag and not create an associated commit.
 1. Run `npm publish --tag beta`. This will publish your beta tag to npm's beta channel. 
 
 To install from the beta channel, run `npm install medic-conf@beta`. 
