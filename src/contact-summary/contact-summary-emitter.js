@@ -12,7 +12,7 @@ function emitter(contactSummary, contact, reports) {
       var appliesToNotType = appliesToType.filter(function(type) {
         return type && type.charAt(0) === '!';
       });
-      if (appliesToType.includes(contactType) ||
+      if (appliesToType.length === 0 || appliesToType.includes(contactType) ||
           (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
         if (!f.appliesIf || f.appliesIf()) {
           delete f.appliesToType;
@@ -32,7 +32,7 @@ function emitter(contactSummary, contact, reports) {
       throw new Error("You cannot set appliesToType to an array which includes the type 'report' and another type.");
     }
     
-    if (appliesToType.includes('report')) {
+    if (appliesToType.includes('report') || appliesToType.length === 0) {
       for (idx1=0; idx1<reports.length; ++idx1) {
         r = reports[idx1];
         if (!isReportValid(r)) {
@@ -45,7 +45,7 @@ function emitter(contactSummary, contact, reports) {
         }
       }
     } else {
-      if (!appliesToType.includes(contactType)) {
+      if (!appliesToType.includes(contactType) && appliesToType.length > 0) {
         return;
       }
 
@@ -63,6 +63,9 @@ function emitter(contactSummary, contact, reports) {
 }
 
 function convertToArray(appliesToType) {
+  if (!appliesToType) {
+    return [];
+  }
   return Array.isArray(appliesToType) ? appliesToType : [appliesToType];  
 }
 
@@ -81,6 +84,9 @@ function execAppliesIf(prop, report) {
 }
 
 function addCard(card, context, r) {
+  if (typeof card.fields === 'function' && arguments.length < 3) {
+    return;
+  }
   if (!execAppliesIf(card.appliesIf, r)) {
     return;
   }
