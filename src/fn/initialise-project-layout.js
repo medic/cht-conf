@@ -28,7 +28,7 @@ const LAYOUT = {
   app_settings: {
     'base_settings.json': {},
     'forms.json': {},
-    'schedules.json': {},
+    'schedules.json': [],
   },
 };
 
