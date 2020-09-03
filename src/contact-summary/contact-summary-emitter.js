@@ -32,7 +32,7 @@ function emitter(contactSummary, contact, reports) {
       throw new Error("You cannot set appliesToType to an array which includes the type 'report' and another type.");
     }
     
-    if (appliesToType.includes('report') || (appliesToType.length === 0 && typeof card.fields === 'function')) {
+    if (appliesToType.includes('report')) {
       for (idx1=0; idx1<reports.length; ++idx1) {
         r = reports[idx1];
         if (!isReportValid(r)) {
@@ -84,9 +84,6 @@ function execAppliesIf(prop, report) {
 }
 
 function addCard(card, context, r) {
-  if (typeof card.fields === 'function' && arguments.length < 3) {
-    return;
-  }
   if (!execAppliesIf(card.appliesIf, r)) {
     return;
   }
