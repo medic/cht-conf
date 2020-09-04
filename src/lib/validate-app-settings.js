@@ -26,7 +26,9 @@ const FormsSchema = joi.object().pattern(
         position: joi.number(),
         flags: joi.object(),
         length: joi.array().items(joi.number()),
-        required: joi.boolean()
+        required: joi.boolean(),
+        range: joi.array().items(joi.number()),
+        validations: joi.object()
       })
     ).required(),
     public_form: joi.boolean(),
