@@ -154,12 +154,15 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
       def.modifyContent(content, c, r);
     }
 
-    return {
-      type: 'report',
-      form: def.form,
+    var action = {
+      type: def.type || 'report',
       label: def.label || 'Follow up',
       content: content,
     };
+    if (def.form) {
+      action.form = def.form;
+    }
+    return action;
   }
 }
 
