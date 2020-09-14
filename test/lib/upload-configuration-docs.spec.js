@@ -46,7 +46,7 @@ describe('Upload Configuration Docs', () => {
   it('should upload configuration', async () => {
     warnUploadOverwrite.preUploadDoc.returns(true);
     insertOrReplace.returns(Promise.resolve());
-    attachmentsFromDir.returns({ image: {} });
+    attachmentsFromDir.returns({ 'greatCompany.png': {} });
 
     const configurationDoc = {
       _id: 'configurationDoc',
@@ -55,7 +55,7 @@ describe('Upload Configuration Docs', () => {
         greatCompany: 'greatCompany.png',
         aliasCompany: 'aliasCompany.png'
       },
-      _attachments: { image: {} }
+      _attachments: { 'greatCompany.png': {} }
     };
     const rewireWith = {
       fs,
@@ -79,14 +79,14 @@ describe('Upload Configuration Docs', () => {
   it('should call processJson when provided', async () => {
     warnUploadOverwrite.preUploadDoc.returns(true);
     insertOrReplace.returns(Promise.resolve());
-    attachmentsFromDir.returns({ image: {} });
+    attachmentsFromDir.returns({ 'greatCompany.png': {} });
 
     const configurationDoc = {
       _id: 'configurationDoc',
       customSection: {
         title: 'ABC Company'
       },
-      _attachments: { image: {} }
+      _attachments: { 'greatCompany.png': {} }
     };
     const rewireWith = {
       fs,
