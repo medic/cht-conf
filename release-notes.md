@@ -1,5 +1,28 @@
 # Release Notes
 
+## 3.3.0
+
+### Support for headless execution
+
+The `--force` argument can now be provided to make it possible to execute commands in a scripted environment by skipping any prompts. This is more dangerous as medic-conf will no longer warn about possible configuration errors, so it's recommended this option is only used when user input is not possible and you have independently verified that the configuration is correct.
+
+[#307](https://github.com/medic/medic-conf/issues/307)
+
+### Privacy policies
+
+Privacy policies can now be uploaded using medic-conf. Read [the documentation](https://docs.communityhealthtoolkit.org/apps/guides/security/privacy-policy/) for more information.
+
+[cht-core#6538](https://github.com/medic/cht-core/issues/6538)
+
+### Bug fixes
+
+- [#332](https://github.com/medic/medic-conf/issues/332): Uploading of multimedia is extremely limited
+- [#273](https://github.com/medic/medic-conf/issues/273): Add configurable hierarchy support to doc references in csv-to-docs
+- [#322](https://github.com/medic/medic-conf/issues/322): Missing optional appliesIf attribute on contact summary cards causes crash
+- [#315](https://github.com/medic/medic-conf/issues/315): Error running csv-to-docs with null properties
+- [#325](https://github.com/medic/medic-conf/issues/325): Task generation fails when given contactless reports
+- [cht-core#6291](https://github.com/medic/cht-core/issues/6291): Allow specifying subject_key in properties
+
 ## 3.2.0
 
 ### Prompt before configuration overwrites

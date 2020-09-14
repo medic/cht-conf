@@ -8,7 +8,7 @@ const insertOrReplace = require('./insert-or-replace');
 const pouch = require('./db');
 const warnUploadOverwrite = require('./warn-upload-overwrite');
 
-const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms'];
+const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms', 'subject_key'];
 
 module.exports = (projectDir, subDirectory, options) => {
   const db = pouch();

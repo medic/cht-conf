@@ -112,6 +112,7 @@ In order to avoid overwriting someone elses configuration medic-conf records the
 * upload app settings to server
 * upload resources to server
 * upload custom translations to the server
+* upload privacy policies to server
 * upload branding to server
 * upload partners to server
 
@@ -166,6 +167,10 @@ This tool expects a project to be structured as follows:
 		.eslintrc
 		app_settings.json
 		contact-summary.js
+		privacy-policies.json
+		privacy-policies/
+		    language1.html
+		    …
 		purge.js
 		resources.json
 		resources/
@@ -247,7 +252,13 @@ Accepted log types:
 	nginx
 	sentinel
 
-# Testing locally
+# Development
+
+## Testing
+
+Execute `npm test` to run static analysis checks and the test suite.
+
+## Executing your local branch
 
 1. Clone the project locally
 1. Make changes to medic-conf or checkout a branch for testing
@@ -255,18 +266,27 @@ Accepted log types:
 	1. To test CLI changes locally you can run `node <project_dir>/src/bin/medic-conf.js`. This will run as if you installed via npm.
 	1. To test changes that are imported in code run `npm install <project_dir>` to use the local version of medic-conf.
 
-# Releasing
+## Releasing
 
 1. Create a pull request with prep for the new release. This should contain changes to release notes if required and anything else that needs to be done. As commit messages should be clear and readable for every change, [release-notes.md](./release-notes.md) does not need to be updated for every single change. Instead, it should include information about significant changes, breaking changes, changes to interfaces, changes in behavior, new feature details, etc.
 1. Get the pull request reviewed and approved
 1. Run `npm version patch`, `npm version minor`, or `npm version major` as appropriate. This will:
     - Update versions in `package.json` and `package-lock.json`
     - Commit those changes locally and tag that commit with the new version
-    - "Compile" and publish the changes to npm
+1. Run `npm publish` to publish the new tag to npm
 1. `git push && git push --tags` to push the npm generated commit and tag up to your pre-approved pull request
 1. Merge the pull request back into master
+1. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
 
-# Build status
+### Releasing betas
+
+1. Checkout `master`
+1. Run `npm version --no-git-tag-version <major>.<minor>.<patch>-beta.1`. This will only update the versions in `package.json` and `package-lock.json`. It will not create a git tag and not create an associated commit.
+1. Run `npm publish --tag beta`. This will publish your beta tag to npm's beta channel. 
+
+To install from the beta channel, run `npm install medic-conf@beta`. 
+
+## Build status
 
 Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/cht-conf).
 

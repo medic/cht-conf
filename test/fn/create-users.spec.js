@@ -7,14 +7,14 @@ const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
 
 const createUsers = rewire('../../src/fn/create-users');
+const userPrompt = rewire('../../src/lib/user-prompt');
 
-let readLine;
+const readLine = require('readline-sync');
 const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => testDir);
 
 describe('create-users', () => {
   beforeEach(() => {
-    readLine = { keyInYN: sinon.stub() };
-    createUsers.__set__('readline', readLine);
+    createUsers.__set__('userPrompt', userPrompt);
     return api.start();
   });
   afterEach(() => {
@@ -127,7 +127,7 @@ describe('create-users', () => {
       phone: '+123456789',
     };
 
-    readLine.keyInYN.returns(true);
+    sinon.stub(readLine, 'keyInYN').returns(true);
     const qs = {
       facility_id: todd.place,
       role: JSON.stringify(todd.roles),
@@ -160,7 +160,7 @@ describe('create-users', () => {
       phone: '+123456789',
     };
 
-    readLine.keyInYN.returns(false);
+    sinon.stub(readLine, 'keyInYN').returns(false);
     const qs = {
       facility_id: todd.place,
       role: JSON.stringify(todd.roles),
@@ -172,6 +172,39 @@ describe('create-users', () => {
         assert.equal(process.exit.callCount, 1);
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+        ]);
+      });
+  });
+
+  it('force should create users without interaction', () => {
+    sinon.stub(environment, 'force').get(() => true);
+    sinon.stub(process, 'exit');
+    mockTestDir(`data/create-users/existing-place`);
+    api.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } },{ body: {} });
+    const todd = {
+      username: 'todd',
+      password: 'Secret_1',
+      roles: ['district-admin'],
+      place: 'place_uuid_here',
+      contact: {
+        c_prop: 'c_val_a'
+      },
+      name: 'Alice Example',
+      phone: '+123456789',
+    };
+
+    const qs = {
+      facility_id: todd.place,
+      role: JSON.stringify(todd.roles),
+    };
+
+    return assertDbEmpty()
+      .then(() => /* when */ createUsers.execute())
+      .then(() => {
+        assert.equal(process.exit.callCount, 0);
+        assert.deepEqual(api.requestLog(), [
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+          { method: 'POST', url: '/api/v1/users', body: todd },
         ]);
       });
   });
@@ -196,7 +229,6 @@ describe('create-users', () => {
       .then(r => assert.equal(r, 'Expected to reject'))
       .catch(err => {
         assert.deepEqual(err.error, { code: 500, error: 'boom' });
-        assert.equal(readLine.keyInYN.callCount, 0);
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
         ]);
@@ -217,7 +249,7 @@ describe('create-users', () => {
       { body: {} },
     );
 
-    readLine.keyInYN.returns(true);
+    sinon.stub(readLine, 'keyInYN').returns(true);
     const todd = { username: 'todd', password: pwd, roles: ['district-admin'],  place: 'place_uuid_1', contact: 'contact_uuid_1' };
     const jack = { username: 'jack', password: pwd, roles: ['district-admin', 'supervisor'],  place: 'place_uuid_2', contact: 'contact_uuid_2' };
     const jill = { username: 'jill', password: pwd, roles: ['role1', 'role2', 'role3'],  place: 'place_uuid_3', contact: 'contact_uuid_3' };
@@ -251,7 +283,7 @@ describe('create-users', () => {
       { body: { total_docs: 1000, warn: false, limit: 10000 } },
     );
 
-    readLine.keyInYN.onCall(1).returns(false);
+    sinon.stub(readLine, 'keyInYN').onCall(1).returns(false);
     const todd = { username: 'todd', password: pwd, roles: ['district-admin'],  place: 'place_uuid_1', contact: 'contact_uuid_1' };
     const jack = { username: 'jack', password: pwd, roles: ['district-admin', 'supervisor'],  place: 'place_uuid_2', contact: 'contact_uuid_2' };
     const jill = { username: 'jill', password: pwd, roles: ['role1', 'role2', 'role3'],  place: 'place_uuid_3', contact: 'contact_uuid_3' };

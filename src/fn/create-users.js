@@ -1,5 +1,5 @@
 const csvParse = require('csv-parse/lib/sync');
-const readline = require('readline-sync');
+const userPrompt = require('../../src/lib/user-prompt');
 
 const api = require('../lib/api');
 const environment = require('../lib/environment');
@@ -76,7 +76,7 @@ const execute = async () => {
   if (warnings.length) {
     warnings.forEach(warning => warn(warning));
     warn('Are you sure you want to continue?');
-    if(!readline.keyInYN()) {
+    if(!userPrompt.keyInYN()) {
       error('User failed to confirm action.');
       process.exit(1);
       return; // stop execution in tests

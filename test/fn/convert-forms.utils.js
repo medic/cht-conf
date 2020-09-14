@@ -1,4 +1,6 @@
-const { assert } = require('chai');
+const chai = require('chai');
+var {expect, assert}  = require('chai');
+var chaiXml = require('chai-xml');
 const sinon = require('sinon');
 
 const environment = require('../../src/lib/environment');
@@ -8,7 +10,7 @@ module.exports = {
   testFor: (testName, type) => {
 
     const convertForms = require(`../../src/fn/convert-${type}-forms`);
-
+    chai.use(chaiXml); 
     describe(testName, function () {
 
       this.timeout(30000); // allow time for form conversion
@@ -26,7 +28,7 @@ module.exports = {
 
         it(`should generate ${generatedXml} as expected`, () => {
           assert.ok(fs.exists(generatedXml), `Missing generated XML file: ${generatedXml}`);
-          assert.equal(fs.read(generatedXml), fs.read(expectedXml), `Content of ${generatedXml} was not as expected.`);
+          expect(fs.read(generatedXml)).xml.to.equal(fs.read(expectedXml));
         });
 
       });

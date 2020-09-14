@@ -1,10 +1,13 @@
-const { expect } = require('chai');
+const { expect, assert } = require('chai');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
 const api = require('../api-stub');
 const uploadDocs = rewire('../../src/fn/upload-docs');
-uploadDocs.__set__('readline', { keyInYN: () => true });
+const userPrompt = rewire('../../src/lib/user-prompt');
+let readLine = { keyInYN: () => true };
+userPrompt.__set__('readline', readLine);
+uploadDocs.__set__('userPrompt', userPrompt);
 
 describe('upload-docs', function() {
   let fs;
@@ -19,7 +22,10 @@ describe('upload-docs', function() {
     };
     uploadDocs.__set__('fs', fs);
   });
-  afterEach(api.stop);
+  afterEach(() => {
+    sinon.restore();
+    return api.stop();
+  });
 
   it('should upload docs to pouch', async () => {
     await assertDbEmpty();
@@ -94,6 +100,24 @@ describe('upload-docs', function() {
     });
   });
 
+  it('should exit if user denies the warning', async () => {
+    userPrompt.__set__('readline', { keyInYN: () => false });
+    await assertDbEmpty();
+    sinon.stub(process, 'exit');
+    await uploadDocs.execute().then(() => {
+      assert.equal(process.exit.callCount, 1);
+    });
+  });
+
+  it('should not exit if force is set', async () => {
+    userPrompt.__set__('environment', { force: () => true });
+    await assertDbEmpty();
+    sinon.stub(process, 'exit');
+    await uploadDocs.execute();
+    assert.equal(process.exit.callCount, 0);
+    const res = await api.db.allDocs();
+    expect(res.rows.map(doc => doc.id)).to.deep.eq(['one', 'three', 'two']);
+  });
 });
 
 async function assertDbEmpty() {

@@ -1,6 +1,6 @@
 const fs = require('./sync-fs');
 const jsonDiff = require('json-diff');
-const readline = require('readline-sync');
+const userPrompt = require('./user-prompt');
 const crypto = require('crypto');
 const url = require('url');
 const path = require('path');
@@ -140,17 +140,17 @@ const preUploadDoc = async (db, localDoc) => {
   const diff = jsonDiff.diffString(remoteDoc, localDoc);
 
   if (diff) {
-    let index = readline.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
+    let index = userPrompt.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
     if (index === 2) { // diff
       log.info(diff);
-      index = readline.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
+      index = userPrompt.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
     }
     if (index === 1) { // abort
       throw new Error('configuration modified');
     }
   } else {
     // attachments or properties updated - prompt for overwrite or abort
-    const index = readline.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
+    const index = userPrompt.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
     if (index === 1) { // abort
       throw new Error('configuration modified');
     }
@@ -163,7 +163,6 @@ const preUploadDoc = async (db, localDoc) => {
 const postUploadDoc = doc => updateStoredHash(doc._id, getDocHash(doc));
 
 const preUploadForm = async (db, localDoc, localXml, properties) => {
-
   let remoteXml;
   let remoteHash;
   try {
@@ -206,16 +205,16 @@ const preUploadForm = async (db, localDoc, localXml, properties) => {
   const hasNoDiff = diff.getResult();
   if (hasNoDiff) {
     // attachments or properties updated - prompt for overwrite or abort
-    const index = readline.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
+    const index = userPrompt.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
     if (index === 1) { // abort
       throw new Error('configuration modified');
     }
   } else {
-    let index = readline.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
+    let index = userPrompt.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
     if (index === 2) { // diff
       log.info(GroupingReporter.report(diff));
 
-      index = readline.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
+      index = userPrompt.keyInSelect(responseChoicesWithoutDiff, question, {cancel: false});
     }
     if (index === 1) { // abort
       throw new Error('configuration modified');

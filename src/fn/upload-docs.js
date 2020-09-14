@@ -1,6 +1,6 @@
 const path = require('path');
 const minimist = require('minimist');
-const readline = require('readline-sync');
+const userPrompt = require('../lib/user-prompt');
 
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
@@ -34,7 +34,7 @@ const execute = async () => {
   }
 
   warn(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
-  if(!readline.keyInYN()) {
+  if(!userPrompt.keyInYN()) {
     error('User failed to confirm action.');
     process.exit(1);
   }
