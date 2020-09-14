@@ -5,6 +5,18 @@ const insertOrReplace = require('../lib/insert-or-replace');
 const warnUploadOverwrite = require('../lib/warn-upload-overwrite');
 const { info, warn } = require('../lib/log');
 
+function filterAttachments(attachments, settings) {
+  if (!attachments || !settings) {
+    return;
+  }
+
+  const settingsStr = JSON.stringify(settings);
+
+  return Object
+    .keys(attachments)
+    .filter(fileName => settingsStr.indexOf(fileName) > -1);
+}
+
 /**
  * Upload Configuration to DB's document
  * @param configPath (Mandatory) String. Path to configuration json file.
@@ -29,9 +41,10 @@ module.exports = async (configPath, directoryPath, dbDocName, processJson) => {
 
   const json = fs.readJson(jsonPath);
   const settings = processJson ? processJson(json) : json;
+  const attachments = attachmentsFromDir(directoryPath);
   const baseDocument = {
     _id: dbDocName,
-    _attachments: attachmentsFromDir(directoryPath)
+    _attachments: filterAttachments(attachments, settings)
   };
   const doc = Object.assign({}, baseDocument, settings);
 
