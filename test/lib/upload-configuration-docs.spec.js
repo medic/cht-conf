@@ -97,7 +97,8 @@ describe('Upload Configuration Docs', () => {
     };
     const processJson = (json) => {
       return {
-        customSection: { title: json.title }
+        customSection: { title: json.title },
+        resources: json.resources
       };
     };
 
