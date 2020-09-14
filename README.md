@@ -113,6 +113,8 @@ In order to avoid overwriting someone elses configuration medic-conf records the
 * upload resources to server
 * upload custom translations to the server
 * upload privacy policies to server
+* upload branding to server
+* upload partners to server
 
 ## Forms
 
