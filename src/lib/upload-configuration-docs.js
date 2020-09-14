@@ -13,8 +13,13 @@ function filterAttachments(attachments, settings) {
   const settingsStr = JSON.stringify(settings);
 
   return Object
-    .keys(attachments)
-    .filter(fileName => settingsStr.indexOf(fileName) > -1);
+    .entries(attachments)
+    .reduce((accumulator, [key, value]) => {
+      if (settingsStr.indexOf(key) > -1) {
+        accumulator[key] = value;
+      }
+      return accumulator;
+    }, {});
 }
 
 /**
