@@ -8,6 +8,8 @@ const log = require('./log');
 const environment = require('./environment');
 const { compare, GroupingReporter } = require('dom-compare');
 const DOMParser = require('xmldom').DOMParser;
+const request = require('request-promise-native');
+const cache = new Map();
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -20,6 +22,26 @@ const getEnvironmentKey = () => {
   const parsed = url.parse(environment.apiUrl);
   const path = parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : '/medic';
   return `${parsed.hostname}${path}`;
+};
+
+const getCompressibleTypes = async () => {
+  const parsedUrl = url.parse(environment.apiUrl);
+  const configUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/api/couch-config-attachments`;
+  try {
+    if (cache.has('compressibleTypes')) {
+      return cache.get('compressibleTypes');
+    }
+    const resp = await request.get({ url: configUrl, json: true });
+    cache.set('compressibleTypes', resp.compressible_types);
+    return resp.compressible_types;
+  } catch(e) {
+    if (e.statusCode === 404) {
+      cache.set('compressibleTypes', null);
+    } else {
+      log.error(`Error trying to get couchdb config: ${e}`);
+    }
+    return null;
+  }
 };
 
 const getHashFileName = () => {
@@ -94,16 +116,30 @@ const getFormHash = (doc, xml, properties) => {
   return crypt.digest('base64');
 };
 
-const getDocHash = originalDoc => {
+const getDocHash = async (db, originalDoc) => {
   const doc = JSON.parse(JSON.stringify(originalDoc)); // clone doc
   delete doc._rev;
   delete doc._attachments;
   const crypt = crypto.createHash('md5');
   crypt.update(JSON.stringify(doc), 'utf8');
+  const compressibleTypes = await getCompressibleTypes();
+  const matchRegex = (pattern, type) => {
+    const rx = new RegExp(pattern.trim());
+    return rx.test(type);
+  };
   if (originalDoc._attachments) {
-    Object.values(originalDoc._attachments).forEach(attachment => {
-      crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
-    });
+    for (const attachmentName of Object.keys(originalDoc._attachments)) {
+      const attachment = originalDoc._attachments[attachmentName];
+      const attachmentCompressible = compressibleTypes ?
+        compressibleTypes.split(',').some(c => matchRegex(c, attachment.content_type)) :
+        true;
+      if (attachmentCompressible) {
+        const data = attachment.data ? attachment.data : await db.getAttachment(originalDoc._id, attachmentName);
+        crypt.update(data);
+      } else {
+        crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
+      }
+    }
   }
   return crypt.digest('base64');
 };
@@ -124,8 +160,8 @@ const preUploadDoc = async (db, localDoc) => {
     }
   }
 
-  const remoteHash = getDocHash(remoteDoc);
-  const localHash = getDocHash(localDoc);
+  const remoteHash = await getDocHash(db, remoteDoc);
+  const localHash = await getDocHash(db, localDoc);
   if (localHash === remoteHash) {
     // no changes to this form - do not upload
     return Promise.resolve(false);
@@ -160,7 +196,7 @@ const preUploadDoc = async (db, localDoc) => {
   return Promise.resolve(true);
 };
 
-const postUploadDoc = doc => updateStoredHash(doc._id, getDocHash(doc));
+const postUploadDoc = async (db, doc) => updateStoredHash(doc._id, await getDocHash(db, doc));
 
 const preUploadForm = async (db, localDoc, localXml, properties) => {
   let remoteXml;

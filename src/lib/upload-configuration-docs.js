@@ -64,7 +64,7 @@ module.exports = async (configPath, directoryPath, dbDocName, processJson) => {
     info('Configuration not uploaded as no changes found');
   }
 
-  warnUploadOverwrite.postUploadDoc(doc);
+  await warnUploadOverwrite.postUploadDoc(db, doc);
 
   return Promise.resolve();
 };
