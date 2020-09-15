@@ -52,6 +52,7 @@ describe('upload-forms', () => {
         expect(form.context).to.deep.equal({ person: true, place: false });
         expect(form.icon).to.equal('example');
         expect(form.xml2sms).to.equal('hello world');
+        expect(form.subject_key).to.equal('some.translation.key');
       });
   });
 
