@@ -71,7 +71,7 @@ describe('Upload Configuration Docs', () => {
       expect(attachmentsFromDir.called).to.be.true;
       expect(pouch.called).to.be.true;
       expect(warnUploadOverwrite.preUploadDoc.args[0][1]).to.deep.include(configurationDoc);
-      expect(warnUploadOverwrite.postUploadDoc.args[0][0]).to.deep.include(configurationDoc);
+      expect(warnUploadOverwrite.postUploadDoc.args[0][1]).to.deep.include(configurationDoc);
       expect(insertOrReplace.args[0][1]).to.deep.include(configurationDoc);
     });
   });
@@ -108,7 +108,7 @@ describe('Upload Configuration Docs', () => {
       expect(attachmentsFromDir.called).to.be.true;
       expect(pouch.called).to.be.true;
       expect(warnUploadOverwrite.preUploadDoc.args[0][1]).to.deep.include(configurationDoc);
-      expect(warnUploadOverwrite.postUploadDoc.args[0][0]).to.deep.include(configurationDoc);
+      expect(warnUploadOverwrite.postUploadDoc.args[0][1]).to.deep.include(configurationDoc);
       expect(insertOrReplace.args[0][1]).to.deep.include(configurationDoc);
     });
   });
