@@ -1,6 +1,14 @@
 const state = {};
 
-const initialize = (pathToProject, isArchiveMode, archiveDestination, extraArgs, apiUrl, force) => {
+const initialize = (
+  pathToProject,
+  isArchiveMode,
+  archiveDestination,
+  extraArgs,
+  apiUrl,
+  force,
+  skipTranslationCheck
+) => {
   if (state.initialized) {
     throw Error('environment is already initialized');
   }
@@ -12,7 +20,8 @@ const initialize = (pathToProject, isArchiveMode, archiveDestination, extraArgs,
     initialized: true,
     isArchiveMode,
     pathToProject,
-    force
+    force,
+    skipTranslationCheck
   });
 };
 
@@ -25,5 +34,6 @@ module.exports = {
   get instanceUrl() { return this.apiUrl && this.apiUrl.replace(/\/medic$/, ''); },
   get extraArgs() { return state.extraArgs; },
   get apiUrl() { return state.apiUrl; },
-  get force() { return state.force; }
+  get force() { return state.force; },
+  get skipTranslationCheck() { return state.skipTranslationCheck; }
 };

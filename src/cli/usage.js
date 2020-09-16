@@ -57,6 +57,9 @@ ${bold('OPTIONS')}
   --skip-dependency-check
     Skips checking the version running is set to the same version in the package.json
 
+  --skip-translation-check
+    Skips checking message translations
+
   --force
     CAN BE DANGEROUS! Passes yes to all commands and any where that would prompt to overwrite changes will overwrite automatically. 
 `);

@@ -1,12 +1,10 @@
-const { assert, expect } = require('chai');
+const { assert } = require('chai');
 const sinon = require('sinon');
 const readline = require('readline-sync');
 const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
-const testProjectDir = './data/upload-custom-translations/';
+const log = require('../../src/lib/log');
 const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
-
-const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => `${testProjectDir}${testDir}`);
 
 const getTranslationDoc = (lang) => {
   return api.db.get(`messages-${lang}`)
@@ -28,11 +26,20 @@ const expectTranslationDocs = (...expectedLangs) => {
 };
 
 describe('upload-custom-translations', () => {
+
+  const testProjectDir = './data/upload-custom-translations/';
+  let mockTestDir;
+
   beforeEach(() => {
+    mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => `${testProjectDir}${testDir}`);
     readline.keyInYN = () => true;
     return api.start();
   });
-  afterEach(api.stop);
+
+  afterEach(async () => {
+    sinon.restore();
+    await api.stop();
+  });
 
   describe('medic-2.x', () => {
     beforeEach(() => {
@@ -117,11 +124,13 @@ describe('upload-custom-translations', () => {
 
     it('should set default name for unknown language', () => {
       mockTestDir(`unknown-lang`);
+      sinon.replace(log, 'warn', sinon.fake());
       return uploadCustomTranslations()
         .then(() => expectTranslationDocs('qp'))
         .then(() => getTranslationDoc('qp'))
         .then(messagesQp => {
           assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
+          assert(log.warn.lastCall.calledWithMatch('\'qp\' is not a recognized ISO 639 language code, please ask admin to set the name'));
         });
     });
   });
@@ -455,6 +464,17 @@ describe('upload-custom-translations', () => {
           });
       });
 
+      it('upload translations containing empty messages raises warn logs but works', () => {
+        mockTestDir('contains-empty-messages');
+        sinon.replace(log, 'warn', sinon.fake());
+        return uploadCustomTranslations()
+          .then(() => expectTranslationDocs('en'))
+          .then(() => {
+            assert(log.warn.lastCall.calledWithMatch(
+              '1 empty messages trying to compile translations'));
+          });
+      });
+
     });
 
 
@@ -462,12 +482,39 @@ describe('upload-custom-translations', () => {
 
   it('should crash for invalid language code', () => {
     mockTestDir(`invalid-lang`);
+    sinon.replace(log, 'error', sinon.fake());
+    sinon.replace(process, 'exit', sinon.fake());
     return uploadCustomTranslations()
       .then(() => {
-        throw new Error('ensures uploadCustomTranslations throws');
-      })
-      .catch(err => {
-        expect(err.message).to.include('bad(code');
+        assert(log.error.lastCall.calledWithMatch('The language code \'bad(code\' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.'));
+        assert(process.exit.calledOnce);
+      });
+  });
+
+  it('upload translations containing invalid placeholders raise errors', () => {
+    mockTestDir('contains-placeholder-wrong');
+    sinon.replace(log, 'error', sinon.fake());
+    sinon.replace(process, 'exit', sinon.fake());
+    return uploadCustomTranslations()
+      .then(() => {
+        assert(log.error.lastCall.calledWithMatch(
+          '1 errors trying to compile translations\n' +
+          'You can use messages-ex.properties to add placeholders missing from the reference context.'));
+        assert(process.exit.calledOnce);
+      });
+  });
+
+  it('upload translations containing invalid messageformat raises error logs and exit', () => {
+    mockTestDir('contains-messageformat-wrong');
+    sinon.replace(log, 'error', sinon.fake());
+    sinon.replace(process, 'exit', sinon.fake());
+    return uploadCustomTranslations()
+      .then(() => {
+        assert(log.error.calledTwice);
+        assert(log.error.firstCall.calledWithMatch(/Cannot compile 'en' translation n.month/));
+        assert(log.error.lastCall.calledWithMatch('1 errors trying to compile translations'));
+        assert(process.exit.calledOnce);
+        sinon.restore();
       });
   });
 });

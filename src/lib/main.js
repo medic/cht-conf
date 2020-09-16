@@ -162,7 +162,15 @@ module.exports = async (argv, env) => {
     extraArgs = undefined;
   }
 
-  environment.initialize(pathToProject, !!cmdArgs.archive, cmdArgs.destination, extraArgs, apiUrl, cmdArgs.force);
+  environment.initialize(
+    pathToProject,
+    !!cmdArgs.archive,
+    cmdArgs.destination,
+    extraArgs,
+    apiUrl,
+    cmdArgs.force,
+    cmdArgs['skip-translation-check']
+  );
 
   const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
   const expectedOptions = ['alpha', projectName];
