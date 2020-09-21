@@ -12,7 +12,7 @@ function emitter(contactSummary, contact, reports) {
       var appliesToNotType = appliesToType.filter(function(type) {
         return type && type.charAt(0) === '!';
       });
-      if (appliesToType.includes(contactType) ||
+      if (appliesToType.length === 0 || appliesToType.includes(contactType) ||
           (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
         if (!f.appliesIf || f.appliesIf()) {
           delete f.appliesToType;
@@ -45,7 +45,7 @@ function emitter(contactSummary, contact, reports) {
         }
       }
     } else {
-      if (!appliesToType.includes(contactType)) {
+      if (!appliesToType.includes(contactType) && appliesToType.length > 0) {
         return;
       }
 
@@ -63,6 +63,9 @@ function emitter(contactSummary, contact, reports) {
 }
 
 function convertToArray(appliesToType) {
+  if (!appliesToType) {
+    return [];
+  }
   return Array.isArray(appliesToType) ? appliesToType : [appliesToType];  
 }
 

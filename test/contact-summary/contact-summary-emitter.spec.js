@@ -66,7 +66,7 @@ describe('contact-summary-emitter', function() {
       assert.equal(appliesIf.callCount, 0);
     });
 
-    it('does not add cards with undefined appliesToType and existing contact type', () => {
+    it('adds cards with undefined appliesToType and existing contact type', () => {
       const appliesIf = sinon.stub().returns(false);
       const cards = [
         { appliesIf },
@@ -74,7 +74,7 @@ describe('contact-summary-emitter', function() {
       const report = { report: true };
       emitter({ cards }, { type: 'x' }, [report]);
 
-      assert.equal(appliesIf.callCount, 0);
+      assert.equal(appliesIf.callCount, 1);
     });
 
     it('adds cards with undefined appliesToType and undefined contact type', () => {
@@ -147,15 +147,15 @@ describe('contact-summary-emitter', function() {
       expect(result.fields).to.deep.eq([]);
     });
 
-    it('does not add fields with undefined appliesToType and defined contact type', () => {
+    it('adds fields with undefined appliesToType and defined contact type', () => {
       const appliesIf = sinon.stub().returns(true);
       const fields = [
-        { appliesIf },
+        { appliesIf, label: 'label' },
       ];
       const report = { report: true };
       const result = emitter({ fields }, { type: 'r' }, [report]);
 
-      expect(result.fields).to.deep.eq([]);
+      expect(result.fields).to.deep.eq([{ label: 'label' }]);
     });
 
     it('does add fields with undefined appliesToType and undefined contact type', () => {
