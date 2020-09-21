@@ -51,10 +51,10 @@ const compileAppSettingsForProject = async (projectDir, options) => {
     // using modular config so should override anything already defined in app_settings.json
     appSettings = fs.readJson(baseSettingsPath);
     if(appSettings.forms) {
-      warn('forms should be defined in a separate forms.json file.');
+      warn('forms should be defined in a separate <config_repo>/app_settings/forms.json file.');
     }
     if(appSettings.schedules) {
-      warn('schedules should be defined in a separate schedules.json file.');
+      warn('schedules should be defined in a separate <config_repo>/app_settings/schedules.json file.');
     }
     const formSettings = readOptionalJson(path.join(projectDir, 'app_settings/forms.json'));
     if (formSettings) {
