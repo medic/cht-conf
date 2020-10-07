@@ -67,6 +67,15 @@ describe('compile-app-settings', () => {
 
   it('can overwrite eslint rules with eslintrc file', () =>
     test('eslintrc/project'));
+
+  it('should handle a configuration using the base_settings file', () =>
+    test('base-settings/project'));
+
+  it('should handle a configuration using the forms.json and schedules.json files', () =>
+    test('sms-modules/project'));
+
+  it('should reject a configuration using invalid forms.json or schedules.json files', () =>
+    testFails('sms-modules/invalid-files'));
 });
 
 async function test(relativeProjectDir) {

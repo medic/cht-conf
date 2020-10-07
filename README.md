@@ -108,6 +108,10 @@ In order to avoid overwriting someone elses configuration medic-conf records the
   - schedules
   - contact-summary
   - purge
+* app settings can also be defined in a more modular way by having the following files in app_settings folder:
+	- base_settings.json
+	- forms.json
+	- schedules.json
 * backup app settings from server
 * upload app settings to server
 * upload resources to server
