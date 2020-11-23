@@ -136,10 +136,10 @@ In order to avoid overwriting someone elses configuration medic-conf records the
 * upload JSON files as docs on instance
 * compress PNGs and SVGs in the current directory and its subdirectories
 
-## Editing contacts across the hierarchy. 
+## Editing contacts across the hierarchy.
 To edit existing couchdb documents, create a CSV file that contains the id's of the document you wish to update, and the columns of the document attribute(s) you wish to add/edit. By default, values are parsed as strings. To parse a CSV column as a JSON type, refer to the [Property Types](#property-types) section to see how you can parse the values to different types. Also refer to the [Excluded Columns](#excluded-columns) section to see how to exclude column(s) from being added to the docs.
 
-Parameter | Description | Required 
+Parameter | Description | Required
 -- | -- | --
 column(s) | Comma delimited list of columns you wish to add/edit. If this is not specified all columns will be added. | No
 docDirectoryPath | This action outputs files to local disk at this destination | No. Default `json-docs`
@@ -147,7 +147,7 @@ file(s) | Comma delimited list of files you wish to process using edit-contacts.
 
 
 ### Example
-1. Create a contact.csv file with your columns in the csv folder in your current path. The documentID column is a requirement. (The documentID column contains the document IDs to be fetched from couchdb.) 
+1. Create a contact.csv file with your columns in the csv folder in your current path. The documentID column is a requirement. (The documentID column contains the document IDs to be fetched from couchdb.)
 
 | documentID | is_in_emnch:bool |
 | ----------------- | ---------------- |
@@ -286,13 +286,13 @@ Execute `npm test` to run static analysis checks and the test suite.
 
 1. Checkout `master`
 1. Run `npm version --no-git-tag-version <major>.<minor>.<patch>-beta.1`. This will only update the versions in `package.json` and `package-lock.json`. It will not create a git tag and not create an associated commit.
-1. Run `npm publish --tag beta`. This will publish your beta tag to npm's beta channel. 
+1. Run `npm publish --tag beta`. This will publish your beta tag to npm's beta channel.
 
-To install from the beta channel, run `npm install medic-conf@beta`. 
+To install from the beta channel, run `npm install medic-conf@beta`.
 
 ## Build status
 
-Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/cht-conf).
+Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic-conf).
 
 <a href="https://travis-ci.org/medic/medic-conf"><img src="https://travis-ci.org/medic/medic-conf.svg?branch=master"/></a>
 
