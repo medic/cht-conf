@@ -1,6 +1,6 @@
 name: Build Medic-Conf and test against node versions
 
-on: [push, pull_request]
+on: push
 
 jobs:
   build:
