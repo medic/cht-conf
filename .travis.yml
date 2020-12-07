@@ -1,12 +1,12 @@
-language: node_js
-node_js:
-  - 12
-  - 10
-  - 8
-install:
-  - "pip install --user -U pip"
-  - "pip install --user git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic"
-before_script:
-  - "! grep -Fq '.only(' test/**/*.spec.js"
-  - npm ci
-  - npm link
+# language: node_js
+# node_js:
+#   - 12
+#   - 10
+#   - 8
+# install:
+#   - "pip install --user -U pip"
+#   - "pip install --user git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic"
+# before_script:
+#   - "! grep -Fq '.only(' test/**/*.spec.js"
+#   - npm ci
+#   - npm link
