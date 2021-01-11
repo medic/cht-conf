@@ -43,7 +43,9 @@ const updateLineagesAndStage = async (options, db) => {
     }
 
     trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)}.`);
-    const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, contactId);
+    
+    //const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, contactId);
+    const updatedDescendants = updateDocToDeleted(...descendantsAndSelf);
 
     const ancestors = await fetch.ancestorsOf(db, contactDoc);
     trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
@@ -52,6 +54,9 @@ const updateLineagesAndStage = async (options, db) => {
     const reportsCreatedByDescendants = await fetch.reportsCreatedBy(db, descendantsAndSelf.map(descendant => descendant._id));
     trace(`${reportsCreatedByDescendants.length} report(s) created by these affected contact(s) will update`);
     const updatedReports = replaceLineageInReports(reportsCreatedByDescendants, replacementLineage, contactId);
+
+    const reportsWithContactAsSubject = await fetch.reportsWithSubject(db, [contactDoc._id]);
+    updatedReports.push(...updateReportsSubjectTo(parentDoc._id, reportsWithContactAsSubject));
 
     [...updatedDescendants, ...updatedReports, ...updatedAncestors].forEach(updatedDoc => {
       lineageManipulation.minifyLineagesInDoc(updatedDoc);
@@ -75,7 +80,7 @@ const validateContacts = async (contactDocs, constraints) => {
   Object.values(contactDocs).forEach(doc => {
     const hierarchyError = constraints.getHierarchyErrors(doc);
     if (hierarchyError) {
-      throw Error(`Hierarchy Constraints: ${hierarchyError}`);
+      console.error(`Hierarchy Constraints: ${hierarchyError}`);
     }
   });
 
@@ -115,6 +120,7 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
   return {
     parentId: args.parent,
     contactIds,
+    merge: !!args.merge,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
   };
@@ -223,6 +229,15 @@ const fetch = {
     return reports.rows.map(row => row.doc);
   },
 
+  reportsWithSubject: async (db, contactIds) => {
+    const reports = await db.query('medic-client/reports_by_subject', {
+      keys: contactIds.map(id => [id]),
+      include_docs: true,
+    });
+
+    return reports.rows.map(row => row.doc);
+  },
+
   ancestorsOf: async (db, contactDoc) => {
     const ancestorIds = lineageManipulation.pluckIdsFromLineage(contactDoc.parent);
     const ancestors = await db.allDocs({
@@ -255,6 +270,32 @@ const replaceLineageInContacts = (descendantsAndSelf, replacementLineage, contac
   }
   return agg;
 }, []);
+
+const updateDocToDeleted = (...docs) => docs.map(doc => ({
+  _id: doc._id,
+  _rev: doc._rev,
+  deleted: true,
+}));
+
+const updateReportsSubjectTo = (subjectId, reports) => reports.map(report => {
+  if (report.place_id) {
+    report.place_id = subjectId;
+  }
+
+  if (report.patient_id) {
+    report.patient_id = subjectId;
+  }
+  
+  if (report.fields && report.fields.patient_id) {
+    report.fields.patient_id = subjectId;
+  }
+
+  if (report.fields && report.fields.place_id) {
+    report.fields.place_id = subjectId;
+  }
+
+  return report;
+});
 
 const replaceLineageInAncestors = (descendantsAndSelf, ancestors) => ancestors.reduce((agg, ancestor) => {
   let result = agg;
