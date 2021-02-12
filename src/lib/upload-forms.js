@@ -1,4 +1,5 @@
 const abortPromiseChain = require('./abort-promise-chain');
+const api = require('./api');
 const argsFormFilter = require('./args-form-filter');
 const attachmentsFromDir = require('./attachments-from-dir');
 const attachmentFromFile = require('./attachment-from-file');
@@ -62,8 +63,12 @@ module.exports = (projectDir, subDirectory, options) => {
         .then(() => warnUploadOverwrite.preUploadForm(db, doc, xml, properties))
         .then(changes => {
           if (changes) {
-            return insertOrReplace(db, doc)
-              .then(() => log.info(`Form ${formsDir}/${fileName} uploaded`));
+            return api().formsValidate(xml)
+              .then(() => insertOrReplace(db, doc))
+              .then(() => log.info(`Form ${formsDir}/${fileName} uploaded`))
+              .catch(err => {
+                log.error(`Form ${formsDir}/${fileName} not uploaded, found error: ${err.message}`);
+              });
           } else {
             log.info(`Form ${formsDir}/${fileName} not uploaded, no changes`);
           }

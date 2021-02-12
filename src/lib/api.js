@@ -88,6 +88,21 @@ const api = {
     return request({ uri: `${environment.instanceUrl}/api/deploy-info`, method: 'GET', json: true }) // endpoint added in 3.5
       .then(deploy_info => deploy_info && deploy_info.version);
   },
+
+  formsValidate(formXml) {
+    return request({
+      method: 'POST',
+      uri: `${environment.instanceUrl}/api/v1/forms/validate`,
+      headers: { 'Content-Type': 'application/xml' },
+      body: formXml,
+    })
+    .catch(err => {
+      if (err.statusCode === 400 && err.error) {
+        throw new Error(JSON.parse(err.error).error);
+      }
+      throw err;
+    });
+  }
 };
 
 Object.keys(api).forEach(key => {

@@ -35,26 +35,27 @@ describe('upload-forms', () => {
     });
   });
 
-  it('should merge supported properties into form', () => {
-    const logWarn = sinon.spy(log, 'warn');
-    // when
-    return uploadForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR)
-      .then(() => {
-        expect(logWarn.callCount).to.equal(2);
-        expect(logWarn.args[0][0]).to.equal('DEPRECATED: data/lib/upload-forms/merge-properties/forms/./example.properties.json. Please do not manually set internalId in .properties.json for new projects. Support for configuring this value will be dropped. Please see https://github.com/medic/medic-webapp/issues/3342.');
-        expect(logWarn.args[1][0]).to.equal('Ignoring unknown properties in data/lib/upload-forms/merge-properties/forms/./example.properties.json: unknown');
+  it('should merge supported properties into form', async () => {
+    return uploadForms.__with__({
+      api: () => ({
+        formsValidate: ()=> Promise.resolve()
       })
-      .then(() => api.db.get('form:example'))
-      .then(form => {
-        expect(form.type).to.equal('form');
-        expect(form.internalId).to.equal('different');
-        expect(form.title).to.equal('Merge properties');
-        expect(form.context).to.deep.equal({ person: true, place: false });
-        expect(form.icon).to.equal('example');
-        expect(form.xml2sms).to.equal('hello world');
-        expect(form.subject_key).to.equal('some.translation.key');
-        expect(form.hidden_fields[0]).to.equal('hidden');
-      });
+    })(async () => {
+      const logWarn = sinon.spy(log, 'warn');
+      await uploadForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
+      expect(logWarn.callCount).to.equal(2);
+      expect(logWarn.args[0][0]).to.equal('DEPRECATED: data/lib/upload-forms/merge-properties/forms/./example.properties.json. Please do not manually set internalId in .properties.json for new projects. Support for configuring this value will be dropped. Please see https://github.com/medic/medic-webapp/issues/3342.');
+      expect(logWarn.args[1][0]).to.equal('Ignoring unknown properties in data/lib/upload-forms/merge-properties/forms/./example.properties.json: unknown');
+      const form = await api.db.get('form:example');
+      expect(form.type).to.equal('form');
+      expect(form.internalId).to.equal('different');
+      expect(form.title).to.equal('Merge properties');
+      expect(form.context).to.deep.equal({ person: true, place: false });
+      expect(form.icon).to.equal('example');
+      expect(form.xml2sms).to.equal('hello world');
+      expect(form.subject_key).to.equal('some.translation.key');
+      expect(form.hidden_fields[0]).to.equal('hidden');
+    });
   });
 
 });
