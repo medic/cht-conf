@@ -37,9 +37,9 @@ describe('upload-forms', () => {
 
   it('should merge supported properties into form', async () => {
     return uploadForms.__with__({
-      api: () => ({
-        formsValidate: ()=> Promise.resolve()
-      })
+      api: {
+        formsValidate: ()=> Promise.resolve({ok: true})
+      }
     })(async () => {
       const logWarn = sinon.spy(log, 'warn');
       await uploadForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);

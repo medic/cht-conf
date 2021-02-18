@@ -89,14 +89,60 @@ const api = {
       .then(deploy_info => deploy_info && deploy_info.version);
   },
 
+  /**
+   * Whether form validation endpoint exists or not, by
+   * default we assume it exists, but once `formsValidate`
+   * is called if the response is a 404 error, the
+   * value is changed to `false`, so next call to
+   * the function the request is omitted and the
+   * form considered valid
+   */
+  _formsValidateEndpointFound: true,
+
+  /**
+   * Validates an XForm against the API.
+   * @param formXml XML string
+   * @returns a JSON object if the validation is successful,
+   *          typically `{ok: true}`. If the validation endpoint
+   *          does not exist, the form is considered valid
+   *          and `{ok: true, formsValidateEndpointFound: false}`
+   *          is returned.
+   *          If the method is called again after the endpoint
+   *          was not found, `{ok: true, formsValidateEndpointFound: false}`
+   *          will be returned again without calling the API
+   * @throws `Error` exception with the validations error message
+   *         from the API
+   */
   formsValidate(formXml) {
+    if (!this._formsValidateEndpointFound) {
+      // The endpoint to validate forms doesn't exist in the API,
+      // (old version), so we assume form is valid but return special result
+      return Promise.resolve({ok: true, formsValidateEndpointFound: false});
+    }
     return request({
       method: 'POST',
       uri: `${environment.instanceUrl}/api/v1/forms/validate`,
       headers: { 'Content-Type': 'application/xml' },
       body: formXml,
     })
+    .then(resp => {
+      const json = JSON.parse(resp);
+      if (Object.keys(json).filter(k=>k!=='ok').length !== 0 || json.ok !== true) {
+        // If other than {ok:true} is received lets log it
+        log.info(`Form validation succeeded with result: ${resp}`);
+      }
+      return json;
+    })
     .catch(err => {
+      if (err.name === 'StatusCodeError' && err.statusCode === 404) {
+        // The endpoint doesn't exist in the API (old version), so
+        // we assume the form is valid but return special JSON
+        // highlighting the situation, and storing the lack
+        // of the endpoint so next call there is no need
+        // to call the missed endpoint again
+        this._formsValidateEndpointFound = false;
+        return {ok: true, formsValidateEndpointFound: false};
+      }
       if (err.statusCode === 400 && err.error) {
         throw new Error(JSON.parse(err.error).error);
       }

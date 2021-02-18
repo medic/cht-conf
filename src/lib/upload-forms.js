@@ -1,5 +1,5 @@
 const abortPromiseChain = require('./abort-promise-chain');
-const api = require('./api');
+const api = require('./api')();
 const argsFormFilter = require('./args-form-filter');
 const attachmentsFromDir = require('./attachments-from-dir');
 const attachmentFromFile = require('./attachment-from-file');
@@ -10,6 +10,8 @@ const pouch = require('./db');
 const warnUploadOverwrite = require('./warn-upload-overwrite');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms', 'subject_key', 'hidden_fields'];
+
+let validateEndpointNotFoundLogged = false;
 
 module.exports = (projectDir, subDirectory, options) => {
   const db = pouch();
@@ -63,11 +65,21 @@ module.exports = (projectDir, subDirectory, options) => {
         .then(() => warnUploadOverwrite.preUploadForm(db, doc, xml, properties))
         .then(changes => {
           if (changes) {
-            return api().formsValidate(xml)
+            return api.formsValidate(xml)
+              .then(resp => {
+                if (resp.formsValidateEndpointFound === false &&
+                    !validateEndpointNotFoundLogged) {
+                  log.info('Form validation endpoint not found in the API, ' +
+                    'no form will be checked before push');
+                  validateEndpointNotFoundLogged = true; // Just log the message once
+                }
+              })
               .then(() => insertOrReplace(db, doc))
               .then(() => log.info(`Form ${formsDir}/${fileName} uploaded`))
               .catch(err => {
-                log.error(`Form ${formsDir}/${fileName} not uploaded, found error: ${err.message}`);
+                if (err.name !== 'StatusCodeError' && err.statusCode === 404) {
+                  log.error(`Form ${formsDir}/${fileName} not uploaded, found error: ${err.message}`);
+                }
               });
           } else {
             log.info(`Form ${formsDir}/${fileName} not uploaded, no changes`);
