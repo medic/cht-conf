@@ -77,9 +77,7 @@ module.exports = (projectDir, subDirectory, options) => {
               .then(() => insertOrReplace(db, doc))
               .then(() => log.info(`Form ${formsDir}/${fileName} uploaded`))
               .catch(err => {
-                if (err.name !== 'StatusCodeError' && err.statusCode === 404) {
-                  log.error(`Form ${formsDir}/${fileName} not uploaded, found error: ${err.message}`);
-                }
+                log.error(`Form ${formsDir}/${fileName} not uploaded, API validations found errors: ${err.message}`);
               });
           } else {
             log.info(`Form ${formsDir}/${fileName} not uploaded, no changes`);
