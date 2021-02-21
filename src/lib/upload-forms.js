@@ -1,4 +1,4 @@
-const abortPromiseChain = require('./abort-promise-chain');
+const failPromiseChain = require('./fail-promise-chain');
 const api = require('./api')();
 const argsFormFilter = require('./args-form-filter');
 const attachmentsFromDir = require('./attachments-from-dir');
@@ -11,8 +11,6 @@ const warnUploadOverwrite = require('./warn-upload-overwrite');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms', 'subject_key', 'hidden_fields'];
 
-let validateEndpointNotFoundLogged = false;
-
 module.exports = (projectDir, subDirectory, options) => {
   const db = pouch();
   if (!options) options = {};
@@ -20,25 +18,31 @@ module.exports = (projectDir, subDirectory, options) => {
   const formsDir = `${projectDir}/forms/${subDirectory}`;
   if(!fs.exists(formsDir)) {
     log.warn(`Forms dir not found: ${formsDir}`);
-    return Promise.resolve();
+    // result: 'skip' is returned when this is executed
+    // in the validation phase so execution phase is skipped
+    return Promise.resolve({result: 'skip'});
   }
 
   return argsFormFilter(formsDir, '.xml', options)
     .reduce((promiseChain, fileName) => {
-      log.info(`Preparing form for upload: ${fileName}…`);
+      log.info(`Preparing form for ${options.validate ? 'validate' : 'upload'}: ${fileName}…`);
 
       const baseFileName = fs.withoutExtension(fileName);
       const mediaDir = `${formsDir}/${baseFileName}-media`;
       const xformPath = `${formsDir}/${baseFileName}.xml`;
       const baseDocId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
 
-      if(!fs.exists(mediaDir)) log.info(`No media directory found at ${mediaDir} for form ${xformPath}`);
+      const mediaDirExists = fs.exists(mediaDir);
+      if(!mediaDirExists) {
+        log.info(`No media directory found at ${mediaDir} for form ${xformPath}`);
+      }
 
       const xml = fs.read(xformPath);
 
       if(!formHasInstanceId(xml)) {
-        return abortPromiseChain(promiseChain,
-            `Form at ${xformPath} appears to be missing <meta><instanceID/></meta> node.  This form will not work on medic-webapp.`);
+        log.error(`Form at ${xformPath} appears to be missing <meta><instanceID/></meta> node. This form will not work on medic-webapp.`);
+        return failPromiseChain(promiseChain,
+          'One or more forms appears to be missing <meta><instanceID/></meta> node. The upload process is aborted.');
       }
 
       const internalId = readIdFrom(xml);
@@ -56,7 +60,7 @@ module.exports = (projectDir, subDirectory, options) => {
       const propertiesPath = `${formsDir}/${baseFileName}.properties.json`;
       updateFromPropertiesFile(doc, propertiesPath);
 
-      doc._attachments = fs.exists(mediaDir) ? attachmentsFromDir(mediaDir) : {};
+      doc._attachments = mediaDirExists ? attachmentsFromDir(mediaDir) : {};
       doc._attachments.xml = attachmentFromFile(xformPath);
 
       const properties = SUPPORTED_PROPERTIES.concat('internalId');
@@ -65,20 +69,13 @@ module.exports = (projectDir, subDirectory, options) => {
         .then(() => warnUploadOverwrite.preUploadForm(db, doc, xml, properties))
         .then(changes => {
           if (changes) {
-            return api.formsValidate(xml)
-              .then(resp => {
-                if (resp.formsValidateEndpointFound === false &&
-                    !validateEndpointNotFoundLogged) {
-                  log.info('Form validation endpoint not found in the API, ' +
-                    'no form will be checked before push');
-                  validateEndpointNotFoundLogged = true; // Just log the message once
-                }
+            return _formsValidate(xml)
+              .catch(err => {
+                log.error(`Form ${formsDir}/${fileName} with errors, API validations response: ${err.message}`);
+                //TODO _formsValidate or insertOrReplace, not both
               })
               .then(() => insertOrReplace(db, doc))
-              .then(() => log.info(`Form ${formsDir}/${fileName} uploaded`))
-              .catch(err => {
-                log.error(`Form ${formsDir}/${fileName} not uploaded, API validations found errors: ${err.message}`);
-              });
+              .then(() => log.info(`Form ${formsDir}/${fileName} uploaded`));
           } else {
             log.info(`Form ${formsDir}/${fileName} not uploaded, no changes`);
           }
@@ -86,6 +83,20 @@ module.exports = (projectDir, subDirectory, options) => {
         // update hash regardless
         .then(() => warnUploadOverwrite.postUploadForm(doc, xml, properties));
     }, Promise.resolve());
+};
+
+let validateEndpointNotFoundLogged = false;
+
+const _formsValidate = (xml) => {
+  return api.formsValidate(xml)
+    .then(resp => {
+      if (resp.formsValidateEndpointFound === false &&
+          !validateEndpointNotFoundLogged) {
+        log.info('Form validation endpoint not found in the API, ' +
+          'no form will be checked before push');
+        validateEndpointNotFoundLogged = true; // Just log the message once
+      }
+    });
 };
 
 // This isn't really how to parse XML, but we have fairly good control over the

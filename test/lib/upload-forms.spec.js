@@ -23,7 +23,7 @@ describe('upload-forms', () => {
       .then(() => assert.fail('Expected Error to be thrown.'))
 
       .catch(e => {
-        assert.include(e.message, 'This form will not work on medic-webapp.');
+        assert.include(e.message, 'One or more forms appears to be missing <meta><instanceID/></meta> node.');
       });
   });
 
