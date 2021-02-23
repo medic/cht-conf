@@ -53,6 +53,7 @@ describe('upload-forms', () => {
         expect(form.icon).to.equal('example');
         expect(form.xml2sms).to.equal('hello world');
         expect(form.subject_key).to.equal('some.translation.key');
+        expect(form.hidden_fields[0]).to.equal('hidden');
       });
   });
 
