@@ -4,9 +4,6 @@ const fs = require('./sync-fs');
 const log = require('./log');
 const { getFormDir, getFormFilePaths } = require('./forms-utils');
 
-let validateEndpointFoundErrors = false;
-let hasInstanceIdFoundErrors = false;
-
 //TODO Add this to the main loop
 module.exports = (projectDir, subDirectory, options) => {
   if (!options) options = {};
@@ -17,9 +14,11 @@ module.exports = (projectDir, subDirectory, options) => {
     return Promise.resolve();
   }
 
+  let hasInstanceIdFoundErrors = false;
+  let validateEndpointFoundErrors = false;
   return argsFormFilter(formsDir, '.xml', options)
     .reduce((promiseChain, fileName) => {
-      log.info(`Preparing form for validate: ${fileName}…`);
+      log.info(`Validating form: ${fileName}…`);
 
       const { xformPath, filePath } = getFormFilePaths(formsDir, fileName);
       const xml = fs.read(xformPath);
@@ -40,12 +39,10 @@ module.exports = (projectDir, subDirectory, options) => {
       // Once all the fails were checked raise an exception if there were errors
       let errors = [];
       if (validateEndpointFoundErrors) {
-        errors.push('One or more forms appears to have errors found by the API validation endpoint. ' +
-          'The upload process is aborted.');
+        errors.push('One or more forms appears to have errors found by the API validation endpoint.');
       }
       if (hasInstanceIdFoundErrors) {
-        errors.push('One or more forms appears to be missing <meta><instanceID/></meta> node. ' +
-          'The upload process is aborted.');
+        errors.push('One or more forms appears to be missing <meta><instanceID/></meta> node.');
       }
       if (errors.length) {
         // the blank spaces are a trick to align the errors in the log ;)

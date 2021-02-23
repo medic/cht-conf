@@ -57,8 +57,8 @@ module.exports = (projectDir, subDirectory, options) => {
         .then(() => warnUploadOverwrite.preUploadForm(db, doc, xml, properties))
         .then(changes => {
           if (changes) {
-              return insertOrReplace(db, doc)
-                .then(() => log.info(`Form ${filePath} uploaded`));
+            return insertOrReplace(db, doc)
+              .then(() => log.info(`Form ${filePath} uploaded`));
           } else {
             log.info(`Form ${filePath} not uploaded, no changes`);
           }
