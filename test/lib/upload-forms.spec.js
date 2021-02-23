@@ -1,9 +1,8 @@
-const { assert, expect } = require('chai');
+const { expect } = require('chai');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
 const api = require('../api-stub');
-const environment = require('../../src/lib/environment');
 const uploadForms = rewire('../../src/lib/upload-forms');
 const log = require('../../src/lib/log');
 
@@ -14,18 +13,6 @@ describe('upload-forms', () => {
 
   beforeEach(api.start);
   afterEach(api.stop);
-
-  it('should reject forms which do not have <meta><instanceID/></meta>', () => {
-    sinon.stub(environment, 'apiUrl').get(() => 'http://example.com/db-name');
-    // when
-    return uploadForms(`${BASE_DIR}/no-instance-id`, FORMS_SUBDIR)
-
-      .then(() => assert.fail('Expected Error to be thrown.'))
-
-      .catch(e => {
-        assert.include(e.message, 'One or more forms appears to be missing <meta><instanceID/></meta> node.');
-      });
-  });
 
   it('form filter limits uploaded forms', async () => {
     const insertOrReplace = sinon.stub();
