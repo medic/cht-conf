@@ -258,6 +258,8 @@ Accepted log types:
 
 # Development
 
+To develop a new action or improve an existing one, check the ["Actions" doc](src/fn/README.md).
+
 ## Testing
 
 Execute `npm test` to run static analysis checks and the test suite.
