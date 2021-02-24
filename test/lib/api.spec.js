@@ -20,6 +20,21 @@ describe('api', () => {
     expect(mockRequest.callCount).to.eq(1);
   });
 
+  describe('formsValidate', async () => {
+    it('should not fail if validate endpoint does not exist', async () => {
+      mockRequest = sinon.stub().rejects({name: 'StatusCodeError', statusCode: 404});
+      api.__set__('request', mockRequest);
+      api.__set__('_formsValidateEndpointFound', true);
+      let result = await api().formsValidate('<xml>/</xml>');
+      expect(result).to.deep.eq({ok: true, formsValidateEndpointFound: false});
+      expect(mockRequest.callCount).to.eq(1);
+      // second call
+      result = await api().formsValidate('<xml>/</xml>');
+      expect(result).to.deep.eq({ok: true, formsValidateEndpointFound: false});
+      expect(mockRequest.callCount).to.eq(1); // still HTTP client called only once
+    });
+  });
+
   describe('archive mode', async () => {
     beforeEach(() => sinon.stub(environment, 'isArchiveMode').get(() => true));
     
