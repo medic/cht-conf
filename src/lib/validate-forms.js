@@ -5,8 +5,7 @@ const log = require('./log');
 const { getFormDir, getFormFilePaths } = require('./forms-utils');
 
 //TODO Add this to the main loop
-module.exports = (projectDir, subDirectory, options) => {
-  if (!options) options = {};
+module.exports = (projectDir, subDirectory, options={}) => {
 
   const formsDir = getFormDir(projectDir, subDirectory);
   if(!formsDir) {
