@@ -206,7 +206,7 @@ module.exports = async (argv, env) => {
       info(`Starting action validations: ${action.name}…`);
       try {
         await validateAction(action);
-        info(`${action.name} validations complete.`);
+        info(`${action.name} validations passed.`);
       } catch (err) {
         error(`${action.name} validations complete with errors: ${err.message}`);
         validationsFail = true;
