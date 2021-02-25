@@ -126,18 +126,17 @@ const api = {
       body: formXml,
     })
     .then(resp => {
-      const json = JSON.parse(resp);
-      if (Object.keys(json).filter(k=>k!=='ok').length !== 0 || json.ok !== true) {
-        // If other than {ok:true} is received lets log it
-        log.info(`Form validation succeeded with result: ${resp}`);
+      try {
+        return JSON.parse(resp);
+      } catch (e) {
+        new Error('Invalid JSON response validating XForm against the API: ' + resp);
       }
-      return json;
     })
     .catch(err => {
-      if (err.name === 'StatusCodeError' && err.statusCode === 404) {
-        // The endpoint doesn't exist in the API (old version), so
+      if (err.statusCode === 404) {
+        // The endpoint doesn't exist in the API (old CHT version), so
         // we assume the form is valid but return special JSON
-        // highlighting the situation, and storing the lack
+        // highlighting the situation, and remembering the lack
         // of the endpoint so next call there is no need
         // to call the missed endpoint again
         this._formsValidateEndpointFound = false;
