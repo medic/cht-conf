@@ -57,7 +57,7 @@ const _formsValidate = (xml) => {
     .then(resp => {
       if (resp.formsValidateEndpointFound === false &&
           !validateEndpointNotFoundLogged) {
-        log.warn('Form validation endpoint not found in the API, ' +
+        log.warn('Form validation endpoint not found in your version of CHT Core, ' +
           'no form will be checked before push');
         validateEndpointNotFoundLogged = true; // Just log the message once
       }
