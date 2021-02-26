@@ -2,8 +2,8 @@ const fs = require('./sync-fs');
 
 module.exports = {
   /**
-   * @returns {string|null} Get the full path of the form, or
-   *          null if the path doesn't exist
+   * Get the full path of the form, or null if the path doesn't exist.
+   * @returns {string|null}
    */
   getFormDir: (projectDir, subDirectory) => {
     const formsDir = `${projectDir}/forms/${subDirectory}`;
@@ -27,5 +27,34 @@ module.exports = {
       xformPath: `${formsDir}/${baseFileName}.xml`,
       filePath: `${formsDir}/${fileName}`
     };
-  }
+  },
+
+  // This isn't really how to parse XML, but we have fairly good control over the
+  // input and this code is working so far.  This may break with changes to the
+  // formatting of output from xls2xform.
+
+  /**
+   * Check whether the XForm has the <instanceID/> tag.
+   * @param {string} xml the XML string
+   * @returns {boolean}
+   */
+  formHasInstanceId: xml => xml.includes('<instanceID/>'),
+
+  /**
+   * Get the title string inside the <h:title> tag
+   * @param {string} xml the XML string
+   * @returns {string}
+   */
+  readTitleFrom: xml =>
+      xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>')),
+
+  /**
+   * Get the ID of the form
+   * @param {string} xml the XML string
+   * @returns {string}
+   */
+  readIdFrom: xml =>
+      xml.match(/<model>[^]*<\/model>/)[0]
+        .match(/<instance>[^]*<\/instance>/)[0]
+        .match(/id="([^"]*)"/)[1],
 };

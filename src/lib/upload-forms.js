@@ -6,76 +6,69 @@ const log = require('./log');
 const insertOrReplace = require('./insert-or-replace');
 const pouch = require('./db');
 const warnUploadOverwrite = require('./warn-upload-overwrite');
-const { getFormDir, getFormFilePaths } = require('./forms-utils');
+const {
+  getFormDir,
+  getFormFilePaths,
+  readTitleFrom,
+  readIdFrom
+} = require('./forms-utils');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms', 'subject_key', 'hidden_fields'];
 
-module.exports = (projectDir, subDirectory, options) => {
+module.exports = async (projectDir, subDirectory, options) => {
   const db = pouch();
   if (!options) options = {};
   const formsDir = getFormDir(projectDir, subDirectory);
   if(!fs.exists(formsDir)) {
     log.warn(`Forms dir not found: ${formsDir}`);
-    return Promise.resolve();
+    return;
   }
 
-  return argsFormFilter(formsDir, '.xml', options)
-    .reduce((promiseChain, fileName) => {
-      log.info(`Preparing form for upload: ${fileName}…`);
+  const fileNames = argsFormFilter(formsDir, '.xml', options);
+  for (const fileName of fileNames) {
+    log.info(`Preparing form for upload: ${fileName}…`);
 
-      const { baseFileName, mediaDir, xformPath, filePath } = getFormFilePaths(formsDir, fileName);
-      const baseDocId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
+    const { baseFileName, mediaDir, xformPath, filePath } = getFormFilePaths(formsDir, fileName);
+    const baseDocId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
 
-      const mediaDirExists = fs.exists(mediaDir);
-      if(!mediaDirExists) {
-        log.info(`No media directory found at ${mediaDir} for form ${xformPath}`);
-      }
+    const mediaDirExists = fs.exists(mediaDir);
+    if(!mediaDirExists) {
+      log.info(`No media directory found at ${mediaDir} for form ${xformPath}`);
+    }
 
-      const xml = fs.read(xformPath);
+    const xml = fs.read(xformPath);
 
-      const internalId = readIdFrom(xml);
-      if(internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
+    const internalId = readIdFrom(xml);
+    if(internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
 
-      const docId = `form:${baseDocId}`;
-      const doc = {
-        _id: docId,
-        type: 'form',
-        internalId: internalId,
-        title: readTitleFrom(xml),
-        context: options.default_context,
-      };
+    const docId = `form:${baseDocId}`;
+    const doc = {
+      _id: docId,
+      type: 'form',
+      internalId: internalId,
+      title: readTitleFrom(xml),
+      context: options.default_context,
+    };
 
-      const propertiesPath = `${formsDir}/${baseFileName}.properties.json`;
-      updateFromPropertiesFile(doc, propertiesPath);
+    const propertiesPath = `${formsDir}/${baseFileName}.properties.json`;
+    updateFromPropertiesFile(doc, propertiesPath);
 
-      doc._attachments = mediaDirExists ? attachmentsFromDir(mediaDir) : {};
-      doc._attachments.xml = attachmentFromFile(xformPath);
+    doc._attachments = mediaDirExists ? attachmentsFromDir(mediaDir) : {};
+    doc._attachments.xml = attachmentFromFile(xformPath);
 
-      const properties = SUPPORTED_PROPERTIES.concat('internalId');
+    const properties = SUPPORTED_PROPERTIES.concat('internalId');
 
-      return promiseChain
-        .then(() => warnUploadOverwrite.preUploadForm(db, doc, xml, properties))
-        .then(changes => {
-          if (changes) {
-            return insertOrReplace(db, doc)
-              .then(() => log.info(`Form ${filePath} uploaded`));
-          } else {
-            log.info(`Form ${filePath} not uploaded, no changes`);
-          }
-        })
-        // update hash regardless
-        .then(() => warnUploadOverwrite.postUploadForm(doc, xml, properties));
-    }, Promise.resolve());
+    const changes = await warnUploadOverwrite.preUploadForm(db, doc, xml, properties);
+    if (changes) {
+      await insertOrReplace(db, doc);
+      log.info(`Form ${filePath} uploaded`);
+    } else {
+      log.info(`Form ${filePath} not uploaded, no changes`);
+    }
+    // update hash regardless
+    await warnUploadOverwrite.postUploadForm(doc, xml, properties);
+  }
 };
-
-// This isn't really how to parse XML, but we have fairly good control over the
-// input and this code is working so far.  This may break with changes to the
-// formatting of output from xls2xform.
-const readTitleFrom = xml => xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>'));
-const readIdFrom = xml =>
-    xml.match(/<model>[^]*<\/model>/)[0]
-       .match(/<instance>[^]*<\/instance>/)[0]
-       .match(/id="([^"]*)"/)[1];
 
 const updateFromPropertiesFile = (doc, path) => {
   if (fs.exists(path)) {
