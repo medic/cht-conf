@@ -16,8 +16,8 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     return;
   }
 
-  let hasInstanceIdFoundErrors = false;
-  let validateEndpointFoundErrors = false;
+  let idValidationsPassed = true;
+  let validateFormsPassed = true;
 
   const fileNames = argsFormFilter(formsDir, '.xml', options);
   for (const fileName of fileNames) {
@@ -28,22 +28,22 @@ module.exports = async (projectDir, subDirectory, options={}) => {
 
     if(!formHasInstanceId(xml)) {
       log.error(`Form at ${xformPath} appears to be missing <meta><instanceID/></meta> node. This form will not work on medic-webapp.`);
-      hasInstanceIdFoundErrors = true;
+      idValidationsPassed = false;
       continue;
     }
     try {
       await _formsValidate(xml);
     } catch (err) {
       log.error(`Form ${filePath} with errors, API validations response: ${err.message}`);
-      validateEndpointFoundErrors = true;
+      validateFormsPassed = false;
     }
   }
   // Once all the fails were checked raise an exception if there were errors
   let errors = [];
-  if (validateEndpointFoundErrors) {
+  if (!validateFormsPassed) {
     errors.push('One or more forms appears to have errors found by the API validation endpoint.');
   }
-  if (hasInstanceIdFoundErrors) {
+  if (!idValidationsPassed) {
     errors.push('One or more forms appears to be missing <meta><instanceID/></meta> node.');
   }
   if (errors.length) {

@@ -199,7 +199,7 @@ module.exports = async (argv, env) => {
     await checkForUpdates({ nonFatal: true });
   }
 
-  let validationsFail = false;
+  let validationsPassed = true;
   info('Starting actions validations…');
   for (let action of actions) {
     if (typeof action.validate === 'function') {
@@ -209,11 +209,11 @@ module.exports = async (argv, env) => {
         info(`${action.name} validations passed.`);
       } catch (err) {
         error(`${action.name} validations complete with errors: ${err.message}`);
-        validationsFail = true;
+        validationsPassed = false;
       }
     }
   }
-  if (validationsFail) {
+  if (!validationsPassed) {
     throw new Error('One or more action validations failed.');
   }
   info('All actions validations completed.');
