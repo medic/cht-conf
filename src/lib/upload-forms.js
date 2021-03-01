@@ -20,7 +20,7 @@ module.exports = async (projectDir, subDirectory, options) => {
   if (!options) options = {};
   const formsDir = getFormDir(projectDir, subDirectory);
   if(!fs.exists(formsDir)) {
-    log.warn(`Forms dir not found: ${formsDir}`);
+    log.info(`Forms dir not found: ${formsDir}`);
     return;
   }
 

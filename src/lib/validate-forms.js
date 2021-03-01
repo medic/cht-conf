@@ -12,7 +12,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
 
   const formsDir = getFormDir(projectDir, subDirectory);
   if(!formsDir) {
-    log.warn(`Forms dir not found: ${formsDir}`);
+    log.info(`Forms dir not found: ${formsDir}`);
     return;
   }
 

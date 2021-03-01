@@ -129,7 +129,7 @@ const api = {
       try {
         return JSON.parse(resp);
       } catch (e) {
-        new Error('Invalid JSON response validating XForm against the API: ' + resp);
+        throw new Error('Invalid JSON response validating XForm against the API: ' + resp);
       }
     })
     .catch(err => {
