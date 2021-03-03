@@ -123,7 +123,7 @@ const TaskSchema = joi.array().items(
     actions: joi.array().items(
       joi.object({
         type: joi.string().valid('report', 'contact').optional(),
-        form: joi.string().min(1).optional(),
+        form: joi.string().min(1).required(),
         label: joi.string().min(1).optional(),
         modifyContent: joi.function().optional()
           .error(taskError('"actions.modifyContent" should be "function (content, contact, report)')),
