@@ -12,6 +12,11 @@ const NOT_FOUND_REGEX = new RegExp(`[(Cc)ommand|${GIT}].* not found`);
  * If there is no git installation or git repository in the
  * working directory it warns a message with the issue and
  * returns `null`.
+ *
+ * NOTE: only changes that affect files in the folder where
+ * the command is executed are taken into account, to avoid
+ * highlighting changes from other configuration folders
+ * in multi-projects repos.
  */
 module.exports.status = async () => {
   try {
@@ -79,11 +84,16 @@ module.exports.getUpstream = async () => {
  * branch against it, returning a message with the result whether it
  * is behind, ahead or both.
  *
- * Returns an empty string if it's in sync.
+ * Returns an empty string if it is in sync.
  *
  * If there is no upstream repository in the
  * working directory it warns a message with the issue and
  * returns `null`.
+ *
+ * NOTE: only commits that affect files in the folder where
+ * the command is executed are taken into account, to avoid
+ * highlighting changes from other configuration folders
+ * in multi-projects repos.
  */
 module.exports.checkUpstream = async () => {
   await exec([GIT, 'fetch'], log.LEVEL_ERROR);
@@ -99,7 +109,7 @@ module.exports.checkUpstream = async () => {
     // Get the commits count from each side that aren't in the other side,
     // eg. `1    3` means 1 commit is ahead in the local repo (not in upstream)
     // while 3 commits from upstream aren't in sync yet in local
-    const result = await exec([GIT, `rev-list --left-right --count ...${upstream}`], log.LEVEL_ERROR);
+    const result = await exec([GIT, `rev-list --left-right --count ...${upstream} .`], log.LEVEL_ERROR);
     const [ahead, behind] = result.split('\t').filter(s => s).map(Number);
     if (ahead && behind) {
       return `branch is behind upstream by ${pluralize('commit', behind, true)} `
