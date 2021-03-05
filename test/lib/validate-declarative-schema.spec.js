@@ -4,34 +4,39 @@ const rewire = require('rewire');
 
 const validateDeclarativeSchema = rewire('../../src/lib/validate-declarative-schema');
 
-const buildContactAction = typeName => ({
-  name: 'patient_create',
-  icon: 'icon-person',
-  title: 'patient_create',
-  appliesTo: 'contacts',
-  appliesToType: ['clinic'],
-  appliesIf: () => true,
-  resolvedIf: () => false,
-  actions: [
-    {
-      type: typeName || 'contact',
-      form: 'home_visit',
-      modifyContent: function (content, contact) {
-        content.type = 'person';
-        content.parent_id = contact && contact.contact._id;
+const buildTaskWithAction = (actionType, actionForm) => {
+  const task = {
+    name: 'patient_create',
+    icon: 'icon-person',
+    title: 'patient_create',
+    appliesTo: 'contacts',
+    appliesToType: ['clinic'],
+    appliesIf: () => true,
+    resolvedIf: () => false,
+    actions: [
+      {
+        type: actionType,
+        modifyContent: function (content, contact) {
+          content.type = 'person';
+          content.parent_id = contact && contact.contact._id;
+        }
       }
-    }
-  ],
-  events: [
-    {
-      id: 'creation-follow-up',
-      start: 3, end: 7,
-      dueDate: function (event, contact) {
-        return contact.contact.reported_date;
+    ],
+    events: [
+      {
+        id: 'creation-follow-up',
+        start: 3, end: 7,
+        dueDate: function (event, contact) {
+          return contact.contact.reported_date;
+        }
       }
-    }
-  ]
-});
+    ]
+  };
+  if (actionForm) {
+    task.actions[0].form = actionForm;
+  }
+  return task;
+};
 
 describe('validate-declarative-schema', () => {
   describe('validate', () => {
@@ -44,18 +49,25 @@ describe('validate-declarative-schema', () => {
       expect(actual).to.deep.eq(['desc[1] contains duplicate value for the "name" field: "a"']);
     });
 
-    it('actions[].type = report no errors', () => {
-      const actual = validate([buildContactAction('report')], TaskSchema);
+    it('actions[].type = report then no errors', () => {
+      const actual = validate([buildTaskWithAction('report', 'home_visit')], TaskSchema);
       expect(actual).to.be.empty;
     });
 
-    it('actions[].type = contact no errors', () => {
-      const actual = validate([buildContactAction()], TaskSchema);
+    it('actions[].type = contact and form set then error', () => {
+      const actual = validate([buildTaskWithAction('contact', 'home_visit')], TaskSchema);
+      expect(actual).to.deep.eq([
+        '"[0].actions[0].form" is not allowed. Value is: "home_visit"'
+      ]);
+    });
+
+    it('actions[].type = contact and form not set then no errors', () => {
+      const actual = validate([buildTaskWithAction('contact')], TaskSchema);
       expect(actual).to.be.empty;
     });
 
     it('actions[].type = wrong-type-name then error', () => {
-      const actual = validate([buildContactAction('wrong-type-name')], TaskSchema);
+      const actual = validate([buildTaskWithAction('wrong-type-name', 'form_a')], TaskSchema);
       expect(actual).to.deep.eq([
         '"[0].actions[0].type" must be one of [report, contact]. Value is: "wrong-type-name"'
       ]);
