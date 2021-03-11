@@ -531,5 +531,67 @@ describe('target emitter', () => {
         { _type:'_complete', _id: true },
       ]);
     });
+
+    it('hardcoded contact type with a contact_type property, target matching type', () => {
+      const target = aPersonBasedTarget();
+      target.appliesToType = ['person'];
+
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [ target ],
+        tasks: [],
+      };
+      config.c.contact.contact_type = 'something';
+
+      // when
+      const emitted = runNoolsLib(config).emitted;
+
+      // then
+      assert.deepEqual(emitted, [
+        { _id: 'c-3~pT-1', _type:'target', date: TEST_DATE },
+        { _type:'_complete', _id: true },
+      ]);
+    });
+
+    it('hardcoded contact type with a contact_type property, target matching contact_type', () => {
+      const target = aPersonBasedTarget();
+      target.appliesToType = ['something'];
+
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [ target ],
+        tasks: [],
+      };
+      config.c.contact.contact_type = 'something';
+
+      // when
+      const emitted = runNoolsLib(config).emitted;
+
+      // then
+      assert.deepEqual(emitted, [
+        { _type:'_complete', _id: true },
+      ]);
+    });
+
+    it('hardcoded contact type with a contact_type property, target matching type and contact_type', () => {
+      const target = aPersonBasedTarget();
+      target.appliesToType = ['person', 'something'];
+
+      const config = {
+        c: personWithReports(aReport()),
+        targets: [ target ],
+        tasks: [],
+      };
+      config.c.contact.contact_type = 'something';
+
+      // when
+      const emitted = runNoolsLib(config).emitted;
+
+      // then
+      assert.deepEqual(emitted, [
+        { _id: 'c-3~pT-1', _type:'target', date: TEST_DATE },
+        { _type:'_complete', _id: true },
+      ]);
+    });
   });
 });
