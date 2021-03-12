@@ -3,7 +3,7 @@ function emitter(contactSummary, contact, reports) {
   var context = contactSummary.context || {};
   var cards = contactSummary.cards || [];
 
-  var contactType = contact && (contact.contact_type || contact.type);
+  var contactType = contact && (contact.type === 'contact' ? contact.contact_type : contact.type);
 
   var result = {
     cards: [],
@@ -31,7 +31,7 @@ function emitter(contactSummary, contact, reports) {
     if (appliesToType.includes('report') && appliesToType.length > 1) {
       throw new Error("You cannot set appliesToType to an array which includes the type 'report' and another type.");
     }
-    
+
     if (appliesToType.includes('report')) {
       for (idx1=0; idx1<reports.length; ++idx1) {
         r = reports[idx1];
@@ -66,7 +66,7 @@ function convertToArray(appliesToType) {
   if (!appliesToType) {
     return [];
   }
-  return Array.isArray(appliesToType) ? appliesToType : [appliesToType];  
+  return Array.isArray(appliesToType) ? appliesToType : [appliesToType];
 }
 
 function isReportValid(report) {
