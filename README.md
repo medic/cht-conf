@@ -292,9 +292,9 @@ To install from the beta channel, run `npm install medic-conf@beta`.
 
 ## Build status
 
-Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic-conf).
+Builds brought to you courtesy of GitHub actions. 
 
-<a href="https://travis-ci.org/medic/medic-conf"><img src="https://travis-ci.org/medic/medic-conf.svg?branch=master"/></a>
+<img src="https://github.com/medic/medic-conf/actions/workflows/build.yml/badge.svg">
 
 # Copyright
 
