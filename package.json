@@ -8,7 +8,6 @@
   },
   "scripts": {
     "clean": "rm -rf ./build/",
-    "generate-changelog": "echo 'Generating changelog...' && ./scripts/changelog > CHANGELOG.md && echo 'Changelog generated.'",
     "eslint": "eslint src/**/*.js test/*.js test/**/*.js",
     "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha --forbid-only ../../test/**/*.spec.js && cd ../.."
   },

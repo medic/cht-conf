@@ -1,5 +1,34 @@
 # Release Notes
 
+## 3.4.0
+
+### Support for uploading branding and partners docs
+
+Two new actions, `upload-branding` and `upload-partners`, permit uploading branding and partners images through medic-conf, respectively. 
+For more information, please check the [documentation](https://docs.communityhealthtoolkit.org/apps/reference/resources/#branding).
+
+[#167](https://github.com/medic/medic-conf/issues/167)
+
+### Modular app_settings and updated folder structure
+
+The `forms` and `schedules` sections of `app_settings` can now be configured individually, in separate files, while other configs should be added to the new `base_settings.json` file. All settings will compiled into the `app_settings.json`, which should now no longer be edited manually.
+For more information, please check the [documentation](https://docs.communityhealthtoolkit.org/apps/reference/app-settings/). 
+
+[#214](https://github.com/medic/medic-conf/issues/214)
+[#68](https://github.com/medic/medic-conf/issues/68)
+
+### Improvements
+
+- [#254](https://github.com/medic/medic-conf/issues/254): Add validation to the upload custom translations function
+- [#269](https://github.com/medic/medic-conf/issues/269): Warn about deprecated transitions when uploading app-settings
+
+### Bug fixes
+
+- [#345](https://github.com/medic/medic-conf/issues/345): Warn config overwrite falsely alerts about changes when uploading certain types of attachments
+- [#164](https://github.com/medic/medic-conf/issues/164): Declarative config appliesToType is indicated as optional for fields and cards but we do require them
+- [#377](https://github.com/medic/medic-conf/issues/377): Incorrect warning when specifying hidden_fields
+- [#382](https://github.com/medic/medic-conf/issues/382): Contacts with hardcoded types that also have a `contact_type` property don't get the correct contact_summary fields and don't count towards target goals
+
 ## 3.3.0
 
 ### Support for headless execution
