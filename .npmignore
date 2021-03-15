@@ -3,5 +3,3 @@ test
 scripts
 .idea
 .github
-.eslint*
-Dockerfile
