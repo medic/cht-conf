@@ -2,3 +2,6 @@ build
 test
 scripts
 .idea
+.github
+.eslint*
+Dockerfile
