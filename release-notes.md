@@ -4,14 +4,14 @@
 
 ### Support for uploading branding and partners docs
 
-Two new actions, `upload-branding` and `upload-partners`, permit uploading branding and partners images through medic-conf, respectively. 
+Two new actions, `upload-branding` and `upload-partners`, permit uploading branding and partners images, respectively. 
 For more information, please check the [documentation](https://docs.communityhealthtoolkit.org/apps/reference/resources/#branding).
 
 [#167](https://github.com/medic/medic-conf/issues/167)
 
 ### Modular app_settings and updated folder structure
 
-The `forms` and `schedules` sections of `app_settings` can now be configured individually, in separate files, while other configs should be added to the new `base_settings.json` file. All settings will compiled into the `app_settings.json`, which should now no longer be edited manually.
+The `forms` and `schedules` sections of `app_settings` should now be configured individually, in separate files, while other configs should be added to the new `base_settings.json` file. All settings will be compiled into the `app_settings.json`, which should now no longer be edited manually.
 For more information, please check the [documentation](https://docs.communityhealthtoolkit.org/apps/reference/app-settings/). 
 
 [#214](https://github.com/medic/medic-conf/issues/214)
