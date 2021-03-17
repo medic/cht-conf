@@ -26,7 +26,7 @@ const getEnvironmentKey = () => {
 
 const getCompressibleTypes = async () => {
   const parsedUrl = new url.URL(environment.apiUrl);
-  const configUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/api/couch-config-attachments`;
+  const configUrl = `${parsedUrl.protocol}//${parsedUrl.username}:${parsedUrl.password}@${parsedUrl.host}/api/couch-config-attachments`;
   try {
     if (cache.has('compressibleTypes')) {
       return cache.get('compressibleTypes');
