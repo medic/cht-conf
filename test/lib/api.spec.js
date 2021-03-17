@@ -66,7 +66,7 @@ describe('api', () => {
         deprecationMessage: 'Use go2 instead'
       } ]);
       mockRequest.onCall(1).resolves({ ok: true });
-      const response = await api().updateAppSettings(JSON.stringify({
+      await api().updateAppSettings(JSON.stringify({
         transitions: { go: { disable: false } }
       }));
       expect(log.warn.callCount).to.equal(1);
@@ -77,7 +77,7 @@ describe('api', () => {
       sinon.stub(log, 'warn');
       mockRequest.onCall(0).rejects({ statusCode: 500, message: 'some error' });
       mockRequest.onCall(1).resolves({ ok: true });
-      const response = await api().updateAppSettings(JSON.stringify({
+      await api().updateAppSettings(JSON.stringify({
         transitions: [ 'test' ]
       }));
       expect(log.warn.callCount).to.equal(1);
