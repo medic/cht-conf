@@ -19,13 +19,13 @@ const responseChoicesWithoutDiff = [
 const responseChoicesWithDiff = responseChoicesWithoutDiff.concat([ 'View diff' ]);
 
 const getEnvironmentKey = () => {
-  const parsed = url.parse(environment.apiUrl);
+  const parsed = new url.URL(environment.apiUrl);
   const path = parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : '/medic';
   return `${parsed.hostname}${path}`;
 };
 
 const getCompressibleTypes = async () => {
-  const parsedUrl = url.parse(environment.apiUrl);
+  const parsedUrl = new url.URL(environment.apiUrl);
   const configUrl = `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/api/couch-config-attachments`;
   try {
     if (cache.has('compressibleTypes')) {
@@ -45,7 +45,7 @@ const getCompressibleTypes = async () => {
 };
 
 const getHashFileName = () => {
-  const parsed = url.parse(environment.apiUrl);
+  const parsed = new url.URL(environment.apiUrl);
   if (parsed.hostname === 'localhost') {
     return 'local.json';
   }
