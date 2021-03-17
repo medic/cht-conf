@@ -12,7 +12,7 @@ module.exports = {
         promiseChain
           .then(() => info('Compressing PNG:', png, '…'))
           .then(() =>
-              exec('pngout-medic', `'${png}'`)
+              exec(['pngout-medic', `'${png}'`])
                 .then(() => trace('Compressed', png))
                 .catch(e => {
                   if(e.status === 2) {

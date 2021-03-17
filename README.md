@@ -66,7 +66,7 @@ For configuring against Medic Mobile-hosted instances.
 
 	medic-conf --instance=instance-name.dev
 
-Username `admin` is used.  A prompt is shown for entering password.
+Username `admin` is used. A prompt is shown for entering password.
 
 If a different username is required, add the `--user` switch:
 

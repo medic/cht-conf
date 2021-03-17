@@ -43,6 +43,7 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "open": "^7.0.2",
+    "pluralize": "^7.0.0",
     "pouchdb-adapter-http": "^7.1.1",
     "pouchdb-core": "^7.1.1",
     "pouchdb-mapreduce": "^7.1.1",

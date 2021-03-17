@@ -54,7 +54,7 @@ module.exports = async (projectDir, subDirectory, options) => {
 };
 
 const xls2xform = (sourcePath, targetPath) =>
-    exec(XLS2XFORM, '--skip_validate', sourcePath, targetPath)
+    exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
       .catch(e => {
         if(executableAvailable()) {
           if(e.includes('unrecognized arguments: --skip_validate')) {

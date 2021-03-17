@@ -13,6 +13,7 @@ const usage = require('../cli/usage');
 
 const { error, info, warn } = log;
 const defaultActions = [
+  'check-git',
   'compile-app-settings',
   'backup-app-settings',
   'upload-app-settings',
@@ -125,6 +126,10 @@ module.exports = async (argv, env) => {
   if(unsupported.length) {
     error(`Unsupported action(s): ${unsupported.join(' ')}`);
     return -1;
+  }
+
+  if (cmdArgs['skip-git-check']) {
+    actions = actions.filter(a => a !== 'check-git');
   }
 
   actions = actions.map(actionName => {
