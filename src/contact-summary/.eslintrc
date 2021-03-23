@@ -1,4 +1,9 @@
 {
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "root": true,
   "parserOptions": {
     "ecmaVersion": 5
   },
@@ -8,6 +13,8 @@
     "no-bitwise": "error",
     "no-console": "off",
     "no-debugger": "off",
+    "no-buffer-constructor": "error",
+    "no-caller": "error",
     "semi": [
       "error",
       "always"
