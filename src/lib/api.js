@@ -2,18 +2,17 @@ const request = require('request-promise-native');
 
 const archivingApi = require('./archiving-api');
 const environment = require('./environment');
-const log = require('../lib/log');
+const log = require('./log');
 
 const logDeprecatedTransitions = (settings) => {
   const appSettings = JSON.parse(settings);
 
   if (!appSettings.transitions || !Object.keys(appSettings.transitions).length) {
-    return;
+    return Promise.resolve();
   }
 
   const uri = `${environment.instanceUrl}/api/v1/settings/deprecated-transitions`;
-
-  return request({ uri, method: 'GET', json: true})
+  return request({ uri, method: 'GET', json: true })
     .then(transitions => {
       (transitions || []).forEach(transition => {
         const transitionSetting = appSettings.transitions[transition.name];
@@ -32,7 +31,7 @@ const logDeprecatedTransitions = (settings) => {
 };
 
 const updateAppSettings = (settings) => {
-  return request.put({
+  return request({
     method: 'PUT',
     url: `${environment.apiUrl}/_design/medic/_rewrite/update_settings/medic?replace=1`,
     headers: {'Content-Type': 'application/json'},
@@ -55,19 +54,12 @@ const api = {
   },
 
   updateAppSettings: (content) => {
-    return Promise.allSettled([
-      updateAppSettings(content),
-      logDeprecatedTransitions(content)
-    ]).then(([updateSettingsResp, logTransitionResp]) => {
-      if (logTransitionResp.status === 'rejected') {
+    return logDeprecatedTransitions(content)
+      .catch(err => {
         // Log error and continue with the work, this isn't a blocking task.
-        log.error('Error in logging deprecated transitions:', logTransitionResp.reason);
-      }
-      if (updateSettingsResp.status === 'rejected') {
-        throw updateSettingsResp.reason;
-      }
-      return updateSettingsResp.value;
-    });
+        log.warn('Failed to check for deprecated transitions. Continuing...', err);
+      })
+      .then(() => updateAppSettings(content));
   },
 
   createUser(userData) {

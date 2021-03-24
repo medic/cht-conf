@@ -33,9 +33,9 @@ const getApiUrl = (cmdArgs, env = {}) => {
     const password = userPrompt.question(`${emoji.key}  Password: `, { hideEchoBack: true });
     const instanceUsername = cmdArgs.user || 'admin';
     const encodedPassword = encodeURIComponent(password);
-    instanceUrl = url.parse(`https://${instanceUsername}:${encodedPassword}@${cmdArgs.instance}.medicmobile.org`);
+    instanceUrl = new url.URL(`https://${instanceUsername}:${encodedPassword}@${cmdArgs.instance}.medicmobile.org`);
   } else if (cmdArgs.url) {
-    instanceUrl = url.parse(cmdArgs.url);
+    instanceUrl = new url.URL(cmdArgs.url);
   }
 
   return `${instanceUrl.href}medic`;
@@ -43,10 +43,10 @@ const getApiUrl = (cmdArgs, env = {}) => {
 
 const parseLocalUrl = (couchUrl) => {
   const doParse = (unparsed) => {
-    const parsed = url.parse(unparsed);
+    const parsed = new url.URL(unparsed);
     parsed.path = parsed.pathname = '';
     parsed.host = `${parsed.hostname}:5988`;
-    return url.parse(url.format(parsed));
+    return new url.URL(url.format(parsed));
   };
 
   if (couchUrl) {
@@ -55,7 +55,7 @@ const parseLocalUrl = (couchUrl) => {
   }
 
   info('Using default local url');
-  return url.parse('http://admin:pass@localhost:5988');
+  return new url.URL('http://admin:pass@localhost:5988');
 };
 
 module.exports = getApiUrl;

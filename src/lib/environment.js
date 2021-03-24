@@ -1,6 +1,6 @@
 const url = require('url');
 
-const LOCAL_MATCHER = /^(.*localhost|::1|127\.0\.0\.\d{1,3})$/;
+const LOCAL_MATCHER = /^(.*localhost|\[::1\]|127\.0\.0\.\d{1,3})$/;
 const DEV_MATCHER = /^(dev|test|staging)(-\w+|\d+)?$/;  // dev, test1, test-xx, ...
 
 const state = {};
@@ -50,7 +50,7 @@ module.exports = {
     if (!this.instanceUrl) {
       return false;
     }
-    const hostname = url.parse(this.instanceUrl).hostname;
+    const hostname = new url.URL(this.instanceUrl).hostname;
     if (LOCAL_MATCHER.test(hostname)) {
       return false;
     }
