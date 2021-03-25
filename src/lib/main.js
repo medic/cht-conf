@@ -199,25 +199,6 @@ module.exports = async (argv, env) => {
     await checkForUpdates({ nonFatal: true });
   }
 
-  let validationsPassed = true;
-  info('Starting actions validations…');
-  for (let action of actions) {
-    if (typeof action.validate === 'function') {
-      info(`Starting action validations: ${action.name}…`);
-      try {
-        await validateAction(action);
-        info(`${action.name} validations passed.`);
-      } catch (err) {
-        error(`${action.name} validations complete with errors: ${err.message}`);
-        validationsPassed = false;
-      }
-    }
-  }
-  if (!validationsPassed) {
-    throw new Error('One or more action validations failed.');
-  }
-  info('All actions validations completed.');
-
   for (let action of actions) {
     info(`Starting action: ${action.name}…`);
     await executeAction(action);
@@ -230,5 +211,4 @@ module.exports = async (argv, env) => {
 };
 
 // Exists for generic mocking purposes
-const executeAction  = action => action.execute();
-const validateAction = action => action.validate();
+const executeAction = action => action.execute();
