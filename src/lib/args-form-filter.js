@@ -1,5 +1,5 @@
 const fs = require('./sync-fs');
-const { warn } = require('./log');
+const log = require('./log');
 
 module.exports = (formsDir, extension, options) => {
   const candidateFiles = fs.readdir(formsDir)
@@ -12,7 +12,7 @@ module.exports = (formsDir, extension, options) => {
 
   const filteredFiles = candidateFiles.filter(name => formAllowList.includes(fs.withoutExtension(name)));
   if (candidateFiles.length && !filteredFiles.length) {
-    warn(`No matches found for files matching form filter: ${formAllowList.join(extension + ',')}${extension}`);
+    log.warn(`No matches found for files matching form filter: ${formAllowList.join(extension + ',')}${extension}`);
   }
 
   return filteredFiles;
