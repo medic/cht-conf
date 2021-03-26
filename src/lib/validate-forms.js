@@ -34,7 +34,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     try {
       await _formsValidate(xml);
     } catch (err) {
-      log.error(`Form ${filePath} with errors, API validations response: ${err.message}`);
+      log.error(`Error found while validating "${filePath}". Validation response: ${err.message}`);
       validateFormsPassed = false;
     }
   }
