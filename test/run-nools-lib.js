@@ -19,6 +19,20 @@ const runNoolsLib = ({ c, targets, tasks }) => {
       },
       now: () => new Date(TEST_DATE),
       isTimely: function() { return true; },
+      isFormSubmittedInWindow: function(reports, form, start, end, count) {
+        let result = false;
+        reports.forEach(function(report) {
+          if (!result && report.form === form) {
+            if (report.reported_date >= start && report.reported_date <= end) {
+              if (!count ||
+                 (count && report.fields && report.fields.follow_up_count > count)) {
+                result = true;
+              }
+            }
+          }
+        });
+        return result;
+      },
     },
     Target: function(props) {
       this._id = props._id;
