@@ -127,7 +127,8 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         task.resolved = taskDefinition.resolvedIf(c, r, event, dueDate, scheduledTaskIdx);
       }
       else {
-        task.resolved = defaultResolvedIf(c, r, event, dueDate, taskDefinition.actions[0].form, Utils);
+        var resolvingForm = taskDefinition.actions.find(function (action) { return action.type === 'report'; }).form;
+        task.resolved = defaultResolvedIf(c, r, event, dueDate, resolvingForm, Utils);
       }
 
       if (scheduledTaskIdx !== undefined) {
