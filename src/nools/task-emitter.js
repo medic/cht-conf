@@ -161,7 +161,7 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
     }
 
     return {
-      type: 'report',
+      type: def.type || 'report',
       form: def.form,
       label: def.label || 'Follow up',
       content: content,

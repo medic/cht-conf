@@ -60,10 +60,13 @@
     "xmldom": "^0.1.27"
   },
   "devDependencies": {
+    "body-parser": "^1.19.0",
     "chai": "^4.2.0",
     "chai-exclude": "^2.0.1",
     "chai-shallow-deep-equal": "^1.4.6",
     "chai-xml": "^0.3.2",
+    "eslint-plugin-node": "^11.1.0",
+    "express": "^4.17.1",
     "express-pouchdb": "^4.2.0",
     "mocha": "^6.1.4",
     "pouchdb-adapter-memory": "^7.1.1",
