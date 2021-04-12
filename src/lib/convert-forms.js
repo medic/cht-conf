@@ -3,6 +3,7 @@ const { execSync } = require('child_process');
 const argsFormFilter = require('./args-form-filter');
 const exec = require('./exec-promise');
 const fs = require('./sync-fs');
+const { getFormDir } = require('./forms-utils');
 const { info, trace, warn } = require('./log');
 
 const XLS2XFORM = 'xls2xform-medic';
@@ -22,7 +23,7 @@ E` + INSTALLATION_INSTRUCTIONS;
 module.exports = async (projectDir, subDirectory, options) => {
   if(!options) options = {};
 
-  const formsDir = `${projectDir}/forms/${subDirectory}`;
+  const formsDir = getFormDir(projectDir, subDirectory);
 
   if(!fs.exists(formsDir)) {
     warn(`Forms dir not found: ${formsDir}`);
