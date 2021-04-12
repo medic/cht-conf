@@ -1,5 +1,24 @@
 # Release Notes
 
+## 3.5.0
+
+### Forms are validated before being uploaded
+
+When uploading forms to CHT Core v3.11.0 or above these are submitted for validation to ensure they will work when uploaded.
+
+[#331](https://github.com/medic/medic-conf/issues/331)
+
+### Check that the code is up to date with the git repo
+
+Warns when pushing configuration that isn't up to date with the git repo.
+
+[#64](https://github.com/medic/medic-conf/issues/64)
+
+### Bug fixes
+
+- [#358](https://github.com/medic/medic-conf/issues/358): Can't create task action with type "contact"
+- [#387](https://github.com/medic/medic-conf/issues/387): Can't upload-app-settings on Node lower than 12
+
 ## 3.4.0
 
 ### Support for uploading branding and partners docs
