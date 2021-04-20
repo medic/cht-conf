@@ -13,17 +13,17 @@ const getApiUrl = (cmdArgs, env = {}) => {
     return false;
   }
 
-  if (cmdArgs.archive) {
-    return '--archive mode';
-  }
-
   if (cmdArgs.user && !cmdArgs.instance) {
     error('The --user switch can only be used if followed by --instance');
     return false;
   }
 
   let instanceUrl;
-  if (cmdArgs.local) {
+  if (cmdArgs.local || cmdArgs.archive) {
+    // Although `--archive` mode won't connect with the
+    // local database, a URL is required to mimic the
+    // behaviour as it is connecting to.
+    // See ./archiving-db.js
     instanceUrl = parseLocalUrl(env.COUCH_URL);
     if (instanceUrl.hostname !== 'localhost') {
       error(`You asked to configure localhost, but the COUCH_URL env var is set to '${instanceUrl.hostname}'.  This may be a remote server.`);

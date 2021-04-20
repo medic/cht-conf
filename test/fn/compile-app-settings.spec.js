@@ -81,6 +81,7 @@ describe('compile-app-settings', () => {
 async function test(relativeProjectDir) {
   const testDir = path.join(__dirname, '../data/compile-app-settings', relativeProjectDir);
   sinon.stub(environment, 'pathToProject').get(() => testDir);
+  sinon.stub(environment, 'extraArgs').get(() => undefined);
 
   // when
   await compileAppSettings.execute();

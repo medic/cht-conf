@@ -1,4 +1,4 @@
-const { expect } = require('chai');
+const { assert, expect } = require('chai');
 const environment = require('../../src/lib/environment');
 const sinon = require('sinon');
 
@@ -6,7 +6,18 @@ describe('environment', () => {
 
   afterEach(sinon.restore);
 
-  describe('isProduction',  () => {
+  describe('initialization', () => {
+    it('raise error if getter is invoked before initialization', () => {
+      try {
+        environment.apiUrl;
+        assert.fail('Expected Error to be thrown.');
+      } catch (e) {
+        expect(e.message).to.be.equal('Cannot return environment.apiUrl: state was not initialized yet');
+      }
+    });
+  });
+
+  describe('isProduction', () => {
 
     it('localhost and port environment return false', () => {
       sinon.stub(environment, 'instanceUrl').get(() => 'http://admin:pass@localhost:5988');

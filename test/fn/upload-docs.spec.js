@@ -3,6 +3,7 @@ const rewire = require('rewire');
 const sinon = require('sinon');
 
 const api = require('../api-stub');
+const environment = require('../../src/lib/environment');
 const uploadDocs = rewire('../../src/fn/upload-docs');
 const userPrompt = rewire('../../src/lib/user-prompt');
 let readLine = { keyInYN: () => true };
@@ -13,6 +14,10 @@ describe('upload-docs', function() {
   let fs;
 
   beforeEach(() => {
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
+    sinon.stub(environment, 'extraArgs').get(() => undefined);
+    sinon.stub(environment, 'pathToProject').get(() => '.');
+    sinon.stub(environment, 'force').get(() => false);
     api.start();
     fs = {
       exists: () => true,

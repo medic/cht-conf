@@ -555,6 +555,7 @@ describe('move-contacts', () => {
 
     it('does not delete files in directory when user presses n', () => {
       readline.keyInYN.returns(false);
+      sinon.stub(environment, 'force').get(() => false);
       prepareDocDir(docOnj);
       assert.equal(fs.deleteFilesInFolder.callCount, 0);
       assert.equal(process.exit.callCount, 1);
@@ -562,6 +563,7 @@ describe('move-contacts', () => {
 
     it('deletes files in directory when user presses y', () => {
       readline.keyInYN.returns(true);
+      sinon.stub(environment, 'force').get(() => false);
       prepareDocDir(docOnj);
       assert.equal(fs.deleteFilesInFolder.callCount, 1);
       assert.equal(process.exit.callCount, 0);

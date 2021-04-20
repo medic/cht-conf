@@ -33,6 +33,9 @@ describe('upload-custom-translations', () => {
   beforeEach(() => {
     mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => `${testProjectDir}${testDir}`);
     readline.keyInYN = () => true;
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
+    sinon.stub(environment, 'skipTranslationCheck').get(() => false);
+    sinon.stub(environment, 'force').get(() => false);
     return api.start();
   });
 
@@ -480,8 +483,9 @@ describe('upload-custom-translations', () => {
 
   });
 
-  it('should crash for invalid language code', () => {
+  const invalidLanguageCodesTest = (skipTranslationCheck) => {
     mockTestDir(`invalid-lang`);
+    sinon.stub(environment, 'skipTranslationCheck').get(() => skipTranslationCheck);
     sinon.replace(log, 'error', sinon.fake());
     sinon.replace(process, 'exit', sinon.fake());
     return uploadCustomTranslations()
@@ -489,6 +493,15 @@ describe('upload-custom-translations', () => {
         assert(log.error.lastCall.calledWithMatch('The language code \'bad(code\' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.'));
         assert(process.exit.calledOnce);
       });
+  };
+
+  it('should crash for invalid language code', () => {
+    return invalidLanguageCodesTest(false);
+  });
+
+  it('should crash for invalid language code even with --skip-translation-check passed', () => {
+    // Flag `--skip-translation-check` aborts translation content checks, not filename checks
+    return invalidLanguageCodesTest(true);
   });
 
   it('upload translations containing invalid placeholders raise errors', () => {

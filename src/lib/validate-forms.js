@@ -1,4 +1,4 @@
-const api = require('./api')();
+const api = require('./api');
 const argsFormFilter = require('./args-form-filter');
 const fs = require('./sync-fs');
 const log = require('./log');
@@ -54,7 +54,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
 
 let validateEndpointNotFoundLogged = false;
 const _formsValidate = async (xml) => {
-  const resp = await api.formsValidate(xml);
+  const resp = await api().formsValidate(xml);
   if (resp.formsValidateEndpointFound === false && !validateEndpointNotFoundLogged) {
     log.warn('Form validation endpoint not found in your version of CHT Core, ' +
       'no form will be checked before push');

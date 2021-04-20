@@ -15,6 +15,7 @@ const getDoc = () => api.db.get('privacy-policies', { attachments: true });
 
 describe('upload privacy policies', () => {
   beforeEach(() => {
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(warnUploadOverwrite, 'preUploadDoc');
     sinon.stub(warnUploadOverwrite, 'postUploadDoc');
     sinon.spy(logger, 'info');

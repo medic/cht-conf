@@ -35,15 +35,16 @@ describe('validate-forms', () => {
   it('should reject forms that the api validations reject', () => {
     const logInfo = sinon.stub(log, 'info');
     const logError = sinon.stub(log, 'error');
-    const apiMock = {
-      formsValidate: sinon.stub().rejects('The error')
-    };
+    const formsValidateMock = sinon.stub().rejects('The error');
+    const apiMock = () => ({
+      formsValidate: formsValidateMock
+    });
     return validateForms.__with__({api: apiMock})(async () => {
       try {
         await validateForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
         assert.fail('Expected Error to be thrown.');
       } catch (e) {
-        expect(apiMock.formsValidate.called).to.be.true;
+        expect(formsValidateMock.called).to.be.true;
         assert.include(e.message, 'One or more forms appears to have errors found by the API validation endpoint.');
         assert.notInclude(e.message, 'One or more forms appears to be missing <meta><instanceID/></meta> node.');
         expect(logInfo.args[0][0]).to.equal('Validating form: example.xml…');
@@ -55,9 +56,10 @@ describe('validate-forms', () => {
   it('should execute all validations and fail with all the errors concatenated', () => {
     const logInfo = sinon.stub(log, 'info');
     const logError = sinon.stub(log, 'error');
-    const apiMock = {
-      formsValidate: sinon.stub().rejects('The error')
-    };
+    const formsValidateMock = sinon.stub().rejects('The error');
+    const apiMock = () => ({
+      formsValidate: formsValidateMock
+    });
     return validateForms.__with__({api: apiMock})(async () => {
       try {
         await validateForms(`${BASE_DIR}/good-and-bad-forms`, FORMS_SUBDIR);
@@ -74,9 +76,9 @@ describe('validate-forms', () => {
 
   it('should resolve OK if all validations pass', () => {
     const logInfo = sinon.stub(log, 'info');
-    const apiMock = {
+    const apiMock = () => ({
       formsValidate: sinon.stub().resolves({ok:true})
-    };
+    });
     return validateForms.__with__({api: apiMock})(async () => {
       await validateForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
       expect(logInfo.args[0][0]).to.equal('Validating form: example.xml…');

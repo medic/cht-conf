@@ -1,3 +1,4 @@
+const api = require('./api');
 const fs = require('./sync-fs');
 const jsonDiff = require('json-diff');
 const userPrompt = require('./user-prompt');
@@ -8,8 +9,6 @@ const log = require('./log');
 const environment = require('./environment');
 const { compare, GroupingReporter } = require('dom-compare');
 const DOMParser = require('xmldom').DOMParser;
-const request = require('request-promise-native');
-const cache = new Map();
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
 const responseChoicesWithoutDiff = [
@@ -22,26 +21,6 @@ const getEnvironmentKey = () => {
   const parsed = new url.URL(environment.apiUrl);
   const path = parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : '/medic';
   return `${parsed.hostname}${path}`;
-};
-
-const getCompressibleTypes = async () => {
-  const parsedUrl = new url.URL(environment.apiUrl);
-  const configUrl = `${parsedUrl.protocol}//${parsedUrl.username}:${parsedUrl.password}@${parsedUrl.host}/api/couch-config-attachments`;
-  try {
-    if (cache.has('compressibleTypes')) {
-      return cache.get('compressibleTypes');
-    }
-    const resp = await request.get({ url: configUrl, json: true });
-    cache.set('compressibleTypes', resp.compressible_types);
-    return resp.compressible_types;
-  } catch(e) {
-    if (e.statusCode === 404) {
-      cache.set('compressibleTypes', null);
-    } else {
-      log.error(`Error trying to get couchdb config: ${e}`);
-    }
-    return null;
-  }
 };
 
 const getHashFileName = () => {
@@ -122,17 +101,16 @@ const getDocHash = async (db, originalDoc) => {
   delete doc._attachments;
   const crypt = crypto.createHash('md5');
   crypt.update(JSON.stringify(doc), 'utf8');
-  const compressibleTypes = await getCompressibleTypes();
-  const matchRegex = (pattern, type) => {
-    const rx = new RegExp(pattern.trim());
-    return rx.test(type);
-  };
+  const compressibleTypes = await api().getCompressibleTypes();
   if (originalDoc._attachments) {
+    const matchRegex = (pattern, type) => {
+      const rx = new RegExp(pattern);
+      return rx.test(type);
+    };
     for (const attachmentName of Object.keys(originalDoc._attachments)) {
       const attachment = originalDoc._attachments[attachmentName];
-      const attachmentCompressible = compressibleTypes ?
-        compressibleTypes.split(',').some(c => matchRegex(c, attachment.content_type)) :
-        true;
+      const attachmentCompressible = compressibleTypes.length ?
+          compressibleTypes.some(c => matchRegex(c, attachment.content_type)) : true;
       if (attachmentCompressible) {
         const data = attachment.data ? attachment.data : await db.getAttachment(originalDoc._id, attachmentName);
         crypt.update(data);

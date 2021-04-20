@@ -35,6 +35,7 @@ module.exports = {
 
       before(() => {
         sinon.stub(environment, 'pathToProject').get(() => projectDir);
+        sinon.stub(environment, 'extraArgs').get(() => undefined);
         return convertForms.execute();
       });
 
