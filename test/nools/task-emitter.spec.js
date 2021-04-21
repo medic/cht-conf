@@ -407,7 +407,7 @@ describe('task-emitter', () => {
         const task = aReportBasedTask();
         task.actions[0].modifyContent = (content, c, r, e) => {
           content.report_id = r._id;
-          content.event= e;
+          content.event = e;
         };
         // and
         const config = {
