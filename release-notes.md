@@ -1,5 +1,14 @@
 # Release Notes
 
+## 3.6.0
+
+### Tasks actions `modifyContent` functions now receive the event as a parameter
+
+To support task logic that depends on knowing which event the emission is generated for, `modifyContent` now receives a fourth parameter containing the event data. 
+For more information, please check the [documentation](https://docs.communityhealthtoolkit.org/apps/reference/tasks/#tasksjs).
+
+[#398](https://github.com/medic/medic-conf/issues/398)
+
 ## 3.5.0
 
 ### Forms are validated before being uploaded
