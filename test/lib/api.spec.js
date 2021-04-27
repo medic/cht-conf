@@ -75,7 +75,7 @@ describe('api', () => {
     });
 
     it('throws not supported for undefined interfaces', () => {
-      expect(api().getAppSettings).to.throw('not supported');
+      expect(api().getAppSettings).to.throw('getAppSettings not supported in --archive mode');
     });
   });
 
