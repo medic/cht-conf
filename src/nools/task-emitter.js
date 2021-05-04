@@ -124,8 +124,8 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         readyStart: event.start || 0,
         readyEnd: event.end || 0,
         title: taskDefinition.title,
-        resolved: taskDefinition.resolvedIf(c, r, event, dueDate, taskDefinition, scheduledTaskIdx),
-        actions: taskDefinition.actions.map(initActions),
+        resolved: taskDefinition.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
+        actions: initActions(taskDefinition.actions, event),
       };
 
       if (scheduledTaskIdx !== undefined) {
