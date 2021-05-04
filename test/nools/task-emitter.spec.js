@@ -18,6 +18,17 @@ const {
   placeWithoutReports,
 } = require('./mocks');
 
+const utilsMock = {
+  now: sinon.stub().returns(new Date(TEST_DATE)),
+  isTimely: sinon.stub().returns(true),
+  isFormSubmittedInWindow: sinon.stub().returns(true),
+  addDate: function (date, days) {
+    const d = new Date(date.getTime());
+    d.setDate(d.getDate() + days);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+};
 const { assert, expect } = chai;
 chai.use(require('chai-shallow-deep-equal'));
 
@@ -288,136 +299,7 @@ describe('task-emitter', () => {
         });
       });
 
-      it('resolvedIf is not required', () => {
-        // given
-        const config = {
-          c: personWithReports(aReport()),
-          targets: [],
-          tasks: [aReportBasedTask()],
-        };
-        delete config.tasks[0].resolvedIf;
-
-        // when
-        const { emitted } = runNoolsLib(config);
-
-        // then
-        expect(emitted[0]).to.nested.include({
-          'actions[0].content.source_id': 'r-1',
-          resolved: false,
-        });
-      });
-
-      it('this.defaultResolvedIf can be passed to resolvedIf', () => {
-        // given
-        const config = {
-          c: personWithReports(aReport()),
-          targets: [],
-          tasks: [aReportBasedTask()],
-        };
-
-        config.tasks[0].resolvedIf = this.defaultResolvedIf;
-
-        // when
-        const { emitted } = runNoolsLib(config);
-
-        // then
-        expect(emitted[0]).to.nested.include({
-          'actions[0].content.source_id': 'r-1',
-          resolved: false,
-        });
-
-        //given
-        const resolvingReport = aReport();
-        resolvingReport.form = 'example-form';
-        resolvingReport.reported_date = TEST_DATE + 1;
-
-        //when
-        config.c.reports.push(resolvingReport);
-        const emittedAgain = runNoolsLib(config).emitted;
-
-        //then
-        expect(emittedAgain[0].resolved).to.be.true;
-      });
-
-      it('this.defaultResolvedIf can be used inside resolvedIf', () => {
-        // given
-        const config = {
-          c: personWithReports(aReport()),
-          targets: [],
-          tasks: [aReportBasedTask()],
-        };
-
-        config.tasks[0].resolvedIf = function (contact, report, event, dueDate) {
-          return this.defaultResolvedIf(contact, report, event, dueDate) && false;//never resolved
-        };
-
-        // when
-        const { emitted } = runNoolsLib(config);
-
-        // then
-        expect(emitted[0]).to.nested.include({
-          'actions[0].content.source_id': 'r-1',
-          resolved: false,//not resolved
-        });
-
-        //given
-        const resolvingReport = aReport();
-        resolvingReport.form = 'example-form';
-        resolvingReport.reported_date = TEST_DATE + 1;
-
-        //when
-        config.c.reports.push(resolvingReport);
-        let emittedAgain = runNoolsLib(config).emitted;
-
-        //then
-        expect(emittedAgain[0].resolved).to.be.false;//still not resolved
-
-        //when
-        config.tasks[0].resolvedIf = function (contact, report, event, dueDate) {
-          return this.defaultResolvedIf(contact, report, event, dueDate);
-        };
-        emittedAgain = runNoolsLib(config).emitted;
-
-        //then
-        expect(emittedAgain[0].resolved).to.be.true;//resolved
-
-      });
-
-      it('this.defaultResolvedIf can be used with specific resolving form', () => {
-        // given
-        const config = {
-          c: personWithReports(aReport()),
-          targets: [],
-          tasks: [aReportBasedTask()],
-        };
-
-        config.tasks[0].resolvedIf = function (contact, report, event, dueDate) {
-          return this.defaultResolvedIf(contact, report, event, dueDate, 'specific-form');
-        };
-
-        // when
-        const { emitted } = runNoolsLib(config);
-
-        // then
-        expect(emitted[0]).to.nested.include({
-          'actions[0].content.source_id': 'r-1',
-          resolved: false,//not resolved
-        });
-
-        //given
-        const resolvingReport = aReport();
-        resolvingReport.form = 'specific-form';
-        resolvingReport.reported_date = TEST_DATE + 1;
-
-        //when
-        config.c.reports.push(resolvingReport);
-        let emittedAgain = runNoolsLib(config).emitted;
-
-        //then
-        expect(emittedAgain[0].resolved).to.be.true;//resolved
-
-      });
-
+      
       it('should emit once per report', () => {
         // given
         const config = {
@@ -505,34 +387,6 @@ describe('task-emitter', () => {
         const expected = new Date();
         expected.setHours(0, 0, 0, 0);
         expect(emitted[0].date.getTime()).to.eq(expected.getTime());
-      });
-
-      it('given task definition without resolved_date, resolvedIf defaults to default and resolves the task', () => {
-        sinon.useFakeTimers();
-
-        // given
-        const config = {
-          c: personWithReports(aReport()),
-          targets: [],
-          tasks: [aPersonBasedTask()],
-        };
-        delete config.tasks[0].resolvedIf;
-        // when
-        const { emitted } = runNoolsLib(config);
-
-        //then
-        expect(emitted[0].resolved).to.be.false;
-        
-        //given
-        const resolvingReport = aReport();
-        resolvingReport.form = 'example-form';
-
-        //when
-        config.c.reports.push(resolvingReport);
-        const emittedAgain = runNoolsLib(config).emitted;
-
-        //then
-        expect(emittedAgain[0].resolved).to.be.true;
       });
 
       it('dueDate function is invoked with expected data', () => {
@@ -813,6 +667,72 @@ describe('task-emitter', () => {
 
         // should throw error
         assert.throws(() => { runNoolsLib(config); }, Error, 'Unrecognised task.appliesTo: unknown');
+      });
+    });
+
+    describe('defaultResolvedIf', () => {
+      it('given task definition without resolved_date, resolvedIf defaults to default and resolves the task', () => {
+        sinon.useFakeTimers();
+
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [aPersonBasedTask()],
+          utilsMock
+        };
+        delete config.tasks[0].resolvedIf;
+        // when
+        const { emitted } = runNoolsLib(config);
+        //then
+
+        expect(utilsMock.isFormSubmittedInWindow.callCount).to.equal(1);
+        expect(emitted[0].resolved).to.be.true;
+      });
+
+      it('this.definition.defaultResolvedIf can be used inside resolvedIf', () => {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [aReportBasedTask()],
+          utilsMock
+        };
+
+        config.tasks[0].resolvedIf = function (contact, report, event, dueDate) {
+          return this.definition.defaultResolvedIf(contact, report, event, dueDate) && false;//never resolved
+        };
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted[0]).to.nested.include({
+          'actions[0].content.source_id': 'r-1',
+          resolved: false,//not resolved
+        });
+
+        //given
+        const resolvingReport = aReport();
+        resolvingReport.form = 'example-form';
+        resolvingReport.reported_date = TEST_DATE + 1;
+
+        //when
+        config.c.reports.push(resolvingReport);
+        let emittedAgain = runNoolsLib(config).emitted;
+
+        //then
+        expect(emittedAgain[0].resolved).to.be.false;//still not resolved
+
+        //when
+        config.tasks[0].resolvedIf = function (contact, report, event, dueDate) {
+          return this.definition.defaultResolvedIf(contact, report, event, dueDate);
+        };
+        emittedAgain = runNoolsLib(config).emitted;
+
+        //then
+        expect(emittedAgain[0].resolved).to.be.true;//resolved
+
       });
     });
 

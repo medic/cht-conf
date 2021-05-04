@@ -104,12 +104,19 @@ const TaskSchema = joi.array().items(
     contactLabel:
       joi.alternatives().try( joi.string().min(1), joi.function() ).optional()
       .error(taskError('"contactLabel" should either be a non-empty string or function(contact, report)')),
-    resolvedIf: joi.alternatives().conditional('actions', {
-      is: joi.array().items(joi.object({ type: 'contact' }).unknown()),
-      then: joi.function().required(),
-      otherwise: joi.function().optional()
-    })
-      .error(taskError('"resolvedIf" should be of type function(contact, report) if there is no report action')),
+    resolvedIf: joi
+      .alternatives()
+      .conditional('actions', {
+        is: joi.array().has(joi.object({ type: 'report' }).unknown()),
+        then: joi.function().optional(),
+        otherwise: joi.function().required()
+      })
+      .error(
+        taskError(
+          'ERROR: Schema error in actions array: Actions with property "type" which value is different than "report", ' +
+          'should define property "resolvedIf" as: function(contact, report) { ... }.'
+        )
+      ),
     events: joi.alternatives().conditional('events', {
       is: joi.array().length(1),
       then: joi.array().items(EventSchema('optional')).min(1).required(),

@@ -4,6 +4,38 @@ const rewire = require('rewire');
 
 const validateDeclarativeSchema = rewire('../../src/lib/validate-declarative-schema');
 
+const actionsCollection = {
+  oneActionReportType: [
+    {
+      type: 'report',
+      form: 'example_form',
+      label: 'Example Form'
+    }
+  ],
+  twoActionsOneReportType: [
+    {
+      type: 'contact',
+    },
+    {
+      type: 'report',
+      form: 'example_form',
+      label: 'Example Form'
+    }
+  ],
+  oneActionReportUndefined: [
+    {
+      form: 'example_form',
+      label: 'Example Form'
+    }
+  ],
+  oneActionContactType: [
+    {
+      type: 'contact',
+      label: 'New contact'
+    }
+  ]
+};
+
 const buildTaskWithAction = (actionType, actionForm) => {
   const task = {
     name: 'patient_create',
@@ -113,6 +145,48 @@ describe('validate-declarative-schema', () => {
       const schema = joi.string().valid('contacts', 'reports', 'scheduled_tasks').required();
       const actual = validate('no', schema);
       expect(actual).to.deep.eq(['"value" must be one of [contacts, reports, scheduled_tasks]. Value is: "no"']);
+    });
+  });
+
+  describe('task resolvedIf and actions requirements', () => {
+    const validate = (...args) => validateDeclarativeSchema.__get__('validate')('desc', ...args);
+    const TaskSchema = validateDeclarativeSchema.__get__('TaskSchema');
+    it('resolvedIf is not required if there is one action with type report', () => {
+      // given
+      let aTask = buildTaskWithAction();
+      aTask.actions = actionsCollection.oneActionReportType;
+      delete aTask.resolvedIf;
+      const actual = validate([aTask], TaskSchema);
+      expect(actual).to.be.empty;
+    });
+
+    it('resolvedIf is not required if there are two actions with one type report', () => {
+      // given
+      let aTask = buildTaskWithAction();
+      aTask.actions = actionsCollection.twoActionsOneReportType;
+      delete aTask.resolvedIf;
+      const actual = validate([aTask], TaskSchema);
+      expect(actual).to.be.empty;
+    });
+
+    it('resolvedIf is not required if there is one action with type undefined', () => {
+      // given
+      let aTask = buildTaskWithAction();
+      aTask.actions = actionsCollection.oneActionReportUndefined;
+      delete aTask.resolvedIf;
+      const actual = validate([aTask], TaskSchema);
+      expect(actual).to.be.empty;
+    });
+
+    it('resolvedIf is required for a contact based action', () => {
+      // given
+      let aTask = buildTaskWithAction();
+      aTask.actions = actionsCollection.oneActionContactType;
+      delete aTask.resolvedIf;
+      const actual = validate([aTask], TaskSchema);
+      expect(actual).to.deep.eq(
+        ['Invalid schema at tasks[0].resolvedIf\nERROR: Schema error in actions array: Actions with property "type" which value is different than "report", ' + 
+         'should define property "resolvedIf" as: function(contact, report) { ... }.\nCurrent value of tasks[0].resolvedIf is undefined\n']);
     });
   });
 });

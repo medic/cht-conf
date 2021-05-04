@@ -3,45 +3,36 @@ const taskEmitter = require('../src/nools/task-emitter');
 
 const { TEST_DATE } = require('./nools/mocks.js');
 
-const runNoolsLib = ({ c, targets, tasks }) => {
+const runNoolsLib = ({ c, targets, tasks, utilsMock }) => {
   const emitted = [];
   const context = {
     now: new Date(TEST_DATE),
     c,
     targets,
     tasks,
-    Utils: {
-      addDate: function(date, days) {
-        const d = new Date(date.getTime());
-        d.setDate(d.getDate() + days);
-        d.setHours(0, 0, 0, 0);
-        return d;
-      },
-      now: () => new Date(TEST_DATE),
-      isTimely: function() { return true; },
-      isFormSubmittedInWindow: function(reports, form, start, end, count) {
-        let result = false;
-        reports.forEach(function(report) {
-          if (!result && report.form === form) {
-            if (report.reported_date >= start && report.reported_date <= end) {
-              if (!count ||
-                 (count && report.fields && report.fields.follow_up_count > count)) {
-                result = true;
-              }
-            }
-          }
-        });
-        return result;
-      },
+    Utils: () => {
+      if (utilsMock) {
+        return utilsMock;
+      }
+      return {
+        addDate: function(date, days) {
+          const d = new Date(date.getTime());
+          d.setDate(d.getDate() + days);
+          d.setHours(0, 0, 0, 0);
+          return d;
+        },
+        now: () => new Date(TEST_DATE),
+        isTimely: function () { return true; },
+      };
     },
-    Target: function(props) {
+    Target: function (props) {
       this._id = props._id;
       this.date = props.date;
       if (props.groupBy) {
         this.groupBy = props.groupBy;
       }
     },
-    Task: function(props) {
+    Task: function (props) {
       // Any property whose value you want to assert in tests needs to be
       // copied from 'props' to 'this' here.
       this._id = props._id;
@@ -56,8 +47,8 @@ const runNoolsLib = ({ c, targets, tasks }) => {
     },
   };
 
-  targetEmitter(context.targets, context.c, context.Utils, context.Target, context.emit);
-  taskEmitter(context.tasks, context.c, context.Utils, context.Task, context.emit);
+  targetEmitter(context.targets, context.c, context.Utils(), context.Target, context.emit);
+  taskEmitter(context.tasks, context.c, context.Utils(), context.Task, context.emit);
   context.emit('_complete', { _id: true });
 
   return { emitted };

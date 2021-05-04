@@ -1,11 +1,15 @@
 var prepareDefinition = require('./definition-preparation');
+var taskDefaults = require('./task-defaults');
 
 function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
   if (!taskDefinitions) return;
 
   var taskDefinition, r;
   for (var idx1 = 0; idx1 < taskDefinitions.length; ++idx1) {
-    taskDefinition = taskDefinitions[idx1];
+    taskDefinition = Object.assign({}, taskDefinitions[idx1],  taskDefaults(Utils));
+    if (typeof taskDefinition.resolvedIf !== 'function') {
+      taskDefinition.resolvedIf = taskDefinition.defaultResolvedIf;
+  }
     prepareDefinition(taskDefinition);
 
     switch (taskDefinition.appliesTo) {
@@ -120,16 +124,9 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         readyStart: event.start || 0,
         readyEnd: event.end || 0,
         title: taskDefinition.title,
-        actions: initActions(taskDefinition.actions, event),
+        resolved: taskDefinition.resolvedIf(c, r, event, dueDate, taskDefinition, scheduledTaskIdx),
+        actions: taskDefinition.actions.map(initActions),
       };
-
-      if (typeof taskDefinition.resolvedIf === 'function') {
-        task.resolved = taskDefinition.resolvedIf(c, r, event, dueDate, scheduledTaskIdx);
-      }
-      else {
-        var resolvingForm = taskDefinition.actions.find(function (action) { return action.type === 'report'; }).form;
-        task.resolved = defaultResolvedIf(c, r, event, dueDate, resolvingForm, Utils);
-      }
 
       if (scheduledTaskIdx !== undefined) {
         task._id += '-' + scheduledTaskIdx;
@@ -176,22 +173,5 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
   }
 }
 
-function defaultResolvedIf (c, r, event, dueDate, resolvingForm, Utils) {
-  var start = 0;
-  if (r) {//Report based task
-    //Start of the task window or after the report's reported date, whichever comes later
-    start = Math.max(Utils.addDate(dueDate, -event.start).getTime(), r.reported_date + 1);
-  }
-  else {
-    start = Utils.addDate(dueDate, -event.start).getTime();
-  }
-  var end = Utils.addDate(dueDate, event.end + 1).getTime();
-  return Utils.isFormSubmittedInWindow(
-    c.reports,
-    resolvingForm,
-    start,
-    end
-  );
-}
 
 module.exports = taskEmitter;
