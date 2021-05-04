@@ -7,6 +7,5 @@
   "xml2sms": "hello world",
   "internalId": "different",
   "subject_key": "some.translation.key",
-  "unknown": true,
-  "hidden_fields": ["hidden"]
+  "unknown": true
 }

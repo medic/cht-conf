@@ -6,11 +6,11 @@ Their module should look something like this:
 
 ```js
 module.exports = {
-    requiresInstance: true,
-    execute: async () => {
-        ...
-    }
-}
+  requiresInstance: true,
+  execute: async () => {
+    ...
+  }
+};
 ```
 
 ## Module Exports
@@ -18,4 +18,4 @@ module.exports = {
 |Field|Required|Notes|
 |---|---|---|
 |`requiresInstance`|Optional, defaults to `true`|The action needs the user to have provided a instance location, e.g. via `--local` or `--instance`|
-|`execute`|Required|the function that is run when the action is executed.|
+|`execute`|Required|The function that is run when the action is executed.|

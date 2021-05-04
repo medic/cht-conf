@@ -221,7 +221,7 @@ describe('task-emitter', () => {
               tasks: [ aReportBasedTask() ],
             };
             config.tasks[0].contactLabel = scenario.contactValue;
-            
+
             // when
             const { emitted } = runNoolsLib(config);
 
@@ -564,8 +564,10 @@ describe('task-emitter', () => {
       it('should allow custom action content', () => {
         // given
         const task = aReportBasedTask();
-        task.actions[0].modifyContent =
-            (content, c, r) => { content.report_id = r._id; };
+        task.actions[0].modifyContent = (content, c, r, e) => {
+          content.report_id = r._id;
+          content.event = e;
+        };
         // and
         const config = {
           c: personWithReports(aReport()),
@@ -591,6 +593,7 @@ describe('task-emitter', () => {
                     _id: 'c-3',
                   },
                   report_id: 'r-2',
+                  event: { id: `task`, days: 0, start: 0, end: 1 }
                 },
               },
             ]
@@ -633,6 +636,87 @@ describe('task-emitter', () => {
           },
         ]);
       });
+
+      it('modifyContent gets the correct event', () => {
+        const task = {
+          appliesTo: 'reports',
+          name: `task-1`,
+          title: [ { locale:'en', content:`Task 1` } ],
+          actions: [ {
+            form:'example-form',
+            modifyContent: (content, c, r, e) => {
+              content.contact_id = c.contact._id;
+              content.report_id = r._id;
+              content.event = e;
+            },
+          } ],
+          events: [
+            { id: `task1`, days:1, start:1, end:2 },
+            { id: `task2`, days:1, start:3, end:4 },
+            { id: `task3`, days:1, start:5, end:6 },
+          ],
+          resolvedIf: function() { return false; },
+        };
+
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ task ],
+        };
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        assert.shallowDeepEqual(emitted, [
+          {
+            actions: [
+              {
+                type: 'report',
+                form: 'example-form',
+                content: {
+                  source: 'task',
+                  source_id: 'r-1',
+                  contact: { _id: 'c-2' },
+                  report_id: 'r-1',
+                  event: { id: `task1`, days:1, start:1, end:2 },
+                },
+              },
+            ]
+          },
+          {
+            actions: [
+              {
+                type: 'report',
+                form: 'example-form',
+                content: {
+                  source: 'task',
+                  source_id: 'r-1',
+                  contact: { _id: 'c-2' },
+                  report_id: 'r-1',
+                  event: { id: `task2`, days:1, start:3, end:4 },
+                },
+              },
+            ]
+          },
+          {
+            actions: [
+              {
+                type: 'report',
+                form: 'example-form',
+                content: {
+                  source: 'task',
+                  source_id: 'r-1',
+                  contact: { _id: 'c-2' },
+                  report_id: 'r-1',
+                  event: { id: `task3`, days:1, start:5, end:6 },
+                },
+              },
+            ]
+          },
+        ]);
+
+      });
     });
 
     it('functions have access to "this"', () => {
@@ -647,7 +731,7 @@ describe('task-emitter', () => {
       config.tasks[0].appliesIf = function() {
         expect(this).to.nested.include({
           'definition.appliesTo': 'reports',
-          'definition.name': 'task-3',  
+          'definition.name': 'task-3',
         });
 
         invoked = true;
@@ -679,7 +763,7 @@ describe('task-emitter', () => {
         invoked = true;
         expect(this).to.nested.include({
           'definition.appliesTo': 'reports',
-          'definition.name': 'task-3',  
+          'definition.name': 'task-3',
         });
         return false;
       };

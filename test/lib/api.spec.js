@@ -1,4 +1,4 @@
-const { expect } = require('chai');
+const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
@@ -18,6 +18,33 @@ describe('api', () => {
   it('defaults to live requests', async () => {
     await api().version();
     expect(mockRequest.callCount).to.eq(1);
+  });
+
+  describe('formsValidate', async () => {
+
+    it('should fail if validate endpoint returns invalid JSON', async () => {
+      mockRequest = sinon.stub().resolves('--NOT JSON--');
+      api.__set__('request', mockRequest);
+      try {
+        await api().formsValidate('<xml></xml>');
+        assert.fail('Expected assertion');
+      } catch (e) {
+        expect(e.message).to.eq(
+          'Invalid JSON response validating XForm against the API: --NOT JSON--');
+      }
+    });
+
+    it('should not fail if validate endpoint does not exist', async () => {
+      mockRequest = sinon.stub().rejects({name: 'StatusCodeError', statusCode: 404});
+      api.__set__('request', mockRequest);
+      let result = await api().formsValidate('<xml></xml>');
+      expect(result).to.deep.eq({ok: true, formsValidateEndpointFound: false});
+      expect(mockRequest.callCount).to.eq(1);
+      // second call
+      result = await api().formsValidate('<xml>Another XML</xml>');
+      expect(result).to.deep.eq({ok: true, formsValidateEndpointFound: false});
+      expect(mockRequest.callCount).to.eq(1); // still HTTP client called only once
+    });
   });
 
   describe('archive mode', async () => {
