@@ -10,6 +10,7 @@ describe('Upload Partners', () => {
   });
 
   it('should call uploadConfigurationDocs with expected parameters', async () => {
+    sinon.stub(environment, 'pathToProject').get(() => '.');
     const configurationPath = `${environment.pathToProject}/partners.json`;
     const directoryPath = `${environment.pathToProject}/partners`;
     const dbDocName = 'partners';

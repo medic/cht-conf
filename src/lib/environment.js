@@ -30,17 +30,27 @@ const initialize = (
   });
 };
 
+const getState = prop => {
+  if (!state.initialized) {
+    // If this exception is raised, it means that the use of any method of this
+    // module was earlier than the state initialization, so the problem is not of
+    // how medic-conf was invoked by the user, but a bug introduced in the code
+    throw new Error(`Cannot return environment.${prop}: state was not initialized yet`);
+  }
+  return state[prop];
+};
+
 module.exports = {
   initialize,
 
-  get pathToProject() { return state.pathToProject || '.'; },
-  get isArchiveMode() { return !!state.isArchiveMode; },
-  get archiveDestination() { return state.archiveDestination; },
+  get pathToProject() { return getState('pathToProject') || '.'; },
+  get isArchiveMode() { return !!getState('isArchiveMode'); },
+  get archiveDestination() { return getState('archiveDestination'); },
   get instanceUrl() { return this.apiUrl && this.apiUrl.replace(/\/medic$/, ''); },
-  get extraArgs() { return state.extraArgs; },
-  get apiUrl() { return state.apiUrl; },
-  get force() { return state.force; },
-  get skipTranslationCheck() { return state.skipTranslationCheck; },
+  get extraArgs() { return getState('extraArgs'); },
+  get apiUrl() { return getState('apiUrl'); },
+  get force() { return getState('force'); },
+  get skipTranslationCheck() { return getState('skipTranslationCheck'); },
 
   /**
    * Return `true` if the environment **seems** to be production.

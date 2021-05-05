@@ -15,6 +15,8 @@ const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() =
 describe('create-users', () => {
   beforeEach(() => {
     createUsers.__set__('userPrompt', userPrompt);
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
+    sinon.stub(environment, 'force').get(() => false);
     return api.start();
   });
   afterEach(() => {

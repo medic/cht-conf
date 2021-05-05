@@ -3,6 +3,7 @@ const rewire = require('rewire');
 const sinon = require('sinon');
 
 const api = require('../api-stub');
+const environment = require('../../src/lib/environment');
 const uploadForms = rewire('../../src/lib/upload-forms');
 const log = require('../../src/lib/log');
 
@@ -21,6 +22,7 @@ describe('upload-forms', () => {
   const validateForms = sinon.stub().resolves();
 
   it('form filter limits uploaded forms', async () => {
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
     const insertOrReplace = sinon.stub();
     const logWarn = sinon.stub(log, 'warn');
     return uploadForms.__with__({ insertOrReplace, validateForms })(async () => {
@@ -31,6 +33,8 @@ describe('upload-forms', () => {
   });
 
   it('should merge supported properties into form', async () => {
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
+    sinon.stub(environment, 'pathToProject').get(() => '.');
     return uploadForms.__with__({ validateForms })(async () => {
       const logInfo = sinon.stub(log, 'info');
       const logWarn = sinon.stub(log, 'warn');

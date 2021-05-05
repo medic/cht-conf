@@ -3,6 +3,9 @@ const request = require('request-promise-native');
 const archivingApi = require('./archiving-api');
 const environment = require('./environment');
 const log = require('./log');
+const url = require('url');
+
+const cache = new Map();
 
 const logDeprecatedTransitions = (settings) => {
   const appSettings = JSON.parse(settings);
@@ -147,13 +150,40 @@ const api = {
       }
       throw err;
     });
+  },
+
+  async getCompressibleTypes () {
+    const parsedUrl = new url.URL(environment.apiUrl);
+    const baseUrl = `${parsedUrl.protocol}//${parsedUrl.username}:${parsedUrl.password}@${parsedUrl.host}`;
+    const configUrl = `${baseUrl}/api/couch-config-attachments`;
+    try {
+      if (cache.has('compressibleTypes')) {
+        return cache.get('compressibleTypes');
+      }
+      const resp = await request.get({ url: configUrl, json: true });
+      const compressibleTypes = resp.compressible_types.split(',').map(s=>s.trim());
+      cache.set('compressibleTypes', compressibleTypes);
+      return compressibleTypes;
+    } catch (e) {
+      if (e.statusCode === 404) {
+        cache.set('compressibleTypes', []);
+      } else {
+        log.error(`Error trying to get couchdb config: ${e}`);
+      }
+      return [];
+    }
   }
 };
 
-Object.keys(api).forEach(key => {
-  if (!archivingApi[key]) {
-    archivingApi[key] = () => { throw Error('not supported in --archive mode'); };
-  }
-});
+Object.entries(api)
+  .filter(([key, value]) => typeof value === 'function' && !archivingApi[key])
+  .forEach(([key, ]) => {
+    archivingApi[key] = () => {
+      // if this error is raised, somebody forgot to add a mock
+      // implementation to ./archiving-api.js or the action isn't
+      // implemented right when archive mode is running :-(
+      throw Error(`${key} not supported in --archive mode`);
+    };
+  });
 
 module.exports = () => environment.isArchiveMode ? archivingApi : api;

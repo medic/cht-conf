@@ -12,7 +12,7 @@ const initialiseProjectLayout = require('../../src/fn/initialise-project-layout'
 describe('initialise-project-layout', () => {
   it('should create a project with the desired layout', () => {
     // when
-
+    sinon.stub(environment, 'extraArgs').get(() => undefined);
     sinon.stub(environment, 'pathToProject').get(() => TARGET_DIR);
     initialiseProjectLayout.execute();
 
