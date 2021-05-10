@@ -156,7 +156,11 @@ describe('validate-declarative-schema', () => {
       let aTask = buildTaskWithAction();
       aTask.actions = actionsCollection.oneActionReportType;
       delete aTask.resolvedIf;
+
+      // when
       const actual = validate([aTask], TaskSchema);
+
+      // then
       expect(actual).to.be.empty;
     });
 
@@ -165,7 +169,11 @@ describe('validate-declarative-schema', () => {
       let aTask = buildTaskWithAction();
       aTask.actions = actionsCollection.twoActionsOneReportType;
       delete aTask.resolvedIf;
+
+      // when
       const actual = validate([aTask], TaskSchema);
+
+      // then
       expect(actual).to.be.empty;
     });
 
@@ -174,7 +182,11 @@ describe('validate-declarative-schema', () => {
       let aTask = buildTaskWithAction();
       aTask.actions = actionsCollection.oneActionReportUndefined;
       delete aTask.resolvedIf;
+
+      // when
       const actual = validate([aTask], TaskSchema);
+
+      // then
       expect(actual).to.be.empty;
     });
 
@@ -183,7 +195,11 @@ describe('validate-declarative-schema', () => {
       let aTask = buildTaskWithAction();
       aTask.actions = actionsCollection.oneActionContactType;
       delete aTask.resolvedIf;
+
+      // when
       const actual = validate([aTask], TaskSchema);
+
+      // then
       expect(actual).to.deep.eq(
         ['Invalid schema at tasks[0].resolvedIf\nERROR: Schema error in actions array: Actions with property "type" which value is different than "report", ' + 
          'should define property "resolvedIf" as: function(contact, report) { ... }.\nCurrent value of tasks[0].resolvedIf is undefined\n']);

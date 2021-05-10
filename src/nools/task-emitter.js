@@ -6,10 +6,10 @@ function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
 
   var taskDefinition, r;
   for (var idx1 = 0; idx1 < taskDefinitions.length; ++idx1) {
-    taskDefinition = Object.assign({}, taskDefinitions[idx1],  taskDefaults(Utils));
+    taskDefinition = Object.assign({}, taskDefinitions[idx1], taskDefaults(Utils));
     if (typeof taskDefinition.resolvedIf !== 'function') {
       taskDefinition.resolvedIf = taskDefinition.defaultResolvedIf;
-  }
+    }
     prepareDefinition(taskDefinition);
 
     switch (taskDefinition.appliesTo) {

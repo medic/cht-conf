@@ -27,7 +27,7 @@ function aTask(type) {
     appliesTo: type,
     name: `task-${idCounter}`,
     title: [ { locale:'en', content:`Task ${idCounter}` } ],
-    actions: [ {form:'example-form' } ],
+    actions: [{ form: 'example-form' }],
     events: [ {
       id: `task`,
       days:0, start:0, end:1,

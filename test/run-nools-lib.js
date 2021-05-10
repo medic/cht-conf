@@ -14,6 +14,7 @@ const runNoolsLib = ({ c, targets, tasks, utilsMock }) => {
       if (utilsMock) {
         return utilsMock;
       }
+      //TODO: preferred way is to use 'utilsMocks' and this one will be removed when the unit test are aligned with the new approach
       return {
         addDate: function(date, days) {
           const d = new Date(date.getTime());
@@ -47,8 +48,10 @@ const runNoolsLib = ({ c, targets, tasks, utilsMock }) => {
     },
   };
 
-  targetEmitter(context.targets, context.c, context.Utils(), context.Target, context.emit);
-  taskEmitter(context.tasks, context.c, context.Utils(), context.Task, context.emit);
+  //context.Utils is deprecated, please use utilsMock in unit tests
+  targetEmitter(context.targets, context.c, utilsMock || context.Utils(), context.Target, context.emit);
+  // context.Utils is deprecated, please use utilsMock in unit tests
+  taskEmitter(context.tasks, context.c, utilsMock || context.Utils(), context.Task, context.emit);
   context.emit('_complete', { _id: true });
 
   return { emitted };

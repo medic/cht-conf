@@ -22,11 +22,11 @@ const utilsMock = {
   now: sinon.stub().returns(new Date(TEST_DATE)),
   isTimely: sinon.stub().returns(true),
   isFormSubmittedInWindow: sinon.stub().returns(true),
-  addDate: function (date, days) {
-    const d = new Date(date.getTime());
-    d.setDate(d.getDate() + days);
-    d.setHours(0, 0, 0, 0);
-    return d;
+  addDate: (date, days) => {
+    const newDate = new Date(date.getTime());
+    newDate.setDate(newDate.getDate() + days);
+    newDate.setHours(0, 0, 0, 0);
+    return newDate;
   }
 };
 const { assert, expect } = chai;
@@ -671,7 +671,7 @@ describe('task-emitter', () => {
     });
 
     describe('defaultResolvedIf', () => {
-      it('given task definition without resolved_date, resolvedIf defaults to default and resolves the task', () => {
+      it('given task definition without resolvedIf, it defaults to defaultResolvedIf', () => {
         sinon.useFakeTimers();
 
         // given
@@ -682,10 +682,11 @@ describe('task-emitter', () => {
           utilsMock
         };
         delete config.tasks[0].resolvedIf;
+
         // when
         const { emitted } = runNoolsLib(config);
-        //then
 
+        // then
         expect(utilsMock.isFormSubmittedInWindow.callCount).to.equal(1);
         expect(emitted[0].resolved).to.be.true;
       });
@@ -700,39 +701,14 @@ describe('task-emitter', () => {
         };
 
         config.tasks[0].resolvedIf = function (contact, report, event, dueDate) {
-          return this.definition.defaultResolvedIf(contact, report, event, dueDate) && false;//never resolved
+          return this.definition.defaultResolvedIf(contact, report, event, dueDate);
         };
 
         // when
         const { emitted } = runNoolsLib(config);
 
         // then
-        expect(emitted[0]).to.nested.include({
-          'actions[0].content.source_id': 'r-1',
-          resolved: false,//not resolved
-        });
-
-        //given
-        const resolvingReport = aReport();
-        resolvingReport.form = 'example-form';
-        resolvingReport.reported_date = TEST_DATE + 1;
-
-        //when
-        config.c.reports.push(resolvingReport);
-        let emittedAgain = runNoolsLib(config).emitted;
-
-        //then
-        expect(emittedAgain[0].resolved).to.be.false;//still not resolved
-
-        //when
-        config.tasks[0].resolvedIf = function (contact, report, event, dueDate) {
-          return this.definition.defaultResolvedIf(contact, report, event, dueDate);
-        };
-        emittedAgain = runNoolsLib(config).emitted;
-
-        //then
-        expect(emittedAgain[0].resolved).to.be.true;//resolved
-
+        expect(emitted[0].resolved).to.be.true;
       });
     });
 
