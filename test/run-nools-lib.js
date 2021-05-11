@@ -11,9 +11,6 @@ const runNoolsLib = ({ c, targets, tasks, utilsMock }) => {
     targets,
     tasks,
     Utils: () => {
-      if (utilsMock) {
-        return utilsMock;
-      }
       //TODO: preferred way is to use 'utilsMocks' and this one will be removed when the unit test are aligned with the new approach
       return {
         addDate: function(date, days) {
