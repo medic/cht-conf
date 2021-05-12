@@ -6,9 +6,11 @@ function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
 
   var taskDefinition, r;
   for (var idx1 = 0; idx1 < taskDefinitions.length; ++idx1) {
-    taskDefinition = Object.assign({}, taskDefinitions[idx1], taskDefaults(Utils));
+    taskDefinition = Object.assign({}, taskDefinitions[idx1], taskDefaults);
     if (typeof taskDefinition.resolvedIf !== 'function') {
-      taskDefinition.resolvedIf = taskDefinition.defaultResolvedIf;
+      taskDefinition.resolvedIf = function (contact, report, event, dueDate) {
+        return taskDefinition.defaultResolvedIf(contact, report, event, dueDate, Utils);
+      };
     }
     prepareDefinition(taskDefinition);
 

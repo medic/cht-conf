@@ -701,7 +701,7 @@ describe('task-emitter', () => {
         };
 
         config.tasks[0].resolvedIf = function (contact, report, event, dueDate) {
-          return this.definition.defaultResolvedIf(contact, report, event, dueDate);
+          return this.definition.defaultResolvedIf(contact, report, event, dueDate, utilsMock);
         };
 
         // when
