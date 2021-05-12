@@ -18,12 +18,12 @@ module.exports = {
     }
     else {
       start = _utils
-      .addDate(dueDate, -event.start)
-      .getTime();
+        .addDate(dueDate, -event.start)
+        .getTime();
     }
     end = _utils
-    .addDate(dueDate, event.end + 1)
-    .getTime();
+      .addDate(dueDate, event.end + 1)
+      .getTime();
     return _utils.isFormSubmittedInWindow(
       contact.reports,
       resolvingForm,
@@ -34,16 +34,16 @@ module.exports = {
 };
 
 function getDefaultResolvingForm(taskDefinition) {
-var resolvingAction;
+  var resolvingAction;
 
-if (!taskDefinition || !taskDefinition.actions) {
-  return;
-}
-
-resolvingAction = taskDefinition.actions.find(
-  function (action) {
-    return !action.type || action.type === 'report';
+  if (!taskDefinition || !taskDefinition.actions) {
+    return;
   }
-);
-return resolvingAction && resolvingAction.form;
+
+  resolvingAction = taskDefinition.actions.find(
+    function (action) {
+      return !action.type || action.type === 'report';
+    }
+  );
+  return resolvingAction && resolvingAction.form;
 }
