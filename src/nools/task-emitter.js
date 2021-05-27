@@ -1,11 +1,17 @@
 var prepareDefinition = require('./definition-preparation');
+var taskDefaults = require('./task-defaults');
 
 function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
   if (!taskDefinitions) return;
 
   var taskDefinition, r;
   for (var idx1 = 0; idx1 < taskDefinitions.length; ++idx1) {
-    taskDefinition = taskDefinitions[idx1];
+    taskDefinition = Object.assign({}, taskDefinitions[idx1], taskDefaults);
+    if (typeof taskDefinition.resolvedIf !== 'function') {
+      taskDefinition.resolvedIf = function (contact, report, event, dueDate) {
+        return taskDefinition.defaultResolvedIf(contact, report, event, dueDate, Utils);
+      };
+    }
     prepareDefinition(taskDefinition);
 
     switch (taskDefinition.appliesTo) {
@@ -168,5 +174,6 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
     };
   }
 }
+
 
 module.exports = taskEmitter;

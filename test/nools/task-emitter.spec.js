@@ -2,6 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const runNoolsLib = require('../run-nools-lib');
 const {
+  TEST_DATE,
   TEST_DAY,
   reset,
   aReportBasedTask,
@@ -17,6 +18,17 @@ const {
   placeWithoutReports,
 } = require('./mocks');
 
+const utilsMock = {
+  now: sinon.stub().returns(new Date(TEST_DATE)),
+  isTimely: sinon.stub().returns(true),
+  isFormSubmittedInWindow: sinon.stub().returns(true),
+  addDate: (date, days) => {
+    const newDate = new Date(date.getTime());
+    newDate.setDate(newDate.getDate() + days);
+    newDate.setHours(0, 0, 0, 0);
+    return newDate;
+  }
+};
 const { assert, expect } = chai;
 chai.use(require('chai-shallow-deep-equal'));
 
@@ -287,6 +299,7 @@ describe('task-emitter', () => {
         });
       });
 
+      
       it('should emit once per report', () => {
         // given
         const config = {
@@ -654,6 +667,48 @@ describe('task-emitter', () => {
 
         // should throw error
         assert.throws(() => { runNoolsLib(config); }, Error, 'Unrecognised task.appliesTo: unknown');
+      });
+    });
+
+    describe('defaultResolvedIf', () => {
+      it('given task definition without resolvedIf, it defaults to defaultResolvedIf', () => {
+        sinon.useFakeTimers();
+
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [aPersonBasedTask()],
+          utilsMock
+        };
+        delete config.tasks[0].resolvedIf;
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(utilsMock.isFormSubmittedInWindow.callCount).to.equal(1);
+        expect(emitted[0].resolved).to.be.true;
+      });
+
+      it('this.definition.defaultResolvedIf can be used inside resolvedIf', () => {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [aReportBasedTask()],
+          utilsMock
+        };
+
+        config.tasks[0].resolvedIf = function (contact, report, event, dueDate) {
+          return this.definition.defaultResolvedIf(contact, report, event, dueDate, utilsMock);
+        };
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted[0].resolved).to.be.true;
       });
     });
 
