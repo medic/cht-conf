@@ -1,7 +1,7 @@
-Medic Project Configurer
+CHT Project Configurer
 ========================
 
-Medic Conf is a command-line interface tool to manage and configure your apps built using the [Core Framework](https://github.com/medic/cht-core) of the [Community Health Toolkit](https://communityhealthtoolkit.org).
+CHT Conf is a command-line interface tool to manage and configure your apps built using the [Core Framework](https://github.com/medic/cht-core) of the [Community Health Toolkit](https://communityhealthtoolkit.org).
 
 # Requirements
 
@@ -13,42 +13,42 @@ Medic Conf is a command-line interface tool to manage and configure your apps bu
 
 ## Docker
 
-	docker build -t medic-conf:v0 .
-	docker run medic-conf:v0
+	docker build -t cht-conf:v0 .
+	docker run cht-conf:v0
 	docker exec -it <container_name> /bin/bash
 
 ## Ubuntu
 
-	npm install -g medic-conf
+	npm install -g cht-conf
 	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
 ## OSX
 
-	npm install -g medic-conf
+	npm install -g cht-conf
 	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
 ## Windows
 
 As Administrator:
 
-	npm install -g medic-conf
+	npm install -g cht-conf
 	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic --upgrade
 
 ## Bash completion
 
 To enable tab completion in bash, add the following to your `.bashrc`/`.bash_profile`:
 
-	eval "$(medic-conf --shell-completion=bash)"
+	eval "$(cht-conf --shell-completion=bash)"
 
 ## Upgrading
 
 To upgrade to the latest version
 
-	npm install -g medic-conf
+	npm install -g cht-conf
 
 # Usage
 
-`medic-conf` will upload the configuration **from your current directory**.
+`cht` will upload the configuration **from your current directory**.
 
 ## Specifying the server to configure
 
@@ -58,13 +58,13 @@ If you are using the default actionset, or performing any actions that require a
 
 For developers, this is the instance defined in your `COUCH_URL` environment variable.
 
-	medic-conf --local
+	cht --local
 
 ### A specific Medic Mobile instance
 
 For configuring against Medic Mobile-hosted instances.
 
-	medic-conf --instance=instance-name.dev
+	cht --instance=instance-name.dev
 
 Username `admin` is used. A prompt is shown for entering password.
 
@@ -74,29 +74,29 @@ If a different username is required, add the `--user` switch:
 
 ### An arbitrary URL
 
-	medic-conf --url=https://username:password@example.com:12345
+	cht --url=https://username:password@example.com:12345
 
 ### Into an archive to be uploaded later
 
-  medic-conf --archive
+    cht --archive
 
 The resulting archive is consumable by Medic's API >v3.7 to create default configurations.
 
 ## Perform specific action(s)
 
-	medic-conf <--archive|--local|--instance=instance-name|--url=url> <...action>
+	cht <--archive|--local|--instance=instance-name|--url=url> <...action>
 
-The list of available actions can be seen via `medic-conf --help`.
+The list of available actions can be seen via `cht --help`.
 
 ## Perform actions for specific forms
 
-	medic-conf <--local|--instance=instance-name|--url=url> <...action> -- <...form>
+	cht <--local|--instance=instance-name|--url=url> <...action> -- <...form>
 
 ## Protecting against configuration overwriting
 
 _Added in v3.2.0_
 
-In order to avoid overwriting someone elses configuration medic-conf records the last uploaded configuration snapshot in the `.snapshots` directory. The `remote.json` file should be committed to your repository along with the associated configuration change. When uploading future configuration if medic-conf detects the snapshot doesn't match the configuration on the server you will be prompted to overwrite or cancel.
+In order to avoid overwriting someone elses configuration cht-conf records the last uploaded configuration snapshot in the `.snapshots` directory. The `remote.json` file should be committed to your repository along with the associated configuration change. When uploading future configuration if cht-conf detects the snapshot doesn't match the configuration on the server you will be prompted to overwrite or cancel.
 
 # Currently supported
 
@@ -158,7 +158,7 @@ file(s) | Comma delimited list of files you wish to process using edit-contacts.
 1. Use the following command to download and edit the documents:
 
 ```
-medic-conf --instance=*instance* edit-contacts -- --column=*is_in_emnch* --docDirectoryPath=*my_folder*
+cht --instance=*instance* edit-contacts -- --column=*is_in_emnch* --docDirectoryPath=*my_folder*
 ```
 1. Then upload the edited documents using the [upload-docs ](#examples) command.
 
@@ -205,7 +205,7 @@ This tool expects a project to be structured as follows:
 
 If you are starting from scratch you can initialise the file layout using the `initialise-project-layout` action:
 
-    medic-conf initialise-project-layout
+    cht initialise-project-layout
 
 ## Derived configs
 
@@ -242,11 +242,11 @@ To achieve this, create a file called `settings.inherit.json` in your project's 
 
 Fetch logs from a CHT v2.x production server.
 
-This is a standalone command installed alongside `medic-conf`.  For usage information, run `medic-logs --help`.
+This is a standalone command installed alongside `cht-conf`.  For usage information, run `cht-logs --help`.
 
 ## Usage
 
-	medic-logs <instance-name> <log-types...>
+	cht-logs <instance-name> <log-types...>
 
 Accepted log types:
 
@@ -267,10 +267,10 @@ Execute `npm test` to run static analysis checks and the test suite.
 ## Executing your local branch
 
 1. Clone the project locally
-1. Make changes to medic-conf or checkout a branch for testing
+1. Make changes to cht-conf or checkout a branch for testing
 1. Test changes
-	1. To test CLI changes locally you can run `node <project_dir>/src/bin/medic-conf.js`. This will run as if you installed via npm.
-	1. To test changes that are imported in code run `npm install <project_dir>` to use the local version of medic-conf.
+	1. To test CLI changes locally you can run `node <project_dir>/src/bin/cht-conf.js`. This will run as if you installed via npm.
+	1. To test changes that are imported in code run `npm install <project_dir>` to use the local version of cht-conf.
 
 ## Releasing
 
@@ -290,13 +290,13 @@ Execute `npm test` to run static analysis checks and the test suite.
 1. Run `npm version --no-git-tag-version <major>.<minor>.<patch>-beta.1`. This will only update the versions in `package.json` and `package-lock.json`. It will not create a git tag and not create an associated commit.
 1. Run `npm publish --tag beta`. This will publish your beta tag to npm's beta channel.
 
-To install from the beta channel, run `npm install medic-conf@beta`.
+To install from the beta channel, run `npm install cht-conf@beta`.
 
 ## Build status
 
 Builds brought to you courtesy of GitHub actions. 
 
-<img src="https://github.com/medic/medic-conf/actions/workflows/build.yml/badge.svg">
+<img src="https://github.com/medic/cht-conf/actions/workflows/build.yml/badge.svg">
 
 # Copyright
 

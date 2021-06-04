@@ -27,7 +27,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     const xml = fs.read(xformPath);
 
     if(!formHasInstanceId(xml)) {
-      log.error(`Form at ${xformPath} appears to be missing <meta><instanceID/></meta> node. This form will not work on medic-webapp.`);
+      log.error(`Form at ${xformPath} appears to be missing <meta><instanceID/></meta> node. This form will not work on CHT webapp.`);
       idValidationsPassed = false;
       continue;
     }

@@ -6,7 +6,7 @@ const readline = require('readline-sync');
  * Display a query to the user if it's specified, and then return a
  * boolean or an empty string immediately a key was pressed by the user,
  * without pressing the Enter key.
- * If `medic-conf` was called with the `--force` argument, `true`
+ * If `cht-conf` was called with the `--force` argument, `true`
  * is immediately returned without displaying any message and without
  * waiting the user confirmation.
  * @param {string=} query - the message, by default 'Are you sure? '
