@@ -86,7 +86,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
       ;
 
   // Enketo _may_ not work with forms which define a default language - see
-  // https://github.com/medic/medic-webapp/issues/3174
+  // https://github.com/medic/cht-core/issues/3174
   if(enketo) xml = xml.replace(/ default="true\(\)"/g, '');
 
   if(hiddenFields) {
@@ -99,7 +99,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
 
   // Check for deprecations
   if(xml.includes('repeat-relevant')) {
-    warn('From webapp version 2.14.0, repeat-relevant is no longer required.  See https://github.com/medic/medic-webapp/issues/3449 for more info.');
+    warn('From webapp version 2.14.0, repeat-relevant is no longer required.  See https://github.com/medic/cht-core/issues/3449 for more info.');
   }
 
   fs.write(path, xml);
