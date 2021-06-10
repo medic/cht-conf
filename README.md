@@ -1,4 +1,4 @@
-CHT Project Configurer
+CHT App Configurer
 ========================
 
 CHT Conf is a command-line interface tool to manage and configure your apps built using the [Core Framework](https://github.com/medic/cht-core) of the [Community Health Toolkit](https://communityhealthtoolkit.org).
@@ -269,7 +269,7 @@ Execute `npm test` to run static analysis checks and the test suite.
 1. Clone the project locally
 1. Make changes to cht-conf or checkout a branch for testing
 1. Test changes
-	1. To test CLI changes locally you can run `node <project_dir>/src/bin/cht-conf.js`. This will run as if you installed via npm.
+	1. To test CLI changes locally you can run `node <project_dir>/src/bin/index.js`. This will run as if you installed via npm.
 	1. To test changes that are imported in code run `npm install <project_dir>` to use the local version of cht-conf.
 
 ## Releasing

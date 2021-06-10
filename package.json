@@ -12,8 +12,8 @@
     "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha --forbid-only ../../test/**/*.spec.js && cd ../.."
   },
   "bin": {
-    "medic-conf": "src/bin/cht-conf.js",
-    "cht": "src/bin/cht-conf.js",
+    "medic-conf": "src/bin/index.js",
+    "cht": "src/bin/index.js",
     "medic-logs": "src/bin/cht-logs.bash",
     "cht-logs": "src/bin/cht-logs.bash",
     "shell-completion-for-medic-conf": "src/bin/shell-completion.js",
