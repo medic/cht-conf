@@ -1,7 +1,7 @@
 {
-  "name": "medic-conf",
-  "version": "3.6.0",
-  "description": "Configure Medic Mobile deployments",
+  "name": "cht-conf",
+  "version": "3.7.0",
+  "description": "Configure CHT deployments",
   "main": "./src/lib/main.js",
   "engines": {
     "node": ">=8.10.0"
@@ -12,21 +12,25 @@
     "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha --forbid-only ../../test/**/*.spec.js && cd ../.."
   },
   "bin": {
-    "medic-conf": "src/bin/medic-conf.js",
-    "medic-logs": "src/bin/medic-logs.bash",
+    "medic-conf": "src/bin/index.js",
+    "cht": "src/bin/index.js",
+    "medic-logs": "src/bin/cht-logs.bash",
+    "cht-logs": "src/bin/cht-logs.bash",
     "shell-completion-for-medic-conf": "src/bin/shell-completion.js",
-    "pngout-medic": "bin/pngout"
+    "shell-completion-for-cht": "src/bin/shell-completion.js",
+    "pngout-medic": "bin/pngout",
+    "pngout-cht": "bin/pngout"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/medic/medic-conf.git"
+    "url": "git+ssh://git@github.com/medic/cht-conf.git"
   },
   "author": "",
   "license": "AGPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/medic/medic-conf/issues"
+    "url": "https://github.com/medic/cht-conf/issues"
   },
-  "homepage": "https://github.com/medic/medic-conf#readme",
+  "homepage": "https://github.com/medic/cht-conf#readme",
   "dependencies": {
     "@hapi/joi": "^16.1.8",
     "canonical-json": "0.0.4",

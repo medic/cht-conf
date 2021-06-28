@@ -41,7 +41,7 @@ module.exports = async (projectDir, subDirectory, options) => {
     const xml = fs.read(xformPath);
 
     const internalId = readIdFrom(xml);
-    if(internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/medic-webapp/issues/3342.');
+    if(internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/cht-core/issues/3342.');
 
     const docId = `form:${baseDocId}`;
     const doc = {
@@ -83,7 +83,7 @@ const updateFromPropertiesFile = (doc, path) => {
         if (SUPPORTED_PROPERTIES.includes(key)) {
           doc[key] = properties[key];
         } else if (key === 'internalId') {
-          log.warn(`DEPRECATED: ${path}. Please do not manually set internalId in .properties.json for new projects. Support for configuring this value will be dropped. Please see https://github.com/medic/medic-webapp/issues/3342.`);
+          log.warn(`DEPRECATED: ${path}. Please do not manually set internalId in .properties.json for new projects. Support for configuring this value will be dropped. Please see https://github.com/medic/cht-core/issues/3342.`);
           doc.internalId = properties.internalId;
         } else {
           ignoredKeys.push(key);

@@ -1,6 +1,6 @@
 const open = require('open');
 const checkForUpdates = require('../lib/check-for-updates');
-const checkMedicConfDependencyVersion = require('../lib/check-medic-conf-dependency-version');
+const checkChtConfDependencyVersion = require('../lib/check-cht-conf-dependency-version');
 const environment = require('./environment');
 const fs = require('../lib/sync-fs');
 const getApiUrl = require('../lib/get-api-url');
@@ -49,6 +49,11 @@ const defaultArchiveActions = [
 
 module.exports = async (argv, env) => {
   // No params at all
+  const cmd = argv[1];
+  if (cmd && cmd.endsWith('medic-conf')) {
+    warn('The "medic-conf" cli command is deprecated. Please use "cht" instead');
+  }
+
   if(argv.length <= 2) {
     usage(0);
     return -1;
@@ -82,7 +87,7 @@ module.exports = async (argv, env) => {
   }
 
   if (cmdArgs.changelog) {
-    await open('https://github.com/medic/medic-conf/releases', { url: true });
+    await open('https://github.com/medic/cht-conf/releases', { url: true });
     return process.exit(0);
   }
 
@@ -111,7 +116,7 @@ module.exports = async (argv, env) => {
   //
   const pathToProject = fs.path.resolve(cmdArgs.source || '.');
   if (!cmdArgs['skip-dependency-check']) {
-    checkMedicConfDependencyVersion(pathToProject);
+    checkChtConfDependencyVersion(pathToProject);
   }
 
   //

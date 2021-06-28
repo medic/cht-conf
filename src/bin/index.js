@@ -3,12 +3,12 @@
 const { error } = require('../lib/log');
 require('../cli/check-node-version');
 
-const runMedicConf = require('../lib/main');
+const main = require('../lib/main');
 
 (async () => {
   let returnCode;
   try {
-    returnCode = await runMedicConf(process.argv, process.env);
+    returnCode = await main(process.argv, process.env);
   }
   catch (e) {
     error(e);

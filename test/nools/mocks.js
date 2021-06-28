@@ -1,7 +1,7 @@
 let idCounter;
 const TEST_DATE = 1431143098575;
 // make the tests work in any timezone.  TODO it's not clear if this is a hack,
-// or actually correct.  see https://github.com/medic/medic-webapp/issues/4928
+// or actually correct.  see https://github.com/medic/cht-core/issues/4928
 const TEST_DAY = new Date(TEST_DATE);
 TEST_DAY.setHours(0, 0, 0, 0);
 
