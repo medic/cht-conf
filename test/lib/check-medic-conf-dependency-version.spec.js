@@ -2,27 +2,27 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const checkMedicConfVersion = rewire('../../src/lib/check-medic-conf-dependency-version');
+const checkChtConfVersion = rewire('../../src/lib/check-cht-conf-dependency-version');
 const RUNNING_VERSION = '3.1.2';
 
-describe('check-medic-conf-dependency-version', () => { 
-  let warn, fs; 
-  
-  beforeEach(() => {  
+describe('check-cht-conf-dependency-version', () => {
+  let warn, fs;
+
+  beforeEach(() => {
     warn = sinon.stub();
     fs = {
       exists: sinon.stub().returns(true),
-      readJson: sinon.stub().returns({ dependencies: { 'medic-conf': '1.0.0' } }),
+      readJson: sinon.stub().returns({ dependencies: { 'cht-conf': '1.0.0' } }),
     };
 
-    checkMedicConfVersion.__set__('warn', warn);
-    checkMedicConfVersion.__set__('runningVersion', RUNNING_VERSION);
-    checkMedicConfVersion.__set__('fs', fs);
+    checkChtConfVersion.__set__('warn', warn);
+    checkChtConfVersion.__set__('runningVersion', RUNNING_VERSION);
+    checkChtConfVersion.__set__('fs', fs);
   });
 
   const scenarios = [
     { version: '2.0.0', throw: true },
-    { version: '3.0.0' },    
+    { version: '3.0.0' },
     { version: '3.1.1' },
     { version: '3.1.2' },
     { version: '3.1.3', throw: true },
@@ -38,12 +38,12 @@ describe('check-medic-conf-dependency-version', () => {
 
   for (const scenario of scenarios) {
     it(`${scenario.desc || scenario.version}`, () => {
-      fs.readJson.returns({ dependencies: { 'medic-conf': scenario.version } });
+      fs.readJson.returns({ dependencies: { 'cht-conf': scenario.version } });
 
       if (scenario.throw) {
-        expect(() => checkMedicConfVersion()).to.throw();
+        expect(() => checkChtConfVersion()).to.throw();
       } else {
-        const actual = checkMedicConfVersion();
+        const actual = checkChtConfVersion();
         expect(actual).to.be.undefined;
       }
       expect(warn.called).to.eq(!!scenario.warn);
@@ -52,14 +52,14 @@ describe('check-medic-conf-dependency-version', () => {
 
   it('project package.json path does not exist', () => {
     fs.exists.returns(false);
-    const actual = checkMedicConfVersion();
+    const actual = checkChtConfVersion();
     expect(actual).to.be.undefined;
     expect(warn.args[0][0]).to.include('No project package.json');
   });
 
   it('devDependencies', () => {
-      fs.readJson.returns({devDependencies:   {'medic-conf': '3.1.2'}});
-      const actual = checkMedicConfVersion();
+      fs.readJson.returns({devDependencies:   {'cht-conf': '3.1.2'}});
+      const actual = checkChtConfVersion();
       expect(actual).to.be.undefined;
       expect(warn.called).to.eq(false);
     });

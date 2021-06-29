@@ -7,7 +7,7 @@ const main = rewire('../../src/lib/main');
 const userPrompt = require('../../src/lib/user-prompt');
 
 const defaultActions = main.__get__('defaultActions');
-const normalArgv = ['node', 'medic-conf'];
+const normalArgv = ['node', 'cht'];
 
 let mocks;
 describe('main', () => {
@@ -21,7 +21,7 @@ describe('main', () => {
       shellCompletionSetup: sinon.stub(),
       error: sinon.stub(),
       info: sinon.stub(),
-      checkMedicConfDependencyVersion: sinon.stub(),
+      checkChtConfDependencyVersion: sinon.stub(),
       warn: sinon.stub(),
       executeAction: sinon.stub(),
       getApiUrl: sinon.stub().returns('http://api'),
@@ -73,12 +73,12 @@ describe('main', () => {
 
   it('--skip-dependency-check', async () => {
     await main([...normalArgv, '--skip-dependency-check'], {});
-    expect(mocks.checkMedicConfDependencyVersion.callCount).to.eq(0);
+    expect(mocks.checkChtConfDependencyVersion.callCount).to.eq(0);
   });
 
-  it('medic conf dependency checked', async () => {
+  it('cht-conf dependency checked', async () => {
     await main([...normalArgv, '--local'], {});
-    expect(mocks.checkMedicConfDependencyVersion.calledOnce).to.be.true;
+    expect(mocks.checkChtConfDependencyVersion.calledOnce).to.be.true;
   });
 
   it('--local --accept-self-signed-certs', async () => {

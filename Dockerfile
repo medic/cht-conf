@@ -11,13 +11,13 @@ RUN echo "==> Installing Python dependencies" && \
             libxml2-dev libxslt1-dev zlib1g-dev   \
             git wget python-wheel curl
 
-RUN echo "====> Installing medic-conf python stuff"    &&\
+RUN echo "====> Installing cht-conf python stuff"    &&\
     python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
 RUN curl -sL https://deb.nodesource.com/setup_6.x -o nodesource_setup.sh
 RUN bash nodesource_setup.sh
 RUN apt-get install -y nodejs
 
-RUN npm install -g medic-conf
+RUN npm install -g cht-conf
 
 CMD ["tail", "-f", "/dev/null"]

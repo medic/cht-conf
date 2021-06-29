@@ -137,11 +137,11 @@ const prepareDocumentDirectory = ({ docDirectoryPath, force }) => {
 const usage = () => {
   const bold = text => `\x1b[1m${text}\x1b[0m`;
   info(`
-${bold('medic-conf\'s move-contacts action')}
+${bold('cht-conf\'s move-contacts action')}
 When combined with 'upload-docs' this action effectively moves a contact from one place in the hierarchy to another.
 
 ${bold('USAGE')}
-medic-conf --local move-contacts -- --contactIds=<id1>,<id2> --parent=<parent_id>
+cht --local move-contacts -- --contactIds=<id1>,<id2> --parent=<parent_id>
 
 ${bold('OPTIONS')}
 --contacts=<id1>,<id2>

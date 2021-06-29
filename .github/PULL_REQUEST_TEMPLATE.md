@@ -2,7 +2,7 @@
 
 [description]
 
-medic/medic-conf#[number]
+medic/cht-conf#[number]
 
 # Code review items
 

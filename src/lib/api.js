@@ -49,7 +49,7 @@ const api = {
       .catch(err => {
         if(err.statusCode === 404) {
           throw new Error(`Failed to fetch existing app_settings from ${url}.\n` +
-              `      Check that medic-api is running and that you're connecting on the correct port!`);
+              `      Check that CHT API is running and that you're connecting on the correct port!`);
         } else {
           throw err;
         }
