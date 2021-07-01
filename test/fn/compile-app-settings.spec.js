@@ -76,6 +76,9 @@ describe('compile-app-settings', () => {
 
   it('should reject a configuration using invalid forms.json or schedules.json files', () =>
     testFails('sms-modules/invalid-files'));
+  
+  it('should reject a project with no .eslintrc file defined', () =>
+    testFails('missing-eslintrc/project'));
 });
 
 async function test(relativeProjectDir) {
