@@ -44,9 +44,10 @@ const getUserInfo = async (user) => {
   };
 
   info(`Requesting user-info for "${user.username}"`);
-  let result;
   try {
-    result = await api().getUserInfo(params);
+    const result = await api().getUserInfo(params);
+    result.warn_docs = result.warn_docs || result.total_docs;
+    return result;
   } catch (err) {
     // we can safely ignore some errors
     // - 404: This endpoint was only added in 3.7
@@ -56,7 +57,6 @@ const getUserInfo = async (user) => {
       throw err;
     }
   }
-  return result;
 };
 
 const execute = async () => {
@@ -70,7 +70,7 @@ const execute = async () => {
   for (let user of users) {
     const userInfo = await getUserInfo(user);
     if (userInfo && userInfo.warn) {
-      warnings.push(`The user "${user.username}" would replicate ${userInfo.total_docs}, which is above the recommended limit of ${userInfo.limit}.`);
+      warnings.push(`The user "${user.username}" would replicate ${userInfo.warn_docs}, which is above the recommended limit of ${userInfo.limit}.`);
     }
   }
   if (warnings.length) {

@@ -13,8 +13,11 @@ const readLine = require('readline-sync');
 const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => testDir);
 
 describe('create-users', () => {
+  let warn;
   beforeEach(() => {
+    warn = sinon.stub();
     createUsers.__set__('userPrompt', userPrompt);
+    createUsers.__set__('warn', warn);
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'force').get(() => false);
     return api.start();
@@ -301,6 +304,50 @@ describe('create-users', () => {
           { method: 'GET', url: '/api/v1/users-info?' + qs(jack), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jill), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(john), body: {} },
+        ]);
+        assert.equal(warn.callCount, 3);
+        assert.deepEqual(warn.args, [
+          [ 'The user "jack" would replicate 12000, which is above the recommended limit of 10000.' ],
+          [ 'The user "jill" would replicate 10200, which is above the recommended limit of 10000.' ],
+          [ 'Are you sure you want to continue?' ],
+        ]);
+      });
+  });
+
+  it('should use warn_docs if available', () => {
+    mockTestDir(`data/create-users/multiple-existing-place`);
+    sinon.stub(process, 'exit');
+    const pwd = 'Secret_1';
+    api.giveResponses(
+      { status: 400, body: { code: 400, error: 'not an offline role' } },
+      { body: { total_docs: 12000, warn_docs: 11000, warn: true, limit: 10000 } },
+      { body: { total_docs: 10200, warn_docs: 10100, warn: true, limit: 10000 } },
+      { body: { total_docs: 15000, warn_docs: 100, warn: false, limit: 10000 } },
+    );
+
+    sinon.stub(readLine, 'keyInYN').onCall(1).returns(false);
+    const todd = { username: 'todd', password: pwd, roles: ['district-admin'],  place: 'place_uuid_1', contact: 'contact_uuid_1' };
+    const jack = { username: 'jack', password: pwd, roles: ['district-admin', 'supervisor'],  place: 'place_uuid_2', contact: 'contact_uuid_2' };
+    const jill = { username: 'jill', password: pwd, roles: ['role1', 'role2', 'role3'],  place: 'place_uuid_3', contact: 'contact_uuid_3' };
+    const john = { username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4' };
+    const qs = (user) => querystring.stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
+    return assertDbEmpty()
+      .then(() => createUsers.execute())
+      .then(() => {
+        assert.equal(readLine.keyInYN.callCount, 1);
+        assert.equal(process.exit.callCount, 1);
+        assert.deepEqual(api.requestLog(), [
+          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(jack), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(jill), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(john), body: {} },
+        ]);
+
+        assert.equal(warn.callCount, 3);
+        assert.deepEqual(warn.args, [
+          [ 'The user "jack" would replicate 11000, which is above the recommended limit of 10000.' ],
+          [ 'The user "jill" would replicate 10100, which is above the recommended limit of 10000.' ],
+          [ 'Are you sure you want to continue?' ],
         ]);
       });
   });
