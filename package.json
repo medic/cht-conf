@@ -1,35 +1,36 @@
 {
-  "name": "medic-conf",
-  "version": "3.2.1",
-  "description": "Configure Medic Mobile deployments",
+  "name": "cht-conf",
+  "version": "3.7.0",
+  "description": "Configure CHT deployments",
   "main": "./src/lib/main.js",
   "engines": {
     "node": ">=8.10.0"
   },
   "scripts": {
     "clean": "rm -rf ./build/",
-    "generate-changelog": "echo 'Generating changelog...' && ./scripts/changelog > CHANGELOG.md && echo 'Changelog generated.'",
     "eslint": "eslint src/**/*.js test/*.js test/**/*.js",
-    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha ../../test/**/*.spec.js && cd ../..",
-    "postversion": "npm publish",
-    "postpublish": "git push --all; git push --tags"
+    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha --forbid-only ../../test/**/*.spec.js && cd ../.."
   },
   "bin": {
-    "medic-conf": "src/bin/medic-conf.js",
-    "medic-logs": "src/bin/medic-logs.bash",
+    "medic-conf": "src/bin/index.js",
+    "cht": "src/bin/index.js",
+    "medic-logs": "src/bin/cht-logs.bash",
+    "cht-logs": "src/bin/cht-logs.bash",
     "shell-completion-for-medic-conf": "src/bin/shell-completion.js",
-    "pngout-medic": "bin/pngout"
+    "shell-completion-for-cht": "src/bin/shell-completion.js",
+    "pngout-medic": "bin/pngout",
+    "pngout-cht": "bin/pngout"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/medic/medic-conf.git"
+    "url": "git+ssh://git@github.com/medic/cht-conf.git"
   },
   "author": "",
   "license": "AGPL-3.0-only",
   "bugs": {
-    "url": "https://github.com/medic/medic-conf/issues"
+    "url": "https://github.com/medic/cht-conf/issues"
   },
-  "homepage": "https://github.com/medic/medic-conf#readme",
+  "homepage": "https://github.com/medic/cht-conf#readme",
   "dependencies": {
     "@hapi/joi": "^16.1.8",
     "canonical-json": "0.0.4",
@@ -38,7 +39,7 @@
     "eslint": "^6.5.0",
     "eslint-loader": "^3.0.2",
     "googleapis": "^43.0.0",
-    "iso-639-1": "^2.1.0",
+    "iso-639-1": "^2.1.4",
     "json-diff": "^0.5.4",
     "json-stringify-safe": "^5.0.1",
     "json2csv": "^4.5.1",
@@ -46,6 +47,7 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "open": "^7.0.2",
+    "pluralize": "^7.0.0",
     "pouchdb-adapter-http": "^7.1.1",
     "pouchdb-core": "^7.1.1",
     "pouchdb-mapreduce": "^7.1.1",
@@ -56,15 +58,19 @@
     "request-promise-native": "^1.0.7",
     "semver": "^6.1.1",
     "svgo": "^1.2.2",
+    "@medic/translation-checker": "1.0.0",
     "uuid": "^3.3.3",
     "webpack": "^4.41.0",
     "xmldom": "^0.1.27"
   },
   "devDependencies": {
+    "body-parser": "^1.19.0",
     "chai": "^4.2.0",
     "chai-exclude": "^2.0.1",
     "chai-shallow-deep-equal": "^1.4.6",
     "chai-xml": "^0.3.2",
+    "eslint-plugin-node": "^11.1.0",
+    "express": "^4.17.1",
     "express-pouchdb": "^4.2.0",
     "mocha": "^6.1.4",
     "pouchdb-adapter-memory": "^7.1.1",

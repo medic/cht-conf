@@ -66,7 +66,7 @@ describe('contact-summary-emitter', function() {
       assert.equal(appliesIf.callCount, 0);
     });
 
-    it('does not add cards with undefined appliesToType and existing contact type', () => {
+    it('adds cards with undefined appliesToType and existing contact type', () => {
       const appliesIf = sinon.stub().returns(false);
       const cards = [
         { appliesIf },
@@ -74,7 +74,7 @@ describe('contact-summary-emitter', function() {
       const report = { report: true };
       emitter({ cards }, { type: 'x' }, [report]);
 
-      assert.equal(appliesIf.callCount, 0);
+      assert.equal(appliesIf.callCount, 1);
     });
 
     it('adds cards with undefined appliesToType and undefined contact type', () => {
@@ -100,6 +100,37 @@ describe('contact-summary-emitter', function() {
       } catch(e) {
         expect(e.message).to.include('You cannot set appliesToType');
       }
+    });
+
+    it('should prioritize contact.type over contact.contact_type', () => {
+      const appliesIf = sinon.stub().returns(false);
+      const appliesIfPatient = sinon.stub().returns(false);
+      const appliesIfAll = sinon.stub().returns(false);
+      const cards = [
+        { appliesIf: appliesIf, appliesToType: ['person'], fields: [], },
+        { appliesIf: appliesIfPatient, appliesToType: ['patient'], fields: [], },
+        { appliesIf: appliesIfAll, appliesToType: ['patient', 'person'], fields: [], },
+      ];
+
+      const report = { report: true };
+      emitter({ cards }, { type: 'person', contact_type: 'patient' }, [report]);
+      assert.equal(appliesIf.callCount, 1);
+      assert.equal(appliesIfPatient.callCount, 0);
+      assert.equal(appliesIfAll.callCount, 1);
+
+      sinon.resetHistory();
+
+      emitter({ cards }, { type: 'contact', contact_type: 'patient' }, [report]);
+      assert.equal(appliesIf.callCount, 0);
+      assert.equal(appliesIfPatient.callCount, 1);
+      assert.equal(appliesIfAll.callCount, 1);
+
+      sinon.resetHistory();
+
+      emitter({ cards }, { type: 'contact', contact_type: 'neither' }, [report]);
+      assert.equal(appliesIf.callCount, 0);
+      assert.equal(appliesIfPatient.callCount, 0);
+      assert.equal(appliesIfAll.callCount, 0);
     });
   });
 
@@ -147,15 +178,15 @@ describe('contact-summary-emitter', function() {
       expect(result.fields).to.deep.eq([]);
     });
 
-    it('does not add fields with undefined appliesToType and defined contact type', () => {
+    it('adds fields with undefined appliesToType and defined contact type', () => {
       const appliesIf = sinon.stub().returns(true);
       const fields = [
-        { appliesIf },
+        { appliesIf, label: 'label' },
       ];
       const report = { report: true };
       const result = emitter({ fields }, { type: 'r' }, [report]);
 
-      expect(result.fields).to.deep.eq([]);
+      expect(result.fields).to.deep.eq([{ label: 'label' }]);
     });
 
     it('does add fields with undefined appliesToType and undefined contact type', () => {
@@ -167,6 +198,37 @@ describe('contact-summary-emitter', function() {
       const result = emitter({ fields }, {}, [report]);
 
       expect(result.fields).to.deep.eq(fields);
+    });
+
+    it('should prioritize contact.type over contact.contact_type', () => {
+      const appliesIf = sinon.stub().returns(false);
+      const appliesIfPatient = sinon.stub().returns(false);
+      const appliesIfAll = sinon.stub().returns(false);
+      const fields = [
+        { appliesIf: appliesIf, appliesToType: ['person'], },
+        { appliesIf: appliesIfPatient, appliesToType: ['patient'], },
+        { appliesIf: appliesIfAll, appliesToType: ['patient', 'person'], },
+      ];
+
+      const report = { report: true };
+      emitter({ fields }, { type: 'person', contact_type: 'patient' }, [report]);
+      assert.equal(appliesIf.callCount, 1);
+      assert.equal(appliesIfPatient.callCount, 0);
+      assert.equal(appliesIfAll.callCount, 1);
+
+      sinon.resetHistory();
+
+      emitter({ fields }, { type: 'contact', contact_type: 'patient' }, [report]);
+      assert.equal(appliesIf.callCount, 0);
+      assert.equal(appliesIfPatient.callCount, 1);
+      assert.equal(appliesIfAll.callCount, 1);
+
+      sinon.resetHistory();
+
+      emitter({ fields }, { type: 'contact', contact_type: 'neither' }, [report]);
+      assert.equal(appliesIf.callCount, 0);
+      assert.equal(appliesIfPatient.callCount, 0);
+      assert.equal(appliesIfAll.callCount, 0);
     });
   });
 

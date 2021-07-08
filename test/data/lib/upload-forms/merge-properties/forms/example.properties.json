@@ -1,10 +1,12 @@
 {
-	"icon": "example",
-	"context": {
-		"person": true,
-		"place": false
-	},
+  "icon": "example",
+  "context": {
+    "person": true,
+    "place": false
+  },
   "xml2sms": "hello world",
   "internalId": "different",
-  "unknown": true
+  "subject_key": "some.translation.key",
+  "unknown": true,
+  "hidden_fields": ["hidden"]
 }

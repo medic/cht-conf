@@ -4,29 +4,24 @@ const { expect } = require('chai');
 
 const environment = rewire('../../src/lib/environment');
 const main = rewire('../../src/lib/main');
-const userPrompt = rewire('../../src/lib/user-prompt');
+const userPrompt = require('../../src/lib/user-prompt');
 
 const defaultActions = main.__get__('defaultActions');
-const normalArgv = ['node', 'medic-conf'];
+const normalArgv = ['node', 'cht'];
 
 let mocks;
-let readline;
 describe('main', () => {
   beforeEach(() => {
-    readline = {
-      question: sinon.stub().returns('pwd'),
-      keyInYN: sinon.stub().returns(true)
-    };
     environment.__set__('state', {});
     sinon.spy(environment, 'initialize');
-    userPrompt.__set__('readline', readline);
+    sinon.stub(userPrompt, 'question').returns('pwd');
+    sinon.stub(userPrompt, 'keyInYN').returns(true);
     mocks = {
-      userPrompt: userPrompt,
       usage: sinon.stub(),
       shellCompletionSetup: sinon.stub(),
       error: sinon.stub(),
       info: sinon.stub(),
-      checkMedicConfDependencyVersion: sinon.stub(),
+      checkChtConfDependencyVersion: sinon.stub(),
       warn: sinon.stub(),
       executeAction: sinon.stub(),
       getApiUrl: sinon.stub().returns('http://api'),
@@ -45,6 +40,7 @@ describe('main', () => {
   });
   afterEach(() => {
     environment.initialize.restore();
+    sinon.restore();
   });
 
   it('no argv yields usage', async () => {
@@ -77,12 +73,12 @@ describe('main', () => {
 
   it('--skip-dependency-check', async () => {
     await main([...normalArgv, '--skip-dependency-check'], {});
-    expect(mocks.checkMedicConfDependencyVersion.callCount).to.eq(0);
+    expect(mocks.checkChtConfDependencyVersion.callCount).to.eq(0);
   });
 
-  it('medic conf dependency checked', async () => {
+  it('cht-conf dependency checked', async () => {
     await main([...normalArgv, '--local'], {});
-    expect(mocks.checkMedicConfDependencyVersion.calledOnce).to.be.true;
+    expect(mocks.checkChtConfDependencyVersion.calledOnce).to.be.true;
   });
 
   it('--local --accept-self-signed-certs', async () => {
@@ -158,7 +154,7 @@ describe('main', () => {
     it('single action', async () => {
       await main([...normalArgv, '--archive', '--destination=foo', 'upload-app-settings'], {});
       expectExecuteActionBehavior('upload-app-settings', undefined, true);
-      expect(readline.keyInYN.callCount).to.eq(0);
+      expect(userPrompt.keyInYN.callCount).to.eq(0);
     });
 
     it('requires destination', async () => {
@@ -170,17 +166,17 @@ describe('main', () => {
 
   it('accept non-matching instance warning', async () => {
     mocks.getApiUrl.returns('https://admin:pwd@url.app.medicmobile.org/medic');
-    readline.keyInYN.returns(true);
+    userPrompt.keyInYN.returns(true);
     const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
-    expect(readline.keyInYN.callCount).to.eq(1);
+    expect(userPrompt.keyInYN.callCount).to.eq(1);
     expect(actual).to.be.undefined;
   });
 
   it('reject non-matching instance warning', async () => {
     mocks.getApiUrl.returns('https://admin:pwd@url.app.medicmobile.org/medic');
-    readline.keyInYN.returns(false);
+    userPrompt.keyInYN.returns(false);
     const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
-    expect(readline.keyInYN.callCount).to.eq(1);
+    expect(userPrompt.keyInYN.callCount).to.eq(1);
     expect(actual).to.eq(false);
   });
 
@@ -188,7 +184,7 @@ describe('main', () => {
     mocks.getApiUrl.returns('https://admin:pwd@url.app.medicmobile.org/medic');
     environment.__set__('force', true);
     const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/', '--force']);
-    expect(readline.keyInYN.callCount).to.eq(1);
+    expect(userPrompt.keyInYN.callCount).to.eq(1);
     expect(actual).to.be.undefined;
   });
 });

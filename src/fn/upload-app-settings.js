@@ -10,7 +10,7 @@ module.exports = {
     return api().updateAppSettings(settings)
       .then(JSON.parse)
       .then(json => {
-        // As per https://github.com/medic/medic-webapp/issues/3674, this endpoint
+        // As per https://github.com/medic/cht-core/issues/3674, this endpoint
         // will return 200 even when upload fails.
         if (!json.success) {
           throw new Error(json.error);

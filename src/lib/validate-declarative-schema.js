@@ -104,8 +104,19 @@ const TaskSchema = joi.array().items(
     contactLabel:
       joi.alternatives().try( joi.string().min(1), joi.function() ).optional()
       .error(taskError('"contactLabel" should either be a non-empty string or function(contact, report)')),
-    resolvedIf: joi.function().required()
-      .error(taskError('"resolvedIf" should be of type function(contact, report)')),
+    resolvedIf: joi
+      .alternatives()
+      .conditional('actions', {
+        is: joi.array().has(joi.object({ type: 'report' }).unknown()),
+        then: joi.function().optional(),
+        otherwise: joi.function().required()
+      })
+      .error(
+        taskError(
+          'ERROR: Schema error in actions array: Actions with property "type" which value is different than "report", ' +
+          'should define property "resolvedIf" as: function(contact, report) { ... }.'
+        )
+      ),
     events: joi.alternatives().conditional('events', {
       is: joi.array().length(1),
       then: joi.array().items(EventSchema('optional')).min(1).required(),
@@ -122,8 +133,8 @@ const TaskSchema = joi.array().items(
       .error(taskError('"priority" should be an object with optional fields "level" and "label" or a function which returns the same')),
     actions: joi.array().items(
       joi.object({
-        type: joi.string().valid('report', 'contacts').optional(),
-        form: joi.string().min(1).required(),
+        type: joi.string().valid('report', 'contact').optional(),
+        form: joi.alternatives().conditional('type', { is: 'contact', then: joi.forbidden(), otherwise: joi.string().min(1).required() }),
         label: joi.string().min(1).optional(),
         modifyContent: joi.function().optional()
           .error(taskError('"actions.modifyContent" should be "function (content, contact, report)')),

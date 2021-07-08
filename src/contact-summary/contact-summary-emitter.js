@@ -3,7 +3,7 @@ function emitter(contactSummary, contact, reports) {
   var context = contactSummary.context || {};
   var cards = contactSummary.cards || [];
 
-  var contactType = contact && (contact.contact_type || contact.type);
+  var contactType = contact && (contact.type === 'contact' ? contact.contact_type : contact.type);
 
   var result = {
     cards: [],
@@ -12,7 +12,7 @@ function emitter(contactSummary, contact, reports) {
       var appliesToNotType = appliesToType.filter(function(type) {
         return type && type.charAt(0) === '!';
       });
-      if (appliesToType.includes(contactType) ||
+      if (appliesToType.length === 0 || appliesToType.includes(contactType) ||
           (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
         if (!f.appliesIf || f.appliesIf()) {
           delete f.appliesToType;
@@ -31,7 +31,7 @@ function emitter(contactSummary, contact, reports) {
     if (appliesToType.includes('report') && appliesToType.length > 1) {
       throw new Error("You cannot set appliesToType to an array which includes the type 'report' and another type.");
     }
-    
+
     if (appliesToType.includes('report')) {
       for (idx1=0; idx1<reports.length; ++idx1) {
         r = reports[idx1];
@@ -45,7 +45,7 @@ function emitter(contactSummary, contact, reports) {
         }
       }
     } else {
-      if (!appliesToType.includes(contactType)) {
+      if (!appliesToType.includes(contactType) && appliesToType.length > 0) {
         return;
       }
 
@@ -63,7 +63,10 @@ function emitter(contactSummary, contact, reports) {
 }
 
 function convertToArray(appliesToType) {
-  return Array.isArray(appliesToType) ? appliesToType : [appliesToType];  
+  if (!appliesToType) {
+    return [];
+  }
+  return Array.isArray(appliesToType) ? appliesToType : [appliesToType];
 }
 
 function isReportValid(report) {

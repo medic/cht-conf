@@ -79,7 +79,8 @@ const execute = async () => {
     if(!userPrompt.keyInYN()) {
       error('User failed to confirm action.');
       process.exit(1);
-      return; // stop execution in tests
+      // stop execution in tests
+      return; // eslint-disable-line no-unreachable
     }
   }
 

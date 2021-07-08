@@ -12,12 +12,11 @@ const initialiseProjectLayout = require('../../src/fn/initialise-project-layout'
 describe('initialise-project-layout', () => {
   it('should create a project with the desired layout', () => {
     // when
-
+    sinon.stub(environment, 'extraArgs').get(() => undefined);
     sinon.stub(environment, 'pathToProject').get(() => TARGET_DIR);
     initialiseProjectLayout.execute();
 
     // then
-    assertExists('app_settings.json');
     assertExists('contact-summary.js');
     assertExists('forms/app');
     assertExists('forms/collect');
@@ -28,6 +27,9 @@ describe('initialise-project-layout', () => {
     assertExists('targets.js');
     assertExists('.eslintrc');
     assertExists('translations');
+    assertExists('app_settings/base_settings.json');
+    assertExists('app_settings/forms.json');
+    assertExists('app_settings/schedules.json');
   });
 });
 

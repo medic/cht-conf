@@ -3,7 +3,10 @@
     "es6": true,
     "node": true
   },
-  "extends": "eslint:recommended",
+  "extends": [
+    "eslint:recommended",
+    "plugin:node/recommended"
+  ],
   "parserOptions": {
     "ecmaVersion": 8
   },
@@ -23,6 +26,9 @@
       {
         "allowTemplateLiterals": true
       }
-    ]
+    ],
+    "no-process-exit": "warn",
+    "node/no-missing-require": "off",
+    "node/no-extraneous-require": "warn"
   }
 }

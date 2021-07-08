@@ -59,7 +59,8 @@ describe('edit-contacts', function() {
   });
 
   it(`should do a top-down test well and add all available columns to the docs since they are not specified`, async function(){
-
+    sinon.stub(environment, 'force').get(() => false);
+    sinon.stub(environment, 'extraArgs').get(() => undefined);
     await editContactsModule.execute();
     assert.equal(countFilesInDir(saveDocsDir),
                 countFilesInDir(expectedDocsDirAllCols),

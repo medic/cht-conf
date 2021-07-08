@@ -1,4 +1,9 @@
 {
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "root": true,
   "parserOptions": {
     "ecmaVersion": 5
   },
@@ -25,6 +30,7 @@
   },
   "globals": {
     "user": true,
-    "Utils": true
+    "Utils": true,
+    "cht": true
   }
 }

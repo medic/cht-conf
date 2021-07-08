@@ -13,11 +13,13 @@ describe('upload-sms-from-csv', function() {
   beforeEach(api.start);
   afterEach(api.stop);
 
-  it('should upload SMS supplied in CSV format to medic-api', function() {
+  it('should upload SMS supplied in CSV format to CHT API', function() {
 
     // given
     const testDir = 'data/upload-sms-from-csv';
     sinon.stub(environment, 'pathToProject').get(() => testDir);
+    sinon.stub(environment, 'extraArgs').get(() => undefined);
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
 
     // when
     return csvToSms.execute()

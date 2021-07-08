@@ -3,6 +3,7 @@ const { execSync } = require('child_process');
 const argsFormFilter = require('./args-form-filter');
 const exec = require('./exec-promise');
 const fs = require('./sync-fs');
+const { getFormDir } = require('./forms-utils');
 const { info, trace, warn } = require('./log');
 
 const XLS2XFORM = 'xls2xform-medic';
@@ -22,7 +23,7 @@ E` + INSTALLATION_INSTRUCTIONS;
 module.exports = async (projectDir, subDirectory, options) => {
   if(!options) options = {};
 
-  const formsDir = `${projectDir}/forms/${subDirectory}`;
+  const formsDir = getFormDir(projectDir, subDirectory);
 
   if(!fs.exists(formsDir)) {
     warn(`Forms dir not found: ${formsDir}`);
@@ -54,7 +55,7 @@ module.exports = async (projectDir, subDirectory, options) => {
 };
 
 const xls2xform = (sourcePath, targetPath) =>
-    exec(XLS2XFORM, '--skip_validate', sourcePath, targetPath)
+    exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
       .catch(e => {
         if(executableAvailable()) {
           if(e.includes('unrecognized arguments: --skip_validate')) {
@@ -85,7 +86,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
       ;
 
   // Enketo _may_ not work with forms which define a default language - see
-  // https://github.com/medic/medic-webapp/issues/3174
+  // https://github.com/medic/cht-core/issues/3174
   if(enketo) xml = xml.replace(/ default="true\(\)"/g, '');
 
   if(hiddenFields) {
@@ -98,7 +99,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
 
   // Check for deprecations
   if(xml.includes('repeat-relevant')) {
-    warn('From webapp version 2.14.0, repeat-relevant is no longer required.  See https://github.com/medic/medic-webapp/issues/3449 for more info.');
+    warn('From webapp version 2.14.0, repeat-relevant is no longer required.  See https://github.com/medic/cht-core/issues/3449 for more info.');
   }
 
   fs.write(path, xml);

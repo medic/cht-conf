@@ -1,36 +1,89 @@
 const semver = require('semver');
 
 const environment = require('../lib/environment');
-const fs = require('../lib/sync-fs');
 const pouch = require('../lib/db');
 const getApiVersion = require('../lib/get-api-version');
 const iso639 = require('iso-639-1');
-const { warn, info } = require('../lib/log');
+const log = require('../lib/log');
 const properties = require('properties');
 const warnUploadOverwrite = require('../lib/warn-upload-overwrite');
-
-const FILE_MATCHER = /messages-.*\.properties/;
+const {
+  checkTranslations,
+  isLanguageCodeValid,
+  TranslationException
+} = require('@medic/translation-checker');
 
 const execute = async () => {
   const db = pouch(environment.apiUrl);
 
   const dir = `${environment.pathToProject}/translations`;
 
-  if(!fs.exists(dir)) return warn('Could not find custom translations dir:', dir);
-
-  const fileNames = fs.readdir(dir)
-                      .filter(name => FILE_MATCHER.test(name));
+  let fileNames;
+  let formatErrorsFound = 0;
+  let placeholderErrorsFound = 0;
+  let emptiesFound = 0;
+  try {
+    // if environment.skipTranslationCheck is true then only
+    // directory access and file names are checked
+    fileNames = await checkTranslations(dir, {
+      checkPlaceholders: !environment.skipTranslationCheck,
+      checkMessageformat: !environment.skipTranslationCheck,
+      checkEmpties: !environment.skipTranslationCheck
+    });
+  } catch (err) {
+    if (err instanceof TranslationException) {
+      fileNames = err.fileNames;
+      if (!err.errors) {
+        return log.error('Exception checking translations:', err.message);
+      }
+      for (const error of err.errors) {
+        switch (error.error) {
+          case 'cannot-access-dir':
+            return log.warn('Could not find custom translations dir:', dir);
+          case 'missed-placeholder':
+          case 'wrong-placeholder':
+            placeholderErrorsFound++;
+            log.error(error.message);
+            break;
+          case 'empty-message':
+            emptiesFound++;
+            log.warn(error.message);
+            break;
+          case 'wrong-messageformat':
+            formatErrorsFound++;
+            log.error(error.message);
+            break;
+          default:  // 'wrong-file-name', ...
+            log.error(error.message);
+        }
+      }
+      if (emptiesFound > 0) {
+        log.warn(`Found ${emptiesFound} empty messages trying to compile translations`);
+      }
+      if (formatErrorsFound > 0 || placeholderErrorsFound > 0) {
+        let errMsg = `Found ${formatErrorsFound + placeholderErrorsFound} errors trying to compile translations`;
+        if (placeholderErrorsFound > 0) {
+          errMsg += '\nYou can use messages-ex.properties to add placeholders missing from the reference context.';
+        }
+        log.error(errMsg);
+        return process.exit(-1);
+      }
+    } else {
+      throw err;
+    }
+  }
 
   for (let fileName of fileNames) {
     const id = idFor(fileName);
     const languageCode = id.substring('messages-'.length);
     if (!isLanguageCodeValid(languageCode)) {
-      throw new Error(`The language code '${languageCode}' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.`);
+      log.error(`The language code '${languageCode}' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.`);
+      return process.exit(-1);
     }
 
     let languageName = iso639.getName(languageCode);
-    if (!languageName){
-      warn(`'${languageCode}' is not a recognized ISO 639 language code, please ask admin to set the name`);
+    if (!languageName) {
+      log.warn(`'${languageCode}' is not a recognized ISO 639 language code, please ask admin to set the name`);
       languageName = 'TODO: please ask admin to set this in settings UI';
     } else {
       let languageNativeName = iso639.getNativeName(languageCode);
@@ -43,7 +96,7 @@ const execute = async () => {
 
     let doc;
     try {
-      doc = await db.get(idFor(fileName));
+      doc = await db.get(id);
     } catch(e) {
       if (e.status === 404) {
         doc = await newDocFor(fileName, db, languageName, languageCode);
@@ -57,20 +110,14 @@ const execute = async () => {
 
     if (changes) {
       await db.put(doc);
-      info(`Translation ${dir}/${fileName} uploaded`);
+      log.info(`Translation ${dir}/${fileName} uploaded`);
     } else {
-      info(`Translation ${dir}/${fileName} not uploaded as no changes were found`);
+      log.info(`Translation ${dir}/${fileName} not uploaded as no changes were found`);
     }
 
-    warnUploadOverwrite.postUploadDoc(doc);
+    await warnUploadOverwrite.postUploadDoc(db, doc);
   }
 };
-
-function isLanguageCodeValid(code) {
-  // valid CSS selector name to avoid https://github.com/medic/medic/issues/5982
-  var regex = /^[_a-zA-Z]+[_a-zA-Z0-9-]+$/;
-  return regex.test(code);
-}
 
 function parse(filePath, options) {
   return new Promise((resolve, reject) => {

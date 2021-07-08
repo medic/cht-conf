@@ -25,7 +25,7 @@ function determineDate(targetConfig, Utils, c, r) {
   if (typeof targetConfig.date === 'function') {
     return targetConfig.date(c, r);
   }
-  
+
   if (targetConfig.date === undefined || targetConfig.date === 'now') {
     return Utils.now().getTime();
   }
@@ -33,7 +33,7 @@ function determineDate(targetConfig, Utils, c, r) {
   if (targetConfig.date === 'reported') {
     return r ? r.reported_date : c.contact.reported_date;
   }
-  
+
   throw new Error('Unrecognised value for target.date: ' + targetConfig.date);
 }
 
@@ -57,7 +57,7 @@ function determineInstanceIds(targetConfig, c, r) {
 function emitTargetFor(targetConfig, Target, Utils, emit, c, r) {
   var isEmittingForReport = !!r;
   if (!c.contact) return;
-  var contactType = c.contact.contact_type || c.contact.type;
+  var contactType = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
   var appliesToKey = isEmittingForReport ? r.form : contactType;
   if (targetConfig.appliesToType && targetConfig.appliesToType.indexOf(appliesToKey) < 0) return;
   if (targetConfig.appliesIf && !targetConfig.appliesIf (c, r)) return;

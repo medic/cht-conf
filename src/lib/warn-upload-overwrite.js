@@ -1,3 +1,4 @@
+const api = require('./api');
 const fs = require('./sync-fs');
 const jsonDiff = require('json-diff');
 const userPrompt = require('./user-prompt');
@@ -17,13 +18,13 @@ const responseChoicesWithoutDiff = [
 const responseChoicesWithDiff = responseChoicesWithoutDiff.concat([ 'View diff' ]);
 
 const getEnvironmentKey = () => {
-  const parsed = url.parse(environment.apiUrl);
+  const parsed = new url.URL(environment.apiUrl);
   const path = parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : '/medic';
   return `${parsed.hostname}${path}`;
 };
 
 const getHashFileName = () => {
-  const parsed = url.parse(environment.apiUrl);
+  const parsed = new url.URL(environment.apiUrl);
   if (parsed.hostname === 'localhost') {
     return 'local.json';
   }
@@ -94,16 +95,29 @@ const getFormHash = (doc, xml, properties) => {
   return crypt.digest('base64');
 };
 
-const getDocHash = originalDoc => {
+const getDocHash = async (db, originalDoc) => {
   const doc = JSON.parse(JSON.stringify(originalDoc)); // clone doc
   delete doc._rev;
   delete doc._attachments;
   const crypt = crypto.createHash('md5');
   crypt.update(JSON.stringify(doc), 'utf8');
+  const compressibleTypes = await api().getCompressibleTypes();
   if (originalDoc._attachments) {
-    Object.values(originalDoc._attachments).forEach(attachment => {
-      crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
-    });
+    const matchRegex = (pattern, type) => {
+      const rx = new RegExp(pattern);
+      return rx.test(type);
+    };
+    for (const attachmentName of Object.keys(originalDoc._attachments)) {
+      const attachment = originalDoc._attachments[attachmentName];
+      const attachmentCompressible = compressibleTypes.length ?
+          compressibleTypes.some(c => matchRegex(c, attachment.content_type)) : true;
+      if (attachmentCompressible) {
+        const data = attachment.data ? attachment.data : await db.getAttachment(originalDoc._id, attachmentName);
+        crypt.update(data);
+      } else {
+        crypt.update(attachment.digest || couchDigest(attachment.data), 'utf8');
+      }
+    }
   }
   return crypt.digest('base64');
 };
@@ -124,8 +138,8 @@ const preUploadDoc = async (db, localDoc) => {
     }
   }
 
-  const remoteHash = getDocHash(remoteDoc);
-  const localHash = getDocHash(localDoc);
+  const remoteHash = await getDocHash(db, remoteDoc);
+  const localHash = await getDocHash(db, localDoc);
   if (localHash === remoteHash) {
     // no changes to this form - do not upload
     return Promise.resolve(false);
@@ -160,7 +174,7 @@ const preUploadDoc = async (db, localDoc) => {
   return Promise.resolve(true);
 };
 
-const postUploadDoc = doc => updateStoredHash(doc._id, getDocHash(doc));
+const postUploadDoc = async (db, doc) => updateStoredHash(doc._id, await getDocHash(db, doc));
 
 const preUploadForm = async (db, localDoc, localXml, properties) => {
   let remoteXml;

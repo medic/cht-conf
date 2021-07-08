@@ -1,11 +1,17 @@
 var prepareDefinition = require('./definition-preparation');
+var taskDefaults = require('./task-defaults');
 
 function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
   if (!taskDefinitions) return;
 
   var taskDefinition, r;
   for (var idx1 = 0; idx1 < taskDefinitions.length; ++idx1) {
-    taskDefinition = taskDefinitions[idx1];
+    taskDefinition = Object.assign({}, taskDefinitions[idx1], taskDefaults);
+    if (typeof taskDefinition.resolvedIf !== 'function') {
+      taskDefinition.resolvedIf = function (contact, report, event, dueDate) {
+        return taskDefinition.defaultResolvedIf(contact, report, event, dueDate, Utils);
+      };
+    }
     prepareDefinition(taskDefinition);
 
     switch (taskDefinition.appliesTo) {
@@ -78,9 +84,9 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
     } else {
       contactLabel = taskDefinition.contactLabel;
     }
-  
+
     return contactLabel ? { name: contactLabel } : c.contact;
-  }  
+  }
 
   function emitForEvents(scheduledTaskIdx) {
     var i, dueDate = null, event, priority, task;
@@ -121,7 +127,7 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         readyEnd: event.end || 0,
         title: taskDefinition.title,
         resolved: taskDefinition.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
-        actions: taskDefinition.actions.map(initActions),
+        actions: initActions(taskDefinition.actions, event),
       };
 
       if (scheduledTaskIdx !== undefined) {
@@ -142,7 +148,13 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
     }
   }
 
-  function initActions(def) {
+  function initActions(actions, event) {
+    return taskDefinition.actions.map(function(action) {
+      return initAction(action, event);
+    });
+  }
+
+  function initAction(action, event) {
     var appliesToReport = !!r;
     var content = {
       source: 'task',
@@ -150,17 +162,18 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
       contact: c.contact,
     };
 
-    if (def.modifyContent) {
-      def.modifyContent(content, c, r);
+    if (action.modifyContent) {
+      action.modifyContent(content, c, r, event);
     }
 
     return {
-      type: 'report',
-      form: def.form,
-      label: def.label || 'Follow up',
+      type: action.type || 'report',
+      form: action.form,
+      label: action.label || 'Follow up',
       content: content,
     };
   }
 }
+
 
 module.exports = taskEmitter;

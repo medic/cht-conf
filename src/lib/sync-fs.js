@@ -87,7 +87,7 @@ module.exports = {
   extension,
   fs,
   mkdir: path => { try { mkdirp(path); } catch(e) { warn(e); } },
-  mkdtemp: () => fs.mkdtempSync(`${os.tmpdir()}/medic-conf`),
+  mkdtemp: () => fs.mkdtempSync(`${os.tmpdir()}/cht-conf`),
   path,
   posixPath: p => p.split(path.sep).join('/'),
   read,

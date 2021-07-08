@@ -7,6 +7,7 @@ const fs = require('../lib/sync-fs');
 const parseTargets = require('../lib/parse-targets');
 const { warn } = require('../lib/log');
 const parsePurge = require('../lib/parse-purge');
+const validateAppSettings = require('../lib/validate-app-settings');
 
 const compileAppSettings = async () => {
   const options = parseExtraArgs(environment.extraArgs);
@@ -39,7 +40,45 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   }
 
   const readOptionalJson = path => fs.exists(path) ? fs.readJson(path) : undefined;
-  const appSettings = fs.readJson(path.join(projectDir, 'app_settings.json'));
+  let appSettings;
+  const baseSettingsPath = path.join(projectDir, 'app_settings/base_settings.json');
+  const appSettingsPath = path.join(projectDir, 'app_settings.json');
+
+  if (!fs.exists(baseSettingsPath) && !fs.exists(appSettingsPath)) {
+    throw new Error('No configuration defined please create a base_settings.json file in app_settings folder with the desired configuration');
+  }
+  if (fs.exists(baseSettingsPath)) {
+    // using modular config so should override anything already defined in app_settings.json
+    appSettings = fs.readJson(baseSettingsPath);
+    if(appSettings.forms) {
+      warn('forms should be defined in a separate <config_repo>/app_settings/forms.json file.');
+    }
+    if(appSettings.schedules) {
+      warn('schedules should be defined in a separate <config_repo>/app_settings/schedules.json file.');
+    }
+    const formSettings = readOptionalJson(path.join(projectDir, 'app_settings/forms.json'));
+    if (formSettings) {
+      // validate forms object
+      const validate = validateAppSettings.validateFormsSchema(formSettings);
+      if (!validate.valid) {
+        throw new Error(`Invalid form settings: ${validate.error}`);
+      }
+      appSettings.forms = formSettings;
+    }
+    const scheduleSettings = readOptionalJson(path.join(projectDir, 'app_settings/schedules.json'));
+    if (scheduleSettings) {
+      // validate schedules object
+      const validate = validateAppSettings.validateScheduleSchema(scheduleSettings);
+      if (!validate.valid) {
+        throw new Error(`Invalid schedule settings: ${validate.error}`);
+      }
+      appSettings.schedules = scheduleSettings;
+    }
+  } else {
+    warn(`app_settings.json file should not be edited directly.
+    Please create a base_settings.json file in app_settings folder and move any manually defined configurations there.`);
+    appSettings = fs.readJson(appSettingsPath);
+  }
   appSettings.contact_summary = await compileContactSummary(projectDir, options);
   appSettings.tasks = {
     rules: await compileNoolsRules(projectDir, options),

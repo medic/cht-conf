@@ -13,17 +13,17 @@ const getApiUrl = (cmdArgs, env = {}) => {
     return false;
   }
 
-  if (cmdArgs.archive) {
-    return '--archive mode';
-  }
-
   if (cmdArgs.user && !cmdArgs.instance) {
     error('The --user switch can only be used if followed by --instance');
     return false;
   }
 
   let instanceUrl;
-  if (cmdArgs.local) {
+  if (cmdArgs.local || cmdArgs.archive) {
+    // Although `--archive` mode won't connect with the
+    // local database, a URL is required to mimic the
+    // behaviour as it is connecting to.
+    // See ./archiving-db.js
     instanceUrl = parseLocalUrl(env.COUCH_URL);
     if (instanceUrl.hostname !== 'localhost') {
       error(`You asked to configure localhost, but the COUCH_URL env var is set to '${instanceUrl.hostname}'.  This may be a remote server.`);
@@ -33,9 +33,9 @@ const getApiUrl = (cmdArgs, env = {}) => {
     const password = userPrompt.question(`${emoji.key}  Password: `, { hideEchoBack: true });
     const instanceUsername = cmdArgs.user || 'admin';
     const encodedPassword = encodeURIComponent(password);
-    instanceUrl = url.parse(`https://${instanceUsername}:${encodedPassword}@${cmdArgs.instance}.medicmobile.org`);
+    instanceUrl = new url.URL(`https://${instanceUsername}:${encodedPassword}@${cmdArgs.instance}.medicmobile.org`);
   } else if (cmdArgs.url) {
-    instanceUrl = url.parse(cmdArgs.url);
+    instanceUrl = new url.URL(cmdArgs.url);
   }
 
   return `${instanceUrl.href}medic`;
@@ -43,10 +43,10 @@ const getApiUrl = (cmdArgs, env = {}) => {
 
 const parseLocalUrl = (couchUrl) => {
   const doParse = (unparsed) => {
-    const parsed = url.parse(unparsed);
+    const parsed = new url.URL(unparsed);
     parsed.path = parsed.pathname = '';
     parsed.host = `${parsed.hostname}:5988`;
-    return url.parse(url.format(parsed));
+    return new url.URL(url.format(parsed));
   };
 
   if (couchUrl) {
@@ -55,7 +55,7 @@ const parseLocalUrl = (couchUrl) => {
   }
 
   info('Using default local url');
-  return url.parse('http://admin:pass@localhost:5988');
+  return new url.URL('http://admin:pass@localhost:5988');
 };
 
 module.exports = getApiUrl;
