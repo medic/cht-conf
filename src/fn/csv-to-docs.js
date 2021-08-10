@@ -1,5 +1,5 @@
 const stringify = require('canonical-json/index2');
-const uuid5 = require('uuid/v5');
+const { v5: uuid5 } = require('uuid');
 
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');

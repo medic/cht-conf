@@ -1,4 +1,4 @@
-const uuid = require('uuid/v4');
+const { v4: uuid } = require('uuid');
 
 const api = require('../lib/api');
 const environment = require('../lib/environment');
