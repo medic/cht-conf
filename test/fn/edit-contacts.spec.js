@@ -317,5 +317,16 @@ describe('edit-contacts', function() {
       expect(err.message).to.be.equal('User canceled the action.');
     }
   });
+
+  it('should not prompt a user if the force flag is passed', async () => {
+    const prompt = sinon.stub(userPrompt, 'keyInSelect').returns(1);
+    sinon.stub(
+      environment,
+      'extraArgs'
+    ).get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`, '--force=true',]);
+    await editContactsModule.execute();
+
+    expect(prompt.callCount).to.equal(0);
+  });
  
 });
