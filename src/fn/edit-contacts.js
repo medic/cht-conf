@@ -2,7 +2,7 @@ const minimist = require('minimist');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const path = require('path');
-const { warn, info, error } = require('../lib/log');
+const { warn, info } = require('../lib/log');
 const pouch = require('../lib/db');
 const safeStringify = require('../lib/safe-stringify');
 const toDocs = require('./csv-to-docs');
@@ -16,10 +16,10 @@ const execute = () => {
   const db = pouch();
   const docDirectoryPath = args.docDirectoryPath;
   fs.mkdir(docDirectoryPath);
-  let overwriteFiles = false;
+  let overwriteAllFiles = false;
 
   const saveJsonDoc = doc => {
-    if(fs.exists(`${docDirectoryPath}/${doc._id}.doc.json`) && !args.updateOfflineDocs && !args.force && !overwriteFiles) {
+    if(fs.exists(`${docDirectoryPath}/${doc._id}.doc.json`) && !args.updateOfflineDocs && !args.force && !overwriteAllFiles) {
       const userSelection = userPrompt.keyInSelect(
         ['overwrite this file', 'overwrite this file and all subsequent files'],
         `${doc._id}.doc.json already exists in the chosen directory. What do you want to do?`
@@ -27,11 +27,10 @@ const execute = () => {
       if(userSelection === 0) {
         return fs.write(`${docDirectoryPath}/${doc._id}.doc.json`, safeStringify(doc) + '\n');
       } else if(userSelection === 1) {
-        overwriteFiles = true;
+        overwriteAllFiles = true;
         return fs.write(`${docDirectoryPath}/${doc._id}.doc.json`, safeStringify(doc) + '\n');
       } else {
-        error('User canceled the action.');
-        process.exit(-1);
+        throw new Error('User canceled the action.');
       }
     }
     return fs.write(`${docDirectoryPath}/${doc._id}.doc.json`, safeStringify(doc) + '\n');
