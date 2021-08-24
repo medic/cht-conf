@@ -7,9 +7,11 @@ const pouch = require('../lib/db');
 const safeStringify = require('../lib/safe-stringify');
 const toDocs = require('./csv-to-docs');
 const EDIT_RESERVED_COL_NAMES = [ 'parent', '_id', 'name', 'reported_date' ];
-const DOC_TYPES = ['district_hospital', 'health_center', 'clinic', 'person', 'user', 'user-settings', 'contact'];
 const DOCUMENT_ID =  'documentID';
 const userPrompt = require('../lib/user-prompt');
+const fetchDocumentList = require('../lib/fetch-document-list');
+
+const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.json`;
 
 const execute = () => {
   const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
@@ -19,21 +21,25 @@ const execute = () => {
   let overwriteAllFiles = false;
 
   const saveJsonDoc = doc => {
-    if(fs.exists(`${docDirectoryPath}/${doc._id}.doc.json`) && !args.updateOfflineDocs && !args.force && !overwriteAllFiles) {
-      const userSelection = userPrompt.keyInSelect(
-        ['overwrite this file', 'overwrite this file and all subsequent files'],
-        `${doc._id}.doc.json already exists in the chosen directory. What do you want to do?`
-      );
-      if(userSelection === 0) {
-        return fs.write(`${docDirectoryPath}/${doc._id}.doc.json`, safeStringify(doc) + '\n');
-      } else if(userSelection === 1) {
-        overwriteAllFiles = true;
-        return fs.write(`${docDirectoryPath}/${doc._id}.doc.json`, safeStringify(doc) + '\n');
-      } else {
-        throw new Error('User canceled the action.');
-      }
+    const writeFile = (writeDoc) => fs.write(jsonDocPath(docDirectoryPath, writeDoc._id), safeStringify(writeDoc) + '\n');
+    
+    if (args.updateOfflineDocs || args.force || overwriteAllFiles) {
+      return writeFile(doc);
     }
-    return fs.write(`${docDirectoryPath}/${doc._id}.doc.json`, safeStringify(doc) + '\n');
+    
+    if (!fs.exists(jsonDocPath(docDirectoryPath, doc._id))) {
+       return writeFile(doc);
+    }
+    
+    const userSelection = userPrompt.keyInSelect();
+    if (userSelection === undefined || userSelection === 2) {
+      throw new Error('User canceled the action.');
+    }
+    
+    if (userSelection === 1) {
+      overwriteAllFiles = true;
+    }
+    return writeFile(doc);
   };
 
   const csvDir = `${environment.pathToProject}/csv`;
@@ -157,50 +163,6 @@ function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs)
 const processDocuments =  async (docType, csv, ids, db, args) => {
   const documentDocs = await fetchDocumentList(db, ids, args);
   return  processDocs(docType, csv, documentDocs, args);
-};
-
-const fetchDocumentList = async (db, ids, args) => {
-  if(args.updateOfflineDocs) {
-    info('Loading offline doc(s)');
-    let missingDocs = [];
-    let docs = {};
-    ids.map(id => {
-      const docPath = `${args.docDirectoryPath}/${id}.doc.json`;
-      if(!fs.exists(docPath)) {
-        missingDocs.push(id);
-      } else {
-        docs[id] = fs.readJson(docPath);
-      }
-    });
-    if(missingDocs.length > 0) {
-      const docsFromDB = await fetchDocumentListFromDB(db, missingDocs);
-      Object.assign(docs, docsFromDB);
-    }
-
-    return docs;
-  } else {
-    return fetchDocumentListFromDB(db, ids);
-  }
-};
-
-const fetchDocumentListFromDB = async (db, ids) => {
-  info('Downloading doc(s)...');
-  const documentDocs = await db.allDocs({
-    keys: ids,
-    include_docs: true,
-  });
-
-  const missingDocumentErrors = documentDocs.rows.filter(row => !row.doc).map(row => `Document with id '${row.key}' could not be found.`);
-  if (missingDocumentErrors && missingDocumentErrors.length) {
-    throw Error(missingDocumentErrors);
-  }
-
-  const documentTypeErrors = documentDocs.rows.filter(row => !DOC_TYPES.includes(row.doc.type)).map(row => ` Document with id ${row.key} of type ${row.doc.type} cannot be edited`);
-  if (documentTypeErrors && documentTypeErrors.length) {
-    throw Error(documentTypeErrors);
-  }
-
-  return documentDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
 };
 
 // Parses extraArgs and asserts if required parameters are not present

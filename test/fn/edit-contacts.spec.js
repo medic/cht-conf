@@ -312,7 +312,7 @@ describe('edit-contacts', function() {
     ).get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`]);
     try {
       await editContactsModule.execute();
-      assert.fail('should throw an error a user chooses not ot overwrite files');
+      assert.fail('should throw an error a user chooses not to overwrite files');
     } catch (err) {
       expect(err.message).to.be.equal('User canceled the action.');
     }
