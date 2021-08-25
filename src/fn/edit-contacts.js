@@ -13,37 +13,35 @@ const fetchDocumentList = require('../lib/fetch-document-list');
 
 const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.json`;
 
+let overwriteAllFiles = false;
+const saveJsonDoc = (doc, args) => {
+  const writeFile = (writeDoc) => fs.write(jsonDocPath(args.docDirectoryPath, writeDoc._id), safeStringify(writeDoc) + '\n');
+  
+  if (args.updateOfflineDocs || args.force || overwriteAllFiles) {
+    return writeFile(doc);
+  }
+  
+  if (!fs.exists(jsonDocPath(args.docDirectoryPath, doc._id))) {
+     return writeFile(doc);
+  }
+  
+  const userSelection = userPrompt.keyInSelect();
+  if (userSelection === undefined || userSelection === 2) {
+    throw new Error('User canceled the action.');
+  }
+  
+  overwriteAllFiles = (userSelection === 1);
+  return writeFile(doc);
+};
+
 const execute = () => {
   const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
   const db = pouch();
   const docDirectoryPath = args.docDirectoryPath;
   fs.mkdir(docDirectoryPath);
-  let overwriteAllFiles = false;
-
-  const saveJsonDoc = doc => {
-    const writeFile = (writeDoc) => fs.write(jsonDocPath(docDirectoryPath, writeDoc._id), safeStringify(writeDoc) + '\n');
-    
-    if (args.updateOfflineDocs || args.force || overwriteAllFiles) {
-      return writeFile(doc);
-    }
-    
-    if (!fs.exists(jsonDocPath(docDirectoryPath, doc._id))) {
-       return writeFile(doc);
-    }
-    
-    const userSelection = userPrompt.keyInSelect();
-    if (userSelection === undefined || userSelection === 2) {
-      throw new Error('User canceled the action.');
-    }
-    
-    if (userSelection === 1) {
-      overwriteAllFiles = true;
-    }
-    return writeFile(doc);
-  };
 
   const csvDir = `${environment.pathToProject}/csv`;
-  if(!fs.exists(csvDir)) {
+  if (!fs.exists(csvDir)) {
     warn(`No csv directory found at ${csvDir}.`);
     return Promise.resolve();
   }
@@ -68,7 +66,7 @@ const execute = () => {
       Promise.resolve())
 
     .then(() => model.exclusions.forEach(toDocs.removeExcludedField))
-    .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));
+    .then(() => Promise.all(Object.values(model.docs).map(doc => saveJsonDoc(doc, args))));
 };
 
 const model = {
@@ -136,7 +134,7 @@ function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs)
   const idPrefix =  docType === 'contact' ? '' : 'org.couchdb.user:';
   const doc = documentDocs[idPrefix + documentId];
 
-  if(toIncludeIndex.length > 0){
+  if (toIncludeIndex.length > 0){
     row = toIncludeIndex.map(index => row[index]);
   } else {
     row.splice(uuidIndex,1);
@@ -145,12 +143,12 @@ function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs)
   for(let i=0; i<cols.length; ++i) {
     const { col, val, excluded } = toDocs.parseColumn(cols[i], row[i]);
     
-    if(EDIT_RESERVED_COL_NAMES.includes(col.split('.')[0])) {
+    if (EDIT_RESERVED_COL_NAMES.includes(col.split('.')[0])) {
       throw new Error(`Cannot set property defined by column '${col}' - this property name is protected.`);
     }
 
     toDocs.setCol(doc, col, val);
-    if(excluded) { 
+    if (excluded) { 
       model.exclusions.push({
         doc: doc,
         propertyName: col,

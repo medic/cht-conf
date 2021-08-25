@@ -198,10 +198,9 @@ describe('edit-contacts', function() {
 
   it('should load documents from provided directory if relevant argument is passed', async () => {
     const db = sinon.stub(pouch, 'allDocs');
-    sinon.stub(
-      environment,
-      'extraArgs'
-    ).get(() => ['--columns=type', '--files=contact.type.csv', '--updateOfflineDocs=true', `--docDirectoryPath=${editedJsonDocs}`]);
+    sinon
+      .stub(environment,'extraArgs')
+      .get(() => ['--columns=type', '--files=contact.type.csv', '--updateOfflineDocs=true', `--docDirectoryPath=${editedJsonDocs}`]);
     await editContactsModule.execute();
 
     expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/09efb53f-9cd8-524c-9dfd-f62c242f1817.doc.json`)).to.deep.equal(
@@ -226,25 +225,26 @@ describe('edit-contacts', function() {
   });
 
   it('should load documents from db if not found in directory', async () => {
-    const db = sinon.stub(pouch, 'allDocs').resolves({
-      rows: [
-        {
-          id: '0ebca32d-c1b7-5522-94a3-97dd8b3df146',
-          key: '0ebca32d-c1b7-5522-94a3-97dd8b3df146',
-          value: { rev: '1-ccec0024d98011c6d33c223ba389b1da' },
-          doc: {
-            type: 'person',
-            name: 'janie',
-            _id: '0ebca32d-c1b7-5522-94a3-97dd8b3df146',
-            _rev: '1-ccec0024d98011c6d33c223ba389b1da'
+    const db = sinon
+      .stub(pouch, 'allDocs')
+      .resolves({
+        rows: [
+          {
+            id: '0ebca32d-c1b7-5522-94a3-97dd8b3df146',
+            key: '0ebca32d-c1b7-5522-94a3-97dd8b3df146',
+            value: { rev: '1-ccec0024d98011c6d33c223ba389b1da' },
+            doc: {
+              type: 'person',
+              name: 'janie',
+              _id: '0ebca32d-c1b7-5522-94a3-97dd8b3df146',
+              _rev: '1-ccec0024d98011c6d33c223ba389b1da'
+            }
           }
-        }
-      ]
+        ]
     });
-    sinon.stub(
-      environment,
-      'extraArgs'
-    ).get(() => ['--columns=is_in_emnch,rbf', '--files=contact.csv', '--updateOfflineDocs=true', `--docDirectoryPath=${editedJsonDocs}`]);
+    sinon
+      .stub(environment,'extraArgs')
+      .get(() => ['--columns=is_in_emnch,rbf', '--files=contact.csv', '--updateOfflineDocs=true', `--docDirectoryPath=${editedJsonDocs}`]);
     await editContactsModule.execute();
 
     expect(db.callCount).to.equal(1);
@@ -283,11 +283,12 @@ describe('edit-contacts', function() {
   });
 
   it('should prompt a user if they will ovewrite files in a directory if they have not passed the updateOfflineDocs flag', async () => {
-    const prompt = sinon.stub(userPrompt, 'keyInSelect').returns(0);
-    sinon.stub(
-      environment,
-      'extraArgs'
-    ).get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`]);
+    const prompt = sinon
+      .stub(userPrompt, 'keyInSelect')
+      .returns(0);
+    sinon
+      .stub(environment, 'extraArgs')
+      .get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`]);
     await editContactsModule.execute();
 
     expect(prompt.callCount).to.equal(2);
@@ -295,21 +296,21 @@ describe('edit-contacts', function() {
 
   it('should not prompt a user again if they choose to ovewrite all files', async () => {
     const prompt = sinon.stub(userPrompt, 'keyInSelect').returns(1);
-    sinon.stub(
-      environment,
-      'extraArgs'
-    ).get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`]);
+    sinon
+      .stub(environment, 'extraArgs')
+      .get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`]);
     await editContactsModule.execute();
 
     expect(prompt.callCount).to.equal(1);
   });
 
   it('should throw an error and exit if a user chooses not to overwrite files', async () => {
-    sinon.stub(userPrompt, 'keyInSelect').returns(2);
-    sinon.stub(
-      environment,
-      'extraArgs'
-    ).get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`]);
+    sinon
+      .stub(userPrompt, 'keyInSelect')
+      .returns(2);
+    sinon
+      .stub(environment,'extraArgs')
+      .get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`]);
     try {
       await editContactsModule.execute();
       assert.fail('should throw an error a user chooses not to overwrite files');
@@ -319,14 +320,50 @@ describe('edit-contacts', function() {
   });
 
   it('should not prompt a user if the force flag is passed', async () => {
-    const prompt = sinon.stub(userPrompt, 'keyInSelect').returns(1);
-    sinon.stub(
-      environment,
-      'extraArgs'
-    ).get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`, '--force=true',]);
+    const prompt = sinon
+      .stub(userPrompt, 'keyInSelect')
+      .returns(1);
+    sinon
+      .stub(environment, 'extraArgs')
+      .get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`, '--force=true',]);
     await editContactsModule.execute();
 
     expect(prompt.callCount).to.equal(0);
+  });
+
+  it('should default to false if updateOfflineDocs is not properly set', async () => {
+    const saveJsonDoc = sinon.stub();
+    editContactsModule.__set__('saveJsonDoc', saveJsonDoc);
+    sinon
+      .stub(environment,'extraArgs')
+      .get(() => ['--columns=is_in_emnch,rbf', '--files=contact.csv', '--updateOfflineDocs=undefined', `--docDirectoryPath=${editedJsonDocs}`]);
+    await editContactsModule.execute();
+    expect(saveJsonDoc.args[0][1].updateOfflineDocs).to.equal(false);
+  });
+
+  it('should default to false if updateOfflineDocs has no set value', async () => {
+    const saveJsonDoc = sinon.stub();
+    editContactsModule.__set__('saveJsonDoc', saveJsonDoc);
+    sinon
+      .stub(environment,'extraArgs')
+      .get(() => ['--columns=is_in_emnch,rbf', '--files=contact.csv', '--updateOfflineDocs=', `--docDirectoryPath=${editedJsonDocs}`]);
+    await editContactsModule.execute();
+    expect(saveJsonDoc.args[0][1].updateOfflineDocs).to.equal(false);
+  });
+
+  it('should throw an error if fetching focs from the db fails', async () => {
+    sinon
+      .stub(pouch, 'allDocs')
+      .throws(new Error('db fetching failed'));
+    sinon
+      .stub(environment,'extraArgs')
+      .get(() => ['--columns=is_in_emnch,rbf', '--files=contact.fail.fetch.csv', '--updateOfflineDocs=true', `--docDirectoryPath=${editedJsonDocs}`]);
+    try {
+      await editContactsModule.execute();
+      assert.fail('should throw an error when fetching from the db fails');
+    } catch (err) {
+      expect(err.message).to.be.equal('db fetching failed');
+    }
   });
  
 });
