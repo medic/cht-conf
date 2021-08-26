@@ -37,6 +37,6 @@ jobs:
       with:
         name: Code Coverage Report
         path: |
-          Coverage
+          coverage
           .nyc_output
       if: ${{ failure() }}
