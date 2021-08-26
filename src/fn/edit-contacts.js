@@ -71,6 +71,8 @@ const execute = () => {
           throw new Error('User canceled the action.');
         }
         overwriteAllFiles = (userSelection === 1);
+
+        saveJsonDoc(doc, args, overwriteAllFiles);
       }
     })));
 };
