@@ -35,7 +35,7 @@ jobs:
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
-        name: Code Coverage Report
+        name: Coverage Report ${{ matrix.node-version }}
         path: |
           coverage
           .nyc_output
