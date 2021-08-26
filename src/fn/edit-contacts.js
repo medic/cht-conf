@@ -10,6 +10,7 @@ const EDIT_RESERVED_COL_NAMES = [ 'parent', '_id', 'name', 'reported_date' ];
 const DOCUMENT_ID =  'documentID';
 const userPrompt = require('../lib/user-prompt');
 const fetchDocumentList = require('../lib/fetch-document-list');
+const DOC_EXISTS = 'DOC_EXISTS';
 
 const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.json`;
 
@@ -24,7 +25,7 @@ const saveJsonDoc = (doc, args, overwriteAllFiles) => {
     return writeFile(doc);
   }
 
-  return 'user input required';
+  return DOC_EXISTS;
 };
 
 const execute = () => {
@@ -63,18 +64,14 @@ const execute = () => {
     .then(() => Promise.all(Object.values(model.docs).map(doc => {
       const saveDoc = saveJsonDoc(doc, args, overwriteAllFiles);
 
-      if(saveDoc === 'user input required') {
+      if(saveDoc === DOC_EXISTS) {
         const userSelection = userPrompt.keyInSelect();
 
         if (userSelection === undefined || userSelection === 2) {
           throw new Error('User canceled the action.');
         }
         overwriteAllFiles = (userSelection === 1);
-
-        return saveJsonDoc(doc, args, overwriteAllFiles);
       }
-
-      return saveDoc;
     })));
 };
 
