@@ -9,7 +9,7 @@
   "scripts": {
     "clean": "rm -rf ./build/",
     "eslint": "eslint src/**/*.js test/*.js test/**/*.js",
-    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && mocha --forbid-only ../../test/**/*.spec.js && cd ../.."
+    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha --forbid-only ../../test/**/*.spec.js && cd ../.."
   },
   "bin": {
     "medic-conf": "src/bin/index.js",
@@ -73,6 +73,7 @@
     "express": "^4.17.1",
     "express-pouchdb": "^4.2.0",
     "mocha": "^6.1.4",
+    "nyc": "^15.1.0",
     "pouchdb-adapter-memory": "^7.1.1",
     "rewire": "^4.0.1",
     "sinon": "^7.3.2"
