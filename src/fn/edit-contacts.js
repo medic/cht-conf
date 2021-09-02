@@ -174,13 +174,11 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
     .split(',')
     .filter(id => id);
   
-  const updateOfflineDocs = String(args.updateOfflineDocs).toLowerCase() === 'true'? true : false;
-
   return {
     colNames,
     csvFiles,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
-    updateOfflineDocs,
+    updateOfflineDocs: args.updateOfflineDocs,
     force: !!args.force,
   };
 };
