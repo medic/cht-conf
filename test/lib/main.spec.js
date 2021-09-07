@@ -196,7 +196,7 @@ describe('main', () => {
     await main([...normalArgv, 'upload-app-forms']);
     expect(mocks.error.callCount).to.eq(1);
     expect(mocks.error.args[0][0]).to
-      .eq('Failed to get a response from http://api. Maybe you entered the wrong URL, wrong port or the instance is not started? Please check and try again');
+      .eq('Failed to get a response from http://api. Maybe you entered the wrong URL, wrong port or the instance is not started? Please check and try again.');
   });
 
   it('should continue without error if action requires an instance and apiUrl responds', async() => {
