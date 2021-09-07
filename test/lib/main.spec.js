@@ -32,6 +32,9 @@ describe('main', () => {
           resolve: () => 'resolved',
         },
       },
+      request: {
+        get: sinon.stub()
+      }
     };
 
     for (let attr of Object.keys(mocks)) {
@@ -186,5 +189,19 @@ describe('main', () => {
     const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/', '--force']);
     expect(userPrompt.keyInYN.callCount).to.eq(1);
     expect(actual).to.be.undefined;
+  });
+
+  it('should provide an error if action requires an instance and apiUrl does not respond', async() => {
+    mocks.request.get.rejects();
+    await main([...normalArgv, 'upload-app-forms']);
+    expect(mocks.error.callCount).to.eq(1);
+    expect(mocks.error.args[0][0]).to
+      .eq('Failed to get a response from http://api. Maybe you entered the wrong URL, wrong port or the instance is not started? Please check and try again');
+  });
+
+  it('should continue without error if action requires an instance and apiUrl responds', async() => {
+    mocks.request.get.resolves();
+    await main([...normalArgv, 'upload-app-forms']);
+    expect(mocks.error.callCount).to.eq(0);
   });
 });
