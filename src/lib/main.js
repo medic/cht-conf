@@ -167,6 +167,7 @@ module.exports = async (argv, env) => {
       return -1;
     }
     try {
+      info(`Checking that ${apiUrl} is available...`);
       await request.get(apiUrl);
     } catch (err) {
       error(`Failed to get a response from ${apiUrl}. Maybe you entered the wrong URL, wrong port or the instance is not started? Please check and try again.`);
