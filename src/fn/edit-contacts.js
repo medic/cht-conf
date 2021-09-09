@@ -29,7 +29,7 @@ const saveJsonDoc = (doc, args, overwriteAllFiles) => {
 };
 
 const execute = () => {
-  const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
+  const args = parseExtraArgs(environment.pathToProject, environment.extraArgs, environment.force);
   const db = pouch();
   const docDirectoryPath = args.docDirectoryPath;
   let overwriteAllFiles = false;
@@ -172,7 +172,7 @@ const processDocuments =  async (docType, csv, ids, db, args) => {
 };
 
 // Parses extraArgs and asserts if required parameters are not present
-const parseExtraArgs = (projectDir, extraArgs = []) => {
+const parseExtraArgs = (projectDir, extraArgs = [], force) => {
   const args = minimist(extraArgs, { boolean: true });
   const colNames = (args.columns || args.column || '')
     .split(',')
@@ -187,7 +187,7 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
     csvFiles,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     updateOfflineDocs: args.updateOfflineDocs,
-    force: !!args.force,
+    force: !!force,
   };
 };
 

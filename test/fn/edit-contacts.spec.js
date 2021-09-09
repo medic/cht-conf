@@ -52,6 +52,7 @@ describe('edit-contacts', function() {
     const pouchDb = sinon.stub();
     pouchDb.returns(pouch);
     editContactsModule.__set__('pouch', pouchDb);
+    sinon.stub(environment, 'force').get(() => false);
   });
 
   afterEach(async () => {
@@ -320,12 +321,13 @@ describe('edit-contacts', function() {
   });
 
   it('should not prompt a user if the force flag is passed', async () => {
+    sinon.stub(environment, 'force').get(() => true);
     const prompt = sinon
       .stub(userPrompt, 'keyInSelect')
       .returns(1);
     sinon
       .stub(environment, 'extraArgs')
-      .get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`, '--force=true',]);
+      .get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`]);
     await editContactsModule.execute();
 
     expect(prompt.callCount).to.equal(0);
