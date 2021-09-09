@@ -10,11 +10,11 @@ const EDIT_RESERVED_COL_NAMES = [ 'parent', '_id', 'name', 'reported_date' ];
 const DOCUMENT_ID =  'documentID';
 const userPrompt = require('../lib/user-prompt');
 const fetchDocumentList = require('../lib/fetch-document-list');
+const DOC_EXISTS = 'DOC_EXISTS';
 
 const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.json`;
 
-let overwriteAllFiles = false;
-const saveJsonDoc = (doc, args) => {
+const saveJsonDoc = (doc, args, overwriteAllFiles) => {
   const writeFile = (writeDoc) => fs.write(jsonDocPath(args.docDirectoryPath, writeDoc._id), safeStringify(writeDoc) + '\n');
   
   if (args.updateOfflineDocs || args.force || overwriteAllFiles) {
@@ -22,22 +22,17 @@ const saveJsonDoc = (doc, args) => {
   }
   
   if (!fs.exists(jsonDocPath(args.docDirectoryPath, doc._id))) {
-     return writeFile(doc);
+    return writeFile(doc);
   }
-  
-  const userSelection = userPrompt.keyInSelect();
-  if (userSelection === undefined || userSelection === 2) {
-    throw new Error('User canceled the action.');
-  }
-  
-  overwriteAllFiles = (userSelection === 1);
-  return writeFile(doc);
+
+  return DOC_EXISTS;
 };
 
 const execute = () => {
   const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
   const db = pouch();
   const docDirectoryPath = args.docDirectoryPath;
+  let overwriteAllFiles = false;
   fs.mkdir(docDirectoryPath);
 
   const csvDir = `${environment.pathToProject}/csv`;
@@ -66,7 +61,20 @@ const execute = () => {
       Promise.resolve())
 
     .then(() => model.exclusions.forEach(toDocs.removeExcludedField))
-    .then(() => Promise.all(Object.values(model.docs).map(doc => saveJsonDoc(doc, args))));
+    .then(() => Promise.all(Object.values(model.docs).map(doc => {
+      const saveDoc = saveJsonDoc(doc, args, overwriteAllFiles);
+
+      if(saveDoc === DOC_EXISTS) {
+        const userSelection = userPrompt.keyInSelect();
+
+        if (userSelection === undefined || userSelection === 2) {
+          throw new Error('User canceled the action.');
+        }
+        overwriteAllFiles = (userSelection === 1);
+
+        saveJsonDoc(doc, args, overwriteAllFiles);
+      }
+    })));
 };
 
 const model = {
@@ -134,7 +142,7 @@ function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs)
   const idPrefix =  docType === 'contact' ? '' : 'org.couchdb.user:';
   const doc = documentDocs[idPrefix + documentId];
 
-  if (toIncludeIndex.length > 0){
+  if (toIncludeIndex.length > 0) {
     row = toIncludeIndex.map(index => row[index]);
   } else {
     row.splice(uuidIndex,1);
@@ -160,7 +168,7 @@ function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs)
 
 const processDocuments =  async (docType, csv, ids, db, args) => {
   const documentDocs = await fetchDocumentList(db, ids, args);
-  return  processDocs(docType, csv, documentDocs, args);
+  return processDocs(docType, csv, documentDocs, args);
 };
 
 // Parses extraArgs and asserts if required parameters are not present

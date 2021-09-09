@@ -345,5 +345,20 @@ describe('edit-contacts', function() {
       expect(err.message).to.be.equal('db fetching failed');
     }
   });
+
+  it('should throw an error if saving a JSON doc fails', async () => {
+    sinon
+      .stub(fs, 'write')
+      .throws(new Error('failed to write file'));
+    sinon
+      .stub(environment,'extraArgs')
+      .get(() => ['--columns=is_in_emnch,rbf', '--files=contact.csv', '--updateOfflineDocs=true', `--docDirectoryPath=${editedJsonDocs}`]);
+    try {
+      await editContactsModule.execute();
+      assert.fail('should throw an error saving a JSON doc fails');
+    } catch (err) {
+      expect(err.message).to.be.equal('failed to write file');
+    }
+  });
  
 });

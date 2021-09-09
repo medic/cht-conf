@@ -37,24 +37,27 @@ const fetchDocumentListFromDB = async (db, ids) => {
  * provided directory and fetches them from the DB if they are not.
  */
 module.exports = async (db, ids, args) => {
-  if(args.updateOfflineDocs) {
-    info('Loading offline doc(s)');
-    const missingDocs = [];
-    let docs = {};
-    ids.forEach(id => {
-      const docPath = jsonDocPath(args.docDirectoryPath, id);
-      if (!fs.exists(docPath)) {
-        missingDocs.push(id);
-      } else {
-        docs[id] = fs.readJson(docPath);
-      }
-    });
-    if (missingDocs.length > 0) {
-      const docsFromDB = await fetchDocumentListFromDB(db, missingDocs);
-      Object.assign(docs, docsFromDB);
-    }
-
-    return docs;
+  if (!args.updateOfflineDocs) {
+    return fetchDocumentListFromDB(db, ids);
   }
-  return fetchDocumentListFromDB(db, ids);
+
+  const missingDocs = [];
+  let docs = {};
+
+  ids.forEach(id => {
+    const docPath = jsonDocPath(args.docDirectoryPath, id);
+    if (fs.exists(docPath)) {
+      docs[id] = fs.readJson(docPath);
+      return;
+    }
+        
+    missingDocs.push(id);
+  });
+
+  if (missingDocs.length) {
+    const docsFromDB = await fetchDocumentListFromDB(db, missingDocs);
+    Object.assign(docs, docsFromDB);
+  }
+
+  return docs;
 };
