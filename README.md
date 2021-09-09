@@ -144,6 +144,7 @@ Parameter | Description | Required
 column(s) | Comma delimited list of columns you wish to add/edit. If this is not specified all columns will be added. | No
 docDirectoryPath | This action outputs files to local disk at this destination | No. Default `json-docs`
 file(s) | Comma delimited list of files you wish to process using edit-contacts. By default, contact.csv is searched for in the current directory and processed. | No.
+updateOfflineDocs | If passed this updates the docs already in the docDirectoryPath instead of downloading form the server. | No.
 
 
 ### Example
@@ -155,12 +156,16 @@ file(s) | Comma delimited list of files you wish to process using edit-contacts.
 | documentID2            | false            |
 | documentID3            | true             |
 
-1. Use the following command to download and edit the documents:
+2. Use the following command to download and edit the documents:
 
 ```
 cht --instance=*instance* edit-contacts -- --column=*is_in_emnch* --docDirectoryPath=*my_folder*
 ```
-1. Then upload the edited documents using the [upload-docs ](#examples) command.
+or this one to update already downloaded docs
+```
+cht --instance=*instance* edit-contacts -- --column=*is_in_emnch* --docDirectoryPath=*my_folder* --updateOfflineDocs
+```
+3. Then upload the edited documents using the [upload-docs ](#examples) command.
 
 
 # Project layout
