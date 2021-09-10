@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable node/shebang */
 
 const { error } = require('../lib/log');
 require('../cli/check-node-version');
