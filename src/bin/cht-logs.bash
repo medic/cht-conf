@@ -2,10 +2,10 @@
 
 usage() {
 	cat <<EOF
-medic-logs
+cht-logs
 ==========
 
-Fetch logs from production Medic Mobile servers.
+Fetch logs from production CHT servers.
 
 USAGE
 	$0 <instance-name> <log-types...>

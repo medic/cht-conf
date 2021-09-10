@@ -30,6 +30,7 @@
   },
   "globals": {
     "user": true,
-    "Utils": true
+    "Utils": true,
+    "cht": true
   }
 }

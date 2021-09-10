@@ -16,7 +16,7 @@ module.exports = async (filesJson, targetDir, mimeType) => {
         .then(() => new Promise(resolve => {
           // Here we pause to avoid a suspected race condition when trying to
           // access the last-written xlsx file.  Reported at
-          // https://github.com/medic/medic-conf/issues/88
+          // https://github.com/medic/cht-conf/issues/88
           setTimeout(resolve, 500);
         }));
 

@@ -3,12 +3,12 @@ const supportedActions = require('./supported-actions');
 module.exports = () => {
   console.log(`
 ${bold('NAME')}
-  medic-conf - Configure your Medic Mobile instances
+  cht - Configure your CHT instances
 
 ${bold('SYNOPSIS')}
-  medic-conf <--local|--instance=instance-name|--url=url>
+  cht <--local|--instance=instance-name|--url=url>
 Or:
-  medic-conf <--local|--instance=instance-name|--url=url|--archive> <actions> <options> -- <params>
+  cht <--local|--instance=instance-name|--url=url|--archive> <actions> <options> -- <params>
 
 ${bold('DESCRIPTION')}
   This script updates and uploads a project's configuration.
@@ -52,7 +52,7 @@ ${bold('OPTIONS')}
     Display application changelog.
 
   --accept-self-signed-certs
-    Allows medic-conf to work with self signed certs by telling node to ignore the error
+    Allows cht-conf to work with self signed certs by telling node to ignore the error
 
   --skip-dependency-check
     Skips checking the version running is set to the same version in the package.json

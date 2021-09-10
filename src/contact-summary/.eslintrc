@@ -33,6 +33,7 @@
     "reports": true,
     "lineage": true,
     "uhcStats": true,
-    "targetDoc": true
+    "targetDoc": true,
+    "cht": true
   }
 }

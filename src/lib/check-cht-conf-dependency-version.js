@@ -1,6 +1,6 @@
 /**
- * Attempt to check that the version of medic-conf that a project relies on
- * matches the version of medic-conf being used to configure that project.
+ * Attempt to check that the version of cht-conf that a project relies on
+ * matches the version of cht-conf being used to configure that project.
  */
 
 const fs = require('./sync-fs');
@@ -12,7 +12,7 @@ const runningVersion = require('../../package.json').version;
 module.exports = projectDir => {
   const projectVersion = readRequestedVersion(projectDir);
   if(!projectVersion) {
-    warn('Project has no dependency on medic-conf.');
+    warn('Project has no dependency on cht-conf.');
     return;
   }
 
@@ -23,7 +23,7 @@ module.exports = projectDir => {
   let satisifiesGreaterThanRunningVersion = semver.satisfies(projectVersion, `>${runningVersion}`);
 
   if(satisfiesLessThanMajorRunningVersion || satisifiesGreaterThanRunningVersion) {
-    
+
     if(satisfiesLessThanMajorRunningVersion) {
       upgradeDowngradeLocalMsg = 'Downgrade';
       upgradeDowngradeProjectMsg = 'update';
@@ -34,17 +34,17 @@ module.exports = projectDir => {
       upgradeDowngradeProjectMsg = 'downgrade';
     }
 
-    throw new Error(`Your medic-conf version is incompatible with the project's medic-conf version:
-    Your local medic-conf version:   ${runningVersion}
-    The project medic-conf version: ${projectVersion}
+    throw new Error(`Your cht-conf version is incompatible with the project's cht-conf version:
+    Your local cht-conf version:   ${runningVersion}
+    The project cht-conf version: ${projectVersion}
     
     Continuing without updating could cause this project to not compile or work as expected.
     
-    ${upgradeDowngradeLocalMsg} your local medic-conf with:
-        npm i -g medic-conf@${projectVersion}
-    and try again, or ${upgradeDowngradeProjectMsg} the project medic-conf version to ${runningVersion}, or ignore this warning with --skip-dependency-check
+    ${upgradeDowngradeLocalMsg} your local cht-conf with:
+        npm i -g cht-conf@${projectVersion}
+    and try again, or ${upgradeDowngradeProjectMsg} the project cht-conf version to ${runningVersion}, or ignore this warning with --skip-dependency-check
     `);
-  
+
   }
 };
 
@@ -57,6 +57,6 @@ function readRequestedVersion(projectDir) {
   }
 
   const json = fs.readJson(path);
-  return (json.dependencies    && json.dependencies['medic-conf']) ||
-         (json.devDependencies && json.devDependencies['medic-conf']);
+  return (json.dependencies    && json.dependencies['cht-conf']) ||
+         (json.devDependencies && json.devDependencies['cht-conf']);
 }

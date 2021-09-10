@@ -1,4 +1,4 @@
-name: Build Medic-Conf and test against node versions
+name: Build CHT Conf and test against node versions
 
 on: [push, pull_request]
 
@@ -20,15 +20,23 @@ jobs:
     - name: Setting up python 2.X
       uses: actions/setup-python@v2
       with:
-        python-version: '2.x' 
-        architecture: 'x64' 
-    - name: Installing wheel package for pip # This makes the warning about legacy installing go away. 
+        python-version: '2.x'
+        architecture: 'x64'
+    - name: Installing wheel package for pip # This makes the warning about legacy installing go away.
       uses: BSFishy/pip-action@v1
       with:
         packages: wheel
-    - name: Installing pyxform # Install pyxform dependency. 
+    - name: Installing pyxform # Install pyxform dependency.
       uses: BSFishy/pip-action@v1
       with:
         packages: git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
     - name: npm ci and test
       run: npm ci && npm test
+    - name: Archive Results
+      uses: actions/upload-artifact@v2
+      with:
+        name: Coverage Report ${{ matrix.node-version }}
+        path: |
+          coverage
+          .nyc_output
+      if: ${{ failure() }}

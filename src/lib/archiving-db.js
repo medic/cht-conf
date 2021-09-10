@@ -1,12 +1,12 @@
 /**
- * ArchivingDB allows medic-conf to run when API is not available. Instead of making all actions aware of
+ * ArchivingDB allows cht-conf to run when API is not available. Instead of making all actions aware of
  * the --archive mode, this database returns mocked response that an empty database would return.
  *
  * Data that would upload to API is saved to disk as an archive. The API uses one such archive when
  * it starts to deploy a default configuration.
  *
- * So this class implements the interfaces from the PouchDB class which are used by medic-conf actions,
- * and when medic-conf is executed with the `--archive` flag, this implementation is used instead
+ * So this class implements the interfaces from the PouchDB class which are used by cht-conf actions,
+ * and when cht-conf is executed with the `--archive` flag, this implementation is used instead
  * of PouchDB.
  *
  * Archive mode is used by the default grant task in the CHT, see the `exec:build-config`

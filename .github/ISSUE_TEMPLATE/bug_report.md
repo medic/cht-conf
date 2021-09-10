@@ -23,7 +23,7 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 **Logs**
-If applicable, include the medic-conf output, server logs, and/or browser logs.
+If applicable, include the cht-conf output, server logs, and/or browser logs.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
@@ -31,7 +31,7 @@ If applicable, add screenshots to help explain your problem.
 **Environment**
 - Instance: (eg: alpha.dev.medicmobile.org, etc)
 - Client platform: (eg: Windows, MacOS, Linux)
-- medic-conf version: (eg: 2.15.0, 3.0.0, etc)
+- cht-conf version: (eg: 2.15.0, 3.0.0, etc)
 - cht-core version: (eg: 2.15.0, 3.0.0, etc)
 
 **Additional context**

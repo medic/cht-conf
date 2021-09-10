@@ -34,7 +34,7 @@ const getState = prop => {
   if (!state.initialized) {
     // If this exception is raised, it means that the use of any method of this
     // module was earlier than the state initialization, so the problem is not of
-    // how medic-conf was invoked by the user, but a bug introduced in the code
+    // how cht-conf was invoked by the user, but a bug introduced in the code
     throw new Error(`Cannot return environment.${prop}: state was not initialized yet`);
   }
   return state[prop];
