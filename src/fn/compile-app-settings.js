@@ -43,6 +43,12 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   let appSettings;
   const baseSettingsPath = path.join(projectDir, 'app_settings/base_settings.json');
   const appSettingsPath = path.join(projectDir, 'app_settings.json');
+  const esLintFilePath = path.join(projectDir, '.eslintrc');
+
+  // Fail if no eslintrc file is found
+  if (!fs.exists(esLintFilePath)) {
+    throw new Error('No eslint configuration defined please create a .eslintrc file with the desired linting rules');
+  }
 
   if (!fs.exists(baseSettingsPath) && !fs.exists(appSettingsPath)) {
     throw new Error('No configuration defined please create a base_settings.json file in app_settings folder with the desired configuration');
