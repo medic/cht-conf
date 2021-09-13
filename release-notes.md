@@ -1,5 +1,25 @@
 # Release Notes
 
+## 3.8.0
+
+### Ability to edit a contact type
+
+It is now possible to edit a contact type. There is a new flag `--updateOfflineDocs` that can be passed to the `edit-contacts` action which updates docs in the directory provided in `--docDirectoryPath` instead of downloading the docs from the database.
+
+[#408](https://github.com/medic/cht-conf/issues/408)
+
+### Fail early if .eslintrc file is not provided
+
+Running the `compile-app-settings` command now fails early and provides a more descriptive error message to users.
+
+[#333](https://github.com/medic/cht-conf/issues/333)
+
+### Check to make sure CHT instance is up
+
+Commands that require an instance now fail with a more descriptive error message if the instance provided is not reachable
+
+[#380](https://github.com/medic/cht-conf/issues/380)
+
 ## 3.7.0
 
 ### The repository has been renamed to `cht-conf`. 
