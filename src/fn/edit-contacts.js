@@ -10,22 +10,23 @@ const EDIT_RESERVED_COL_NAMES = [ 'parent', '_id', 'name', 'reported_date' ];
 const DOCUMENT_ID =  'documentID';
 const userPrompt = require('../lib/user-prompt');
 const fetchDocumentList = require('../lib/fetch-document-list');
-const DOC_EXISTS = 'DOC_EXISTS';
+const OVERWRITE_ALL_FILES_OPTION = 1;
+const CANCEL_OVERWRITE_OPTION = 2;
 
 const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.json`;
 
-const saveJsonDoc = (doc, args, overwriteAllFiles) => {
+// check to see if we should write/overwrite the file
+const overwriteFileCheck = (doc, args, overwriteAllFiles) => {
+  if (args.updateOfflineDocs || args.force || overwriteAllFiles || !fs.exists(jsonDocPath(args.docDirectoryPath, doc._id))) {
+    return true;
+  }
+  return false;
+};
+
+const saveJsonDoc = (doc, args) => {
   const writeFile = (writeDoc) => fs.write(jsonDocPath(args.docDirectoryPath, writeDoc._id), safeStringify(writeDoc) + '\n');
   
-  if (args.updateOfflineDocs || args.force || overwriteAllFiles) {
-    return writeFile(doc);
-  }
-  
-  if (!fs.exists(jsonDocPath(args.docDirectoryPath, doc._id))) {
-    return writeFile(doc);
-  }
-
-  return DOC_EXISTS;
+  return writeFile(doc);
 };
 
 const execute = () => {
@@ -62,18 +63,20 @@ const execute = () => {
 
     .then(() => model.exclusions.forEach(toDocs.removeExcludedField))
     .then(() => Promise.all(Object.values(model.docs).map(doc => {
-      const saveDoc = saveJsonDoc(doc, args, overwriteAllFiles);
+      const overwriteFile = overwriteFileCheck(doc, args, overwriteAllFiles);
 
-      if(saveDoc === DOC_EXISTS) {
-        const userSelection = userPrompt.keyInSelect();
+      if(!overwriteFile) {
+        const userSelection = userPrompt.keyInSelect(
+          ['overwrite this file', 'overwrite this file and all subsequent files'],
+          `${doc._id}.doc.json already exists in the chosen directory. What do you want to do?`
+        );
 
-        if (userSelection === undefined || userSelection === 2) {
+        if (userSelection === undefined || userSelection === CANCEL_OVERWRITE_OPTION) {
           throw new Error('User canceled the action.');
         }
-        overwriteAllFiles = (userSelection === 1);
-
-        saveJsonDoc(doc, args, overwriteAllFiles);
+        overwriteAllFiles = (userSelection === OVERWRITE_ALL_FILES_OPTION);
       }
+      return saveJsonDoc(doc, args);
     })));
 };
 

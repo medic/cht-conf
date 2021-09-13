@@ -1,9 +1,26 @@
 /* eslint-disable no-console */
 const { info } = require('../lib/log');
 const fs = require('../lib/sync-fs');
-const DOC_TYPES = ['district_hospital', 'health_center', 'clinic', 'person', 'user', 'user-settings', 'contact'];
+const INVALID_DOC_TYPES = ['district_hospital', 'health_center', 'clinic', 'person', 'user', 'user-settings', 'contact'];
 
 const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.json`;
+
+const findErrors = (rows) => {
+  const errors =  { invalidDocType: [], docNotFound: [] };
+
+  rows.forEach(row => {
+    if (!row.doc) {
+        errors.docNotFound.push(`Document with id '${row.key}' could not be found.`);
+        return;
+    }
+
+    if (!INVALID_DOC_TYPES.includes(row.doc.type)) {
+      errors.invalidDocType.push(`Document with id ${row.key} of type ${row.doc.type} cannot be edited`);
+    }
+  });
+
+  return errors;
+};
 
 const fetchDocumentListFromDB = async (db, ids) => {
   info('Downloading doc(s)...');
@@ -12,18 +29,7 @@ const fetchDocumentListFromDB = async (db, ids) => {
     include_docs: true,
   });
 
-  const errors =  { invalidDocType: [], docNotFound: [] };
-
-  documentDocs.rows.forEach(row => {
-    if (!row.doc) {
-        errors.docNotFound.push(`Document with id '${row.key}' could not be found.`);
-        return;
-    }
-
-    if (!DOC_TYPES.includes(row.doc.type)) {
-      errors.invalidDocType.push(`Document with id ${row.key} of type ${row.doc.type} cannot be edited`);
-    }
-  });
+  const errors =  findErrors(documentDocs.rows);
 
   if (errors.docNotFound.length || errors.invalidDocType.length) {
     throw Error([...errors.docNotFound, ...errors.invalidDocType]);
