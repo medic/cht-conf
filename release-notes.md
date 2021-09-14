@@ -4,7 +4,7 @@
 
 ### Ability to edit a contact type
 
-It is now possible to edit a contact type. There is a new flag `--updateOfflineDocs` that can be passed to the `edit-contacts` action which updates docs in the directory provided in `--docDirectoryPath` instead of downloading the docs from the database.
+It is now possible to edit a contact type with the `edit-contacts` action. Additionally, `edit-contacts` accepts a new flag `--updateOfflineDocs`, that allows editing json docs that already exist in the directory provided in `--docDirectoryPath` instead of downloading the docs from the database.
 
 [#408](https://github.com/medic/cht-conf/issues/408)
 
