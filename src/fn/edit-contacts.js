@@ -24,7 +24,9 @@ const saveJsonDoc = (doc, args) => {
   return fs.write(jsonDocPath(args.docDirectoryPath, doc._id), safeStringify(doc) + '\n');
 };
 
-const writeDocs = (docs, args, overwriteAllFiles) => {
+const writeDocs = (docs, args) => {
+  let overwriteAllFiles = false;
+  
   return Promise.all(Object.values(docs).map(doc => {
     const overwriteFile = overwriteFileCheck(doc, args, overwriteAllFiles);
 
@@ -47,7 +49,6 @@ const execute = () => {
   const args = parseExtraArgs(environment.pathToProject, environment.extraArgs, environment.force);
   const db = pouch();
   const docDirectoryPath = args.docDirectoryPath;
-  let overwriteAllFiles = false;
   fs.mkdir(docDirectoryPath);
 
   const csvDir = `${environment.pathToProject}/csv`;
@@ -76,7 +77,7 @@ const execute = () => {
       Promise.resolve())
 
     .then(() => model.exclusions.forEach(toDocs.removeExcludedField))
-    .then(() => writeDocs(model.docs, args, overwriteAllFiles));
+    .then(() => writeDocs(model.docs, args));
 };
 
 const model = {
