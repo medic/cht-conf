@@ -21,9 +21,26 @@ const overwriteFileCheck = (doc, args, overwriteAllFiles) => {
 };
 
 const saveJsonDoc = (doc, args) => {
-  const writeFile = (writeDoc) => fs.write(jsonDocPath(args.docDirectoryPath, writeDoc._id), safeStringify(writeDoc) + '\n');
-  
-  return writeFile(doc);
+  return fs.write(jsonDocPath(args.docDirectoryPath, doc._id), safeStringify(doc) + '\n');
+};
+
+const writeDocs = (docs, args, overwriteAllFiles) => {
+  return Promise.all(Object.values(docs).map(doc => {
+    const overwriteFile = overwriteFileCheck(doc, args, overwriteAllFiles);
+
+    if (!overwriteFile) {
+      const userSelection = userPrompt.keyInSelect(
+        ['overwrite this file', 'overwrite this file and all subsequent files'],
+        `${doc._id}.doc.json already exists in the chosen directory. What do you want to do?`
+      );
+
+      if (userSelection === undefined || userSelection === CANCEL_OVERWRITE_OPTION) {
+        throw new Error('User canceled the action.');
+      }
+      overwriteAllFiles = (userSelection === OVERWRITE_ALL_FILES_OPTION);
+    }
+    return saveJsonDoc(doc, args);
+  }));
 };
 
 const execute = () => {
@@ -59,22 +76,7 @@ const execute = () => {
       Promise.resolve())
 
     .then(() => model.exclusions.forEach(toDocs.removeExcludedField))
-    .then(() => Promise.all(Object.values(model.docs).map(doc => {
-      const overwriteFile = overwriteFileCheck(doc, args, overwriteAllFiles);
-
-      if(!overwriteFile) {
-        const userSelection = userPrompt.keyInSelect(
-          ['overwrite this file', 'overwrite this file and all subsequent files'],
-          `${doc._id}.doc.json already exists in the chosen directory. What do you want to do?`
-        );
-
-        if (userSelection === undefined || userSelection === CANCEL_OVERWRITE_OPTION) {
-          throw new Error('User canceled the action.');
-        }
-        overwriteAllFiles = (userSelection === OVERWRITE_ALL_FILES_OPTION);
-      }
-      return saveJsonDoc(doc, args);
-    })));
+    .then(() => writeDocs(model.docs, args, overwriteAllFiles));
 };
 
 const model = {

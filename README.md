@@ -144,7 +144,7 @@ Parameter | Description | Required
 column(s) | Comma delimited list of columns you wish to add/edit. If this is not specified all columns will be added. | No
 docDirectoryPath | This action outputs files to local disk at this destination | No. Default `json-docs`
 file(s) | Comma delimited list of files you wish to process using edit-contacts. By default, contact.csv is searched for in the current directory and processed. | No.
-updateOfflineDocs | If passed this updates the docs already in the docDirectoryPath instead of downloading form the server. | No.
+updateOfflineDocs | If passed, this updates the docs already in the docDirectoryPath instead of downloading from the server. | No.
 
 
 ### Example

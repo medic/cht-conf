@@ -1,7 +1,6 @@
-/* eslint-disable no-console */
 const { info } = require('../lib/log');
 const fs = require('../lib/sync-fs');
-const INVALID_DOC_TYPES = ['district_hospital', 'health_center', 'clinic', 'person', 'user', 'user-settings', 'contact'];
+const VALID_DOC_TYPES = ['district_hospital', 'health_center', 'clinic', 'person', 'user', 'user-settings', 'contact'];
 
 const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.json`;
 
@@ -14,7 +13,7 @@ const findErrors = (rows) => {
         return;
     }
 
-    if (!INVALID_DOC_TYPES.includes(row.doc.type)) {
+    if (!VALID_DOC_TYPES.includes(row.doc.type)) {
       errors.invalidDocType.push(`Document with id ${row.key} of type ${row.doc.type} cannot be edited`);
     }
   });
@@ -48,7 +47,7 @@ module.exports = async (db, ids, args) => {
   }
 
   const missingDocs = [];
-  let docs = {};
+  const docs = {};
 
   ids.forEach(id => {
     const docPath = jsonDocPath(args.docDirectoryPath, id);
