@@ -17,7 +17,7 @@ const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.jso
 
 // check to see if we should write/overwrite the file
 const overwriteFileCheck = (doc, args, overwriteAllFiles) => {
-  return args.updateOfflineDocs || args.force || overwriteAllFiles || !fs.exists(jsonDocPath(args.docDirectoryPath, doc._id));
+  return args.updateOfflineDocs || environment.force || overwriteAllFiles || !fs.exists(jsonDocPath(args.docDirectoryPath, doc._id));
 };
 
 const saveJsonDoc = (doc, args) => {
@@ -46,7 +46,7 @@ const writeDocs = (docs, args) => {
 };
 
 const execute = () => {
-  const args = parseExtraArgs(environment.pathToProject, environment.extraArgs, environment.force);
+  const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
   const db = pouch();
   const docDirectoryPath = args.docDirectoryPath;
   fs.mkdir(docDirectoryPath);
@@ -175,7 +175,7 @@ const processDocuments =  async (docType, csv, ids, db, args) => {
 };
 
 // Parses extraArgs and asserts if required parameters are not present
-const parseExtraArgs = (projectDir, extraArgs = [], force) => {
+const parseExtraArgs = (projectDir, extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
   const colNames = (args.columns || args.column || '')
     .split(',')
@@ -190,7 +190,6 @@ const parseExtraArgs = (projectDir, extraArgs = [], force) => {
     csvFiles,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     updateOfflineDocs: args.updateOfflineDocs,
-    force: !!force,
   };
 };
 

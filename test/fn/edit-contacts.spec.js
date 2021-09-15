@@ -201,7 +201,7 @@ describe('edit-contacts', function() {
     const db = sinon.stub(pouch, 'allDocs');
     sinon
       .stub(environment,'extraArgs')
-      .get(() => ['--columns=type', '--files=contact.type.csv', '--updateOfflineDocs', `--docDirectoryPath=${editedJsonDocs}`]);
+      .get(() => ['--column=type', '--files=contact.type.csv', '--updateOfflineDocs', `--docDirectoryPath=${editedJsonDocs}`]);
     await editContactsModule.execute();
 
     expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/09efb53f-9cd8-524c-9dfd-f62c242f1817.doc.json`)).to.deep.equal(
