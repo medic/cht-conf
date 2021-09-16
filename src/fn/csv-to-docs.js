@@ -9,7 +9,7 @@ const safeStringify = require('../lib/safe-stringify');
 
 const pretty = o => JSON.stringify(o, null, 2);
 
-const RESERVED_COL_NAMES = [ 'type', 'form' ];
+const RESERVED_COL_NAMES = [ 'form' ];
 const REF_MATCHER = /^(?:GET )?((\w+) OF )?(\w+) WHERE (.*)$/i;
 const PLACE_TYPES = [ 'clinic', 'district_hospital', 'health_center' ];
 

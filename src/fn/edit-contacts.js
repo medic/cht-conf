@@ -7,18 +7,52 @@ const pouch = require('../lib/db');
 const safeStringify = require('../lib/safe-stringify');
 const toDocs = require('./csv-to-docs');
 const EDIT_RESERVED_COL_NAMES = [ 'parent', '_id', 'name', 'reported_date' ];
-const DOC_TYPES = ['district_hospital', 'health_center', 'clinic', 'person', 'user', 'user-settings', 'contact'];
 const DOCUMENT_ID =  'documentID';
+const userPrompt = require('../lib/user-prompt');
+const fetchDocumentList = require('../lib/fetch-document-list');
+const OVERWRITE_ALL_FILES_OPTION = 1;
+const CANCEL_OVERWRITE_OPTION = 2;
+
+const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.json`;
+
+// check to see if we should write/overwrite the file
+const overwriteFileCheck = (doc, args, overwriteAllFiles) => {
+  return args.updateOfflineDocs || environment.force || overwriteAllFiles || !fs.exists(jsonDocPath(args.docDirectoryPath, doc._id));
+};
+
+const saveJsonDoc = (doc, args) => {
+  return fs.write(jsonDocPath(args.docDirectoryPath, doc._id), safeStringify(doc) + '\n');
+};
+
+const writeDocs = (docs, args) => {
+  let overwriteAllFiles = false;
+  
+  return Promise.all(Object.values(docs).map(doc => {
+    const overwriteFile = overwriteFileCheck(doc, args, overwriteAllFiles);
+
+    if (!overwriteFile) {
+      const userSelection = userPrompt.keyInSelect(
+        ['overwrite this file', 'overwrite this file and all subsequent files'],
+        `${doc._id}.doc.json already exists in the chosen directory. What do you want to do?`
+      );
+
+      if (userSelection === undefined || userSelection === CANCEL_OVERWRITE_OPTION) {
+        throw new Error('User canceled the action.');
+      }
+      overwriteAllFiles = (userSelection === OVERWRITE_ALL_FILES_OPTION);
+    }
+    return saveJsonDoc(doc, args);
+  }));
+};
 
 const execute = () => {
   const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
   const db = pouch();
   const docDirectoryPath = args.docDirectoryPath;
   fs.mkdir(docDirectoryPath);
-  const saveJsonDoc = doc => fs.write(`${docDirectoryPath}/${doc._id}.doc.json`, safeStringify(doc) + '\n');
 
   const csvDir = `${environment.pathToProject}/csv`;
-  if(!fs.exists(csvDir)) {
+  if (!fs.exists(csvDir)) {
     warn(`No csv directory found at ${csvDir}.`);
     return Promise.resolve();
   }
@@ -34,8 +68,8 @@ const execute = () => {
         const nameParts = fs.path.basename(csv).split('.');
         const prefix = nameParts[0];
         switch(prefix) {
-          case 'contact':  return processDocuments(csv, getIDs(csv, prefix), db, args);
-          case 'users': return processUsers(csv, getIDs(csv, prefix), db, args);
+          case 'contact':  return processDocuments('contact', csv, getIDs(csv, prefix), db, args);
+          case 'users': return processDocuments('user', csv, getIDs(csv, prefix), db, args);
           default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
         }
       })
@@ -43,7 +77,7 @@ const execute = () => {
       Promise.resolve())
 
     .then(() => model.exclusions.forEach(toDocs.removeExcludedField))
-    .then(() => Promise.all(Object.values(model.docs).map(saveJsonDoc)));
+    .then(() => writeDocs(model.docs, args));
 };
 
 const model = {
@@ -111,7 +145,7 @@ function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs)
   const idPrefix =  docType === 'contact' ? '' : 'org.couchdb.user:';
   const doc = documentDocs[idPrefix + documentId];
 
-  if(toIncludeIndex.length > 0){
+  if (toIncludeIndex.length > 0) {
     row = toIncludeIndex.map(index => row[index]);
   } else {
     row.splice(uuidIndex,1);
@@ -120,12 +154,12 @@ function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs)
   for(let i=0; i<cols.length; ++i) {
     const { col, val, excluded } = toDocs.parseColumn(cols[i], row[i]);
     
-    if(EDIT_RESERVED_COL_NAMES.includes(col.split('.')[0])) {
+    if (EDIT_RESERVED_COL_NAMES.includes(col.split('.')[0])) {
       throw new Error(`Cannot set property defined by column '${col}' - this property name is protected.`);
     }
 
     toDocs.setCol(doc, col, val);
-    if(excluded) { 
+    if (excluded) { 
       model.exclusions.push({
         doc: doc,
         propertyName: col,
@@ -135,34 +169,9 @@ function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs)
   return doc;
 }
 
-const processUsers =  async (csv, ids, db, args) => {
-  const documentDocs = await fetchDocumentList(db, ids);
-  return  processDocs('user', csv, documentDocs, args);
-};
-
-const processDocuments =  async (csv, ids, db, args) => {
-  const documentDocs = await fetchDocumentList(db, ids);
-  return  processDocs('contact', csv, documentDocs, args);
-};
-
-const fetchDocumentList = async (db, ids) => {
-  info('Downloading doc(s)...');
-  const documentDocs = await db.allDocs({
-    keys: ids,
-    include_docs: true,
-  });
-
-  const missingDocumentErrors = documentDocs.rows.filter(row => !row.doc).map(row => `Document with id '${row.key}' could not be found.`);
-  if (missingDocumentErrors && missingDocumentErrors.length) {
-    throw Error(missingDocumentErrors);
-  }
-
-  const documentTypeErrors = documentDocs.rows.filter(row => !DOC_TYPES.includes(row.doc.type)).map(row => ` Document with id ${row.key} of type ${row.doc.type} cannot be edited`);
-  if (documentTypeErrors && documentTypeErrors.length) {
-    throw Error(documentTypeErrors);
-  }
-
-  return documentDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
+const processDocuments =  async (docType, csv, ids, db, args) => {
+  const documentDocs = await fetchDocumentList(db, ids, args);
+  return processDocs(docType, csv, documentDocs, args);
 };
 
 // Parses extraArgs and asserts if required parameters are not present
@@ -175,11 +184,12 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
   const csvFiles = (args.files || args.file || 'contact.csv')
     .split(',')
     .filter(id => id);
-
+  
   return {
     colNames,
     csvFiles,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
+    updateOfflineDocs: args.updateOfflineDocs,
   };
 };
 

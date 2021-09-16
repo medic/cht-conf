@@ -144,22 +144,27 @@ Parameter | Description | Required
 column(s) | Comma delimited list of columns you wish to add/edit. If this is not specified all columns will be added. | No
 docDirectoryPath | This action outputs files to local disk at this destination | No. Default `json-docs`
 file(s) | Comma delimited list of files you wish to process using edit-contacts. By default, contact.csv is searched for in the current directory and processed. | No.
+updateOfflineDocs | If passed, this updates the docs already in the docDirectoryPath instead of downloading from the server. | No.
 
 
 ### Example
 1. Create a contact.csv file with your columns in the csv folder in your current path. The documentID column is a requirement. (The documentID column contains the document IDs to be fetched from couchdb.)
 
-| documentID | is_in_emnch:bool |
-| ----------------- | ---------------- |
-| documentID1            | false            |
-| documentID2            | false            |
-| documentID3            | true             |
+	| documentID | is_in_emnch:bool |
+	| ----------------- | ---------------- |
+	| documentID1            | false            |
+	| documentID2            | false            |
+	| documentID3            | true             |
 
 1. Use the following command to download and edit the documents:
 
-```
-cht --instance=*instance* edit-contacts -- --column=*is_in_emnch* --docDirectoryPath=*my_folder*
-```
+	```
+	cht --instance=*instance* edit-contacts -- --column=*is_in_emnch* --docDirectoryPath=*my_folder*
+	```
+	or this one to update already downloaded docs
+	```
+	cht --instance=*instance* edit-contacts -- --column=*is_in_emnch* --docDirectoryPath=*my_folder* --updateOfflineDocs
+	```
 1. Then upload the edited documents using the [upload-docs ](#examples) command.
 
 
