@@ -52,6 +52,7 @@ describe('upload-forms', () => {
       const form = await api.db.get('form:example');
       expect(form.type).to.equal('form');
       expect(form.internalId).to.equal('different');
+      expect(form.xmlVersion).to.equal('2020-01-01T01:01:01Z');
       expect(form.title).to.equal('Merge properties');
       expect(form.context).to.deep.equal({ person: true, place: false });
       expect(form.icon).to.equal('example');

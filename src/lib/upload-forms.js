@@ -39,6 +39,7 @@ module.exports = async (projectDir, subDirectory, options) => {
     }
 
     const xml = fs.read(xformPath);
+    const xmlVersion = fs.statSync(filePath).mtime;
 
     const internalId = readIdFrom(xml);
     if(internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/cht-core/issues/3342.');
@@ -48,6 +49,7 @@ module.exports = async (projectDir, subDirectory, options) => {
       _id: docId,
       type: 'form',
       internalId: internalId,
+      xmlVersion: xmlVersion,
       title: readTitleFrom(xml),
       context: options.default_context,
     };
