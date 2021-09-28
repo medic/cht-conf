@@ -156,14 +156,16 @@ const moveReports = async (db, descendantsAndSelf, writeOptions, replacementLine
   const contactIds = descendantsAndSelf.map(contact => contact._id);
 
   let skip = 0;
-  let batch;
+  let reportDocsBatch;
   do {
     info(`Processing ${skip} to ${skip + BATCH_SIZE} report docs`);
-    batch = await fetch.reportsCreatedBy(db, contactIds, skip);
+    reportDocsBatch = await fetch.reportsCreatedBy(db, contactIds, skip);
 
-    updateAndWriteReports(writeOptions, replacementLineage, contactId, batch);
-    skip += batch.length;
-  } while (batch.length >= BATCH_SIZE);
+    const updatedReports = replaceLineageInReports(reportDocsBatch, replacementLineage, contactId);
+    minifyLineageAndWriteToDisk(updatedReports, writeOptions);
+
+    skip += reportDocsBatch.length;
+  } while (reportDocsBatch.length >= BATCH_SIZE);
 
   return skip;
 };
@@ -259,11 +261,6 @@ const fetch = {
 
     return ancestors.rows.map(ancestor => ancestor.doc);
   },
-};
-
-const updateAndWriteReports = (writeOpts, replacementLineage, contactId, reportDocs) => {
-  const updatedReports = replaceLineageInReports(reportDocs, replacementLineage, contactId);
-  minifyLineageAndWriteToDisk(updatedReports, writeOpts);
 };
 
 const replaceLineageInReports = (reportsCreatedByDescendants, replaceWith, startingFromIdInLineage) => reportsCreatedByDescendants.reduce((agg, doc) => {
