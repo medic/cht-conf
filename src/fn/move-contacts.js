@@ -152,18 +152,6 @@ ${bold('OPTIONS')}
 `);
 };
 
-const reportBatch = async (db, contactIds, skip) => {
-  const options = {
-    keys: contactIds.map(id => [`contact:${id}`]),
-    include_docs: true,
-    limit: BATCH_SIZE,
-    skip: skip,
-  };
-
-  const result = await db.query('medic-client/reports_by_freetext', options);
-  return result.rows.map(row => row.doc);
-};
-
 const moveReports = async (db, descendantsAndSelf, writeOptions, replacementLineage, contactId) => {
   const contactIds = descendantsAndSelf.map(contact => contact._id);
 
@@ -171,7 +159,7 @@ const moveReports = async (db, descendantsAndSelf, writeOptions, replacementLine
   let batch;
   do {
     info(`Processing ${skip} to ${skip + BATCH_SIZE} report docs`);
-    batch = await reportBatch(db, contactIds, skip);
+    batch = await fetch.reportsCreatedBy(db, contactIds, skip);
 
     updateAndWriteReports(writeOptions, replacementLineage, contactId, batch);
     skip += batch.length;
@@ -246,10 +234,12 @@ const fetch = {
       .filter(doc => doc && doc.type !== 'tombstone');
   },
 
-  reportsCreatedBy: async (db, contactIds) => {
+  reportsCreatedBy: async (db, contactIds, skip) => {
     const reports = await db.query('medic-client/reports_by_freetext', {
       keys: contactIds.map(id => [`contact:${id}`]),
       include_docs: true,
+      limit: BATCH_SIZE,
+      skip: skip,
     });
 
     return reports.rows.map(row => row.doc);
