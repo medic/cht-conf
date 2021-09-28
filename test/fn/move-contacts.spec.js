@@ -576,4 +576,72 @@ describe('move-contacts', () => {
       assert.equal(process.exit.callCount, 0);
     });
   });
+
+  describe('batching works as expected', () => {
+    beforeEach(async () => {
+      await mockReport(pouchDb, {
+        id: 'report_2',
+        creatorId: 'health_center_1_contact',
+      });
+  
+      await mockReport(pouchDb, {
+        id: 'report_3',
+        creatorId: 'health_center_1_contact',
+      });
+    });
+    moveContactsModule.__set__('BATCH_SIZE', 1);
+    it('move health_center_1 to district_2 in small batches', async () => {
+      await updateLineagesAndStage({
+        contactIds: ['health_center_1'],
+        parentId: 'district_2',
+      }, pouchDb);
+  
+      expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
+        _id: 'health_center_1_contact',
+        type: 'person',
+        parent: parentsToLineage('health_center_1', 'district_2'),
+      });
+  
+      expect(getWrittenDoc('health_center_1')).to.deep.eq({
+        _id: 'health_center_1',
+        type: 'health_center',
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+        parent: parentsToLineage('district_2'),
+      });
+  
+      expect(getWrittenDoc('clinic_1')).to.deep.eq({
+        _id: 'clinic_1',
+        type: 'clinic',
+        contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_2'),
+        parent: parentsToLineage('health_center_1', 'district_2'),
+      });
+  
+      expect(getWrittenDoc('patient_1')).to.deep.eq({
+        _id: 'patient_1',
+        type: 'person',
+        parent: parentsToLineage('clinic_1', 'health_center_1', 'district_2'),
+      });
+  
+      expect(getWrittenDoc('report_1')).to.deep.eq({
+        _id: 'report_1',
+        form: 'foo',
+        type: 'data_record',
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+      });
+
+      expect(getWrittenDoc('report_2')).to.deep.eq({
+        _id: 'report_2',
+        form: 'foo',
+        type: 'data_record',
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+      });
+
+      expect(getWrittenDoc('report_3')).to.deep.eq({
+        _id: 'report_3',
+        form: 'foo',
+        type: 'data_record',
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+      });
+    });
+  });
 });

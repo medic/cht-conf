@@ -10,7 +10,7 @@ const pouch = require('../lib/db');
 const { warn, trace, info, error } = require('../lib/log');
 
 const HIERARCHY_ROOT = 'root';
-const BATCH_SIZE = 20000;
+const BATCH_SIZE = 10000;
 
 module.exports = {
   requiresInstance: true,
@@ -22,7 +22,12 @@ module.exports = {
   }
 };
 
-const moveReportsBatch = async (db, contactIds, skip, replacementLineage, contactId, options) => {
+const minifyLineageAndWriteDocToDisk = (doc, parsedArgs) => {
+  lineageManipulation.minifyLineagesInDoc(doc);
+    writeDocumentToDisk(parsedArgs, doc);
+};
+
+const moveReportsBatch = async (db, contactIds, replacementLineage, contactId, parsedArgs, skip) => {
   const queryOptions = {
     keys: contactIds.map(id => [`contact:${id}`]),
     include_docs: true,
@@ -34,15 +39,14 @@ const moveReportsBatch = async (db, contactIds, skip, replacementLineage, contac
   info(`Processing ${skip} to (${skip + BATCH_SIZE}) docs of ${result.total_rows} total`);
   const updatedReports = replaceLineageInReports(reportDocs, replacementLineage, contactId);
   updatedReports.forEach(updatedDoc => {
-    lineageManipulation.minifyLineagesInDoc(updatedDoc);
-    writeDocumentToDisk(options, updatedDoc);
+    minifyLineageAndWriteDocToDisk(updatedDoc, parsedArgs);
   });
 
   if(result.total_rows < skip + BATCH_SIZE) {
     return result.total_rows;
   }
 
-  await moveReportsBatch(db, contactIds, skip + BATCH_SIZE, replacementLineage, contactId, options);
+  return moveReportsBatch(db, contactIds, replacementLineage, contactId, parsedArgs, skip + BATCH_SIZE);
 };
 
 const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
@@ -72,13 +76,13 @@ const updateLineagesAndStage = async (options, db) => {
     const ancestors = await fetch.ancestorsOf(db, contactDoc);
     trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
     const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
+    const contactIds = descendantsAndSelf.map(descendant => descendant._id);
 
-    const movedReports = await moveReportsBatch(db, descendantsAndSelf.map(descendant => descendant._id), 0, replacementLineage, contactId, options);
+    const movedReports = await moveReportsBatch(db, contactIds, replacementLineage, contactId, options, 0);
     trace(`${movedReports} report(s) created by these affected contact(s) will update`);
 
     [...updatedDescendants, ...updatedAncestors].forEach(updatedDoc => {
-      lineageManipulation.minifyLineagesInDoc(updatedDoc);
-      writeDocumentToDisk(options, updatedDoc);
+      minifyLineageAndWriteDocToDisk(updatedDoc, options);
     });
 
     affectedContactCount += updatedDescendants.length + updatedAncestors.length;
