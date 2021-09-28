@@ -31,19 +31,21 @@ const moveReportsBatch = async (db, contactIds, replacementLineage, contactId, p
   const queryOptions = {
     keys: contactIds.map(id => [`contact:${id}`]),
     include_docs: true,
-    limit: BATCH_SIZE,
+    limit: 2,
     skip: skip,
   };
   const result = await db.query('medic-client/reports_by_freetext', queryOptions);
   const reportDocs = result.rows.map(row => row.doc);
   info(`Processing ${skip} to (${skip + BATCH_SIZE}) docs of ${result.total_rows} total`);
+  info(`Processing ${result.rows.length} and batch is ${BATCH_SIZE} `);
+  info(queryOptions);
   const updatedReports = replaceLineageInReports(reportDocs, replacementLineage, contactId);
   updatedReports.forEach(updatedDoc => {
     minifyLineageAndWriteDocToDisk(updatedDoc, parsedArgs);
   });
 
-  if(result.total_rows < skip + BATCH_SIZE) {
-    return result.total_rows;
+  if (result.rows.length <= BATCH_SIZE) {
+    return skip + result.rows.length;
   }
 
   return moveReportsBatch(db, contactIds, replacementLineage, contactId, parsedArgs, skip + BATCH_SIZE);

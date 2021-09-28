@@ -579,6 +579,7 @@ describe('move-contacts', () => {
 
   describe('batching works as expected', () => {
     beforeEach(async () => {
+      moveContactsModule.__set__('BATCH_SIZE', 1);
       await mockReport(pouchDb, {
         id: 'report_2',
         creatorId: 'health_center_1_contact',
@@ -588,8 +589,12 @@ describe('move-contacts', () => {
         id: 'report_3',
         creatorId: 'health_center_1_contact',
       });
+
+      await mockReport(pouchDb, {
+        id: 'report_4',
+        creatorId: 'health_center_1_contact',
+      });
     });
-    moveContactsModule.__set__('BATCH_SIZE', 1);
     it('move health_center_1 to district_2 in small batches', async () => {
       await updateLineagesAndStage({
         contactIds: ['health_center_1'],
