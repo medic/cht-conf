@@ -128,6 +128,8 @@ describe('move-contacts', () => {
   });
 
   it('move health_center_1 to root', async () => {
+    sinon.spy(pouchDb, 'query');
+
     await updateHierarchyRules([{ id: 'health_center', parents: [] }]);
 
     await updateLineagesAndStage({
@@ -167,6 +169,19 @@ describe('move-contacts', () => {
       type: 'data_record',
       contact: parentsToLineage('health_center_1_contact', 'health_center_1'),
     });
+
+    const contactIdsKeys = [
+      ['contact:clinic_1'],
+      ['contact:clinic_1_contact'],
+      ['contact:health_center_1'],
+      ['contact:health_center_1_contact'],
+      ['contact:patient_1']
+    ];
+    expect(pouchDb.query.callCount).to.equal(2);
+    expect(pouchDb.query.args).to.deep.equal([
+      ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
+      ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 10000, skip: 0, group_level: undefined }],
+    ]);
   });
 
   it('move district_1 from root', async () => {
