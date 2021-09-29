@@ -50,6 +50,7 @@ describe('move-contacts', () => {
   const updateHierarchyRules = contact_types => upsert('settings', { settings: { contact_types } });
 
   beforeEach(async () => {
+    // using remote couchdb because of https://github.com/pouchdb/pouchdb/issues/8370
     pouchDb = new PouchDB(`http://localhost:6984/scenario${scenarioCount++}`);
 
     await mockHierarchy(pouchDb, {

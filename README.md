@@ -267,7 +267,7 @@ To develop a new action or improve an existing one, check the ["Actions" doc](sr
 
 ## Testing
 
-Execute `npm test` to run static analysis checks and the test suite.
+Execute `npm test` to run static analysis checks and the test suite. Requires Docker to run integration tests against a CouchDB instance. 
 
 ## Executing your local branch
 
