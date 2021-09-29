@@ -578,7 +578,9 @@ describe('move-contacts', () => {
   });
 
   describe('batching works as expected', () => {
+    let defaultBatchSize;
     beforeEach(async () => {
+      defaultBatchSize = moveContactsModule.__get__('BATCH_SIZE');
       await mockReport(pouchDb, {
         id: 'report_2',
         creatorId: 'health_center_1_contact',
@@ -593,6 +595,10 @@ describe('move-contacts', () => {
         id: 'report_4',
         creatorId: 'health_center_1_contact',
       });
+    });
+
+    afterEach(() => {
+      moveContactsModule.__set__('BATCH_SIZE', defaultBatchSize);
     });
 
     it('move health_center_1 to district_2 in batches of 1', async () => {
