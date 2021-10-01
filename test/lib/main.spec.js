@@ -10,12 +10,14 @@ const defaultActions = main.__get__('defaultActions');
 const normalArgv = ['node', 'cht'];
 
 let mocks;
+let apiPing;
 describe('main', () => {
   beforeEach(() => {
     environment.__set__('state', {});
     sinon.spy(environment, 'initialize');
     sinon.stub(userPrompt, 'question').returns('pwd');
     sinon.stub(userPrompt, 'keyInYN').returns(true);
+    apiPing = sinon.stub().resolves();
     mocks = {
       usage: sinon.stub(),
       shellCompletionSetup: sinon.stub(),
@@ -32,9 +34,9 @@ describe('main', () => {
           resolve: () => 'resolved',
         },
       },
-      request: {
-        get: sinon.stub()
-      }
+      api: () => ({
+        ping: apiPing
+      }),
     };
 
     for (let attr of Object.keys(mocks)) {
@@ -192,16 +194,18 @@ describe('main', () => {
   });
 
   it('should provide an error if action requires an instance and apiUrl does not respond', async() => {
-    mocks.request.get.rejects();
+    apiPing = sinon.stub().rejects('An error');
     await main([...normalArgv, 'upload-app-forms']);
+    expect(apiPing.callCount).to.eq(1);
     expect(mocks.error.callCount).to.eq(1);
     expect(mocks.error.args[0][0]).to
       .eq('Failed to get a response from http://api. Maybe you entered the wrong URL, wrong port or the instance is not started? Please check and try again.');
   });
 
   it('should continue without error if action requires an instance and apiUrl responds', async() => {
-    mocks.request.get.resolves();
+    apiPing = sinon.stub().resolves('okey dokey');
     await main([...normalArgv, 'upload-app-forms']);
+    expect(apiPing.callCount).to.eq(1);
     expect(mocks.error.callCount).to.eq(0);
   });
 });

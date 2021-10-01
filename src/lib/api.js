@@ -87,6 +87,15 @@ const api = {
     });
   },
 
+  /**
+   * "Ping" request to the API to see if it's alive. The request
+   * is made to a "lightweight" endpoint that only returns a HTTP 302,
+   * and an empty promise is returned instead.
+   */
+  ping: async () => {
+    await request.get(`${environment.apiUrl}/medic`);
+  },
+
   version() {
     return request({ uri: `${environment.instanceUrl}/api/deploy-info`, method: 'GET', json: true }) // endpoint added in 3.5
       .then(deploy_info => deploy_info && deploy_info.version);

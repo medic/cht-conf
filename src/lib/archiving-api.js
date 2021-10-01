@@ -21,6 +21,8 @@ const archivingApi = {
     return Promise.resolve('{ "success": true }');
   },
 
+  ping: async () => { },
+
   version() {
     return '1000.0.0'; // assume the latest version when archiving
   },
