@@ -88,12 +88,21 @@ const api = {
   },
 
   /**
-   * "Ping" request to the API to see if it's alive. The request
+   * Check whether the API it's alive or not. The request
    * is made to a "lightweight" endpoint that only returns a HTTP 302,
-   * and an empty promise is returned instead.
+   * and an promise is returned with true (available) or false.
    */
-  ping: async () => {
-    await request.get(`${environment.apiUrl}/medic`);
+  available: async () => {
+    const url = `${environment.apiUrl}/`;
+    try {
+      log.info(`Checking that ${url} is available...`);
+      await request.get(url);
+      return true;
+    } catch (err) {
+      log.error(`Failed to get a response from ${url}. Maybe you entered the wrong URL, `
+                + 'wrong port or the instance is not started? Please check and try again.');
+      return false;
+    }
   },
 
   version() {

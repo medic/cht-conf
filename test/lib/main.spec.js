@@ -10,14 +10,14 @@ const defaultActions = main.__get__('defaultActions');
 const normalArgv = ['node', 'cht'];
 
 let mocks;
-let apiPing;
+let apiAvailable;
 describe('main', () => {
   beforeEach(() => {
     environment.__set__('state', {});
     sinon.spy(environment, 'initialize');
     sinon.stub(userPrompt, 'question').returns('pwd');
     sinon.stub(userPrompt, 'keyInYN').returns(true);
-    apiPing = sinon.stub().resolves();
+    apiAvailable = sinon.stub().resolves(true);
     mocks = {
       usage: sinon.stub(),
       shellCompletionSetup: sinon.stub(),
@@ -35,7 +35,7 @@ describe('main', () => {
         },
       },
       api: () => ({
-        ping: apiPing
+        available: apiAvailable
       }),
     };
 
@@ -193,19 +193,18 @@ describe('main', () => {
     expect(actual).to.be.undefined;
   });
 
-  it('should provide an error if action requires an instance and apiUrl does not respond', async() => {
-    apiPing = sinon.stub().rejects('An error');
-    await main([...normalArgv, 'upload-app-forms']);
-    expect(apiPing.callCount).to.eq(1);
-    expect(mocks.error.callCount).to.eq(1);
-    expect(mocks.error.args[0][0]).to
-      .eq('Failed to get a response from http://api. Maybe you entered the wrong URL, wrong port or the instance is not started? Please check and try again.');
+  it('should return earlier with false value if api is not available', async () => {
+    apiAvailable = sinon.stub().resolves(false);
+    const earlyResult = await main([...normalArgv, 'upload-app-forms']);
+    expect(earlyResult).to.be.false;
+    expect(apiAvailable.callCount).to.eq(1);
   });
 
-  it('should continue without error if action requires an instance and apiUrl responds', async() => {
-    apiPing = sinon.stub().resolves('okey dokey');
-    await main([...normalArgv, 'upload-app-forms']);
-    expect(apiPing.callCount).to.eq(1);
+  it('should continue without error if action requires an instance and apiUrl responds', async () => {
+    apiAvailable = sinon.stub().resolves(true);
+    const result = await main([...normalArgv, 'upload-app-forms']);
+    expect(result).to.be.undefined;
+    expect(apiAvailable.callCount).to.eq(1);
     expect(mocks.error.callCount).to.eq(0);
   });
 });

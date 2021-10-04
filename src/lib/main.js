@@ -183,14 +183,8 @@ module.exports = async (argv, env) => {
     cmdArgs['skip-translation-check']
   );
 
-  if (apiUrl) {
-    try {
-      info(`Checking that ${apiUrl} is available...`);
-      await api().ping();
-    } catch (err) {
-      error(`Failed to get a response from ${apiUrl}. Maybe you entered the wrong URL, wrong port or the instance is not started? Please check and try again.`);
-      return -1;
-    }
+  if (apiUrl && !await api().available()) {
+    return false;
   }
 
   const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
