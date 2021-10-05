@@ -200,7 +200,7 @@ describe('api', () => {
 
     beforeEach(() => sinon.stub(environment, 'apiUrl').get(() => 'http://api/medic'));
 
-    it('should return true in no error found in request', async () => {
+    it('should return true if no error found in request', async () => {
       sinon.stub(environment, 'isArchiveMode').get(() => false);
       sinon.stub(mockRequest, 'get').resolves('okey dokey');
       sinon.stub(log, 'error');
@@ -221,7 +221,7 @@ describe('api', () => {
         'wrong port or the instance is not started? Please check and try again.');
     });
 
-    it('should return true if archive mode is enable even when api is not available', async () => {
+    it('should return true if archive mode is enabled even when api is not available', async () => {
       sinon.stub(environment, 'isArchiveMode').get(() => true);
       sinon.stub(mockRequest, 'get').rejects('Ups');
       sinon.stub(log, 'error');

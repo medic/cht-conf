@@ -88,7 +88,7 @@ const api = {
   },
 
   /**
-   * Check whether the API it's alive or not. The request
+   * Check whether the API is alive or not. The request
    * is made to a "lightweight" endpoint that only returns a HTTP 302,
    * and an promise is returned with true (available) or false.
    */
