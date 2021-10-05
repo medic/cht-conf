@@ -194,7 +194,7 @@ describe('main', () => {
   });
 
   it('should return earlier with false value if api is not available', async () => {
-    apiAvailable = sinon.stub().resolves(false);
+    apiAvailable.resolves(false);
     const earlyResult = await main([...normalArgv, 'upload-app-forms']);
     expect(earlyResult).to.be.false;
     expect(apiAvailable.callCount).to.eq(1);
