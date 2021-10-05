@@ -220,5 +220,15 @@ describe('api', () => {
         'Failed to get a response from http://api/medic/. Maybe you entered the wrong URL, ' +
         'wrong port or the instance is not started? Please check and try again.');
     });
+
+    it('should return true if archive mode is enable even when api is not available', async () => {
+      sinon.stub(environment, 'isArchiveMode').get(() => true);
+      sinon.stub(mockRequest, 'get').rejects('Ups');
+      sinon.stub(log, 'error');
+      const isAvailable = await api().available();
+      expect(isAvailable).to.be.true;
+      expect(log.error.callCount).to.eq(0);
+      expect(mockRequest.callCount).to.eq(0);   // api is not called
+    });
   });
 });
