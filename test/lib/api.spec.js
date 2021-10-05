@@ -204,7 +204,7 @@ describe('api', () => {
       sinon.stub(environment, 'isArchiveMode').get(() => false);
       sinon.stub(mockRequest, 'get').resolves('okey dokey');
       sinon.stub(log, 'error');
-      let isAvailable = await api().available();
+      const isAvailable = await api().available();
       expect(isAvailable).to.be.true;
       expect(log.error.callCount).to.eq(0);
     });
