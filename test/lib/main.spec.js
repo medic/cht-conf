@@ -201,7 +201,7 @@ describe('main', () => {
   });
 
   it('should continue without error if action requires an instance and apiUrl responds', async () => {
-    apiAvailable = sinon.stub().resolves(true);
+    apiAvailable.resolves(true);
     const result = await main([...normalArgv, 'upload-app-forms']);
     expect(result).to.be.undefined;
     expect(apiAvailable.callCount).to.eq(1);
