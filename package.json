@@ -1,5 +1,5 @@
 {
-  "name": "cht-conf",
+  "name": "cht-conf-testing-ci-release",
   "version": "3.8.0",
   "description": "Configure CHT deployments",
   "main": "./src/lib/main.js",

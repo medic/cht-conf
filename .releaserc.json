@@ -17,5 +17,6 @@
         "message": "chore(release): ${nextRelease.version} [skip ci]"
       }
     ]
-  ]
+  ],
+  "branches": ["master", "413-implement-continuous-delivery"]
 }
