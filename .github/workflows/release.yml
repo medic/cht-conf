@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     branches:
-      - 413-implement-continuous-delivery
+      - master
 jobs:
   release:
     name: Release

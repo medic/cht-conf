@@ -1,5 +1,5 @@
 {
-  "name": "cht-conf-publish-test",
+  "name": "cht-conf",
   "version": "3.8.0",
   "description": "Configure CHT deployments",
   "main": "./src/lib/main.js",
