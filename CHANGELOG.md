@@ -1,10 +1,3 @@
-# [3.10.0](https://github.com/medic/cht-conf/compare/v3.9.0...v3.10.0) (2021-10-12)
-
-
-### Features
-
-* **#413:** trigger build and release ([1682357](https://github.com/medic/cht-conf/commit/16823570d24398b6141baeddccf1339956188942)), closes [#413](https://github.com/medic/cht-conf/issues/413)
-
 ## 3.8.0
 
 ### Ability to edit a contact type

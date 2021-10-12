@@ -18,5 +18,5 @@
       }
     ]
   ],
-  "branches": ["master", "413-implement-continuous-delivery"]
+  "branches": ["master"]
 }
