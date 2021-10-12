@@ -1,6 +1,6 @@
 {
   "name": "cht-conf-testing-ci-release",
-  "version": "3.9.0",
+  "version": "3.8.0",
   "description": "Configure CHT deployments",
   "main": "./src/lib/main.js",
   "engines": {
