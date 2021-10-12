@@ -1,3 +1,32 @@
+# [3.8.0](https://github.com/medic/cht-conf/compare/v3.7.0...v3.8.0) (2021-10-12)
+
+
+### Features
+
+* **#413:** add .releaserc.sjon file ([c9d9f1e](https://github.com/medic/cht-conf/commit/c9d9f1e61989ce9963981b1bd174371d31afc0d8)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** add .releaserc.sjon file ([30bd60f](https://github.com/medic/cht-conf/commit/30bd60f6fc91aafa2a1eb979942b1de483019b62)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** add @semantic-release/changelog and @semantic-release/git packages ([b5aff56](https://github.com/medic/cht-conf/commit/b5aff56c43dd4daa868bff354089d54632b07f11)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** add @semantic-release/changelog and @semantic-release/git packages ([4cef1f9](https://github.com/medic/cht-conf/commit/4cef1f9e03b528c49214429854e3bc1094cde291)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** add semantic-release package ([ec3c5e0](https://github.com/medic/cht-conf/commit/ec3c5e0062cdac08717f26ffd85ea44510c7a15e)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** add semantic-release package ([004a766](https://github.com/medic/cht-conf/commit/004a76695cf016df3d1a4afc6f187598d222a235)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** change node version for release action ([58c8445](https://github.com/medic/cht-conf/commit/58c8445c974f3d64f33c6f662d0defc143c611b3)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** change node version for release action ([dc0d72f](https://github.com/medic/cht-conf/commit/dc0d72fe2922c6bb87d2c03e0a61635d399fdcf5)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** release from the master branch ([d624049](https://github.com/medic/cht-conf/commit/d6240498e18135af2cf87a1a811420ed46944349)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** release from the master branch ([8aaa084](https://github.com/medic/cht-conf/commit/8aaa084c6a9c24b2fd7586cbed666ee2d59e4fb7)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** remove aut--added changelog ([81c905f](https://github.com/medic/cht-conf/commit/81c905f6508bb255c725349295b70a6742e33d12)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** test package release ([0dff431](https://github.com/medic/cht-conf/commit/0dff43199b3e403886a97db92f730f98d5bd5476)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** test package release ([afa7914](https://github.com/medic/cht-conf/commit/afa791478cc0b8ec7f33364e8eaa6c226ed71129)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** test release from feature branch ([f94870b](https://github.com/medic/cht-conf/commit/f94870ba21c3c2b307da6f4526c9143b489ffaad)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** test release from feature branch ([14eb92c](https://github.com/medic/cht-conf/commit/14eb92c7e6f2e82cad3d9261fcbc5aa362d56e58)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** test release from feature branch ([c5cf77c](https://github.com/medic/cht-conf/commit/c5cf77cfc399ead935b79f722a69a6c2e69259f2)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** test release from feature branch ([c7a2461](https://github.com/medic/cht-conf/commit/c7a2461cec88987edec4751bac8b81841178e152)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** trigger release with chongelog populated ([a23f563](https://github.com/medic/cht-conf/commit/a23f563aecc7a4d5d9fb4be9584c5aa86893fae3)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** trigger release with chongelog populated ([3e7dc1c](https://github.com/medic/cht-conf/commit/3e7dc1c84ff891359db693ef85e97c99907d1c1d)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** trigger release with v3.7.0 tag added ([02a9255](https://github.com/medic/cht-conf/commit/02a925586a55aa94671f290d5b82bb340d7dec85)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** trigger release with v3.7.0 tag added ([78bf5ea](https://github.com/medic/cht-conf/commit/78bf5ea9cd5ece3f044aa8e0bcd807ac3156e63b)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** trigger release with v3.8.0 tag readded ([368273c](https://github.com/medic/cht-conf/commit/368273cd24f3e5b7cb7bbe606a32da112260ab41)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** trigger release with v3.8.0 tag readded ([5d97e97](https://github.com/medic/cht-conf/commit/5d97e972e2ccbacd68411bc247ee6c6c578785fc)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+
 ## 3.8.0
 
 ### Ability to edit a contact type
