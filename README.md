@@ -279,15 +279,22 @@ Execute `npm test` to run static analysis checks and the test suite.
 
 ## Releasing
 
-1. Create a pull request with prep for the new release. This should contain changes to release notes if required and anything else that needs to be done. As commit messages should be clear and readable for every change, [release-notes.md](./release-notes.md) does not need to be updated for every single change. Instead, it should include information about significant changes, breaking changes, changes to interfaces, changes in behavior, new feature details, etc.
-1. Get the pull request reviewed and approved
-1. Run `npm version patch`, `npm version minor`, or `npm version major` as appropriate. This will:
-    - Update versions in `package.json` and `package-lock.json`
-    - Commit those changes locally and tag that commit with the new version
-1. Run `npm publish` to publish the new tag to npm
-1. `git push && git push --tags` to push the npm generated commit and tag up to your pre-approved pull request
-1. Merge the pull request back into master
+1. Create a pull request with prep for the new release. Commit messages should be clear and readable for every change and should follow the strict format described in the commit format section below.
+1. Get the pull request reviewed and approved. If you do a squash merge to the master branch then ensure that the cimmit meesage also follows the format below otherwise automatic release will fail.
 1. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
+
+### Commit format
+The commit format should follow this [conventional-changelog angular preset](https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-angular). Examples are provided below.
+
+Type | Example commit message | Release type
+-- | -- | --
+Bug fixes | fix(#123): infinite spinner when clicking contacts tab twice | service pack
+Performance | perf(#789): lazily loaded angular modules | service pack
+Features | feat(#456): add home tab | minor
+Non-code | chore(#123): update README | none
+Breaking| perf(#2): remove reporting rates feature <br/> BREAKING CHANGE: reporting rates no longer supported | major
+
+
 
 ### Releasing betas
 
