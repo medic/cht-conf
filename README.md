@@ -279,8 +279,10 @@ Execute `npm test` to run static analysis checks and the test suite.
 
 ## Releasing
 
-1. Create a pull request with prep for the new release. Commit messages should be clear and readable for every change and should follow the strict format described in the commit format section below.
-1. Get the pull request reviewed and approved. If you do a squash merge to the master branch then ensure that the cimmit meesage also follows the format below otherwise automatic release will fail.
+1. Create a pull request with prep for the new release. 
+1. Get the pull request reviewed and approved.
+1. When doing the squash and merge, make sure that your commit message is clear and readable and follows the strict format described in the commit format section below. If the commit message does not comply, automatic release will fail.
+1. In case you are planning to merge the pull request with a merge commit, make sure that every commit in your branch respects the format. 
 1. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
 
 ### Commit format
