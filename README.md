@@ -290,8 +290,8 @@ The commit format should follow this [conventional-changelog angular preset](htt
 
 Type | Example commit message | Release type
 -- | -- | --
-Bug fixes | fix(#123): infinite spinner when clicking contacts tab twice | service pack
-Performance | perf(#789): lazily loaded angular modules | service pack
+Bug fixes | fix(#123): infinite spinner when clicking contacts tab twice | patch
+Performance | perf(#789): lazily loaded angular modules | patch
 Features | feat(#456): add home tab | minor
 Non-code | chore(#123): update README | none
 Breaking| perf(#2): remove reporting rates feature <br/> BREAKING CHANGE: reporting rates no longer supported | major
