@@ -9,7 +9,8 @@
   "scripts": {
     "clean": "rm -rf ./build/",
     "eslint": "eslint src/**/*.js test/*.js test/**/*.js",
-    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha --forbid-only ../../test/**/*.spec.js && cd ../.."
+    "test": "npm run eslint && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha --forbid-only ../../test/**/*.spec.js && cd ../..",
+    "semantic-release": "semantic-release"
   },
   "bin": {
     "medic-conf": "src/bin/index.js",
@@ -23,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/medic/cht-conf.git"
+    "url": "https://github.com/medic/cht-conf.git"
   },
   "author": "",
   "license": "AGPL-3.0-only",
@@ -64,6 +65,10 @@
     "xmldom": "^0.6.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^13.2.0",
+    "@commitlint/config-conventional": "^13.2.0",
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/git": "^10.0.0",
     "body-parser": "^1.19.0",
     "chai": "^4.3.4",
     "chai-exclude": "^2.0.3",
@@ -72,10 +77,12 @@
     "eslint-plugin-node": "^11.1.0",
     "express": "^4.17.1",
     "express-pouchdb": "^4.2.0",
+    "husky": "^7.0.2",
     "mocha": "^6.2.3",
     "nyc": "^15.1.0",
     "pouchdb-adapter-memory": "^7.2.2",
     "rewire": "^5.0.0",
+    "semantic-release": "^18.0.0",
     "sinon": "^7.3.2"
   }
 }
