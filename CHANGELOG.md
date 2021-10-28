@@ -1,3 +1,13 @@
+# [3.9.0](https://github.com/medic/cht-conf/compare/v3.8.0...v3.9.0) (2021-10-28)
+
+
+### Features
+
+* **#413:** fix tags so that next release is 3.9.0 ([6eea489](https://github.com/medic/cht-conf/commit/6eea489804cf0de3c11fe855d2b285e41553439d))
+* **#413:** implement continuous delivery ([244203e](https://github.com/medic/cht-conf/commit/244203e341fe46e11dcb7249fd3a77dcb8d1f43c)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** publish to npm with automation token ([1cf8550](https://github.com/medic/cht-conf/commit/1cf8550cca2d404342e28d0a9086c837fa2a011e)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+* **#413:** use GH_ADMIN_TOKEN for release workflow ([0f1c581](https://github.com/medic/cht-conf/commit/0f1c581cc5e0990881ab6a99f6f26a040144bfbc)), closes [#413](https://github.com/medic/cht-conf/issues/413)
+
 ## 3.8.0
 
 ### Ability to edit a contact type
