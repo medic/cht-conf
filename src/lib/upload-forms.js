@@ -43,7 +43,6 @@ module.exports = async (projectDir, subDirectory, options) => {
     const xml = fs.read(xformPath);
     hashSum.update(xml);
     const xmlVersion = {
-      time: fs.statSync(filePath).mtime,
       sha256: hashSum.digest('hex'),
     };
 
