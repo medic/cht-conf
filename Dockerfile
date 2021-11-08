@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 MAINTAINER DevOps "devops@medicmobile.org"
 
 
@@ -14,7 +14,7 @@ RUN echo "==> Installing Python dependencies" && \
 RUN echo "====> Installing cht-conf python stuff"    &&\
     python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
-RUN curl -sL https://deb.nodesource.com/setup_6.x -o nodesource_setup.sh
+RUN curl -sL https://deb.nodesource.com/setup_8.x -o nodesource_setup.sh
 RUN bash nodesource_setup.sh
 RUN apt-get install -y nodejs
 

@@ -14,8 +14,18 @@ CHT Conf is a command-line interface tool to manage and configure your apps buil
 ## Docker
 
 	docker build -t cht-conf:v0 .
-	docker run cht-conf:v0
-	docker exec -it <container_name> /bin/bash
+	docker run -d --name cht-conf cht-conf:v0
+
+You now have a container running in the background called `cht-conf`. You can get a shell on this container with:
+
+	docker exec -it cht-conf /bin/bash
+
+And then you can run the utility with `cht`.  You will have to get your config files into the container in order to be able use the `cht` call to interact with a remote CHT instance.
+
+When you are done with the container, you can stop it with:
+
+	docker stop cht-conf
+
 
 ## Ubuntu
 
