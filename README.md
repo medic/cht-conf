@@ -11,7 +11,30 @@ CHT Conf is a command-line interface tool to manage and configure your apps buil
 
 # Installation
 
-## Docker
+## Operating System Specific
+
+### Ubuntu
+
+	npm install -g cht-conf
+	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+
+### OSX
+
+	npm install -g cht-conf
+	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+
+### Windows
+
+As Administrator:
+
+	npm install -g cht-conf
+	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic --upgrade
+
+### Docker
+
+**NB** - `cht-conf` in a Docker container should only be used if your familure with running containers.  You will have to get your config files into the container in order to be able to use the `cht` call to interact with a remote CHT instance. 
+
+Build and then run the `cht-conf` container:
 
 	docker build -t cht-conf:v0 .
 	docker run -d --name cht-conf cht-conf:v0
@@ -20,29 +43,11 @@ You now have a container running in the background called `cht-conf`. You can ge
 
 	docker exec -it cht-conf /bin/bash
 
-And then you can run the utility with `cht`.  You will have to get your config files into the container in order to be able use the `cht` call to interact with a remote CHT instance.
+And then you can run the utility with `cht`.  
 
 When you are done with the container, you can stop it with:
 
 	docker stop cht-conf
-
-
-## Ubuntu
-
-	npm install -g cht-conf
-	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-
-## OSX
-
-	npm install -g cht-conf
-	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-
-## Windows
-
-As Administrator:
-
-	npm install -g cht-conf
-	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic --upgrade
 
 ## Bash completion
 
@@ -56,7 +61,7 @@ To upgrade to the latest version
 
 	npm install -g cht-conf
 
-# Usage
+## Usage
 
 `cht` will upload the configuration **from your current directory**.
 
