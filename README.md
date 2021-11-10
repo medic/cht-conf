@@ -32,7 +32,7 @@ As Administrator:
 
 ### Docker
 
-**NB** - `cht-conf` in a Docker container should only be used if your familure with running containers.  You will have to get your config files into the container in order to be able to use the `cht` call to interact with a remote CHT instance. 
+**NB** - `cht-conf` in a Docker container should only be used if you're familiar with running containers. You will have to copy or mount your config files into the container in order to be able to use the `cht` call to interact with a remote CHT instance.
 
 Build and then run the `cht-conf` container:
 
