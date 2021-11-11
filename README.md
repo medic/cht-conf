@@ -60,9 +60,9 @@ For developers, this is the instance defined in your `COUCH_URL` environment var
 
 	cht --local
 
-### A specific Medic Mobile instance
+### A specific Medic-hosted instance
 
-For configuring against Medic Mobile-hosted instances.
+For configuring Medic-hosted instances.
 
 	cht --instance=instance-name.dev
 
@@ -80,7 +80,7 @@ If a different username is required, add the `--user` switch:
 
     cht --archive
 
-The resulting archive is consumable by Medic's API >v3.7 to create default configurations.
+The resulting archive is consumable by CHT API >v3.7 to create default configurations.
 
 ## Perform specific action(s)
 
