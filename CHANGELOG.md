@@ -1,3 +1,10 @@
+## [3.9.1](https://github.com/medic/cht-conf/compare/v3.9.0...v3.9.1) (2021-11-16)
+
+
+### Bug Fixes
+
+* **#448:** Bump Ubuntu version and Node version in container to fix docker usage. Updates to readme ([25cb955](https://github.com/medic/cht-conf/commit/25cb955377eea6c6a0a7cb3953d889b57c93884b))
+
 # [3.9.0](https://github.com/medic/cht-conf/compare/v3.8.0...v3.9.0) (2021-11-01)
 
 
