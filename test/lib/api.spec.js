@@ -195,4 +195,40 @@ describe('api', () => {
       assert.equal(cacheGetSpy.callCount, 0);      // cache not used
     });
   });
+
+  describe('available', async () => {
+
+    beforeEach(() => sinon.stub(environment, 'apiUrl').get(() => 'http://api/medic'));
+
+    it('should return true if no error found in request', async () => {
+      sinon.stub(environment, 'isArchiveMode').get(() => false);
+      sinon.stub(mockRequest, 'get').resolves('okey dokey');
+      sinon.stub(log, 'error');
+      const isAvailable = await api().available();
+      expect(isAvailable).to.be.true;
+      expect(log.error.callCount).to.eq(0);
+    });
+
+    it('should return false and provide an error if request fails', async () => {
+      sinon.stub(environment, 'isArchiveMode').get(() => false);
+      sinon.stub(mockRequest, 'get').rejects('Ups');
+      sinon.stub(log, 'error');
+      const isAvailable = await api().available();
+      expect(isAvailable).to.be.false;
+      expect(log.error.callCount).to.eq(1);
+      expect(log.error.args[0][0]).to.eq(
+        'Failed to get a response from http://api/medic/. Maybe you entered the wrong URL, ' +
+        'wrong port or the instance is not started? Please check and try again.');
+    });
+
+    it('should return true if archive mode is enabled even when api is not available', async () => {
+      sinon.stub(environment, 'isArchiveMode').get(() => true);
+      sinon.stub(mockRequest, 'get').rejects('Ups');
+      sinon.stub(log, 'error');
+      const isAvailable = await api().available();
+      expect(isAvailable).to.be.true;
+      expect(log.error.callCount).to.eq(0);
+      expect(mockRequest.callCount).to.eq(0);   // api is not called
+    });
+  });
 });

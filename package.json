@@ -1,6 +1,6 @@
 {
   "name": "cht-conf",
-  "version": "3.8.0",
+  "version": "3.9.1",
   "description": "Configure CHT deployments",
   "main": "./src/lib/main.js",
   "engines": {
@@ -12,6 +12,7 @@
     "docker-start-couchdb": "npm run docker-stop-couchdb && docker run -d -p 6984:5984 --rm --name cht-conf-couchdb couchdb:2.3.1 && sh test/scripts/wait_for_response_code.sh 6984 200 CouchDB",
     "docker-stop-couchdb": "docker stop cht-conf-couchdb || true",
     "test": "npm run eslint && npm run docker-start-couchdb && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha --forbid-only ../../test/**/*.spec.js && cd ../.. && npm run docker-stop-couchdb"
+    "semantic-release": "semantic-release"
   },
   "bin": {
     "medic-conf": "src/bin/index.js",
@@ -25,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/medic/cht-conf.git"
+    "url": "https://github.com/medic/cht-conf.git"
   },
   "author": "",
   "license": "AGPL-3.0-only",
@@ -66,6 +67,10 @@
     "xmldom": "^0.6.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^13.2.0",
+    "@commitlint/config-conventional": "^13.2.0",
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/git": "^10.0.0",
     "body-parser": "^1.19.0",
     "chai": "^4.3.4",
     "chai-exclude": "^2.0.3",
@@ -74,10 +79,12 @@
     "eslint-plugin-node": "^11.1.0",
     "express": "^4.17.1",
     "express-pouchdb": "^4.2.0",
+    "husky": "^7.0.2",
     "mocha": "^6.2.3",
     "nyc": "^15.1.0",
     "pouchdb-adapter-memory": "^7.2.2",
     "rewire": "^5.0.0",
+    "semantic-release": "^18.0.0",
     "sinon": "^7.3.2"
   }
 }

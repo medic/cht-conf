@@ -10,7 +10,7 @@ const redactBasicAuth = require('redact-basic-auth');
 const shellCompletionSetup = require('../cli/shell-completion-setup');
 const supportedActions = require('../cli/supported-actions');
 const usage = require('../cli/usage');
-const request = require('request-promise-native');
+const api = require('../lib/api');
 
 const { error, info, warn } = log;
 const defaultActions = [
@@ -166,13 +166,6 @@ module.exports = async (argv, env) => {
       error('Failed to obtain a url to the API');
       return -1;
     }
-    try {
-      info(`Checking that ${apiUrl} is available...`);
-      await request.get(apiUrl);
-    } catch (err) {
-      error(`Failed to get a response from ${apiUrl}. Maybe you entered the wrong URL, wrong port or the instance is not started? Please check and try again.`);
-      return -1;
-    }
   }
 
   let extraArgs = cmdArgs['--'];
@@ -189,6 +182,10 @@ module.exports = async (argv, env) => {
     cmdArgs.force,
     cmdArgs['skip-translation-check']
   );
+
+  if (apiUrl && !await api().available()) {
+    return false;
+  }
 
   const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
   const expectedOptions = ['alpha', projectName];

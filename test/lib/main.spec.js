@@ -10,12 +10,14 @@ const defaultActions = main.__get__('defaultActions');
 const normalArgv = ['node', 'cht'];
 
 let mocks;
+let apiAvailable;
 describe('main', () => {
   beforeEach(() => {
     environment.__set__('state', {});
     sinon.spy(environment, 'initialize');
     sinon.stub(userPrompt, 'question').returns('pwd');
     sinon.stub(userPrompt, 'keyInYN').returns(true);
+    apiAvailable = sinon.stub().resolves(true);
     mocks = {
       usage: sinon.stub(),
       shellCompletionSetup: sinon.stub(),
@@ -32,9 +34,9 @@ describe('main', () => {
           resolve: () => 'resolved',
         },
       },
-      request: {
-        get: sinon.stub()
-      }
+      api: () => ({
+        available: apiAvailable
+      }),
     };
 
     for (let attr of Object.keys(mocks)) {
@@ -191,17 +193,18 @@ describe('main', () => {
     expect(actual).to.be.undefined;
   });
 
-  it('should provide an error if action requires an instance and apiUrl does not respond', async() => {
-    mocks.request.get.rejects();
-    await main([...normalArgv, 'upload-app-forms']);
-    expect(mocks.error.callCount).to.eq(1);
-    expect(mocks.error.args[0][0]).to
-      .eq('Failed to get a response from http://api. Maybe you entered the wrong URL, wrong port or the instance is not started? Please check and try again.');
+  it('should return earlier with false value if api is not available', async () => {
+    apiAvailable.resolves(false);
+    const earlyResult = await main([...normalArgv, 'upload-app-forms']);
+    expect(earlyResult).to.be.false;
+    expect(apiAvailable.callCount).to.eq(1);
   });
 
-  it('should continue without error if action requires an instance and apiUrl responds', async() => {
-    mocks.request.get.resolves();
-    await main([...normalArgv, 'upload-app-forms']);
+  it('should continue without error if action requires an instance and apiUrl responds', async () => {
+    apiAvailable.resolves(true);
+    const result = await main([...normalArgv, 'upload-app-forms']);
+    expect(result).to.be.undefined;
+    expect(apiAvailable.callCount).to.eq(1);
     expect(mocks.error.callCount).to.eq(0);
   });
 });

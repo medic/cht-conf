@@ -11,28 +11,43 @@ CHT Conf is a command-line interface tool to manage and configure your apps buil
 
 # Installation
 
-## Docker
+## Operating System Specific
 
-	docker build -t cht-conf:v0 .
-	docker run cht-conf:v0
-	docker exec -it <container_name> /bin/bash
-
-## Ubuntu
+### Ubuntu
 
 	npm install -g cht-conf
 	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
-## OSX
+### OSX
 
 	npm install -g cht-conf
 	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
-## Windows
+### Windows
 
 As Administrator:
 
 	npm install -g cht-conf
 	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic --upgrade
+
+### Docker
+
+**NB** - `cht-conf` in a Docker container should only be used if you're familiar with running containers. You will have to copy or mount your config files into the container in order to be able to use the `cht` call to interact with a remote CHT instance.
+
+Build and then run the `cht-conf` container:
+
+	docker build -t cht-conf:v0 .
+	docker run -d --name cht-conf cht-conf:v0
+
+You now have a container running in the background called `cht-conf`. You can get a shell on this container with:
+
+	docker exec -it cht-conf /bin/bash
+
+And then you can run the utility with `cht`.  
+
+When you are done with the container, you can stop it with:
+
+	docker stop cht-conf
 
 ## Bash completion
 
@@ -46,7 +61,7 @@ To upgrade to the latest version
 
 	npm install -g cht-conf
 
-# Usage
+## Usage
 
 `cht` will upload the configuration **from your current directory**.
 
@@ -60,9 +75,9 @@ For developers, this is the instance defined in your `COUCH_URL` environment var
 
 	cht --local
 
-### A specific Medic Mobile instance
+### A specific Medic-hosted instance
 
-For configuring against Medic Mobile-hosted instances.
+For configuring Medic-hosted instances.
 
 	cht --instance=instance-name.dev
 
@@ -80,7 +95,7 @@ If a different username is required, add the `--user` switch:
 
     cht --archive
 
-The resulting archive is consumable by Medic's API >v3.7 to create default configurations.
+The resulting archive is consumable by CHT API >v3.7 to create default configurations.
 
 ## Perform specific action(s)
 
@@ -279,15 +294,24 @@ Execute `npm test` to run static analysis checks and the test suite. Requires Do
 
 ## Releasing
 
-1. Create a pull request with prep for the new release. This should contain changes to release notes if required and anything else that needs to be done. As commit messages should be clear and readable for every change, [release-notes.md](./release-notes.md) does not need to be updated for every single change. Instead, it should include information about significant changes, breaking changes, changes to interfaces, changes in behavior, new feature details, etc.
-1. Get the pull request reviewed and approved
-1. Run `npm version patch`, `npm version minor`, or `npm version major` as appropriate. This will:
-    - Update versions in `package.json` and `package-lock.json`
-    - Commit those changes locally and tag that commit with the new version
-1. Run `npm publish` to publish the new tag to npm
-1. `git push && git push --tags` to push the npm generated commit and tag up to your pre-approved pull request
-1. Merge the pull request back into master
+1. Create a pull request with prep for the new release. 
+1. Get the pull request reviewed and approved.
+1. When doing the squash and merge, make sure that your commit message is clear and readable and follows the strict format described in the commit format section below. If the commit message does not comply, automatic release will fail.
+1. In case you are planning to merge the pull request with a merge commit, make sure that every commit in your branch respects the format. 
 1. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
+
+### Commit format
+The commit format should follow this [conventional-changelog angular preset](https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-angular). Examples are provided below.
+
+Type | Example commit message | Release type
+-- | -- | --
+Bug fixes | fix(#123): infinite spinner when clicking contacts tab twice | patch
+Performance | perf(#789): lazily loaded angular modules | patch
+Features | feat(#456): add home tab | minor
+Non-code | chore(#123): update README | none
+Breaking| perf(#2): remove reporting rates feature <br/> BREAKING CHANGE: reporting rates no longer supported | major
+
+
 
 ### Releasing betas
 
