@@ -5,7 +5,7 @@ const fs = require('../../src/lib/sync-fs');
 const environment = require('../../src/lib/environment');
 
 const PouchDB = require('pouchdb-core');
-PouchDB.plugin(require('pouchdb-adapter-memory'));
+PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const moveContactsModule = rewire('../../src/fn/move-contacts');
@@ -50,7 +50,8 @@ describe('move-contacts', () => {
   const updateHierarchyRules = contact_types => upsert('settings', { settings: { contact_types } });
 
   beforeEach(async () => {
-    pouchDb = new PouchDB(`scenario${scenarioCount++}`, { adapter: 'memory' });
+    // using remote couchdb because of https://github.com/pouchdb/pouchdb/issues/8370
+    pouchDb = new PouchDB(`http://localhost:6984/scenario${scenarioCount++}`);
 
     await mockHierarchy(pouchDb, {
       district_1: {
@@ -127,6 +128,8 @@ describe('move-contacts', () => {
   });
 
   it('move health_center_1 to root', async () => {
+    sinon.spy(pouchDb, 'query');
+
     await updateHierarchyRules([{ id: 'health_center', parents: [] }]);
 
     await updateLineagesAndStage({
@@ -166,6 +169,19 @@ describe('move-contacts', () => {
       type: 'data_record',
       contact: parentsToLineage('health_center_1_contact', 'health_center_1'),
     });
+
+    const contactIdsKeys = [
+      ['contact:clinic_1'],
+      ['contact:clinic_1_contact'],
+      ['contact:health_center_1'],
+      ['contact:health_center_1_contact'],
+      ['contact:patient_1']
+    ];
+    expect(pouchDb.query.callCount).to.equal(2);
+    expect(pouchDb.query.args).to.deep.equal([
+      ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
+      ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 10000, skip: 0, group_level: undefined }],
+    ]);
   });
 
   it('move district_1 from root', async () => {
@@ -223,12 +239,12 @@ describe('move-contacts', () => {
       type: 'contact',
       contact_type: 'county',
     });
-    
+
     await updateHierarchyRules([
       { id: 'county', parents: [] },
       { id: 'district_hospital', parents: ['county'] },
     ]);
-    
+
     await updateLineagesAndStage({
       contactIds: ['district_1'],
       parentId: 'county_1',
@@ -285,7 +301,7 @@ describe('move-contacts', () => {
       id: 'report_focal',
       creatorId: 'focal',
     });
-    
+
     await updateLineagesAndStage({
       contactIds: ['focal'],
       parentId: 'subcounty',
@@ -578,13 +594,14 @@ describe('move-contacts', () => {
   });
 
   describe('batching works as expected', () => {
+    let defaultBatchSize;
     beforeEach(async () => {
-      moveContactsModule.__set__('BATCH_SIZE', 1);
+      defaultBatchSize = moveContactsModule.__get__('BATCH_SIZE');
       await mockReport(pouchDb, {
         id: 'report_2',
         creatorId: 'health_center_1_contact',
       });
-  
+
       await mockReport(pouchDb, {
         id: 'report_3',
         creatorId: 'health_center_1_contact',
@@ -595,38 +612,46 @@ describe('move-contacts', () => {
         creatorId: 'health_center_1_contact',
       });
     });
-    it('move health_center_1 to district_2 in small batches', async () => {
+
+    afterEach(() => {
+      moveContactsModule.__set__('BATCH_SIZE', defaultBatchSize);
+    });
+
+    it('move health_center_1 to district_2 in batches of 1', async () => {
+      moveContactsModule.__set__('BATCH_SIZE', 1);
+      sinon.spy(pouchDb, 'query');
+
       await updateLineagesAndStage({
         contactIds: ['health_center_1'],
         parentId: 'district_2',
       }, pouchDb);
-  
+
       expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
         _id: 'health_center_1_contact',
         type: 'person',
         parent: parentsToLineage('health_center_1', 'district_2'),
       });
-  
+
       expect(getWrittenDoc('health_center_1')).to.deep.eq({
         _id: 'health_center_1',
         type: 'health_center',
         contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
         parent: parentsToLineage('district_2'),
       });
-  
+
       expect(getWrittenDoc('clinic_1')).to.deep.eq({
         _id: 'clinic_1',
         type: 'clinic',
         contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_2'),
         parent: parentsToLineage('health_center_1', 'district_2'),
       });
-  
+
       expect(getWrittenDoc('patient_1')).to.deep.eq({
         _id: 'patient_1',
         type: 'person',
         parent: parentsToLineage('clinic_1', 'health_center_1', 'district_2'),
       });
-  
+
       expect(getWrittenDoc('report_1')).to.deep.eq({
         _id: 'report_1',
         form: 'foo',
@@ -647,6 +672,97 @@ describe('move-contacts', () => {
         type: 'data_record',
         contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
       });
+
+      expect(pouchDb.query.callCount).to.deep.equal(6);
+
+      const contactIdsKeys = [
+        ['contact:clinic_1'],
+        ['contact:clinic_1_contact'],
+        ['contact:health_center_1'],
+        ['contact:health_center_1_contact'],
+        ['contact:patient_1']
+      ];
+      expect(pouchDb.query.args).to.deep.equal([
+        ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
+        ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 0, group_level: undefined }],
+        ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 1, group_level: undefined }],
+        ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 2, group_level: undefined }],
+        ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 3, group_level: undefined }],
+        ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 4, group_level: undefined }],
+      ]);
+    });
+
+    it('should health_center_1 to district_1 in batches of 2', async () => {
+      moveContactsModule.__set__('BATCH_SIZE', 2);
+      sinon.spy(pouchDb, 'query');
+
+      await updateLineagesAndStage({
+        contactIds: ['health_center_1'],
+        parentId: 'district_1',
+      }, pouchDb);
+
+      expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
+        _id: 'health_center_1_contact',
+        type: 'person',
+        parent: parentsToLineage('health_center_1', 'district_1'),
+      });
+
+      expect(getWrittenDoc('health_center_1')).to.deep.eq({
+        _id: 'health_center_1',
+        type: 'health_center',
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
+        parent: parentsToLineage('district_1'),
+      });
+
+      expect(getWrittenDoc('clinic_1')).to.deep.eq({
+        _id: 'clinic_1',
+        type: 'clinic',
+        contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_1'),
+        parent: parentsToLineage('health_center_1', 'district_1'),
+      });
+
+      expect(getWrittenDoc('patient_1')).to.deep.eq({
+        _id: 'patient_1',
+        type: 'person',
+        parent: parentsToLineage('clinic_1', 'health_center_1', 'district_1'),
+      });
+
+      expect(getWrittenDoc('report_1')).to.deep.eq({
+        _id: 'report_1',
+        form: 'foo',
+        type: 'data_record',
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
+      });
+
+      expect(getWrittenDoc('report_2')).to.deep.eq({
+        _id: 'report_2',
+        form: 'foo',
+        type: 'data_record',
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
+      });
+
+      expect(getWrittenDoc('report_3')).to.deep.eq({
+        _id: 'report_3',
+        form: 'foo',
+        type: 'data_record',
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
+      });
+
+      expect(pouchDb.query.callCount).to.deep.equal(4);
+
+      const contactIdsKeys = [
+        ['contact:clinic_1'],
+        ['contact:clinic_1_contact'],
+        ['contact:health_center_1'],
+        ['contact:health_center_1_contact'],
+        ['contact:patient_1']
+      ];
+      expect(pouchDb.query.args).to.deep.equal([
+        ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
+        ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 0, group_level: undefined }],
+        ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 2, group_level: undefined }],
+        ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 4, group_level: undefined }]
+      ]);
     });
   });
 });

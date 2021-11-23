@@ -22,35 +22,6 @@ module.exports = {
   }
 };
 
-const minifyLineageAndWriteDocToDisk = (doc, parsedArgs) => {
-  lineageManipulation.minifyLineagesInDoc(doc);
-    writeDocumentToDisk(parsedArgs, doc);
-};
-
-const moveReportsBatch = async (db, contactIds, replacementLineage, contactId, parsedArgs, skip) => {
-  const queryOptions = {
-    keys: contactIds.map(id => [`contact:${id}`]),
-    include_docs: true,
-    limit: 2,
-    skip: skip,
-  };
-  const result = await db.query('medic-client/reports_by_freetext', queryOptions);
-  const reportDocs = result.rows.map(row => row.doc);
-  info(`Processing ${skip} to (${skip + BATCH_SIZE}) docs of ${result.total_rows} total`);
-  info(`Processing ${result.rows.length} and batch is ${BATCH_SIZE} `);
-  info(queryOptions);
-  const updatedReports = replaceLineageInReports(reportDocs, replacementLineage, contactId);
-  updatedReports.forEach(updatedDoc => {
-    minifyLineageAndWriteDocToDisk(updatedDoc, parsedArgs);
-  });
-
-  if (result.rows.length <= BATCH_SIZE) {
-    return skip + result.rows.length;
-  }
-
-  return moveReportsBatch(db, contactIds, replacementLineage, contactId, parsedArgs, skip + BATCH_SIZE);
-};
-
 const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
 const updateLineagesAndStage = async (options, db) => {
   trace(`Fetching contact details for parent: ${options.parentId}`);
@@ -78,19 +49,16 @@ const updateLineagesAndStage = async (options, db) => {
     const ancestors = await fetch.ancestorsOf(db, contactDoc);
     trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
     const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
-    const contactIds = descendantsAndSelf.map(descendant => descendant._id);
 
-    const movedReports = await moveReportsBatch(db, contactIds, replacementLineage, contactId, options, 0);
-    trace(`${movedReports} report(s) created by these affected contact(s) will update`);
+    minifyLineageAndWriteToDisk([...updatedDescendants, ...updatedAncestors], options);
 
-    [...updatedDescendants, ...updatedAncestors].forEach(updatedDoc => {
-      minifyLineageAndWriteDocToDisk(updatedDoc, options);
-    });
+    const movedReportsCount = await moveReports(db, descendantsAndSelf, options, replacementLineage, contactId);
+    trace(`${movedReportsCount} report(s) created by these affected contact(s) will be updated`);
 
     affectedContactCount += updatedDescendants.length + updatedAncestors.length;
-    affectedReportCount += movedReports;
+    affectedReportCount += movedReportsCount;
 
-    info(`Staged updates to ${prettyPrintDocument(contactDoc)}. ${updatedDescendants.length} contact(s) and ${movedReports} report(s).`);
+    info(`Staged updates to ${prettyPrintDocument(contactDoc)}. ${updatedDescendants.length} contact(s) and ${movedReportsCount} report(s).`);
   }
 
   info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);
@@ -184,6 +152,31 @@ ${bold('OPTIONS')}
 `);
 };
 
+const moveReports = async (db, descendantsAndSelf, writeOptions, replacementLineage, contactId) => {
+  const contactIds = descendantsAndSelf.map(contact => contact._id);
+
+  let skip = 0;
+  let reportDocsBatch;
+  do {
+    info(`Processing ${skip} to ${skip + BATCH_SIZE} report docs`);
+    reportDocsBatch = await fetch.reportsCreatedBy(db, contactIds, skip);
+
+    const updatedReports = replaceLineageInReports(reportDocsBatch, replacementLineage, contactId);
+    minifyLineageAndWriteToDisk(updatedReports, writeOptions);
+
+    skip += reportDocsBatch.length;
+  } while (reportDocsBatch.length >= BATCH_SIZE);
+
+  return skip;
+};
+
+const minifyLineageAndWriteToDisk = (docs, parsedArgs) => {
+  docs.forEach(doc => {
+    lineageManipulation.minifyLineagesInDoc(doc);
+    writeDocumentToDisk(parsedArgs, doc);
+  });
+};
+
 const writeDocumentToDisk = ({ docDirectoryPath }, doc) => {
   const destinationPath = path.join(docDirectoryPath, `${doc._id}.doc.json`);
   if (fs.exists(destinationPath)) {
@@ -243,10 +236,12 @@ const fetch = {
       .filter(doc => doc && doc.type !== 'tombstone');
   },
 
-  reportsCreatedBy: async (db, contactIds) => {
+  reportsCreatedBy: async (db, contactIds, skip) => {
     const reports = await db.query('medic-client/reports_by_freetext', {
       keys: contactIds.map(id => [`contact:${id}`]),
       include_docs: true,
+      limit: BATCH_SIZE,
+      skip: skip,
     });
 
     return reports.rows.map(row => row.doc);
