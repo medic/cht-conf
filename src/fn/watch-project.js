@@ -6,11 +6,11 @@ const { warn, info } = require('../lib/log');
 
 const convertForms = require('../lib/convert-forms');
 const uploadForms = require('../lib/upload-forms');
-const convertContactForm = require('./convert-contact-forms');
-const uploadAppSettings = require('./upload-app-settings');
-const compileAppSettings = require('./compile-app-settings');
-const uploadCustomTranslations = require('./upload-custom-translations');
-const uploadResources = require('./upload-resources');
+const { convertContactForm } = require('./convert-contact-forms');
+const { uploadAppSettings } = require('./upload-app-settings');
+const { compileAppSettings } = require('./compile-app-settings');
+const { uploadCustomTranslations } = require('./upload-custom-translations');
+const { uploadResources } = require('./upload-resources');
 
 const formXLSRegex = /^[a-zA-Z_]*\.xlsx$/;
 const formXMLRegex = /^[a-zA-Z_]*\.xml$/;
@@ -30,13 +30,13 @@ const changeListener = async (_, fileName) => {
     if (changeListenerWait) return;
     changeListenerWait = setTimeout(() => { changeListenerWait = false; }, debounceDelay);
 
-    if (fileName.match(/(app_settings|base_settings)\.json/)) {
-        await uploadAppSettings(environment.pathToProject);
+    if (fileName === 'app_settings.json') {
+        // ignore
     } else if (fileName === 'resources.json' || fileName.match(/.*\.(png|svg)/)) {
         await uploadResources(environment.pathToProject);
     } else if (fileName.match(/messages-[\w]*\.properties/)) {
         await uploadCustomTranslations(environment.apiUrl, environment.pathToProject, environment.skipTranslationCheck);
-    } else if (fileName.match(/.*\.js/)) {
+    } else if (fileName.match(/.*\.js$/) || fileName.match(/.*\.json$/)) {
         await compileAppSettings(environment.pathToProject);
         await uploadAppSettings(environment.pathToProject);
     } else {
@@ -91,6 +91,7 @@ module.exports = {
         fs.watch(path.join(environment.pathToProject, 'forms', 'contact'), contactFormListener);
         [
             environment.pathToProject,
+            path.join(environment.pathToProject, 'app_settings'),
             path.join(environment.pathToProject, 'resources'),
             path.join(environment.pathToProject, 'translations'),
         ].forEach((path) => {
