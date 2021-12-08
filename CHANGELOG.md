@@ -1,3 +1,10 @@
+## [3.9.2](https://github.com/medic/cht-conf/compare/v3.9.1...v3.9.2) (2021-12-08)
+
+
+### Performance Improvements
+
+* **#432:** refactor the moving of reports to use a recursive function to improve performance ([c17b43b](https://github.com/medic/cht-conf/commit/c17b43b4d89b29b813db4be6e0f2d2c0a1e6c94d)), closes [#432](https://github.com/medic/cht-conf/issues/432)
+
 ## [3.9.1](https://github.com/medic/cht-conf/compare/v3.9.0...v3.9.1) (2021-11-16)
 
 
