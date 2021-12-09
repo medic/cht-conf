@@ -174,7 +174,7 @@ describe('main', () => {
     userPrompt.keyInYN.returns(true);
     const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
     expect(userPrompt.keyInYN.callCount).to.eq(1);
-    expect(actual).to.be.undefined;
+    expect(actual).to.eq(0);
   });
 
   it('reject non-matching instance warning', async () => {
@@ -182,7 +182,7 @@ describe('main', () => {
     userPrompt.keyInYN.returns(false);
     const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
     expect(userPrompt.keyInYN.callCount).to.eq(1);
-    expect(actual).to.eq(false);
+    expect(actual).to.eq(-1);
   });
 
   it('force option skips non-matching instance warning', async () => {
@@ -190,20 +190,20 @@ describe('main', () => {
     environment.__set__('force', true);
     const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/', '--force']);
     expect(userPrompt.keyInYN.callCount).to.eq(1);
-    expect(actual).to.be.undefined;
+    expect(actual).to.eq(0);
   });
 
   it('should return earlier with false value if api is not available', async () => {
     apiAvailable.resolves(false);
     const earlyResult = await main([...normalArgv, 'upload-app-forms']);
-    expect(earlyResult).to.be.false;
+    expect(earlyResult).to.eq(-1);
     expect(apiAvailable.callCount).to.eq(1);
   });
 
   it('should continue without error if action requires an instance and apiUrl responds', async () => {
     apiAvailable.resolves(true);
     const result = await main([...normalArgv, 'upload-app-forms']);
-    expect(result).to.be.undefined;
+    expect(result).to.eq(0);
     expect(apiAvailable.callCount).to.eq(1);
     expect(mocks.error.callCount).to.eq(0);
   });
