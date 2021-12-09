@@ -126,7 +126,7 @@ const prepareDocumentDirectory = ({ docDirectoryPath, force }) => {
       fs.deleteFilesInFolder(docDirectoryPath);
     } else {
       error('User failed to confirm action.');
-      process.exit(-1);
+      process.exit(1);
     }
   }
 };

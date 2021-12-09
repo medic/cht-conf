@@ -164,7 +164,7 @@ describe('main', () => {
 
     it('requires destination', async () => {
       const actual = await main([...normalArgv, '--archive', 'upload-app-settings'], {});
-      expect(actual).to.eq(-1);
+      expect(actual).to.eq(1);
       expect(mocks.executeAction.called).to.be.false;
     });
   });
@@ -182,7 +182,7 @@ describe('main', () => {
     userPrompt.keyInYN.returns(false);
     const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
     expect(userPrompt.keyInYN.callCount).to.eq(1);
-    expect(actual).to.eq(-1);
+    expect(actual).to.eq(1);
   });
 
   it('force option skips non-matching instance warning', async () => {
@@ -196,7 +196,7 @@ describe('main', () => {
   it('should return earlier with false value if api is not available', async () => {
     apiAvailable.resolves(false);
     const earlyResult = await main([...normalArgv, 'upload-app-forms']);
-    expect(earlyResult).to.eq(-1);
+    expect(earlyResult).to.eq(1);
     expect(apiAvailable.callCount).to.eq(1);
   });
 

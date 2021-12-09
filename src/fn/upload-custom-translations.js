@@ -66,7 +66,7 @@ const execute = async () => {
           errMsg += '\nYou can use messages-ex.properties to add placeholders missing from the reference context.';
         }
         log.error(errMsg);
-        return process.exit(-1);
+        return process.exit(1);
       }
     } else {
       throw err;
@@ -78,7 +78,7 @@ const execute = async () => {
     const languageCode = id.substring('messages-'.length);
     if (!isLanguageCodeValid(languageCode)) {
       log.error(`The language code '${languageCode}' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.`);
-      return process.exit(-1);
+      return process.exit(1);
     }
 
     let languageName = iso639.getName(languageCode);

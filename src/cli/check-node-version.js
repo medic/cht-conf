@@ -6,5 +6,5 @@ if(Number.parseInt(currentNodeVersion.split('.')[0]) < MIN_NODE_VERSION) {
     You are running node version: ${currentNodeVersion}
     cht-conf requires version:  ${MIN_NODE_VERSION}
   Please upgrade node to continue.\x1b[0m`);
-  process.exit(-1);
+  process.exit(1);
 }
