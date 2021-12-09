@@ -36,7 +36,7 @@ const execute = async () => {
   warn(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
   if(!userPrompt.keyInYN()) {
     error('User failed to confirm action.');
-    process.exit(1);
+    process.exit(-1);
   }
 
   const results = { ok:[], failed:{} };

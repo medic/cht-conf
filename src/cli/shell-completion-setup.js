@@ -16,5 +16,5 @@ module.exports = shell => {
   } else {
     error(`completion not yet supported for '${shell}' shell`);
   }
-  process.exit(1);
+  process.exit(-1);
 };

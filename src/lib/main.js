@@ -184,7 +184,7 @@ module.exports = async (argv, env) => {
   );
 
   if (apiUrl && !await api().available()) {
-    return false;
+    return -1;
   }
 
   const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
@@ -194,7 +194,7 @@ module.exports = async (argv, env) => {
         `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
     if(!userPrompt.keyInYN()) {
       error('User failed to confirm action.');
-      return false;
+      return -1;
     }
   }
 
@@ -218,6 +218,8 @@ module.exports = async (argv, env) => {
   if (actions.length > 1) {
     await info('All actions completed.');
   }
+
+  return 0;
 };
 
 // Exists for generic mocking purposes
