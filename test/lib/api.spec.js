@@ -209,16 +209,60 @@ describe('api', () => {
       expect(log.error.callCount).to.eq(0);
     });
 
-    it('should return false and provide an error if request fails', async () => {
+    it('should return false and provide an error if request fails to connect', async () => {
+      const error = {};
       sinon.stub(environment, 'isArchiveMode').get(() => false);
-      sinon.stub(mockRequest, 'get').rejects('Ups');
+      sinon.stub(mockRequest, 'get').rejects(error);
       sinon.stub(log, 'error');
       const isAvailable = await api().available();
       expect(isAvailable).to.be.false;
       expect(log.error.callCount).to.eq(1);
       expect(log.error.args[0][0]).to.eq(
         'Failed to get a response from http://api/medic/. Maybe you entered the wrong URL, ' +
-        'wrong port or the instance is not started? Please check and try again.');
+        'wrong port or the instance is not started. Please check and try again.'
+      );
+    });
+
+    it('should return false and provide an error if request returns authentication error', async () => {
+      const error = { statusCode: 401 };
+      sinon.stub(environment, 'isArchiveMode').get(() => false);
+      sinon.stub(mockRequest, 'get').rejects(error);
+      sinon.stub(log, 'error');
+      const isAvailable = await api().available();
+      expect(isAvailable).to.be.false;
+      expect(log.error.callCount).to.eq(1);
+      expect(log.error.args[0][0]).to.eq(
+        'Authentication failed connecting to http://api/medic/. ' +
+        'Check the supplied username and password and try again.'
+      );
+    });
+
+    it('should return false and provide an error if request returns permissions error', async () => {
+      const error = { statusCode: 403 };
+      sinon.stub(environment, 'isArchiveMode').get(() => false);
+      sinon.stub(mockRequest, 'get').rejects(error);
+      sinon.stub(log, 'error');
+      const isAvailable = await api().available();
+      expect(isAvailable).to.be.false;
+      expect(log.error.callCount).to.eq(1);
+      expect(log.error.args[0][0]).to.eq(
+        'Insufficient permissions connecting to http://api/medic/. ' +
+        'You need to use admin permissions to execute this command.'
+      );
+    });
+
+    it('should return false and provide an error if request returns unknown error', async () => {
+      const error = { statusCode: 503 };
+      sinon.stub(environment, 'isArchiveMode').get(() => false);
+      sinon.stub(mockRequest, 'get').rejects(error);
+      sinon.stub(log, 'error');
+      const isAvailable = await api().available();
+      expect(isAvailable).to.be.false;
+      expect(log.error.callCount).to.eq(1);
+      expect(log.error.args[0][0]).to.eq(
+        'Received error code 503 connecting to http://api/medic/. ' +
+        'Check the server and and try again.'
+      );
     });
 
     it('should return true if archive mode is enabled even when api is not available', async () => {

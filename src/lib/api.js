@@ -99,8 +99,19 @@ const api = {
       await request.get(url);
       return true;
     } catch (err) {
-      log.error(`Failed to get a response from ${url}. Maybe you entered the wrong URL, `
-                + 'wrong port or the instance is not started? Please check and try again.');
+      if (err.statusCode === 401) {
+        log.error(`Authentication failed connecting to ${url}. `
+                  + 'Check the supplied username and password and try again.');
+      } else if (err.statusCode === 403) {
+        log.error(`Insufficient permissions connecting to ${url}. `
+                  + 'You need to use admin permissions to execute this command.');
+      } else if (err.statusCode) {
+        log.error(`Received error code ${err.statusCode} connecting to ${url}. `
+                  + 'Check the server and and try again.');
+      } else {
+        log.error(`Failed to get a response from ${url}. Maybe you entered the wrong URL, `
+                  + 'wrong port or the instance is not started. Please check and try again.');
+      }
       return false;
     }
   },
