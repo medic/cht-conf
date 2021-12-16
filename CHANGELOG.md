@@ -1,3 +1,10 @@
+## [3.9.3](https://github.com/medic/cht-conf/compare/v3.9.2...v3.9.3) (2021-12-16)
+
+
+### Bug Fixes
+
+* **#455:** allow empty translation constants ([ac170d7](https://github.com/medic/cht-conf/commit/ac170d7cce13a6a500d89884d4ca63801f06a969)), closes [#455](https://github.com/medic/cht-conf/issues/455)
+
 ## [3.9.2](https://github.com/medic/cht-conf/compare/v3.9.1...v3.9.2) (2021-12-08)
 
 
