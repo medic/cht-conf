@@ -3,9 +3,9 @@ const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { info } = require('../lib/log');
 
-function uploadAppSettings(pathToProject) {
+function uploadAppSettings(api, pathToProject) {
   const settings = fs.read(`${pathToProject}/app_settings.json`);
-  return api().updateAppSettings(settings)
+  return api.updateAppSettings(settings)
     .then(JSON.parse)
     .then(json => {
       // As per https://github.com/medic/cht-core/issues/3674, this endpoint
@@ -29,5 +29,5 @@ function uploadAppSettings(pathToProject) {
 module.exports = {
   uploadAppSettings,
   requiresInstance: true,
-  execute: () => uploadAppSettings(environment.pathToProject)
+  execute: () => uploadAppSettings(api(), environment.pathToProject)
 };
