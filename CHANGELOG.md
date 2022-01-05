@@ -1,3 +1,10 @@
+## [3.9.4](https://github.com/medic/cht-conf/compare/v3.9.3...v3.9.4) (2022-01-05)
+
+
+### Bug Fixes
+
+* **#460:** log useful error messages when api connection fails ([#461](https://github.com/medic/cht-conf/issues/461)) ([095a55c](https://github.com/medic/cht-conf/commit/095a55c9254c6872696cbee2fe42f244fc1fc4a8)), closes [#460](https://github.com/medic/cht-conf/issues/460) [#460](https://github.com/medic/cht-conf/issues/460)
+
 ## [3.9.3](https://github.com/medic/cht-conf/compare/v3.9.2...v3.9.3) (2021-12-16)
 
 
