@@ -14,8 +14,9 @@ const { uploadResources } = require('./upload-resources');
 
 const formXLSRegex = /^[a-zA-Z_]*\.xlsx$/;
 const formXMLRegex = /^[a-zA-Z_]*\.xml$/;
+const formMediaRegex = /^[a-zA-Z_]+(?:-media)$/;
 
-const debounceDelay = 150;
+const DEBOUNCE_DELAY = 150;
 
 function waitForSignal() {
     return new Promise((resolve) => {
@@ -29,7 +30,7 @@ let changeListenerWait = false;
 const changeListener = function (projectPath, api) {
     return async (_, fileName) => {
         if (changeListenerWait) return;
-        changeListenerWait = setTimeout(() => { changeListenerWait = false; }, debounceDelay);
+        changeListenerWait = setTimeout(() => { changeListenerWait = false; }, DEBOUNCE_DELAY);
 
         if (fileName === 'app_settings.json') {
             // ignore
@@ -50,7 +51,7 @@ let appFormListenerWait = false;
 const appFormListener = function (projectPath) {
     return async (_, fileName) => {
         if (appFormListenerWait) return;
-        appFormListenerWait = setTimeout(() => { appFormListenerWait = false; }, debounceDelay);
+        appFormListenerWait = setTimeout(() => { appFormListenerWait = false; }, DEBOUNCE_DELAY);
 
         if (fileName.match(formXLSRegex)) {
             await convertForms(projectPath, 'app', {
@@ -61,19 +62,36 @@ const appFormListener = function (projectPath) {
             await uploadForms(projectPath, 'app', {
                 forms: [fileName.split('.')[0]],
             });
+        } else if (fileName.match(formMediaRegex)) {
+            const absDirPath = path.join(projectPath, 'forms', 'app', fileName);
+            watchFormMediaDir(fileName, absDirPath, projectPath);
         } else {
-            if (!fileName.match(formXMLRegex)) {
-                warn('don\'t know what to do with', fileName);
-            }
+            warn('don\'t know what to do with', fileName);
         }
     };
 };
+
+const formMediaListener = function (form, projectPath) {
+    let debounce = false;
+    return async () => {
+        if (debounce) return;
+        debounce = setTimeout(() => { debounce = false; }, DEBOUNCE_DELAY);
+        await uploadForms(projectPath, 'app', {
+            forms: [form],
+        });
+    };
+};
+
+function watchFormMediaDir(dirName, absDirPath, projectPath) {
+    if (!fs.existsSync(absDirPath) || !fs.lstatSync(absDirPath).isDirectory()) return;
+    fs.watch(absDirPath, formMediaListener(dirName.split('-')[0], projectPath));
+}
 
 let contactFormListenerWait = false;
 const contactFormListener = function (projectPath) {
     return async (event, fileName) => {
         if (contactFormListenerWait) return;
-        contactFormListenerWait = setTimeout(() => { contactFormListenerWait = false; }, debounceDelay);
+        contactFormListenerWait = setTimeout(() => { contactFormListenerWait = false; }, DEBOUNCE_DELAY);
 
         if (fileName.match(formXLSRegex)) {
             await convertContactForm(projectPath, fileName.split('.')[0]);
@@ -102,6 +120,10 @@ const watchProject = async (projectPath, api, blockFn) => {
         process.exit(1);
     }
     fs.watch(appFormsPath, appFormListener(projectPath));
+    fs.readdirSync(appFormsPath).filter((fileName) => fileName.match(formMediaRegex)).forEach((fileName) => {
+        const absDirPath = path.join(appFormsPath, fileName);
+        watchFormMediaDir(fileName, absDirPath, projectPath);
+    });
     fs.watch(contactFormsPath, contactFormListener(projectPath));
     [
         projectPath,
