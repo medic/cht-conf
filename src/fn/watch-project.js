@@ -12,8 +12,8 @@ const { compileAppSettings } = require('./compile-app-settings');
 const { uploadCustomTranslations } = require('./upload-custom-translations');
 const { uploadResources } = require('./upload-resources');
 
-const formXLSRegex = /^[a-zA-Z_]*\.xlsx$/;
-const formXMLRegex = /^[a-zA-Z_]*\.xml$/;
+const formXLSRegex = /^[a-zA-Z_-]*\.xlsx$/;
+const formXMLRegex = /^[a-zA-Z_-]*\.xml$/;
 const formMediaRegex = /^[a-zA-Z_]+(?:-media)$/;
 
 const DEBOUNCE_DELAY = 150;
@@ -94,7 +94,7 @@ const contactFormListener = function (projectPath) {
         contactFormListenerWait = setTimeout(() => { contactFormListenerWait = false; }, DEBOUNCE_DELAY);
 
         if (fileName.match(formXLSRegex)) {
-            await convertContactForm(projectPath, fileName.split('.')[0]);
+            await convertContactForm(projectPath, [fileName.split('.')[0]]);
             await uploadForms(projectPath, 'contact', {
                 id_prefix: 'contact:',
                 forms: [fileName.split('.')[0]],
