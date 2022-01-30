@@ -1,3 +1,10 @@
+## [3.9.5](https://github.com/medic/cht-conf/compare/v3.9.4...v3.9.5) (2022-01-30)
+
+
+### Bug Fixes
+
+* **#458:** return non-zero code when exiting with failure ([516bff0](https://github.com/medic/cht-conf/commit/516bff0eabec2d3c13a16a994212280d77358c7e)), closes [#458](https://github.com/medic/cht-conf/issues/458)
+
 ## [3.9.4](https://github.com/medic/cht-conf/compare/v3.9.3...v3.9.4) (2022-01-05)
 
 
