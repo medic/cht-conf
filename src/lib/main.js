@@ -57,7 +57,7 @@ module.exports = async (argv, env) => {
 
   if(argv.length <= 2) {
     usage(0);
-    return -1;
+    return 1;
   }
 
   const cmdArgs = require('minimist')(argv.slice(2), {
@@ -94,7 +94,7 @@ module.exports = async (argv, env) => {
 
   if (cmdArgs.archive && !cmdArgs.destination) {
     error('--destination=<path to save files> is required with --archive.');
-    return -1;
+    return 1;
   }
 
   if (cmdArgs['accept-self-signed-certs']) {
@@ -131,7 +131,7 @@ module.exports = async (argv, env) => {
   const unsupported = actions.filter(a => !supportedActions.includes(a));
   if(unsupported.length) {
     error(`Unsupported action(s): ${unsupported.join(' ')}`);
-    return -1;
+    return 1;
   }
 
   if (cmdArgs['skip-git-check']) {
@@ -164,7 +164,7 @@ module.exports = async (argv, env) => {
     apiUrl = getApiUrl(cmdArgs, env);
     if (!apiUrl) {
       error('Failed to obtain a url to the API');
-      return -1;
+      return 1;
     }
   }
 
@@ -184,7 +184,7 @@ module.exports = async (argv, env) => {
   );
 
   if (apiUrl && !await api().available()) {
-    return false;
+    return 1;
   }
 
   const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
@@ -194,7 +194,7 @@ module.exports = async (argv, env) => {
         `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
     if(!userPrompt.keyInYN()) {
       error('User failed to confirm action.');
-      return false;
+      return 1;
     }
   }
 
@@ -218,6 +218,8 @@ module.exports = async (argv, env) => {
   if (actions.length > 1) {
     await info('All actions completed.');
   }
+
+  return 0;
 };
 
 // Exists for generic mocking purposes

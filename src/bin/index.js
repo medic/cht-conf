@@ -12,7 +12,7 @@ const main = require('../lib/main');
   }
   catch (e) {
     error(e);
-    returnCode = -1;
+    returnCode = 1;
   }
   finally {
     process.exit(returnCode);

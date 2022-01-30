@@ -18,7 +18,7 @@ module.exports = {
         warn('Changes untracked or to be committed:\n' + status);
         if (!userPrompt.keyInYN('Are you sure you want to continue?')) {
           error('User failed to confirm action.');
-          process.exit(-1);
+          process.exit(1);
         }
       }
       info('Fetching git upstream...');
@@ -27,7 +27,7 @@ module.exports = {
         warn(syncStatus);
         if (!userPrompt.keyInYN('Are you sure you want to continue?')) {
           error('User failed to confirm action.');
-          process.exit(-1);
+          process.exit(1);
         }
       }
     }
