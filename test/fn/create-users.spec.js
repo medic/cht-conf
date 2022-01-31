@@ -148,7 +148,6 @@ describe('create-users', () => {
 
   it('should not create user if no input when too many docs', () => {
     mockTestDir(`data/create-users/existing-place`);
-    sinon.stub(process, 'exit');
     api.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } } );
     const todd = {
       username: 'todd',
@@ -170,8 +169,10 @@ describe('create-users', () => {
     return assertDbEmpty()
       .then(() => /* when */ createUsers.execute())
       .then(() => {
+        assert.fail('Expected error to be thrown');
+      })
+      .catch(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
-        assert.equal(process.exit.callCount, 1);
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
         ]);
@@ -180,7 +181,6 @@ describe('create-users', () => {
 
   it('force should create users without interaction', () => {
     sinon.stub(environment, 'force').get(() => true);
-    sinon.stub(process, 'exit');
     mockTestDir(`data/create-users/existing-place`);
     api.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } },{ body: {} });
     const todd = {
@@ -203,7 +203,6 @@ describe('create-users', () => {
     return assertDbEmpty()
       .then(() => /* when */ createUsers.execute())
       .then(() => {
-        assert.equal(process.exit.callCount, 0);
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
           { method: 'POST', url: '/api/v1/users', body: todd },
@@ -276,7 +275,6 @@ describe('create-users', () => {
 
   it('should interrupt execution when user fails to confirm user', () => {
     mockTestDir(`data/create-users/multiple-existing-place`);
-    sinon.stub(process, 'exit');
     const pwd = 'Secret_1';
     api.giveResponses(
       { status: 400, body: { code: 400, error: 'not an offline role' } },
@@ -294,8 +292,10 @@ describe('create-users', () => {
     return assertDbEmpty()
       .then(() => createUsers.execute())
       .then(() => {
+        assert.fail('Expected exception to be thrown');
+      })
+      .catch(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
-        assert.equal(process.exit.callCount, 1);
         assert.deepEqual(api.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jack), body: {} },

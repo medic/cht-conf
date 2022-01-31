@@ -1,20 +1,24 @@
 #!/usr/bin/env node
 
 const { error } = require('../lib/log');
-require('../cli/check-node-version');
+const checkNodeVersion = require('../cli/check-node-version');
+
+try {
+  checkNodeVersion();
+} catch (e) {
+  error(e.message);
+  process.exitCode = 1;
+}
 
 const main = require('../lib/main');
-
 (async () => {
   let returnCode;
   try {
     returnCode = await main(process.argv, process.env);
-  }
-  catch (e) {
-    error(e);
+  } catch (e) {
+    error(e.message);
     returnCode = 1;
-  }
-  finally {
-    process.exit(returnCode);
+  } finally {
+    process.exitCode = returnCode;
   }
 })();

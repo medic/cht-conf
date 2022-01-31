@@ -8,7 +8,7 @@ const log = require('../lib/log');
 const pouch = require('../lib/db');
 const progressBar = require('../lib/progress-bar');
 
-const { info, trace, warn, error } = log;
+const { info, trace, warn } = log;
 
 const FILE_EXTENSION = '.doc.json';
 const INITIAL_BATCH_SIZE = 100;
@@ -34,9 +34,8 @@ const execute = async () => {
   }
 
   warn(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
-  if(!userPrompt.keyInYN()) {
-    error('User failed to confirm action.');
-    process.exit(1);
+  if (!userPrompt.keyInYN()) {
+    throw new Error('User aborted execution.');
   }
 
   const results = { ok:[], failed:{} };

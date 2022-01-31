@@ -219,7 +219,7 @@ describe('upload-custom-translations', () => {
           });
       });
 
-      it('should crash for malformed translation files', () => {
+      it('should error for malformed translation files', () => {
         mockTestDir(`with-customs`);
         return api.db
           .put({
@@ -483,51 +483,55 @@ describe('upload-custom-translations', () => {
 
   });
 
-  const invalidLanguageCodesTest = (skipTranslationCheck) => {
-    mockTestDir(`invalid-lang`);
-    sinon.stub(environment, 'skipTranslationCheck').get(() => skipTranslationCheck);
-    sinon.replace(log, 'error', sinon.fake());
-    sinon.replace(process, 'exit', sinon.fake());
-    return uploadCustomTranslations()
-      .then(() => {
-        assert(log.error.lastCall.calledWithMatch('The language code \'bad(code\' is not valid. It must begin with a letter(a–z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.'));
-        assert(process.exit.calledOnce);
-      });
-  };
+  describe('invalid language code', () => {
 
-  it('should crash for invalid language code', () => {
-    return invalidLanguageCodesTest(false);
+    const invalidLanguageCodesTest = (skipTranslationCheck) => {
+      mockTestDir(`invalid-lang`);
+      sinon.stub(environment, 'skipTranslationCheck').get(() => skipTranslationCheck);
+      return uploadCustomTranslations()
+        .then(() => {
+          assert.fail('Expected error to be thrown');
+        })
+        .catch(err => {
+          assert.equal(err.message, 'The language code \'bad(code\' is not valid. It must begin with a letter(a-z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.');
+        });
+    };
+  
+    it('should error for invalid language code', () => {
+      return invalidLanguageCodesTest(false);
+    });
+  
+    it('should crash for invalid language code even with --skip-translation-check passed', () => {
+      // Flag `--skip-translation-check` aborts translation content checks, not filename checks
+      return invalidLanguageCodesTest(true);
+    });
+
   });
 
-  it('should crash for invalid language code even with --skip-translation-check passed', () => {
-    // Flag `--skip-translation-check` aborts translation content checks, not filename checks
-    return invalidLanguageCodesTest(true);
-  });
-
-  it('upload translations containing invalid placeholders raise errors', () => {
+  it('invalid placeholders throws error', () => {
     mockTestDir('contains-placeholder-wrong');
-    sinon.replace(log, 'error', sinon.fake());
-    sinon.replace(process, 'exit', sinon.fake());
     return uploadCustomTranslations()
       .then(() => {
-        assert(log.error.lastCall.calledWithMatch(
-          '1 errors trying to compile translations\n' +
-          'You can use messages-ex.properties to add placeholders missing from the reference context.'));
-        assert(process.exit.calledOnce);
+        assert.fail('Expected error to be thrown');
+      })
+      .catch(err => {
+        assert.equal(
+          err.message,
+          'Found 1 errors trying to compile translations\n' +
+          'You can use messages-ex.properties to add placeholders missing from the reference context.'
+        );
       });
   });
 
-  it('upload translations containing invalid messageformat raises error logs and exit', () => {
+  it('invalid messageformat throws error', () => {
     mockTestDir('contains-messageformat-wrong');
-    sinon.replace(log, 'error', sinon.fake());
-    sinon.replace(process, 'exit', sinon.fake());
     return uploadCustomTranslations()
       .then(() => {
-        assert(log.error.calledTwice);
-        assert(log.error.firstCall.calledWithMatch(/Cannot compile 'en' translation n.month/));
-        assert(log.error.lastCall.calledWithMatch('1 errors trying to compile translations'));
-        assert(process.exit.calledOnce);
-        sinon.restore();
+        assert.fail('Expected error to be thrown');
+      })
+      .catch(err => {
+        assert.equal(err.message, 'Found 1 errors trying to compile translations');
       });
   });
+
 });

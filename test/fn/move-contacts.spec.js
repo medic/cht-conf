@@ -560,7 +560,6 @@ describe('move-contacts', () => {
       readline = { keyInYN: sinon.stub() };
       userPrompt.__set__('readline', readline);
       moveContacts.__set__('userPrompt', userPrompt);
-      sinon.stub(process, 'exit');
       sinon.stub(fs, 'exists').returns(true);
       sinon.stub(fs, 'recurseFiles').returns(Array(20));
       sinon.stub(fs, 'deleteFilesInFolder').returns(true);
@@ -572,9 +571,12 @@ describe('move-contacts', () => {
     it('does not delete files in directory when user presses n', () => {
       readline.keyInYN.returns(false);
       sinon.stub(environment, 'force').get(() => false);
-      prepareDocDir(docOnj);
-      assert.equal(fs.deleteFilesInFolder.callCount, 0);
-      assert.equal(process.exit.callCount, 1);
+      try {
+        prepareDocDir(docOnj);
+        assert.fail('Expected error to be thrown');
+      } catch(e) {
+        assert.equal(fs.deleteFilesInFolder.callCount, 0);
+      }
     });
 
     it('deletes files in directory when user presses y', () => {
@@ -582,14 +584,12 @@ describe('move-contacts', () => {
       sinon.stub(environment, 'force').get(() => false);
       prepareDocDir(docOnj);
       assert.equal(fs.deleteFilesInFolder.callCount, 1);
-      assert.equal(process.exit.callCount, 0);
     });
 
     it('deletes files in directory when force is set', () => {
       sinon.stub(environment, 'force').get(() => true);
       prepareDocDir(docOnj);
       assert.equal(fs.deleteFilesInFolder.callCount, 1);
-      assert.equal(process.exit.callCount, 0);
     });
   });
 

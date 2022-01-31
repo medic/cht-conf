@@ -4,7 +4,7 @@ const userPrompt = require('../../src/lib/user-prompt');
 const api = require('../lib/api');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
-const { info, warn, error } = require('../lib/log');
+const { info, warn } = require('../lib/log');
 
 const nestPrefixedProperties = (obj, name) => {
   const nested = {};
@@ -61,7 +61,7 @@ const getUserInfo = async (user) => {
 
 const execute = async () => {
   const csvPath = `${environment.pathToProject}/users.csv`;
-  if(!fs.exists(csvPath)) {
+  if (!fs.exists(csvPath)) {
     throw new Error(`User csv file not found at ${csvPath}`);
   }
 
@@ -76,11 +76,8 @@ const execute = async () => {
   if (warnings.length) {
     warnings.forEach(warning => warn(warning));
     warn('Are you sure you want to continue?');
-    if(!userPrompt.keyInYN()) {
-      error('User failed to confirm action.');
-      process.exit(1);
-      // stop execution in tests
-      return; // eslint-disable-line no-unreachable
+    if (!userPrompt.keyInYN()) {
+      throw new Error('User aborted execution.');
     }
   }
 

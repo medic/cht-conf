@@ -200,78 +200,60 @@ describe('api', () => {
 
     beforeEach(() => sinon.stub(environment, 'apiUrl').get(() => 'http://api/medic'));
 
-    it('should return true if no error found in request', async () => {
+    async function testAvailableError(response, expected) {
+      sinon.stub(environment, 'isArchiveMode').get(() => false);
+      sinon.stub(mockRequest, 'get').rejects(response);
+      await api().available()
+        .then(() => {
+          assert.fail('Expected error to be thrown');
+        })
+        .catch(err => {
+          expect(err.message).to.eq(expected);
+        });
+    }
+
+    it('should not throw if no error found in request', async () => {
       sinon.stub(environment, 'isArchiveMode').get(() => false);
       sinon.stub(mockRequest, 'get').resolves('okey dokey');
-      sinon.stub(log, 'error');
-      const isAvailable = await api().available();
-      expect(isAvailable).to.be.true;
-      expect(log.error.callCount).to.eq(0);
+      await api().available();
     });
 
-    it('should return false and provide an error if request fails to connect', async () => {
-      const error = {};
-      sinon.stub(environment, 'isArchiveMode').get(() => false);
-      sinon.stub(mockRequest, 'get').rejects(error);
-      sinon.stub(log, 'error');
-      const isAvailable = await api().available();
-      expect(isAvailable).to.be.false;
-      expect(log.error.callCount).to.eq(1);
-      expect(log.error.args[0][0]).to.eq(
+    it('should throw if request fails to connect', async () => {
+      await testAvailableError(
+        {},
         'Failed to get a response from http://api/medic/. Maybe you entered the wrong URL, ' +
         'wrong port or the instance is not started. Please check and try again.'
       );
     });
 
-    it('should return false and provide an error if request returns authentication error', async () => {
-      const error = { statusCode: 401 };
-      sinon.stub(environment, 'isArchiveMode').get(() => false);
-      sinon.stub(mockRequest, 'get').rejects(error);
-      sinon.stub(log, 'error');
-      const isAvailable = await api().available();
-      expect(isAvailable).to.be.false;
-      expect(log.error.callCount).to.eq(1);
-      expect(log.error.args[0][0]).to.eq(
+    it('should throw if request returns authentication error', async () => {
+      await testAvailableError(
+        { statusCode: 401 },
         'Authentication failed connecting to http://api/medic/. ' +
         'Check the supplied username and password and try again.'
       );
     });
 
-    it('should return false and provide an error if request returns permissions error', async () => {
-      const error = { statusCode: 403 };
-      sinon.stub(environment, 'isArchiveMode').get(() => false);
-      sinon.stub(mockRequest, 'get').rejects(error);
-      sinon.stub(log, 'error');
-      const isAvailable = await api().available();
-      expect(isAvailable).to.be.false;
-      expect(log.error.callCount).to.eq(1);
-      expect(log.error.args[0][0]).to.eq(
+    it('should throw if request returns permissions error', async () => {
+      await testAvailableError(
+        { statusCode: 403 },
         'Insufficient permissions connecting to http://api/medic/. ' +
         'You need to use admin permissions to execute this command.'
       );
     });
 
-    it('should return false and provide an error if request returns unknown error', async () => {
-      const error = { statusCode: 503 };
-      sinon.stub(environment, 'isArchiveMode').get(() => false);
-      sinon.stub(mockRequest, 'get').rejects(error);
-      sinon.stub(log, 'error');
-      const isAvailable = await api().available();
-      expect(isAvailable).to.be.false;
-      expect(log.error.callCount).to.eq(1);
-      expect(log.error.args[0][0]).to.eq(
+    it('should throw if request returns unknown error', async () => {
+      await testAvailableError(
+        { statusCode: 503 },
         'Received error code 503 connecting to http://api/medic/. ' +
         'Check the server and and try again.'
       );
     });
 
-    it('should return true if archive mode is enabled even when api is not available', async () => {
+    it('should return if archive mode is enabled even when api is not available', async () => {
       sinon.stub(environment, 'isArchiveMode').get(() => true);
       sinon.stub(mockRequest, 'get').rejects('Ups');
-      sinon.stub(log, 'error');
-      const isAvailable = await api().available();
-      expect(isAvailable).to.be.true;
-      expect(log.error.callCount).to.eq(0);
+      await api().available();
       expect(mockRequest.callCount).to.eq(0);   // api is not called
     });
   });
