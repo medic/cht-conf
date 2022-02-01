@@ -12,13 +12,10 @@ try {
 
 const main = require('../lib/main');
 (async () => {
-  let returnCode;
   try {
-    returnCode = await main(process.argv, process.env);
+    await main(process.argv, process.env);
   } catch (e) {
     error(e.message);
-    returnCode = 1;
-  } finally {
-    process.exitCode = returnCode;
+    process.exitCode = 1;
   }
 })();

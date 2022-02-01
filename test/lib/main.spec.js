@@ -1,6 +1,6 @@
 const rewire = require('rewire');
 const sinon = require('sinon');
-const { expect, assert } = require('chai');
+const { expect } = require('chai');
 
 const environment = rewire('../../src/lib/environment');
 const main = rewire('../../src/lib/main');
@@ -51,7 +51,7 @@ describe('main', () => {
   it('no argv yields usage', async () => {
     try {
       await main([], {});
-      assert.fail('Expected error to be thrown');
+      expect.fail('Expected error to be thrown');
     } catch(e) {
       expect(mocks.usage.calledOnce).to.be.true;
       expect(e.message).to.equal('Invalid number of arguments.');
@@ -61,7 +61,7 @@ describe('main', () => {
   it('default argv yields usage', async () => {
     try {
       await main([...normalArgv], {});
-      assert.fail('Expected error to be thrown');
+      expect.fail('Expected error to be thrown');
     } catch(e) {
       expect(mocks.usage.calledOnce).to.be.true;
       expect(e.message).to.equal('Invalid number of arguments.');
@@ -106,7 +106,7 @@ describe('main', () => {
     mocks.getApiUrl.returns();
     try {
       await main([...normalArgv, 'backup-all-forms'], {});
-      assert.fail('Expected error to be thrown');
+      expect.fail('Expected error to be thrown');
     } catch(e) {
       expect(mocks.executeAction.called).to.be.false;
       expect(e.message).to.equal('Failed to obtain a url to the API');
@@ -159,7 +159,7 @@ describe('main', () => {
   it('unsupported action', async () => {
     try {
       await main([...normalArgv, '--local', 'not-an-action'], {});
-      assert.fail('Expected error to be thrown');
+      expect.fail('Expected error to be thrown');
     } catch(e) {
       expect(mocks.executeAction.called).to.be.false;
       expect(e.message).to.equal('Unsupported action(s): not-an-action');
@@ -183,7 +183,7 @@ describe('main', () => {
     it('requires destination', async () => {
       try {
         await main([...normalArgv, '--archive', 'upload-app-settings'], {});
-        assert.fail('Expected error to be thrown');
+        expect.fail('Expected error to be thrown');
       } catch(e) {
         expect(mocks.executeAction.called).to.be.false;
         expect(e.message).to.equal('--destination=<path to save files> is required with --archive.');
@@ -203,7 +203,7 @@ describe('main', () => {
     userPrompt.keyInYN.returns(false);
     try {
       await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
-      assert.fail('Expected error to be thrown');
+      expect.fail('Expected error to be thrown');
     } catch(e) {
       expect(userPrompt.keyInYN.callCount).to.eq(1);
       expect(e.message).to.equal('User aborted execution.');
@@ -221,7 +221,7 @@ describe('main', () => {
     apiAvailable.throws(new Error('Failed to get a response'));
     try {
       await main([...normalArgv, 'upload-app-forms']);
-      assert.fail('Expected error to be thrown');
+      expect.fail('Expected error to be thrown');
     } catch(e) {
       expect(apiAvailable.callCount).to.eq(1);
       expect(e.message).to.equal('Failed to get a response');

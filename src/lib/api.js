@@ -100,17 +100,18 @@ const api = {
     } catch (err) {
       if (err.statusCode === 401) {
         throw new Error(`Authentication failed connecting to ${url}. `
-                  + 'Check the supplied username and password and try again.');
-      } else if (err.statusCode === 403) {
-        throw new Error(`Insufficient permissions connecting to ${url}. `
-                  + 'You need to use admin permissions to execute this command.');
-      } else if (err.statusCode) {
-        throw new Error(`Received error code ${err.statusCode} connecting to ${url}. `
-                  + 'Check the server and and try again.');
-      } else {
-        throw new Error(`Failed to get a response from ${url}. Maybe you entered the wrong URL, `
-                  + 'wrong port or the instance is not started. Please check and try again.');
+          + 'Check the supplied username and password and try again.');
       }
+      if (err.statusCode === 403) {
+        throw new Error(`Insufficient permissions connecting to ${url}. `
+          + 'You need to use admin permissions to execute this command.');
+      }
+      if (err.statusCode) {
+        throw new Error(`Received error code ${err.statusCode} connecting to ${url}. `
+          + 'Check the server and and try again.');
+      }
+      throw new Error(`Failed to get a response from ${url}. Maybe you entered the wrong URL, `
+        + 'wrong port or the instance is not started. Please check and try again.');
     }
   },
 

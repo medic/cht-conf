@@ -203,13 +203,12 @@ describe('api', () => {
     async function testAvailableError(response, expected) {
       sinon.stub(environment, 'isArchiveMode').get(() => false);
       sinon.stub(mockRequest, 'get').rejects(response);
-      await api().available()
-        .then(() => {
-          assert.fail('Expected error to be thrown');
-        })
-        .catch(err => {
-          expect(err.message).to.eq(expected);
-        });
+      try {
+        await api().available();
+        assert.fail('Expected error to be thrown');
+      } catch(e) {
+        expect(e.message).to.eq(expected);
+      }
     }
 
     it('should not throw if no error found in request', async () => {
