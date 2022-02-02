@@ -1,3 +1,10 @@
+# [3.10.0](https://github.com/medic/cht-conf/compare/v3.9.5...v3.10.0) (2022-02-02)
+
+
+### Features
+
+* **#431:** track form version ([9d0b8d7](https://github.com/medic/cht-conf/commit/9d0b8d7df2c04140b9e84cd044d5583695c4e1c0)), closes [#431](https://github.com/medic/cht-conf/issues/431)
+
 ## [3.9.5](https://github.com/medic/cht-conf/compare/v3.9.4...v3.9.5) (2022-01-30)
 
 
