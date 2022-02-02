@@ -1,6 +1,7 @@
 const argsFormFilter = require('./args-form-filter');
 const attachmentsFromDir = require('./attachments-from-dir');
 const attachmentFromFile = require('./attachment-from-file');
+const crypto = require('crypto');
 const fs = require('./sync-fs');
 const log = require('./log');
 const insertOrReplace = require('./insert-or-replace');
@@ -38,7 +39,13 @@ module.exports = async (projectDir, subDirectory, options) => {
       log.info(`No media directory found at ${mediaDir} for form ${xformPath}`);
     }
 
+    const hashSum = crypto.createHash('sha256');
     const xml = fs.read(xformPath);
+    hashSum.update(xml);
+    const xmlVersion = {
+      time: Date.now(),
+      sha256: hashSum.digest('hex'),
+    };
 
     const internalId = readIdFrom(xml);
     if(internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/cht-core/issues/3342.');
@@ -48,6 +55,7 @@ module.exports = async (projectDir, subDirectory, options) => {
       _id: docId,
       type: 'form',
       internalId: internalId,
+      xmlVersion: xmlVersion,
       title: readTitleFrom(xml),
       context: options.default_context,
     };

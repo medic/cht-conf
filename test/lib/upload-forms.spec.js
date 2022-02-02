@@ -35,6 +35,7 @@ describe('upload-forms', () => {
   it('should merge supported properties into form', async () => {
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'pathToProject').get(() => '.');
+    sinon.stub(Date, 'now').returns(123123);
     return uploadForms.__with__({ validateForms })(async () => {
       const logInfo = sinon.stub(log, 'info');
       const logWarn = sinon.stub(log, 'warn');
@@ -52,6 +53,8 @@ describe('upload-forms', () => {
       const form = await api.db.get('form:example');
       expect(form.type).to.equal('form');
       expect(form.internalId).to.equal('different');
+      expect(form.xmlVersion.time).to.equal(123123);
+      expect(form.xmlVersion.sha256).to.equal('7e3bb121779a8e9f707b6e1db4c1b52aa6e875b5015b41b0a9115efa2d0de1d1');
       expect(form.title).to.equal('Merge properties');
       expect(form.context).to.deep.equal({ person: true, place: false });
       expect(form.icon).to.equal('example');
