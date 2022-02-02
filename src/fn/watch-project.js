@@ -27,7 +27,7 @@ function waitForSignal() {
 }
 
 let changeListenerWait = false;
-const changeListener = function (projectPath, api) {
+const changeListener = function (projectPath, api, callback) {
     return async (_, fileName) => {
         if (changeListenerWait) return;
         changeListenerWait = setTimeout(() => { changeListenerWait = false; }, DEBOUNCE_DELAY);
@@ -41,6 +41,7 @@ const changeListener = function (projectPath, api) {
         } else if (fileName.match(/.*\.js$/) || fileName.match(/.*\.json$/)) {
             await compileAppSettings(projectPath);
             await uploadAppSettings(api, projectPath);
+            callback(fileName, true);
         } else {
             warn('main listen: don\'t know what to do with', fileName);
         }
@@ -112,7 +113,7 @@ function checkExists(dir) {
     return fs.existsSync(dir);
 }
 
-const watchProject = async (projectPath, api, blockFn) => {
+const watchProject = async (projectPath, api, blockFn, callback = {}) => {
     const appFormsPath = path.join(projectPath, 'forms', 'app');
     const contactFormsPath = path.join(projectPath, 'forms', 'contact');
     if (!checkExists(appFormsPath) || !checkExists(contactFormsPath)) {
@@ -135,7 +136,7 @@ const watchProject = async (projectPath, api, blockFn) => {
             error('make sure', path, 'exists. You can use initialise-project-layout for new projects to get the correct project layout');
             process.exit(1);
         }
-        fs.watch(path, changeListener(projectPath, api));
+        fs.watch(path, changeListener(projectPath, api, callback));
     });
     info('watching', projectPath, 'for changes');
     await blockFn();
