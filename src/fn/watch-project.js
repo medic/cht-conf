@@ -38,6 +38,7 @@ const changeListener = function (projectPath, api, callback) {
             await uploadResources(projectPath);
         } else if (fileName.match(/messages-[\w]*\.properties/)) {
             await uploadCustomTranslations(environment.apiUrl, projectPath, environment.skipTranslationCheck);
+            callback(fileName, true);
         } else if (fileName.match(/.*\.js$/) || fileName.match(/.*\.json$/)) {
             await compileAppSettings(projectPath);
             await uploadAppSettings(api, projectPath);
