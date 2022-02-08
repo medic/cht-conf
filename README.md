@@ -91,6 +91,8 @@ If a different username is required, add the `--user` switch:
 
 	cht --url=https://username:password@example.com:12345
 
+**NB** - When specifying the URL with `--url`, be sure not to specify the CouchDB database name in the URL. The CHT API will find the correct database.
+
 ### Into an archive to be uploaded later
 
     cht --archive
