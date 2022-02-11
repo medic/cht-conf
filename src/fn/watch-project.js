@@ -17,6 +17,7 @@ const formXMLRegex = /^[a-zA-Z_-]*\.xml$/;
 const formMediaRegex = /^[a-zA-Z_]+(?:-media)$/;
 
 const DEBOUNCE_DELAY = 150;
+const watchers = [];
 
 function waitForSignal() {
     return new Promise((resolve) => {
@@ -36,6 +37,7 @@ const changeListener = function (projectPath, api, callback) {
             // ignore
         } else if (fileName === 'resources.json' || fileName.match(/.*\.(png|svg)/)) {
             await uploadResources(projectPath);
+            callback(fileName, true);
         } else if (fileName.match(/messages-[\w]*\.properties/)) {
             await uploadCustomTranslations(environment.apiUrl, projectPath, environment.skipTranslationCheck);
             callback(fileName, true);
@@ -86,7 +88,7 @@ const formMediaListener = function (form, projectPath) {
 
 function watchFormMediaDir(dirName, absDirPath, projectPath) {
     if (!fs.existsSync(absDirPath) || !fs.lstatSync(absDirPath).isDirectory()) return;
-    fs.watch(absDirPath, formMediaListener(dirName.split('-')[0], projectPath));
+    return fs.watch(absDirPath, formMediaListener(dirName.split('-')[0], projectPath));
 }
 
 let contactFormListenerWait = false;
@@ -114,38 +116,45 @@ function checkExists(dir) {
     return fs.existsSync(dir);
 }
 
-const watchProject = async (projectPath, api, blockFn, callback = {}) => {
-    const appFormsPath = path.join(projectPath, 'forms', 'app');
-    const contactFormsPath = path.join(projectPath, 'forms', 'contact');
-    if (!checkExists(appFormsPath) || !checkExists(contactFormsPath)) {
-        error('make sure', projectPath, 'has a valid project layout. You can use initialise-project-layout for new projects to get the correct project layout');
-        process.exit(1);
-    }
-    fs.watch(appFormsPath, appFormListener(projectPath));
-    fs.readdirSync(appFormsPath).filter((fileName) => fileName.match(formMediaRegex)).forEach((fileName) => {
-        const absDirPath = path.join(appFormsPath, fileName);
-        watchFormMediaDir(fileName, absDirPath, projectPath);
-    });
-    fs.watch(contactFormsPath, contactFormListener(projectPath));
-    [
-        projectPath,
-        path.join(projectPath, 'app_settings'),
-        path.join(projectPath, 'resources'),
-        path.join(projectPath, 'translations'),
-    ].forEach((path) => {
-        if (!checkExists(path)) {
-            error('make sure', path, 'exists. You can use initialise-project-layout for new projects to get the correct project layout');
+const watchProject = {
+    watch: async (projectPath, api, blockFn, callback = {}) => {
+        const appFormsPath = path.join(projectPath, 'forms', 'app');
+        const contactFormsPath = path.join(projectPath, 'forms', 'contact');
+        if (!checkExists(appFormsPath) || !checkExists(contactFormsPath)) {
+            error('make sure', projectPath, 'has a valid project layout. You can use initialise-project-layout for new projects to get the correct project layout');
             process.exit(1);
         }
-        fs.watch(path, changeListener(projectPath, api, callback));
-    });
-    info('watching', projectPath, 'for changes');
-    await blockFn();
+        watchers.push(fs.watch(appFormsPath, appFormListener(projectPath)));
+        fs.readdirSync(appFormsPath).filter((fileName) => fileName.match(formMediaRegex)).forEach((fileName) => {
+            const absDirPath = path.join(appFormsPath, fileName);
+            watchers.push(watchFormMediaDir(fileName, absDirPath, projectPath));
+        });
+        watchers.push(fs.watch(contactFormsPath, contactFormListener(projectPath)));
+        [
+            projectPath,
+            path.join(projectPath, 'app_settings'),
+            path.join(projectPath, 'resources'),
+            path.join(projectPath, 'translations'),
+        ].forEach((path) => {
+            if (!checkExists(path)) {
+                error('make sure', path, 'exists. You can use initialise-project-layout for new projects to get the correct project layout');
+                process.exit(1);
+            }
+            watchers.push(fs.watch(path, changeListener(projectPath, api, callback)));
+        });
+        info('watching', projectPath, 'for changes');
+        await blockFn();
+    },
+    closeWatchers: () => {
+        watchers.forEach(watcher => {
+            watcher.close();
+        });
+    }
 };
 
 const api = require('../lib/api');
 module.exports = {
     watchProject,
     requiresInstance: true,
-    execute: () => watchProject(environment.pathToProject, api(), waitForSignal)
+    execute: () => watchProject.watch(environment.pathToProject, api(), waitForSignal)
 };
