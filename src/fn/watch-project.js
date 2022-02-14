@@ -16,6 +16,7 @@ const formXLSRegex = /^[a-zA-Z_-]*\.xlsx$/;
 const formPropertiesRegex = /^[a-zA-Z_-]*\.properties.json$/;
 const formXMLRegex = /^[a-zA-Z_-]*\.xml$/;
 const formMediaRegex = /^[a-zA-Z_]+(?:-media)$/;
+const DEBOUNCE_DELAY = 10;
 const watchers = [];
 
 function waitForSignal() {
@@ -49,11 +50,13 @@ const changeListener = function (projectPath, api, callback) {
     };
 };
 
-const appFormListener = function (projectPath) {
+let appFormWait = false;
+const appFormListener = function (projectPath, callback) {
     return async (event, fileName) => {
-        if (event !== 'change') {
+        if (event !== 'change' || appFormWait) {
             return;
         }
+        appFormWait = setTimeout(() => { appFormWait = false; }, DEBOUNCE_DELAY);
         if (fileName.match(formXLSRegex) || fileName.match(formPropertiesRegex)) {
             await convertForms(projectPath, 'app', {
                 enketo: true,
@@ -63,6 +66,7 @@ const appFormListener = function (projectPath) {
             await uploadForms(projectPath, 'app', {
                 forms: [fileName.split('.')[0]],
             });
+            callback(fileName, true);
         } else if (fileName.match(formMediaRegex)) {
             const absDirPath = path.join(projectPath, 'forms', 'app', fileName);
             watchFormMediaDir(fileName, absDirPath, projectPath);
@@ -85,11 +89,13 @@ function watchFormMediaDir(dirName, absDirPath, projectPath) {
     return fs.watch(absDirPath, formMediaListener(dirName.split('-')[0], projectPath));
 }
 
-const contactFormListener = function (projectPath) {
+let contactFormWait = false;
+const contactFormListener = function (projectPath, callback) {
     return async (event, fileName) => {
-        if (event !== 'change') {
+        if (event !== 'change' || contactFormWait) {
             return;
         }
+        contactFormWait = setTimeout(() => { contactFormWait = false; }, DEBOUNCE_DELAY);
         if (fileName.match(formXLSRegex)) {
             await convertContactForm(projectPath, [fileName.split('.')[0]]);
             await uploadForms(projectPath, 'contact', {
@@ -97,6 +103,7 @@ const contactFormListener = function (projectPath) {
                 forms: [fileName.split('.')[0]],
                 default_context: { person: false, place: false },
             });
+            callback(fileName, true);
         } else {
             if (!fileName.match(formXMLRegex)) {
                 warn('don\'t know what to do with', fileName);
@@ -117,12 +124,12 @@ const watchProject = {
             error('make sure', projectPath, 'has a valid project layout. You can use initialise-project-layout for new projects to get the correct project layout');
             process.exit(1);
         }
-        watchers.push(fs.watch(appFormsPath, appFormListener(projectPath)));
+        watchers.push(fs.watch(appFormsPath, appFormListener(projectPath, callback)));
         fs.readdirSync(appFormsPath).filter((fileName) => fileName.match(formMediaRegex)).forEach((fileName) => {
             const absDirPath = path.join(appFormsPath, fileName);
             watchers.push(watchFormMediaDir(fileName, absDirPath, projectPath));
         });
-        watchers.push(fs.watch(contactFormsPath, contactFormListener(projectPath)));
+        watchers.push(fs.watch(contactFormsPath, contactFormListener(projectPath, callback)));
         [
             projectPath,
             path.join(projectPath, 'app_settings'),

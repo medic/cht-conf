@@ -47,6 +47,40 @@ function editResources() {
   });
 }
 
+function editAppFormProperties() {
+  return new Promise((resolve) => {
+    const propsPath = path.join(testDir, 'forms', 'app', 'death.properties.json');
+    const formProperties = fs.readJson(propsPath);
+    formProperties.title = 'DEATH';
+    fs.writeJson(propsPath, formProperties);
+    resolve();
+  });
+}
+
+function copyAppForm(withProperties = false) {
+  return new Promise((resolve) => {
+    fs.fs.copyFileSync(path.join(testDir, 'sample-forms', 'app', 'death.xlsx'),
+      path.join(testDir, 'forms', 'app', 'death.xlsx'));
+    if (withProperties) {
+      fs.fs.copyFileSync(path.join(testDir, 'sample-forms', 'app', 'death.properties.json'),
+        path.join(testDir, 'forms', 'app', 'death.properties.json'));
+    }
+    resolve();
+  });
+}
+
+function copyAppFormProperties() {
+  return copyAppForm(true);
+}
+
+function copyContactForm() {
+  return new Promise((resolve) => {
+    fs.fs.copyFileSync(path.join(testDir, 'sample-forms', 'contact', 'household-create.xlsx'),
+      path.join(testDir, 'forms', 'contact', 'household-create.xlsx'));
+    resolve();
+  });
+}
+
 function watchWrapper(action, file) {
   return new Promise((resolve, reject) => {
     watchProject.watch(testDir, mockApi, action, async (path,) => {
@@ -98,6 +132,48 @@ describe('watch-project', function () {
       .then(() => api.db.allDocs())
       .then(docs => {
         expect(docs.rows.filter(row => row.id === 'resources')).to.not.be.empty;
+      });
+  });
+
+it('watch-project: upload app forms', () => {
+    api.giveResponses({ status: 200, body: { ok: true } });
+    return watchWrapper(copyAppForm, 'death.xlsx')
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        expect(docs.rows.filter(row => row.id === 'form:death')).to.not.be.empty;
+      })
+      .then(() => {
+        const appFormPath = path.join(testDir, 'forms', 'app');
+        fs.fs.readdirSync(appFormPath).forEach(file => fs.fs.rmSync(path.join(appFormPath, file)));
+      });
+  });  
+
+  it('watch-project: upload app form on properties change', () => {
+    api.giveResponses({ status: 200, body: { ok: true } });
+    return copyAppFormProperties()
+      .then(() => {
+        return watchWrapper(editAppFormProperties, 'death.properties.json');
+      })
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        expect(docs.rows.filter(row => row.id === 'form:death')).to.not.be.empty;
+      })
+      .then(() => {
+        const appFormPath = path.join(testDir, 'forms', 'app');
+        fs.fs.readdirSync(appFormPath).forEach(file => fs.fs.rmSync(path.join(appFormPath, file)));
+      });
+  });
+
+  it('watch-project: upload contact forms', () => {
+    api.giveResponses({ status: 200, body: { ok: true } });
+    return watchWrapper(copyContactForm, 'household-create.xlsx')
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        expect(docs.rows.filter(row => row.id === 'form:contact:household:create')).to.not.be.empty;
+      })
+      .then(() => {
+        const appFormPath = path.join(testDir, 'forms', 'contact');
+        fs.fs.readdirSync(appFormPath).forEach(file => fs.fs.rmSync(path.join(appFormPath, file)));
       });
   });
 
