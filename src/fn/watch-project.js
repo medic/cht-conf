@@ -15,8 +15,6 @@ const { uploadResources } = require('./upload-resources');
 const formXLSRegex = /^[a-zA-Z_-]*\.xlsx$/;
 const formXMLRegex = /^[a-zA-Z_-]*\.xml$/;
 const formMediaRegex = /^[a-zA-Z_]+(?:-media)$/;
-
-const DEBOUNCE_DELAY = 150;
 const watchers = [];
 
 function waitForSignal() {
@@ -27,12 +25,8 @@ function waitForSignal() {
     });
 }
 
-let changeListenerWait = false;
 const changeListener = function (projectPath, api, callback) {
     return async (_, fileName) => {
-        if (changeListenerWait) return;
-        changeListenerWait = setTimeout(() => { changeListenerWait = false; }, DEBOUNCE_DELAY);
-
         if (fileName === 'app_settings.json') {
             // ignore
         } else if (fileName === 'resources.json' || fileName.match(/.*\.(png|svg)/)) {
@@ -51,12 +45,8 @@ const changeListener = function (projectPath, api, callback) {
     };
 };
 
-let appFormListenerWait = false;
 const appFormListener = function (projectPath) {
     return async (_, fileName) => {
-        if (appFormListenerWait) return;
-        appFormListenerWait = setTimeout(() => { appFormListenerWait = false; }, DEBOUNCE_DELAY);
-
         if (fileName.match(formXLSRegex)) {
             await convertForms(projectPath, 'app', {
                 enketo: true,
@@ -76,10 +66,7 @@ const appFormListener = function (projectPath) {
 };
 
 const formMediaListener = function (form, projectPath) {
-    let debounce = false;
     return async () => {
-        if (debounce) return;
-        debounce = setTimeout(() => { debounce = false; }, DEBOUNCE_DELAY);
         await uploadForms(projectPath, 'app', {
             forms: [form],
         });
@@ -91,12 +78,8 @@ function watchFormMediaDir(dirName, absDirPath, projectPath) {
     return fs.watch(absDirPath, formMediaListener(dirName.split('-')[0], projectPath));
 }
 
-let contactFormListenerWait = false;
 const contactFormListener = function (projectPath) {
     return async (event, fileName) => {
-        if (contactFormListenerWait) return;
-        contactFormListenerWait = setTimeout(() => { contactFormListenerWait = false; }, DEBOUNCE_DELAY);
-
         if (fileName.match(formXLSRegex)) {
             await convertContactForm(projectPath, [fileName.split('.')[0]]);
             await uploadForms(projectPath, 'contact', {

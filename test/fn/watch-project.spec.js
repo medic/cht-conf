@@ -11,6 +11,7 @@ const { getTranslationDoc, expectTranslationDocs } = require('./utils');
 const testDir = path.join(__dirname, '../data/skeleton');
 const settingsPath = path.join(testDir, 'app_settings', 'base_settings.json');
 const sampleTranslationPath = path.join(testDir, 'translations', 'messages-en.properties');
+const resourceJsonPath = path.join(testDir, 'resources.json');
 const appSettings = fs.readJson(settingsPath);
 
 const mockApi = {
@@ -39,9 +40,16 @@ function editTranslations() {
   });
 }
 
+function editResources() {
+  return new Promise((resolve) => {
+    fs.writeJson(resourceJsonPath, { 'icon': 'test.png' });
+    resolve();
+  });
+}
+
 function watchWrapper(action, file) {
   return new Promise((resolve, reject) => {
-    watchProject(testDir, mockApi, action, async (path,) => {
+    watchProject.watch(testDir, mockApi, action, async (path,) => {
       if (path !== file) {
         reject();
       } else {
@@ -60,10 +68,11 @@ describe('watch-project', function () {
     sinon.stub(environment, 'force').get(() => false);
     return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } }).then(() => api.start());
   });
-  
+
   afterEach(() => {
     sinon.restore();
     fs.writeJson(settingsPath, appSettings);
+    watchProject.closeWatchers();
     return api.stop();
   });
 
@@ -80,7 +89,15 @@ describe('watch-project', function () {
       .then(watchWrapper(editTranslations, 'messages-en.properties'))
       .then(() => getTranslationDoc(api, 'en'))
       .then(messages => {
-        assert.deepEqual(messages.custom, { a:'first', test:'new'});
+        assert.deepEqual(messages.custom, { a: 'first', test: 'new' });
+      });
+  });
+
+  it('watch-project: upload resources', () => {
+    return watchWrapper(editResources, 'resources.json')
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        expect(docs.rows.filter(row => row.id === 'resources')).to.not.be.empty;
       });
   });
 
