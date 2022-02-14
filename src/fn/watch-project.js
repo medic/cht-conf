@@ -13,6 +13,7 @@ const { uploadCustomTranslations } = require('./upload-custom-translations');
 const { uploadResources } = require('./upload-resources');
 
 const formXLSRegex = /^[a-zA-Z_-]*\.xlsx$/;
+const formPropertiesRegex = /^[a-zA-Z_-]*\.properties.json$/;
 const formXMLRegex = /^[a-zA-Z_-]*\.xml$/;
 const formMediaRegex = /^[a-zA-Z_]+(?:-media)$/;
 const watchers = [];
@@ -26,7 +27,10 @@ function waitForSignal() {
 }
 
 const changeListener = function (projectPath, api, callback) {
-    return async (_, fileName) => {
+    return async (event, fileName) => {
+        if (event !== 'change') {
+            return;
+        }
         if (fileName === 'app_settings.json') {
             // ignore
         } else if (fileName === 'resources.json' || fileName.match(/.*\.(png|svg)/)) {
@@ -46,8 +50,11 @@ const changeListener = function (projectPath, api, callback) {
 };
 
 const appFormListener = function (projectPath) {
-    return async (_, fileName) => {
-        if (fileName.match(formXLSRegex)) {
+    return async (event, fileName) => {
+        if (event !== 'change') {
+            return;
+        }
+        if (fileName.match(formXLSRegex) || fileName.match(formPropertiesRegex)) {
             await convertForms(projectPath, 'app', {
                 enketo: true,
                 forms: [fileName.split('.')[0]],
@@ -80,6 +87,9 @@ function watchFormMediaDir(dirName, absDirPath, projectPath) {
 
 const contactFormListener = function (projectPath) {
     return async (event, fileName) => {
+        if (event !== 'change') {
+            return;
+        }
         if (fileName.match(formXLSRegex)) {
             await convertContactForm(projectPath, [fileName.split('.')[0]]);
             await uploadForms(projectPath, 'contact', {
