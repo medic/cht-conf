@@ -121,7 +121,6 @@ const watchProject = {
         const appFormsPath = path.join(projectPath, 'forms', 'app');
         const contactFormsPath = path.join(projectPath, 'forms', 'contact');
         if (!checkExists(appFormsPath) || !checkExists(contactFormsPath)) {
-            error(appFormsPath, checkExists(appFormsPath), contactFormsPath, checkExists(contactFormsPath));
             error('make sure', projectPath, 'has a valid project layout. You can use initialise-project-layout for new projects to get the correct project layout');
             process.exit(1);
         }
