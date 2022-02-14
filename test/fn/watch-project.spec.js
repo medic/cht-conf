@@ -144,7 +144,7 @@ it('watch-project: upload app forms', () => {
       })
       .then(() => {
         const appFormPath = path.join(testDir, 'forms', 'app');
-        fs.fs.readdirSync(appFormPath).forEach(file => fs.fs.rmSync(path.join(appFormPath, file)));
+        fs.fs.readdirSync(appFormPath).filter(name => !name.startsWith('.')).forEach(file => fs.fs.unlinkSync(path.join(appFormPath, file)));
       });
   });  
 
@@ -160,7 +160,7 @@ it('watch-project: upload app forms', () => {
       })
       .then(() => {
         const appFormPath = path.join(testDir, 'forms', 'app');
-        fs.fs.readdirSync(appFormPath).forEach(file => fs.fs.rmSync(path.join(appFormPath, file)));
+        fs.fs.readdirSync(appFormPath).filter(name => !name.startsWith('.')).forEach(file => fs.fs.unlinkSync(path.join(appFormPath, file)));
       });
   });
 
@@ -173,7 +173,7 @@ it('watch-project: upload app forms', () => {
       })
       .then(() => {
         const appFormPath = path.join(testDir, 'forms', 'contact');
-        fs.fs.readdirSync(appFormPath).forEach(file => fs.fs.rmSync(path.join(appFormPath, file)));
+        fs.fs.readdirSync(appFormPath).filter(name => !name.startsWith('.')).forEach(file => fs.fs.unlinkSync(path.join(appFormPath, file)));
       });
   });
 
