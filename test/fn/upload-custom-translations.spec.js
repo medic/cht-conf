@@ -5,7 +5,7 @@ const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
 const log = require('../../src/lib/log');
 const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
-const { getTranslationDoc,api,  expectTranslationDocs api, } = require('./utils');
+const { getTranslationDoc,  expectTranslationDocs } = require('./utils');
 
 describe('upload-custom-translations', () => {
 
