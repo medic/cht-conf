@@ -12,10 +12,10 @@ const { compileAppSettings } = require('./compile-app-settings');
 const { uploadCustomTranslations } = require('./upload-custom-translations');
 const { uploadResources } = require('./upload-resources');
 
-const formXLSRegex = /^[a-zA-Z_-]*\.xlsx$/;
-const formPropertiesRegex = /^[a-zA-Z_-]*\.properties.json$/;
-const formXMLRegex = /^[a-zA-Z_-]*\.xml$/;
-const formMediaRegex = /^[a-zA-Z_]+(?:-media)$/;
+const formXLSRegex = /^[a-zA-Z0-9_-]*\.xlsx$/;
+const formPropertiesRegex = /^[a-zA-Z0-9_-]*\.properties.json$/;
+const formXMLRegex = /^[a-zA-Z0-9_-]*\.xml$/;
+const formMediaRegex = /^[a-zA-Z0-9_]+(?:-media)$/;
 const DEBOUNCE_DELAY = 10;
 const watchers = [];
 
