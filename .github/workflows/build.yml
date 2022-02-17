@@ -5,11 +5,11 @@ on: [push, pull_request]
 jobs:
   build:
     name: Build for Node version ${{ matrix.node-version }}
-    runs-on: macos-latest #ubuntu-18.04
+    runs-on: macos-11 #ubuntu-18.04
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [8.x, 10.x, 12.x, 14.x, 16.x]
 
     steps:
     - uses: actions/checkout@v2
