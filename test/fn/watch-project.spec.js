@@ -57,36 +57,17 @@ function editAppFormProperties() {
   });
 }
 
-function copyAppForm(withProperties = false) {
-  return new Promise((resolve) => {
-    fs.fs.copyFileSync(path.join(testDir, 'sample-forms', 'app', 'death.xlsx'),
-      path.join(testDir, 'forms', 'app', 'death.xlsx'));
-    if (withProperties) {
-      fs.fs.copyFileSync(path.join(testDir, 'sample-forms', 'app', 'death.properties.json'),
-        path.join(testDir, 'forms', 'app', 'death.properties.json'));
-    }
-    resolve();
-  });
-}
-
-function copyAppFormProperties() {
-  return copyAppForm(true);
-}
-
-function copyContactForm() {
-  return new Promise((resolve) => {
-    fs.fs.copyFileSync(path.join(testDir, 'sample-forms', 'contact', 'household-create.xlsx'),
-      path.join(testDir, 'forms', 'contact', 'household-create.xlsx'));
-    resolve();
+function copySampleForms(sampleDir, destination =  path.join('forms', 'app')) {
+  const absSampleDir = path.join(testDir, 'sample-forms', sampleDir);
+  fs.fs.readdirSync(absSampleDir).forEach(file => {
+    fs.fs.copyFileSync(path.join(absSampleDir, file), path.join(testDir, destination, file));
   });
 }
 
 function watchWrapper(action, file) {
-  return new Promise((resolve, reject) => {
-    watchProject.watch(testDir, mockApi, action, async (path,) => {
-      if (path !== file) {
-        reject();
-      } else {
+  return new Promise((resolve,) => {
+    watchProject.watch(testDir, mockApi, action, async (path) => {
+      if (path === file) {
         resolve();
       }
     });
@@ -106,67 +87,89 @@ describe('watch-project', function () {
   afterEach(() => {
     sinon.restore();
     fs.writeJson(settingsPath, appSettings);
-    watchProject.closeWatchers();
+    watchProject.close();
     return api.stop();
   });
 
-  it('watch-project: upload app settings', () => {
-    return watchWrapper(editSettings, 'base_settings.json')
-      .then(mockApi.getAppSettings)
-      .then((settings) => { return JSON.parse(settings.content); })
-      .then((settings) => expect(settings.locale).equal('es'));
-  });
+    it('watch-project: upload app settings', () => {
+      return watchWrapper(editSettings, 'base_settings.json')
+        .then(mockApi.getAppSettings)
+        .then((settings) => { return JSON.parse(settings.content); })
+        .then((settings) => expect(settings.locale).equal('es'));
+    });
 
-  it('watch-project: upload custom translations', () => {
-    return uploadCustomTranslations()
-      .then(() => expectTranslationDocs(api, 'en'))
-      .then(watchWrapper(editTranslations, 'messages-en.properties'))
-      .then(() => getTranslationDoc(api, 'en'))
-      .then(messages => {
-        assert.deepEqual(messages.custom, { a: 'first', test: 'new' });
+    it('watch-project: upload custom translations', () => {
+      return uploadCustomTranslations()
+        .then(() => expectTranslationDocs(api, 'en'))
+        .then(watchWrapper(editTranslations, 'messages-en.properties'))
+        .then(() => getTranslationDoc(api, 'en'))
+        .then(messages => {
+          assert.deepEqual(messages.custom, { a: 'first', test: 'new' });
+        });
+    });
+
+    it('watch-project: upload resources', () => {
+      return watchWrapper(editResources, 'resources.json')
+        .then(() => api.db.allDocs())
+        .then(docs => {
+          expect(docs.rows.filter(row => row.id === 'resources')).to.not.be.empty;
+        });
+    });
+
+    it('watch-project: convert app forms', () => {
+      const appFormPath = path.join(testDir, 'forms', 'app');
+      const copyForm = () => copySampleForms('convert-app-form');
+      return watchWrapper(copyForm, 'death.xlsx')
+        .then(() => {
+          expect(fs.fs.readdirSync(appFormPath).find(file => file === 'death.xml')).to.be.not.undefined;
+        })
+        .then(() => {
+          fs.fs.readdirSync(appFormPath).filter(name => name.startsWith('death')).forEach(file => fs.fs.unlinkSync(path.join(appFormPath, file)));
+        });
+    });  
+
+  it('watch-project: upload app forms', () => {
+    const copySampleForm = () => {
+      return new Promise((resolve) => {
+        copySampleForms('upload-app-form');
+        resolve();
       });
-  });
-
-  it('watch-project: upload resources', () => {
-    return watchWrapper(editResources, 'resources.json')
-      .then(() => api.db.allDocs())
-      .then(docs => {
-        expect(docs.rows.filter(row => row.id === 'resources')).to.not.be.empty;
-      });
-  });
-
-it('watch-project: upload app forms', () => {
+    };
     api.giveResponses({ status: 200, body: { ok: true } });
-    return watchWrapper(copyAppForm, 'death.xlsx')
+    return watchWrapper(copySampleForm, 'death.xml')
       .then(() => api.db.allDocs())
       .then(docs => {
         expect(docs.rows.filter(row => row.id === 'form:death')).to.not.be.empty;
       })
       .then(() => {
         const appFormPath = path.join(testDir, 'forms', 'app');
-        fs.fs.readdirSync(appFormPath).filter(name => !name.startsWith('.')).forEach(file => fs.fs.unlinkSync(path.join(appFormPath, file)));
+        fs.fs.readdirSync(appFormPath).filter(name => name.startsWith('death')).forEach(file => fs.fs.unlinkSync(path.join(appFormPath, file)));
       });
-  });  
+  });
 
   it('watch-project: upload app form on properties change', () => {
+    copySampleForms('upload-properties');
     api.giveResponses({ status: 200, body: { ok: true } });
-    return copyAppFormProperties()
-      .then(() => {
-        return watchWrapper(editAppFormProperties, 'death.properties.json');
-      })
+    return watchWrapper(editAppFormProperties, 'death.properties.json')
       .then(() => api.db.allDocs())
       .then(docs => {
         expect(docs.rows.filter(row => row.id === 'form:death')).to.not.be.empty;
       })
       .then(() => {
         const appFormPath = path.join(testDir, 'forms', 'app');
-        fs.fs.readdirSync(appFormPath).filter(name => !name.startsWith('.')).forEach(file => fs.fs.unlinkSync(path.join(appFormPath, file)));
+        fs.fs.readdirSync(appFormPath).filter(name => name.startsWith('death')).forEach(file => fs.fs.unlinkSync(path.join(appFormPath, file)));
       });
   });
 
   it('watch-project: upload contact forms', () => {
+    const copyContactForm = () => {
+      return new Promise((resolve) => {
+        copySampleForms('contact', path.join('forms', 'contact'));
+        resolve();
+      });
+    };
     api.giveResponses({ status: 200, body: { ok: true } });
-    return watchWrapper(copyContactForm, 'household-create.xlsx')
+    return watchWrapper(copyContactForm, 'household-create.xml')
       .then(() => api.db.allDocs())
       .then(docs => {
         expect(docs.rows.filter(row => row.id === 'form:contact:household:create')).to.not.be.empty;

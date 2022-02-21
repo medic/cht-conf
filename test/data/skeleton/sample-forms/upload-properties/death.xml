@@ -1,0 +1,198 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Death Report</h:title>
+    <model>
+      <instance>
+        <death delimiter="#" id="death" prefix="J1!death!" version="2020-08-13 18:44:15">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <name/>
+              <date_of_birth/>
+              <sex/>
+              <parent>
+                <parent>
+                  <contact>
+                    <_id/>
+                    <name/>
+                    <phone/>
+                  </contact>
+                </parent>
+              </parent>
+            </contact>
+          </inputs>
+          <patient_age_in_years>0</patient_age_in_years>
+          <patient_age_in_months>0</patient_age_in_months>
+          <patient_age_in_days/>
+          <patient_age_display/>
+          <patient_id/>
+          <patient_name/>
+          <patient_sex/>
+          <chw_name/>
+          <chw_phone/>
+          <needs_signoff/>
+          <group_death>
+            <date_of_death/>
+            <date_of_death_display/>
+            <place_of_death/>
+            <place_of_death_other/>
+            <place_of_death_display/>
+            <other_info/>
+          </group_death>
+          <group_summary>
+            <submit/>
+            <r_summary/>
+            <r_patient_info/>
+            <r_death_info/>
+            <r_death_date/>
+            <r_death_place/>
+            <r_await_confirmation/>
+            <r_instruction/>
+            <r_switch/>
+            <r_followup/>
+            <r_no_follow_up/>
+          </group_summary>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </death>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/death/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/death/inputs/source" type="string"/>
+      <bind nodeset="/death/inputs/source_id" type="string"/>
+      <bind nodeset="/death/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/death/inputs/contact/name" type="string"/>
+      <bind nodeset="/death/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/death/inputs/contact/sex" type="string"/>
+      <bind nodeset="/death/inputs/contact/parent/parent/contact/_id" type="string"/>
+      <bind nodeset="/death/inputs/contact/parent/parent/contact/name" type="string"/>
+      <bind nodeset="/death/inputs/contact/parent/parent/contact/phone" type="string"/>
+      <bind calculate="floor( difference-in-months(  /death/inputs/contact/date_of_birth , today() ) div 12 )" nodeset="/death/patient_age_in_years" type="string"/>
+      <bind calculate="difference-in-months(  /death/inputs/contact/date_of_birth , today() )" nodeset="/death/patient_age_in_months" type="string"/>
+      <bind calculate="floor( decimal-date-time(today()) - decimal-date-time( /death/inputs/contact/date_of_birth ) )" nodeset="/death/patient_age_in_days" type="string"/>
+      <bind calculate="concat(
+ concat( /death/patient_age_in_years , if( /death/patient_age_in_years =1,' year and ',' years and ')),
+ concat( /death/patient_age_in_months  mod 12, if(( /death/patient_age_in_months  mod 12)=1,' month old',' months old'))
+)" nodeset="/death/patient_age_display" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/death/patient_id" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/name" nodeset="/death/patient_name" type="string"/>
+      <bind calculate="../inputs/contact/sex" nodeset="/death/patient_sex" type="string"/>
+      <bind calculate="../inputs/contact/parent/parent/contact/name" nodeset="/death/chw_name" type="string"/>
+      <bind calculate="../inputs/contact/parent/parent/contact/phone" nodeset="/death/chw_phone" type="string"/>
+      <bind calculate="true()" nodeset="/death/needs_signoff" type="string"/>
+      <bind constraint=". &lt;= today()" jr:constraintMsg="The date of death cannot be in the future" nodeset="/death/group_death/date_of_death" required="true()" type="date"/>
+      <bind calculate="format-date( /death/group_death/date_of_death ,&quot;%b %e, %Y&quot;)" nodeset="/death/group_death/date_of_death_display" type="string"/>
+      <bind nodeset="/death/group_death/place_of_death" required="true()" type="select1"/>
+      <bind nodeset="/death/group_death/place_of_death_other" relevant=" /death/group_death/place_of_death  = 'other'" type="string"/>
+      <bind calculate="jr:choice-name( /death/group_death/place_of_death , ' /death/group_death/place_of_death ')" nodeset="/death/group_death/place_of_death_display" type="string"/>
+      <bind nodeset="/death/group_death/other_info" type="string"/>
+      <bind nodeset="/death/group_summary/submit" readonly="true()" type="string"/>
+      <bind nodeset="/death/group_summary/r_summary" readonly="true()" type="string"/>
+      <bind nodeset="/death/group_summary/r_patient_info" readonly="true()" type="string"/>
+      <bind nodeset="/death/group_summary/r_death_info" readonly="true()" type="string"/>
+      <bind nodeset="/death/group_summary/r_death_date" readonly="true()" type="string"/>
+      <bind nodeset="/death/group_summary/r_death_place" readonly="true()" type="string"/>
+      <bind nodeset="/death/group_summary/r_await_confirmation" readonly="true()" type="string"/>
+      <bind nodeset="/death/group_summary/r_instruction" readonly="true()" type="string"/>
+      <bind nodeset="/death/group_summary/r_switch" readonly="true()" type="string"/>
+      <bind nodeset="/death/group_summary/r_followup" readonly="true()" type="string"/>
+      <bind nodeset="/death/group_summary/r_no_follow_up" readonly="true()" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/death/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/death/inputs">
+      <label>Patient</label>
+      <group ref="/death/inputs/contact">
+        <label>Contact</label>
+        <input appearance="db-object" ref="/death/inputs/contact/_id">
+          <label>What is the patient's name?</label>
+          <hint>Select a person from list</hint>
+        </input>
+        <group ref="/death/inputs/contact/parent">
+          <label>Contact</label>
+          <group ref="/death/inputs/contact/parent/parent">
+            <label>Contact</label>
+            <group ref="/death/inputs/contact/parent/parent/contact">
+              <label>Contact</label>
+            </group>
+          </group>
+        </group>
+      </group>
+    </group>
+    <group appearance="field-list" ref="/death/group_death">
+      <label>Death Report</label>
+      <input ref="/death/group_death/date_of_death">
+        <label>Date of death</label>
+      </input>
+      <select1 ref="/death/group_death/place_of_death">
+        <label>Place of death</label>
+        <item>
+          <label>Health Facility</label>
+          <value>health_facility</value>
+        </item>
+        <item>
+          <label>Outside Health Facility</label>
+          <value>outside_health_facility</value>
+        </item>
+        <item>
+          <label>Other</label>
+          <value>other</value>
+        </item>
+      </select1>
+      <input ref="/death/group_death/place_of_death_other">
+        <label>Specify other</label>
+      </input>
+      <input ref="/death/group_death/other_info">
+        <label>Provide any other relevant information related to the death of <output value=" /death/patient_name "/></label>
+      </input>
+    </group>
+    <group appearance="field-list summary" ref="/death/group_summary">
+      <label>Summary</label>
+      <input ref="/death/group_summary/submit">
+        <label>&lt;h4 style="text-align:center;"&gt;Be sure you Submit to complete this action.&lt;/h4&gt;</label>
+      </input>
+      <input appearance="h1 yellow" ref="/death/group_summary/r_summary">
+        <label>Person Details&lt;I class="fa fa-user"&gt;&lt;/i&gt;</label>
+      </input>
+      <input ref="/death/group_summary/r_patient_info">
+        <label>&lt;h4 style=&quot;text-align:center;&quot;&gt;<output value=" /death/patient_name "/>&lt;/h4&gt;&lt;h5 style=&quot;text-align:center;&quot;&gt;<output value=" /death/patient_age_display "/> &lt;/h5&gt;</label>
+      </input>
+      <input appearance="h1 red" ref="/death/group_summary/r_death_info">
+        <label>Death Information</label>
+      </input>
+      <input appearance="li" ref="/death/group_summary/r_death_date">
+        <label><output value=" /death/group_death/date_of_death_display "/></label>
+      </input>
+      <input appearance="li" ref="/death/group_summary/r_death_place">
+        <label><output value=" /death/patient_name "/> died in <output value=" /death/group_death/place_of_death_display "/></label></input>
+      <input appearance="h1 red" ref="/death/group_summary/r_await_confirmation">
+        <label>You will never be able to do any follow ups on <output value=" /death/patient_name "/> when the CHW supervisor confirms the death</label>
+      </input>
+      <input appearance="h2 blue" ref="/death/group_summary/r_instruction">
+        <label>Key Instruction</label>
+      </input>
+      <input appearance="li" ref="/death/group_summary/r_switch">
+        <label>Kindly switch on the data bundles to facilitate fast notification of this death to the CHW supervisor for confirmation. Thank you.</label>
+      </input>
+      <input appearance="h1 green" ref="/death/group_summary/r_followup">
+        <label>Follow Up&lt;i class="fa fa-flag"&gt;&lt;/i&gt;</label>
+      </input>
+      <input appearance="li" ref="/death/group_summary/r_no_follow_up">
+        <label>No task will show for follow up once <output value=" /death/patient_name "/> is confirmed dead by the CHA</label>
+      </input>
+    </group>
+  </h:body>
+</h:html>
