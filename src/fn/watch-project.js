@@ -3,6 +3,7 @@ const environment = require('../lib/environment');
 const process = require('process');
 const path = require('path');
 const { warn, error, info } = require('../lib/log');
+const Queue  = require('queue-promise');
 
 const convertForms = require('../lib/convert-forms');
 const uploadForms = require('../lib/upload-forms');
@@ -18,6 +19,7 @@ const formXMLRegex = /^[a-zA-Z0-9_-]*\.xml$/;
 const formMediaRegex = /^[a-zA-Z0-9_]+(?:-media)$/;
 const DEBOUNCE_DELAY = 10;
 const watchers = [];
+const eventQueue = new Queue({concurrent: 1, start: true});
 
 const watchPath = (path, listener) => {
     if(!fs.existsSync(path)) {
@@ -29,8 +31,10 @@ const watchPath = (path, listener) => {
 
 const formMediaListener = (form, projectPath) => {
     return async () => {
-        await uploadForms(projectPath, 'app', {
-            forms: [form],
+        eventQueue.enqueue(() => {
+            return uploadForms(projectPath, 'app', {
+                forms: [form],
+            });
         });
     };
 };
@@ -75,7 +79,7 @@ const changeListener = (projectPath, api, callback) => {
     };
 };
 
-const appFormListener = (projectPath, callback) => {
+const appFormListener = (projectPath) => {
     let appFormWait = false;
     return async (event, fileName) => {
         if (event !== 'change' || appFormWait) {
@@ -83,32 +87,33 @@ const appFormListener = (projectPath, callback) => {
         }
         appFormWait = setTimeout(() => { appFormWait = false; }, DEBOUNCE_DELAY);
         if (fileName.match(formXMLRegex) || fileName.match(formPropertiesRegex)) {
-            await uploadForms(projectPath, 'app', {
-                forms: [fileName.split('.')[0]],
+            eventQueue.enqueue(() => {
+                return uploadForms(projectPath, 'app', {
+                    forms: [fileName.split('.')[0]],
+                }).then(() => Promise.resolve(fileName));
             });
-            if (callback) callback(fileName);
             return;
         }
         if (fileName.match(formXLSRegex)) {
-            await convertForms(projectPath, 'app', {
-                enketo: true,
-                forms: [fileName.split('.')[0]],
-                transformer: xml => xml.replace('</instance>', '</instance>\n      <instance id="contact-summary"/>'),
+            eventQueue.enqueue(() => {
+                return convertForms(projectPath, 'app', {
+                    enketo: true,
+                    forms: [fileName.split('.')[0]],
+                    transformer: xml => xml.replace('</instance>', '</instance>\n      <instance id="contact-summary"/>'),
+                }).then(() => Promise.resolve(fileName));
             });
-            if (callback) callback(fileName);
             return;
         }
         if (fileName.match(formMediaRegex)) {
             const absDirPath = path.join(projectPath, 'forms', 'app', fileName);
             watchFormMediaDir(fileName, absDirPath, projectPath);
-            if (callback) callback(fileName);
             return;
         }
         warn('don\'t know what to do with', fileName);
     };
 };
 
-const contactFormListener = (projectPath, callback) => {
+const contactFormListener = (projectPath) => {
     let contactFormWait = false;
     return async (event, fileName) => {
         if (event !== 'change' || contactFormWait) {
@@ -116,17 +121,20 @@ const contactFormListener = (projectPath, callback) => {
         }
         contactFormWait = setTimeout(() => { contactFormWait = false; }, DEBOUNCE_DELAY);
         if (fileName.match(formXLSRegex)) {
-            await convertContactForm(projectPath, [fileName.split('.')[0]]);
-            if (callback) callback(fileName);
+            eventQueue.enqueue(() => {
+                return convertContactForm(projectPath, [fileName.split('.')[0]])
+                    .then(() => Promise.resolve(fileName));
+            });
             return;
         }
         if (fileName.match(formXMLRegex)) {
-            await uploadForms(projectPath, 'contact', {
-                id_prefix: 'contact:',
-                forms: [fileName.split('.')[0]],
-                default_context: { person: false, place: false },
+            eventQueue.enqueue(() => {
+                return uploadForms(projectPath, 'contact', {
+                    id_prefix: 'contact:',
+                    forms: [fileName.split('.')[0]],
+                    default_context: { person: false, place: false },
+                }).then(() => Promise.resolve(fileName));
             });
-            if (callback) callback(fileName);
             return;
         }
         warn('don\'t know what to do with', fileName);
@@ -152,6 +160,12 @@ const uploadInitialState = () => {
 
 };
 
+const closeWatchers = () => {
+    watchers.forEach(watcher => {
+        watcher.close();
+    });
+};
+
 const watchProject = {
     watch: async (projectPath, api, blockFn, callback = {}) => {
 
@@ -160,21 +174,28 @@ const watchProject = {
         const appFormsPath = path.join(projectPath, 'forms', 'app');
         const contactFormsPath = path.join(projectPath, 'forms', 'contact');
 
-        watchPath(appFormsPath, appFormListener(projectPath, callback));
+        watchPath(appFormsPath, appFormListener(projectPath));
         watchFormMediaDirs(appFormsPath);
-        watchPath(contactFormsPath, contactFormListener(projectPath, callback));
+        watchPath(contactFormsPath, contactFormListener(projectPath));
 
         BASE_PROJECT_DIRS(projectPath).forEach((path) => {
             watchPath(path, changeListener(projectPath, api, callback));
         });
 
+        eventQueue.on('resolve', file => {
+            if (callback) {
+                callback(file);
+            }
+        });
+        eventQueue.on('reject', err => error(err));
+
         info('watching', projectPath, 'for changes');
         await blockFn();
     },
-    closeWatchers: () => {
-        watchers.forEach(watcher => {
-            watcher.close();
-        });
+    close: () => {
+        info('stopping watchers');
+        closeWatchers();
+        eventQueue.clear();
     }
 };
 
