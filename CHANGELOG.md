@@ -1,3 +1,10 @@
+## [3.10.1](https://github.com/medic/cht-conf/compare/v3.10.0...v3.10.1) (2022-02-23)
+
+
+### Bug Fixes
+
+* **#465:** remove process.exit and extraneous require ([058e651](https://github.com/medic/cht-conf/commit/058e65182928cdefdd5bb8fb41849fb9b5164631)), closes [#465](https://github.com/medic/cht-conf/issues/465)
+
 # [3.10.0](https://github.com/medic/cht-conf/compare/v3.9.5...v3.10.0) (2022-02-02)
 
 
