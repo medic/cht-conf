@@ -1,5 +1,5 @@
 const git = require('../lib/git-exec');
-const { info, warn, error } = require('../lib/log');
+const { info, warn } = require('../lib/log');
 const userPrompt = require('../lib/user-prompt');
 const environment = require('../lib/environment');
 
@@ -17,8 +17,7 @@ module.exports = {
           'not staged for commit.');
         warn('Changes untracked or to be committed:\n' + status);
         if (!userPrompt.keyInYN('Are you sure you want to continue?')) {
-          error('User failed to confirm action.');
-          process.exit(1);
+          throw new Error('User aborted execution.');
         }
       }
       info('Fetching git upstream...');
@@ -26,8 +25,7 @@ module.exports = {
       if (syncStatus) {
         warn(syncStatus);
         if (!userPrompt.keyInYN('Are you sure you want to continue?')) {
-          error('User failed to confirm action.');
-          process.exit(1);
+          throw new Error('User aborted execution.');
         }
       }
     }

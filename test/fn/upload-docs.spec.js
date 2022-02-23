@@ -105,21 +105,23 @@ describe('upload-docs', function() {
     });
   });
 
-  it('should exit if user denies the warning', async () => {
+  it('should throw if user denies the warning', async () => {
     userPrompt.__set__('readline', { keyInYN: () => false });
     await assertDbEmpty();
-    sinon.stub(process, 'exit');
-    await uploadDocs.execute().then(() => {
-      assert.equal(process.exit.callCount, 1);
-    });
+    await uploadDocs.execute()
+      .then(() => {
+        assert.fail('Expected error to be thrown');
+      })
+      .catch(err => {
+        expect(err.message).to.equal('User aborted execution.');
+      });
   });
 
-  it('should not exit if force is set', async () => {
+  it('should not throw if force is set', async () => {
     userPrompt.__set__('environment', { force: () => true });
     await assertDbEmpty();
     sinon.stub(process, 'exit');
     await uploadDocs.execute();
-    assert.equal(process.exit.callCount, 0);
     const res = await api.db.allDocs();
     expect(res.rows.map(doc => doc.id)).to.deep.eq(['one', 'three', 'two']);
   });

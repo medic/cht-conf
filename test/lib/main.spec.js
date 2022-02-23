@@ -49,13 +49,23 @@ describe('main', () => {
   });
 
   it('no argv yields usage', async () => {
-    await main([], {});
-    expect(mocks.usage.calledOnce).to.be.true;
+    try {
+      await main([], {});
+      expect.fail('Expected error to be thrown');
+    } catch(e) {
+      expect(mocks.usage.calledOnce).to.be.true;
+      expect(e.message).to.equal('Invalid number of arguments.');
+    }
   });
 
   it('default argv yields usage', async () => {
-    await main([...normalArgv], {});
-    expect(mocks.usage.calledOnce).to.be.true;
+    try {
+      await main([...normalArgv], {});
+      expect.fail('Expected error to be thrown');
+    } catch(e) {
+      expect(mocks.usage.calledOnce).to.be.true;
+      expect(e.message).to.equal('Invalid number of arguments.');
+    }
   });
 
   it('--shell-completion', async () => {
@@ -94,10 +104,13 @@ describe('main', () => {
 
   it('errors if you do not provide an instance when required', async () => {
     mocks.getApiUrl.returns();
-
-    await main([...normalArgv, 'backup-all-forms'], {});
-
-    expect(mocks.executeAction.called).to.be.false;
+    try {
+      await main([...normalArgv, 'backup-all-forms'], {});
+      expect.fail('Expected error to be thrown');
+    } catch(e) {
+      expect(mocks.executeAction.called).to.be.false;
+      expect(e.message).to.equal('Failed to obtain a url to the API');
+    }
   });
 
   it('supports actions that do not require an instance', async () => {
@@ -144,8 +157,13 @@ describe('main', () => {
   });
 
   it('unsupported action', async () => {
-    await main([...normalArgv, '--local', 'not-an-action'], {});
-    expect(mocks.executeAction.called).to.be.false;
+    try {
+      await main([...normalArgv, '--local', 'not-an-action'], {});
+      expect.fail('Expected error to be thrown');
+    } catch(e) {
+      expect(mocks.executeAction.called).to.be.false;
+      expect(e.message).to.equal('Unsupported action(s): not-an-action');
+    }
   });
 
   describe('--archive', () => {
@@ -163,47 +181,56 @@ describe('main', () => {
     });
 
     it('requires destination', async () => {
-      const actual = await main([...normalArgv, '--archive', 'upload-app-settings'], {});
-      expect(actual).to.eq(1);
-      expect(mocks.executeAction.called).to.be.false;
+      try {
+        await main([...normalArgv, '--archive', 'upload-app-settings'], {});
+        expect.fail('Expected error to be thrown');
+      } catch(e) {
+        expect(mocks.executeAction.called).to.be.false;
+        expect(e.message).to.equal('--destination=<path to save files> is required with --archive.');
+      }
     });
   });
 
   it('accept non-matching instance warning', async () => {
     mocks.getApiUrl.returns('https://admin:pwd@url.app.medicmobile.org/medic');
     userPrompt.keyInYN.returns(true);
-    const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
+    await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
     expect(userPrompt.keyInYN.callCount).to.eq(1);
-    expect(actual).to.eq(0);
   });
 
   it('reject non-matching instance warning', async () => {
     mocks.getApiUrl.returns('https://admin:pwd@url.app.medicmobile.org/medic');
     userPrompt.keyInYN.returns(false);
-    const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
-    expect(userPrompt.keyInYN.callCount).to.eq(1);
-    expect(actual).to.eq(1);
+    try {
+      await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
+      expect.fail('Expected error to be thrown');
+    } catch(e) {
+      expect(userPrompt.keyInYN.callCount).to.eq(1);
+      expect(e.message).to.equal('User aborted execution.');
+    }
   });
 
   it('force option skips non-matching instance warning', async () => {
     mocks.getApiUrl.returns('https://admin:pwd@url.app.medicmobile.org/medic');
     environment.__set__('force', true);
-    const actual = await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/', '--force']);
+    await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/', '--force']);
     expect(userPrompt.keyInYN.callCount).to.eq(1);
-    expect(actual).to.eq(0);
   });
 
   it('should return earlier with false value if api is not available', async () => {
-    apiAvailable.resolves(false);
-    const earlyResult = await main([...normalArgv, 'upload-app-forms']);
-    expect(earlyResult).to.eq(1);
-    expect(apiAvailable.callCount).to.eq(1);
+    apiAvailable.throws(new Error('Failed to get a response'));
+    try {
+      await main([...normalArgv, 'upload-app-forms']);
+      expect.fail('Expected error to be thrown');
+    } catch(e) {
+      expect(apiAvailable.callCount).to.eq(1);
+      expect(e.message).to.equal('Failed to get a response');
+    }
   });
 
   it('should continue without error if action requires an instance and apiUrl responds', async () => {
     apiAvailable.resolves(true);
-    const result = await main([...normalArgv, 'upload-app-forms']);
-    expect(result).to.eq(0);
+    await main([...normalArgv, 'upload-app-forms']);
     expect(apiAvailable.callCount).to.eq(1);
     expect(mocks.error.callCount).to.eq(0);
   });

@@ -7,7 +7,7 @@ const fs = require('../lib/sync-fs');
 const lineageManipulation = require('../lib/lineage-manipulation');
 const lineageConstraints = require('../lib/lineage-constraints');
 const pouch = require('../lib/db');
-const { warn, trace, info, error } = require('../lib/log');
+const { warn, trace, info } = require('../lib/log');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
@@ -125,8 +125,7 @@ const prepareDocumentDirectory = ({ docDirectoryPath, force }) => {
     if(userPrompt.keyInYN()) {
       fs.deleteFilesInFolder(docDirectoryPath);
     } else {
-      error('User failed to confirm action.');
-      process.exit(1);
+      throw new Error('User aborted execution.');
     }
   }
 };

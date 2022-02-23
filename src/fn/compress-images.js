@@ -1,3 +1,4 @@
+/*eslint node/no-missing-require: "off"*/
 const compressPng = require('../lib/compress-png').execute;
 const compressSvg = require('../lib/compress-svg').execute;
 

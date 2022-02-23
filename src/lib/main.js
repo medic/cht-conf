@@ -12,7 +12,7 @@ const supportedActions = require('../cli/supported-actions');
 const usage = require('../cli/usage');
 const api = require('../lib/api');
 
-const { error, info, warn } = log;
+const { info, warn } = log;
 const defaultActions = [
   'check-git',
   'compile-app-settings',
@@ -55,9 +55,9 @@ module.exports = async (argv, env) => {
     warn('The "medic-conf" cli command is deprecated. Please use "cht" instead');
   }
 
-  if(argv.length <= 2) {
-    usage(0);
-    return 1;
+  if (argv.length <= 2) {
+    usage();
+    throw new Error('Invalid number of arguments.');
   }
 
   const cmdArgs = require('minimist')(argv.slice(2), {
@@ -69,8 +69,8 @@ module.exports = async (argv, env) => {
   // General single use actions
   //
   if (cmdArgs.help) {
-    usage(0);
-    return 0;
+    usage();
+    return;
   }
 
   if (cmdArgs['shell-completion']) {
@@ -79,22 +79,21 @@ module.exports = async (argv, env) => {
 
   if (cmdArgs['supported-actions']) {
     info('Supported actions:\n', supportedActions.join('\n  '));
-    return 0;
+    return;
   }
 
   if (cmdArgs.version) {
     info(require('../../package.json').version);
-    return 0;
+    return;
   }
 
   if (cmdArgs.changelog) {
     await open('https://github.com/medic/cht-conf/releases', { url: true });
-    return process.exit(0);
+    return;
   }
 
   if (cmdArgs.archive && !cmdArgs.destination) {
-    error('--destination=<path to save files> is required with --archive.');
-    return 1;
+    throw new Error('--destination=<path to save files> is required with --archive.');
   }
 
   if (cmdArgs['accept-self-signed-certs']) {
@@ -130,8 +129,7 @@ module.exports = async (argv, env) => {
 
   const unsupported = actions.filter(a => !supportedActions.includes(a));
   if(unsupported.length) {
-    error(`Unsupported action(s): ${unsupported.join(' ')}`);
-    return 1;
+    throw new Error(`Unsupported action(s): ${unsupported.join(' ')}`);
   }
 
   if (cmdArgs['skip-git-check']) {
@@ -163,8 +161,7 @@ module.exports = async (argv, env) => {
   if (actions.some(action => action.requiresInstance)) {
     apiUrl = getApiUrl(cmdArgs, env);
     if (!apiUrl) {
-      error('Failed to obtain a url to the API');
-      return 1;
+      throw new Error('Failed to obtain a url to the API');
     }
   }
 
@@ -183,8 +180,8 @@ module.exports = async (argv, env) => {
     cmdArgs['skip-translation-check']
   );
 
-  if (apiUrl && !await api().available()) {
-    return 1;
+  if (apiUrl) {
+    await api().available();
   }
 
   const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
@@ -192,9 +189,8 @@ module.exports = async (argv, env) => {
   if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
     warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
         `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
-    if(!userPrompt.keyInYN()) {
-      error('User failed to confirm action.');
-      return 1;
+    if (!userPrompt.keyInYN()) {
+      throw new Error('User aborted execution.');
     }
   }
 
@@ -218,8 +214,6 @@ module.exports = async (argv, env) => {
   if (actions.length > 1) {
     await info('All actions completed.');
   }
-
-  return 0;
 };
 
 // Exists for generic mocking purposes

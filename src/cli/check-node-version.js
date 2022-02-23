@@ -1,10 +1,12 @@
 const MIN_NODE_VERSION = 6;
 const currentNodeVersion = process.versions.node;
 
-if(Number.parseInt(currentNodeVersion.split('.')[0]) < MIN_NODE_VERSION) {
-  console.log(`\x1b[31mYour NodeJS is too old.
-    You are running node version: ${currentNodeVersion}
-    cht-conf requires version:  ${MIN_NODE_VERSION}
-  Please upgrade node to continue.\x1b[0m`);
-  process.exit(1);
-}
+module.exports = () => {
+  const currentMajor = process.versions.node.split('.')[0];
+  if(Number.parseInt(currentMajor) < MIN_NODE_VERSION) {
+    throw new Error(`Your NodeJS is too old.
+      You are running node version: ${currentNodeVersion}
+      cht-conf requires version:  ${MIN_NODE_VERSION}
+    Please upgrade node to continue.`);
+  }
+};
