@@ -7,11 +7,11 @@ const Queue  = require('queue-promise');
 
 const convertForms = require('../lib/convert-forms');
 const uploadForms = require('../lib/upload-forms');
-const { convertContactForm } = require('./convert-contact-forms');
+const convertContactForm = require('./convert-contact-forms').execute;
 const { uploadAppSettings } = require('./upload-app-settings');
-const { compileAppSettings } = require('./compile-app-settings');
-const { uploadCustomTranslations } = require('./upload-custom-translations');
-const { uploadResources } = require('./upload-resources');
+const compileAppSettings = require('./compile-app-settings').execute;
+const uploadCustomTranslations = require('./upload-custom-translations').execute;
+const uploadResources = require('./upload-resources').execute;
 
 const formXLSRegex = /^[a-zA-Z0-9_-]*\.xlsx$/;
 const formPropertiesRegex = /^[a-zA-Z0-9_-]*\.properties.json$/;
@@ -54,24 +54,24 @@ const watchFormMediaDirs = (absAppFormsPath)=> {
         });
 };
 
-const changeListener = (projectPath, api, callback) => {
+const changeListener = (api, callback) => {
     return async (event, fileName) => {
         if (event !== 'change') {
             return;
         }
         if (fileName === 'resources.json' || fileName.match(/.*\.(png|svg)/)) {
-            await uploadResources(projectPath);
+            await uploadResources();
             if (callback) callback(fileName);
             return;
         }
         if (fileName.match(/messages-[\w]*\.properties/)) {
-            await uploadCustomTranslations(environment.apiUrl, projectPath, environment.skipTranslationCheck);
+            await uploadCustomTranslations();
             if (callback) callback(fileName);
             return;
         }
         if (fileName.match(/.*\.js$/) || fileName.match(/^(?:app_settings|base_settings)\.json$/)) {
-            await compileAppSettings(projectPath);
-            await uploadAppSettings(api, projectPath);
+            await compileAppSettings();
+            await uploadAppSettings(api);
             if (callback) callback(fileName);
             return;
         }
@@ -156,8 +156,16 @@ const BASE_PROJECT_DIRS = (projectPath) => [
     path.join(projectPath, 'translations'),
 ];
 
-const uploadInitialState = () => {
-
+const uploadInitialState = (api) => {
+    return Promise.all(
+        [
+            uploadResources(),
+            uploadForms(environment.pathToProject, 'app'),
+            uploadForms(environment.pathToProject, 'contact', { id_prefix: 'contact:', default_context: { person: false, place: false } }),
+            uploadCustomTranslations(),
+            uploadAppSettings(api)
+        ]
+    );
 };
 
 const closeWatchers = () => {
@@ -167,19 +175,19 @@ const closeWatchers = () => {
 };
 
 const watchProject = {
-    watch: async (projectPath, api, blockFn, callback = {}) => {
+    watch: async (api, blockFn, callback = {}, uploadStateOnStart = false) => {
+        if (uploadStateOnStart) {
+            await uploadInitialState(api).then(()=> info('Initial State Uploaded'));
+        }
+        const appFormsPath = path.join(environment.pathToProject, 'forms', 'app');
+        const contactFormsPath = path.join(environment.pathToProject, 'forms', 'contact');
 
-        uploadInitialState();
-
-        const appFormsPath = path.join(projectPath, 'forms', 'app');
-        const contactFormsPath = path.join(projectPath, 'forms', 'contact');
-
-        watchPath(appFormsPath, appFormListener(projectPath));
+        watchPath(appFormsPath, appFormListener(environment.pathToProject));
         watchFormMediaDirs(appFormsPath);
-        watchPath(contactFormsPath, contactFormListener(projectPath));
+        watchPath(contactFormsPath, contactFormListener(environment.pathToProject));
 
-        BASE_PROJECT_DIRS(projectPath).forEach((path) => {
-            watchPath(path, changeListener(projectPath, api, callback));
+        BASE_PROJECT_DIRS(environment.pathToProject).forEach((path) => {
+            watchPath(path, changeListener(api, callback));
         });
 
         eventQueue.on('resolve', file => {
@@ -189,7 +197,7 @@ const watchProject = {
         });
         eventQueue.on('reject', err => error(err));
 
-        info('watching', projectPath, 'for changes');
+        info('watching', environment.pathToProject, 'for changes');
         await blockFn();
     },
     close: () => {
@@ -203,5 +211,5 @@ const api = require('../lib/api');
 module.exports = {
     watchProject,
     requiresInstance: true,
-    execute: () => watchProject.watch(environment.pathToProject, api(), waitForSignal)
+    execute: () => watchProject.watch(api(), waitForSignal, false, true)
 };

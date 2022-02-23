@@ -13,10 +13,10 @@ const {
   TranslationException
 } = require('@medic/translation-checker');
 
-const uploadCustomTranslations = async (apiURL, pathToProject, skipTranslationCheck) => {
-  const db = pouch(apiURL);
+const execute = async () => {
+  const db = pouch(environment.apiUrl);
 
-  const dir = `${pathToProject}/translations`;
+  const dir = `${environment.pathToProject}/translations`;
 
   let fileNames;
   let formatErrorsFound = 0;
@@ -26,9 +26,9 @@ const uploadCustomTranslations = async (apiURL, pathToProject, skipTranslationCh
     // if environment.skipTranslationCheck is true then only
     // directory access and file names are checked
     fileNames = await checkTranslations(dir, {
-      checkPlaceholders: !skipTranslationCheck,
-      checkMessageformat: !skipTranslationCheck,
-      checkEmpties: !skipTranslationCheck
+      checkPlaceholders: !environment.skipTranslationCheck,
+      checkMessageformat: !environment.skipTranslationCheck,
+      checkEmpties: !environment.skipTranslationCheck
     });
   } catch (err) {
     if (err instanceof TranslationException) {
@@ -178,7 +178,6 @@ async function genericTranslationsStructure(db) {
 }
 
 module.exports = {
-  uploadCustomTranslations,
   requiresInstance: true,
-  execute: () => uploadCustomTranslations(environment.apiUrl, environment.pathToProject, environment.skipTranslationCheck)
+  execute
 };

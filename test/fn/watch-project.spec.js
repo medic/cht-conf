@@ -66,7 +66,7 @@ function copySampleForms(sampleDir, destination =  path.join('forms', 'app')) {
 
 function watchWrapper(action, file) {
   return new Promise((resolve,) => {
-    watchProject.watch(testDir, mockApi, action, async (path) => {
+    watchProject.watch(mockApi, action, async (path) => {
       if (path === file) {
         resolve();
       }
@@ -78,6 +78,7 @@ describe('watch-project', function () {
 
   beforeEach(() => {
     sinon.stub(environment, 'pathToProject').get(() => testDir);
+    sinon.stub(environment, 'extraArgs').get(() => {});
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'skipTranslationCheck').get(() => false);
     sinon.stub(environment, 'force').get(() => false);

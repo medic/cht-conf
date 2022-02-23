@@ -3,8 +3,8 @@ const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { info } = require('../lib/log');
 
-function uploadAppSettings(api, pathToProject) {
-  const settings = fs.read(`${pathToProject}/app_settings.json`);
+function uploadAppSettings(api) {
+  const settings = fs.read(`${environment.pathToProject}/app_settings.json`);
   return api.updateAppSettings(settings)
     .then(JSON.parse)
     .then(json => {
@@ -29,5 +29,5 @@ function uploadAppSettings(api, pathToProject) {
 module.exports = {
   uploadAppSettings,
   requiresInstance: true,
-  execute: () => uploadAppSettings(api(), environment.pathToProject)
+  execute: () => uploadAppSettings(api())
 };

@@ -9,9 +9,9 @@ const { warn } = require('../lib/log');
 const parsePurge = require('../lib/parse-purge');
 const validateAppSettings = require('../lib/validate-app-settings');
 
-const compileAppSettings = async (pathToProject, extraArgs) => {
-  const options = parseExtraArgs(extraArgs);
-  const projectDir = path.resolve(pathToProject);
+const compileAppSettings = async () => {
+  const options = parseExtraArgs(environment.extraArgs);
+  const projectDir = path.resolve(environment.pathToProject);
 
   let appSettings;
   const inheritedPath = path.join(projectDir, 'settings.inherit.json');
@@ -177,7 +177,6 @@ const parseExtraArgs = (extraArgs = []) => {
 };
 
 module.exports = {
-  compileAppSettings,
   requiresInstance: false,
-  execute: () => compileAppSettings(environment.pathToProject, environment.extraArgs)
+  execute: compileAppSettings
 };

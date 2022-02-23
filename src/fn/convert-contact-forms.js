@@ -2,8 +2,8 @@ const convertForms = require('../lib/convert-forms');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 
-const convertContactForm = (pathToProject, forms) => {
-  const dir = `${pathToProject}/forms/contact`;
+const execute = () => {
+  const dir = `${environment.pathToProject}/forms/contact`;
   const placeTypesJson = `${dir}/place-types.json`;
 
   let PLACE_TYPES;
@@ -16,10 +16,10 @@ const convertContactForm = (pathToProject, forms) => {
       });
   }
 
-  return convertForms(pathToProject, 'contact', {
+  return convertForms(environment.pathToProject, 'contact', {
       enketo: true,
       force_data_node: 'data',
-      forms: forms,
+      forms: environment.extraArgs,
       transformer: (xml, path) => {
         const type = path.replace(/.*\/(.*?)(-(create|edit))?\.xml/, '$1');
 
@@ -87,7 +87,6 @@ const convertContactForm = (pathToProject, forms) => {
 };
 
 module.exports = {
-  convertContactForm,
   requiresInstance: false,
-  execute: () => convertContactForm(environment.pathToProject, environment.extraArgs)
+  execute
 };

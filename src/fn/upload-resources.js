@@ -7,14 +7,13 @@ const processJson = (json) => {
   };
 };
 
-function uploadResources(pathToProject) {
-  const configurationPath = `${pathToProject}/resources.json`;
-  const directoryPath = `${pathToProject}/resources`;
-  return uploadConfigurationDocs(configurationPath, directoryPath, 'resources', processJson);
-}
-
 module.exports = {
-  uploadResources,
   requiresInstance: true,
-  execute: () => uploadResources(environment.pathToProject)
+  execute: () => {
+    const configurationPath = `${environment.pathToProject}/resources.json`;
+    const directoryPath = `${environment.pathToProject}/resources`;
+
+    return uploadConfigurationDocs(configurationPath, directoryPath, 'resources', processJson);
+  }
 };
+
