@@ -37,6 +37,7 @@
   "dependencies": {
     "@hapi/joi": "^16.1.8",
     "@medic/translation-checker": "^1.0.1",
+    "@parcel/watcher": "^2.0.5",
     "canonical-json": "0.0.4",
     "csv-parse": "^4.16.0",
     "dom-compare": "^0.6.0",
