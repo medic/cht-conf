@@ -114,6 +114,9 @@ describe('watch-project', function () {
         .then(() => api.db.allDocs())
         .then(docs => {
           expect(docs.rows.filter(row => row.id === 'resources')).to.not.be.empty;
+        })
+        .then(() => {
+          fs.writeJson(resourceJsonPath, {});
         });
     });
 
