@@ -165,18 +165,36 @@ describe('watch-project', function () {
       });
   });
 
+  it('watch-project: convert contact forms', () => {
+        const copyForm = () => {
+          return new Promise((resolve) => {
+            copySampleForms('contact-xlsx', path.join('forms', 'contact'));
+            resolve();
+          });
+        };
+        const contactFormPath = path.join(testDir, 'forms', 'contact');
+        return watchWrapper(copyForm, 'household-create.xlsx')
+        .then(() => api.db.allDocs())
+        .then(() => {
+          expect(fs.fs.readdirSync(contactFormPath).find(file => file === 'household-create.xml')).to.be.not.undefined;
+        })
+        .then(() => {
+          fs.fs.readdirSync(contactFormPath).filter(name => !name.startsWith('.')).forEach(file => fs.fs.unlinkSync(path.join(contactFormPath, file)));
+        }); 
+      });  
+
   it('watch-project: upload contact forms', () => {
     const copyContactForm = () => {
       return new Promise((resolve) => {
-        copySampleForms('contact', path.join('forms', 'contact'));
+        copySampleForms('contact-xml', path.join('forms', 'contact'));
         resolve();
       });
     };
     api.giveResponses({ status: 200, body: { ok: true } });
-    return watchWrapper(copyContactForm, 'household-create.xml')
+    return watchWrapper(copyContactForm, 'chw_area-edit.xml')
       .then(() => api.db.allDocs())
       .then(docs => {
-        expect(docs.rows.filter(row => row.id === 'form:contact:household:create')).to.not.be.empty;
+        expect(docs.rows.filter(row => row.id === 'form:contact:chw_area:edit')).to.not.be.empty;
       })
       .then(() => {
         const appFormPath = path.join(testDir, 'forms', 'contact');

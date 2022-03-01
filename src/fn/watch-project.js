@@ -17,8 +17,6 @@ const formPropertiesRegex = /^[a-zA-Z0-9_-]+\.properties.json$/;
 const formMediaRegex = /^[a-zA-Z0-9_]+(?:-media)$/;
 const formXMLRegex = /^[a-zA-Z0-9_-]+\.xml$/;
 
-const eventQueue = new Queue({ concurrent: 1, start: true });
-
 const waitForSignal = () => {
     return new Promise((resolve) => {
         process.on('SIGINT', function () {
@@ -40,6 +38,7 @@ const uploadInitialState = (api) => {
 };
 
 let fsEventsSubscription;
+let eventQueue;
 
 const watchProject = {
     watch: async (api, blockFn, callback = {}, uploadStateOnStart = false) => {
@@ -49,6 +48,7 @@ const watchProject = {
 
         const appFormsPath = path.join(environment.pathToProject, 'forms', 'app');
         const contactFormsPath = path.join(environment.pathToProject, 'forms', 'contact');
+        eventQueue =  new Queue({ concurrent: 1, start: true });
 
         fsEventsSubscription = await watcher.subscribe(environment.pathToProject, async (err, events) => {
             if (err) {
@@ -61,6 +61,7 @@ const watchProject = {
                 }
                 const changePath = event.path;
                 const parsedPath = path.parse(changePath);
+                console.log(event);
 
                 if (parsedPath.dir.startsWith(appFormsPath)) {
                     const fileName = parsedPath.base;
@@ -160,7 +161,7 @@ const watchProject = {
     close: async () => {
         info('stopping watchers');
         if (fsEventsSubscription) await fsEventsSubscription.unsubscribe();
-        eventQueue.clear();
+        if(eventQueue) eventQueue.clear();
     }
 };
 
