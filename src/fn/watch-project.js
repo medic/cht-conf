@@ -160,7 +160,7 @@ const watchProject = {
     close: async () => {
         info('stopping watchers');
         if (fsEventsSubscription) await fsEventsSubscription.unsubscribe();
-        if(eventQueue) eventQueue.clear();
+        if(eventQueue) await eventQueue.clear();
     }
 };
 
