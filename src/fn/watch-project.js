@@ -61,7 +61,6 @@ const watchProject = {
                 }
                 const changePath = event.path;
                 const parsedPath = path.parse(changePath);
-                console.log(event);
 
                 if (parsedPath.dir.startsWith(appFormsPath)) {
                     const fileName = parsedPath.base;
