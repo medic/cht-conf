@@ -17,14 +17,6 @@ const formPropertiesRegex = /^[a-zA-Z0-9_-]+\.properties.json$/;
 const formMediaRegex = /^[a-zA-Z0-9_]+(?:-media)$/;
 const formXMLRegex = /^[a-zA-Z0-9_-]+\.xml$/;
 
-const waitForSignal = () => {
-    return new Promise((resolve) => {
-        process.on('SIGINT', function () {
-            resolve();
-        });
-    });
-};
-
 const uploadInitialState = (api) => {
     return Promise.all(
         [
@@ -39,6 +31,20 @@ const uploadInitialState = (api) => {
 
 let fsEventsSubscription;
 let eventQueue;
+
+const cleanUp = async () => {
+    if (fsEventsSubscription) await fsEventsSubscription.unsubscribe();
+    if(eventQueue) await eventQueue.clear();
+};
+
+const waitForKillSignal = () => {
+    return new Promise((resolve) => {
+        process.on('SIGINT', async () => {
+            await cleanUp();
+            resolve();
+        });
+    });
+};
 
 const watchProject = {
     watch: async (api, blockFn, callback = {}, uploadStateOnStart = false) => {
@@ -159,8 +165,7 @@ const watchProject = {
     },
     close: async () => {
         info('stopping watchers');
-        if (fsEventsSubscription) await fsEventsSubscription.unsubscribe();
-        if(eventQueue) await eventQueue.clear();
+        await cleanUp();
     }
 };
 
@@ -168,5 +173,5 @@ const api = require('../lib/api');
 module.exports = {
     watchProject,
     requiresInstance: true,
-    execute: () => watchProject.watch(api(), waitForSignal, false, true)
+    execute: () => watchProject.watch(api(), waitForKillSignal, false, true)
 };
