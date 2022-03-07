@@ -17,7 +17,7 @@ describe('initialise-project-layout', () => {
     initialiseProjectLayout.execute();
 
     // then
-    assertExists('contact-summary.js');
+    assertExists('contact-summary.templated.js');
     assertExists('forms/app');
     assertExists('forms/collect');
     assertExists('forms/contact');
@@ -30,6 +30,11 @@ describe('initialise-project-layout', () => {
     assertExists('app_settings/base_settings.json');
     assertExists('app_settings/forms.json');
     assertExists('app_settings/schedules.json');
+    assertExists('harness.defaults.json');
+    assertExists('test/forms');
+    assertExists('test/contact-summary');
+    assertExists('test/tasks');
+    assertExists('test/targets');
   });
 });
 

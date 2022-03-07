@@ -5,10 +5,11 @@ const fs = require('../lib/sync-fs');
 const { info } = require('../lib/log');
 
 const LAYOUT = {
-  'contact-summary.js': '',
+  'contact-summary.templated.js': '',
   'privacy-policies.json': {},
   'privacy-policies': {},
   'resources.json': {},
+  'harness.defaults.json': {},
   resources: {},
   'targets.js': 'module.exports = [];',
   'tasks.js': 'module.exports = [];',
@@ -32,6 +33,12 @@ const LAYOUT = {
     'forms.json': {},
     'schedules.json': [],
   },
+  test: {
+    forms: {},
+    'contact-summary': {},
+    tasks: {},
+    targets: {}
+  }
 };
 
 function createRecursively(dir, layout) {
