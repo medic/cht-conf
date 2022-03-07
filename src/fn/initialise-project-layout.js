@@ -5,7 +5,11 @@ const fs = require('../lib/sync-fs');
 const { info } = require('../lib/log');
 
 const LAYOUT = {
-  'contact-summary.templated.js': '',
+  'contact-summary.templated.js': `module.exports = {
+  fields: [],
+  cards: [],
+  context: {}
+};`,
   'privacy-policies.json': {},
   'privacy-policies': {},
   'resources.json': {},
