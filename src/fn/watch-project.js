@@ -135,10 +135,16 @@ const watchProject = {
                 if ((parsedPath.dir === environment.pathToProject && parsedPath.base !== 'resources.json')
                     || parsedPath.dir === path.join(environment.pathToProject, 'app_settings')) {
                     const fileName = parsedPath.base;
+                    if (fileName === 'app_settings.json') {
+                        eventQueue.enqueue(() => {
+                            return uploadAppSettings(api);
+                        });
+                        continue;
+                    }
                     if (fileName.match(/.+\.js$/) || fileName.match(/^[\w]+\.json$/)) {
-                        await compileAppSettings();
-                        await uploadAppSettings(api);
-                        if (callback) callback(fileName);
+                        eventQueue.enqueue(() => {
+                            return compileAppSettings();
+                        });
                         continue;
                     }
                     continue;
