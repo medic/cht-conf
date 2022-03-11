@@ -34,8 +34,14 @@ let fsEventsSubscription;
 let eventQueue;
 
 const cleanUp = async () => {
-    if (fsEventsSubscription) await fsEventsSubscription.unsubscribe();
-    if (eventQueue) await eventQueue.clear();
+    if (fsEventsSubscription) {
+        await fsEventsSubscription.unsubscribe();
+        fsEventsSubscription = undefined;
+    }
+    if (eventQueue) {
+        await eventQueue.clear();
+        eventQueue = undefined;
+    }
 };
 
 const waitForKillSignal = () => {
@@ -47,10 +53,76 @@ const waitForKillSignal = () => {
     });
 };
 
+const processAppForm = (fileName) => {
+    if (fileName.match(formXMLRegex) || fileName.match(formPropertiesRegex)) {
+        eventQueue.enqueue(async () => {
+            await uploadAppForms([fileName.split('.')[0]]);
+            return fileName;
+        });
+        return true;
+    }
+    if (fileName.match(formXLSRegex)) {
+        eventQueue.enqueue(async () => {
+            await convertAppForms([fileName.split('.')[0]]);
+            return fileName;
+        });
+        return true;
+    }
+    return false;
+};
+
+const processAppFormMedia = (formMediaDir, fileName) => {
+    if (formMediaDir && formMediaDir.match(formMediaRegex)) {
+        eventQueue.enqueue(async () => {
+            await uploadAppForms([formMediaDir.split('-')[0]]);
+            return fileName;
+        });
+        return true;
+    }
+    return false;
+};
+
+const processContactForm = (fileName) => {
+    if (fileName.match(formXLSRegex)) {
+        eventQueue.enqueue(async () => {
+            await convertContactForm([fileName.split('.')[0]]);
+            return fileName;
+        });
+        return true;
+    }
+    if (fileName.match(formXMLRegex)) {
+        eventQueue.enqueue(async () => {
+            await uploadContactForms([fileName.split('.')[0]]);
+            return fileName;
+        });
+        return true;
+    }
+    return false;
+};
+
+const processConfigFiles = (api, fileName) => {
+    if (fileName === 'app_settings.json') {
+        eventQueue.enqueue(async () => {
+            await uploadAppSettings(api);
+            return fileName;
+        });
+        return true;
+    }
+    if (fileName.match(/.+\.js$/) || fileName.match(/^[\w]+\.json$/)) {
+        eventQueue.enqueue(async () => {
+            await compileAppSettings();
+            return fileName;
+        });
+        return true;
+    }
+    return false;
+};
+
 const watchProject = {
     watch: async (api, blockFn, callback = {}, uploadStateOnStart = false) => {
         if (uploadStateOnStart) {
-            await uploadInitialState(api).then(() => info('Initial State Uploaded'));
+            await uploadInitialState(api);
+            info('Initial State Uploaded');
         }
 
         const appFormsPath = path.join(environment.pathToProject, 'forms', 'app');
@@ -63,7 +135,7 @@ const watchProject = {
                 return;
             }
             for (const event of events) {
-                if (!(event.type === 'update' || event.type === 'create')) {
+                if (event.type !== 'update' && event.type !== 'create') {
                     continue;
                 }
                 const changePath = event.path;
@@ -71,44 +143,16 @@ const watchProject = {
 
                 if (parsedPath.dir.startsWith(appFormsPath)) {
                     const fileName = parsedPath.base;
-                    if (fileName.match(formXMLRegex) || fileName.match(formPropertiesRegex)) {
-                        eventQueue.enqueue(() => {
-                            return uploadAppForms([fileName.split('.')[0]]).then(() => Promise.resolve(fileName));
-                        });
-                        continue;
-                    }
-                    if (fileName.match(formXLSRegex)) {
-                        eventQueue.enqueue(() => {
-                            return convertAppForms([fileName.split('.')[0]]).then(() => Promise.resolve(fileName));
-                        });
-                        continue;
-                    }
-                    const formMediaDir = parsedPath.dir.replace(appFormsPath, '');
-                    if (formMediaDir && formMediaDir.match(formMediaRegex)) {
-                        eventQueue.enqueue(() => {
-                            return uploadAppForms([formMediaDir.split('-')[0]]).then(() => Promise.resolve(fileName));
-                        });
-                        continue;
+                    if (!processAppForm(fileName)) {
+                        const formMediaDir = parsedPath.dir.replace(appFormsPath, '');
+                        processAppFormMedia(formMediaDir, fileName);
                     }
                     continue;
                 }
 
                 if (parsedPath.dir === contactFormsPath) {
                     const fileName = parsedPath.base;
-                    if (fileName.match(formXLSRegex)) {
-                        eventQueue.enqueue(() => {
-                            return convertContactForm([fileName.split('.')[0]])
-                                .then(() => Promise.resolve(fileName));
-                        });
-                        continue;
-                    }
-                    if (fileName.match(formXMLRegex)) {
-                        eventQueue.enqueue(() => {
-                            return uploadContactForms([fileName.split('.')[0]])
-                                .then(() => Promise.resolve(fileName));
-                        });
-                        continue;
-                    }
+                    processContactForm(fileName);
                     continue;
                 }
 
@@ -122,21 +166,15 @@ const watchProject = {
                     continue;
                 }
 
-                if ((parsedPath.dir === environment.pathToProject && parsedPath.base !== 'resources.json')
-                    || parsedPath.dir === path.join(environment.pathToProject, 'app_settings')) {
+                if (parsedPath.dir === path.join(environment.pathToProject, 'app_settings')) {
                     const fileName = parsedPath.base;
-                    if (fileName === 'app_settings.json') {
-                        eventQueue.enqueue(() => {
-                            return uploadAppSettings(api).then(() => Promise.resolve(fileName));
-                        });
-                        continue;
-                    }
-                    if (fileName.match(/.+\.js$/) || fileName.match(/^[\w]+\.json$/)) {
-                        eventQueue.enqueue(() => {
-                            return compileAppSettings().then(() => Promise.resolve(fileName));
-                        });
-                        continue;
-                    }
+                    processConfigFiles(api, fileName);
+                    continue;
+                }
+
+                if (parsedPath.dir === environment.pathToProject && parsedPath.base !== 'resources.json') {
+                    const fileName = parsedPath.base;
+                    processConfigFiles(api, fileName);
                     continue;
                 }
 
