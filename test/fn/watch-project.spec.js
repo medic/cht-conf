@@ -24,11 +24,20 @@ const mockApi = {
   getAppSettings: () => api.db.get('app_settings')
 };
 
-function editSettings() {
+function editBaseSettings() {
   return new Promise((resolve) => {
     const appSettings = fs.readJson(settingsPath);
     appSettings.locale = 'es';
     fs.writeJson(settingsPath, appSettings);
+    resolve();
+  });
+}
+
+function editAppSettings() {
+  return new Promise((resolve) => {
+    const appSettings = fs.readJson(path.join(testDir, 'app_settings.json'));
+    appSettings.locale = 'es';
+    fs.writeJson(path.join(testDir, 'app_settings.json'), appSettings);
     resolve();
   });
 }
@@ -93,7 +102,7 @@ describe('watch-project', function () {
   });
 
   it('watch-project: upload app settings', () => {
-    return watchWrapper(editSettings, 'app_settings.json')
+    return watchWrapper(editAppSettings, 'app_settings.json')
       .then(mockApi.getAppSettings)
       .then((settings) => { return JSON.parse(settings.content); })
       .then((settings) => expect(settings.locale).equal('es'));
@@ -103,7 +112,7 @@ describe('watch-project', function () {
     const appSettingsPath = path.join(testDir, 'app_settings.json');
     fs.fs.unlinkSync(appSettingsPath);
     expect(fs.fs.existsSync(appSettingsPath)).to.be.false;
-    return watchWrapper(editSettings, 'base_settings.json')
+    return watchWrapper(editBaseSettings, 'base_settings.json')
       .then(() => { return fs.readJson(appSettingsPath); })
       .then((settings) => expect(settings.locale).equal('es'));
   });

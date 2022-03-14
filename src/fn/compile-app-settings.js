@@ -8,6 +8,7 @@ const parseTargets = require('../lib/parse-targets');
 const { warn } = require('../lib/log');
 const parsePurge = require('../lib/parse-purge');
 const validateAppSettings = require('../lib/validate-app-settings');
+const APP_SETTINGS_DIR = 'app_settings';
 
 const compileAppSettings = async () => {
   const options = parseExtraArgs(environment.extraArgs);
@@ -41,7 +42,7 @@ const compileAppSettingsForProject = async (projectDir, options) => {
 
   const readOptionalJson = path => fs.exists(path) ? fs.readJson(path) : undefined;
   let appSettings;
-  const baseSettingsPath = path.join(projectDir, 'app_settings/base_settings.json');
+  const baseSettingsPath = path.join(projectDir, `${APP_SETTINGS_DIR}/base_settings.json`);
   const appSettingsPath = path.join(projectDir, 'app_settings.json');
   const esLintFilePath = path.join(projectDir, '.eslintrc');
 
@@ -178,5 +179,6 @@ const parseExtraArgs = (extraArgs = []) => {
 
 module.exports = {
   requiresInstance: false,
+  APP_SETTINGS_DIR,
   execute: compileAppSettings
 };

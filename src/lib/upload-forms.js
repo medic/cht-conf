@@ -16,67 +16,77 @@ const {
 const validateForms = require('./validate-forms');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms', 'subject_key', 'hidden_fields'];
+const FORM_EXTENSTION = '.xml';
+const FORM_PROPERTIES_EXTENSION = '.properties.json';
+const SUPPORTED_EXTENSIONS = [FORM_EXTENSTION, FORM_PROPERTIES_EXTENSION];
+const FORM_FILE_MATCHER = (fileName) => {
+  return fileName.endsWith(FORM_EXTENSTION) || fileName.endsWith(FORM_PROPERTIES_EXTENSION);
+};
 
-module.exports = async (projectDir, subDirectory, options) => {
-  await validateForms(projectDir, subDirectory, options);
-  const db = pouch();
-  if (!options) options = {};
-  const formsDir = getFormDir(projectDir, subDirectory);
-  if(!fs.exists(formsDir)) {
-    log.info(`Forms dir not found: ${formsDir}`);
-    return;
-  }
-
-  const fileNames = argsFormFilter(formsDir, '.xml', options);
-  for (const fileName of fileNames) {
-    log.info(`Preparing form for upload: ${fileName}…`);
-
-    const { baseFileName, mediaDir, xformPath, filePath } = getFormFilePaths(formsDir, fileName);
-    const baseDocId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
-
-    const mediaDirExists = fs.exists(mediaDir);
-    if(!mediaDirExists) {
-      log.info(`No media directory found at ${mediaDir} for form ${xformPath}`);
+module.exports = {
+  SUPPORTED_EXTENSIONS,
+  FORM_FILE_MATCHER,
+  execute: async (projectDir, subDirectory, options) => {
+    await validateForms(projectDir, subDirectory, options);
+    const db = pouch();
+    if (!options) options = {};
+    const formsDir = getFormDir(projectDir, subDirectory);
+    if (!fs.exists(formsDir)) {
+      log.info(`Forms dir not found: ${formsDir}`);
+      return;
     }
 
-    const hashSum = crypto.createHash('sha256');
-    const xml = fs.read(xformPath);
-    hashSum.update(xml);
-    const xmlVersion = {
-      time: Date.now(),
-      sha256: hashSum.digest('hex'),
-    };
+    const fileNames = argsFormFilter(formsDir, FORM_EXTENSTION, options);
+    for (const fileName of fileNames) {
+      log.info(`Preparing form for upload: ${fileName}…`);
 
-    const internalId = readIdFrom(xml);
-    if(internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/cht-core/issues/3342.');
+      const { baseFileName, mediaDir, xformPath, filePath } = getFormFilePaths(formsDir, fileName);
+      const baseDocId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
 
-    const docId = `form:${baseDocId}`;
-    const doc = {
-      _id: docId,
-      type: 'form',
-      internalId: internalId,
-      xmlVersion: xmlVersion,
-      title: readTitleFrom(xml),
-      context: options.default_context,
-    };
+      const mediaDirExists = fs.exists(mediaDir);
+      if (!mediaDirExists) {
+        log.info(`No media directory found at ${mediaDir} for form ${xformPath}`);
+      }
 
-    const propertiesPath = `${formsDir}/${baseFileName}.properties.json`;
-    updateFromPropertiesFile(doc, propertiesPath);
+      const hashSum = crypto.createHash('sha256');
+      const xml = fs.read(xformPath);
+      hashSum.update(xml);
+      const xmlVersion = {
+        time: Date.now(),
+        sha256: hashSum.digest('hex'),
+      };
 
-    doc._attachments = mediaDirExists ? attachmentsFromDir(mediaDir) : {};
-    doc._attachments.xml = attachmentFromFile(xformPath);
+      const internalId = readIdFrom(xml);
+      if (internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/cht-core/issues/3342.');
 
-    const properties = SUPPORTED_PROPERTIES.concat('internalId');
+      const docId = `form:${baseDocId}`;
+      const doc = {
+        _id: docId,
+        type: 'form',
+        internalId: internalId,
+        xmlVersion: xmlVersion,
+        title: readTitleFrom(xml),
+        context: options.default_context,
+      };
 
-    const changes = await warnUploadOverwrite.preUploadForm(db, doc, xml, properties);
-    if (changes) {
-      await insertOrReplace(db, doc);
-      log.info(`Form ${filePath} uploaded`);
-    } else {
-      log.info(`Form ${filePath} not uploaded, no changes`);
+      const propertiesPath = `${formsDir}/${baseFileName}${FORM_PROPERTIES_EXTENSION}`;
+      updateFromPropertiesFile(doc, propertiesPath);
+
+      doc._attachments = mediaDirExists ? attachmentsFromDir(mediaDir) : {};
+      doc._attachments.xml = attachmentFromFile(xformPath);
+
+      const properties = SUPPORTED_PROPERTIES.concat('internalId');
+
+      const changes = await warnUploadOverwrite.preUploadForm(db, doc, xml, properties);
+      if (changes) {
+        await insertOrReplace(db, doc);
+        log.info(`Form ${filePath} uploaded`);
+      } else {
+        log.info(`Form ${filePath} not uploaded, no changes`);
+      }
+      // update hash regardless
+      await warnUploadOverwrite.postUploadForm(doc, xml, properties);
     }
-    // update hash regardless
-    await warnUploadOverwrite.postUploadForm(doc, xml, properties);
   }
 };
 

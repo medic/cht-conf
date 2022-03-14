@@ -6,17 +6,16 @@ const Queue = require('queue-promise');
 const watcher = require('@parcel/watcher');
 const { uploadAppForms } = require('./upload-app-forms');
 const { uploadContactForms } = require('./upload-contact-forms');
-const { convertAppForms } = require('./convert-app-forms');
-const { convertContactForm } = require('./convert-contact-forms');
-const { uploadAppSettings } = require('./upload-app-settings');
+const convertForms = require('../lib/convert-forms');
+const uploadForms = require('../lib/upload-forms');
+const { convertAppForms, APP_FORMS_PATH } = require('./convert-app-forms');
+const { convertContactForm, CONTACT_FORMS_PATH } = require('./convert-contact-forms');
+const { uploadAppSettings, APP_SETTINGS_DIR } = require('./upload-app-settings');
 const compileAppSettings = require('./compile-app-settings').execute;
-const uploadCustomTranslations = require('./upload-custom-translations').execute;
-const uploadResources = require('./upload-resources').execute;
+const { execute: uploadCustomTranslations, TRANSLATIONS_PATH } = require('./upload-custom-translations');
+const { execute: uploadResources, RESOURCES_DIR_PATH, RESOURCE_CONFIG_PATH } = require('./upload-resources');
 
-const formXLSRegex = /^[a-zA-Z0-9_-]+\.xlsx$/;
-const formPropertiesRegex = /^[a-zA-Z0-9_-]+\.properties.json$/;
 const formMediaRegex = /^[a-zA-Z0-9_]+(?:-media)$/;
-const formXMLRegex = /^[a-zA-Z0-9_-]+\.xml$/;
 
 const uploadInitialState = (api) => {
     return Promise.all(
@@ -54,14 +53,14 @@ const waitForKillSignal = () => {
 };
 
 const processAppForm = (fileName) => {
-    if (fileName.match(formXMLRegex) || fileName.match(formPropertiesRegex)) {
+    if (uploadForms.FORM_FILE_MATCHER(fileName)) {
         eventQueue.enqueue(async () => {
             await uploadAppForms([fileName.split('.')[0]]);
             return fileName;
         });
         return true;
     }
-    if (fileName.match(formXLSRegex)) {
+    if (convertForms.FORM_FILE_MATCHER(fileName)) {
         eventQueue.enqueue(async () => {
             await convertAppForms([fileName.split('.')[0]]);
             return fileName;
@@ -83,14 +82,14 @@ const processAppFormMedia = (formMediaDir, fileName) => {
 };
 
 const processContactForm = (fileName) => {
-    if (fileName.match(formXLSRegex)) {
+    if (convertForms.FORM_FILE_MATCHER(fileName)) {
         eventQueue.enqueue(async () => {
             await convertContactForm([fileName.split('.')[0]]);
             return fileName;
         });
         return true;
     }
-    if (fileName.match(formXMLRegex)) {
+    if (uploadForms.FORM_FILE_MATCHER(fileName)) {
         eventQueue.enqueue(async () => {
             await uploadContactForms([fileName.split('.')[0]]);
             return fileName;
@@ -125,8 +124,6 @@ const watchProject = {
             info('Initial State Uploaded');
         }
 
-        const appFormsPath = path.join(environment.pathToProject, 'forms', 'app');
-        const contactFormsPath = path.join(environment.pathToProject, 'forms', 'contact');
         eventQueue = new Queue({ concurrent: 1, start: true });
 
         fsEventsSubscription = await watcher.subscribe(environment.pathToProject, async (err, events) => {
@@ -141,46 +138,44 @@ const watchProject = {
                 const changePath = event.path;
                 const parsedPath = path.parse(changePath);
 
-                if (parsedPath.dir.startsWith(appFormsPath)) {
+                if (parsedPath.dir.replace(environment.pathToProject, '').startsWith(`/${APP_FORMS_PATH}`)) {
+                    const relativeFormsDir = parsedPath.dir.replace(environment.pathToProject, '');
                     const fileName = parsedPath.base;
-                    if (!processAppForm(fileName)) {
-                        const formMediaDir = parsedPath.dir.replace(appFormsPath, '');
+                    if (!processAppForm(fileName) && !relativeFormsDir.endsWith(APP_FORMS_PATH)) {
+                        const formMediaDir = relativeFormsDir.replace(relativeFormsDir, '');
                         processAppFormMedia(formMediaDir, fileName);
                     }
                     continue;
                 }
 
-                if (parsedPath.dir === contactFormsPath) {
+                if (parsedPath.dir === path.join(environment.pathToProject, CONTACT_FORMS_PATH)) {
                     const fileName = parsedPath.base;
                     processContactForm(fileName);
                     continue;
                 }
 
-                if (parsedPath.dir === path.join(environment.pathToProject, 'translations')) {
+                if (parsedPath.dir === path.join(environment.pathToProject, TRANSLATIONS_PATH)) {
+                    await uploadCustomTranslations();
                     const fileName = parsedPath.base;
-                    if (fileName.match(/messages-[\w]+\.properties/)) {
-                        await uploadCustomTranslations();
-                        if (callback) callback(fileName);
-                        continue;
-                    }
+                    if (callback) callback(fileName);
                     continue;
                 }
 
-                if (parsedPath.dir === path.join(environment.pathToProject, 'app_settings')) {
+                if (parsedPath.dir === path.join(environment.pathToProject, APP_SETTINGS_DIR)) {
                     const fileName = parsedPath.base;
                     processConfigFiles(api, fileName);
                     continue;
                 }
 
-                if (parsedPath.dir === environment.pathToProject && parsedPath.base !== 'resources.json') {
+                if (parsedPath.dir === environment.pathToProject && parsedPath.base !== RESOURCE_CONFIG_PATH) {
                     const fileName = parsedPath.base;
                     processConfigFiles(api, fileName);
                     continue;
                 }
 
-                if (parsedPath.base === 'resources.json' || parsedPath.dir === path.join(environment.pathToProject, 'resources')) {
-                    const fileName = parsedPath.base;
+                if (parsedPath.base === RESOURCE_CONFIG_PATH || parsedPath.dir === path.join(environment.pathToProject, RESOURCES_DIR_PATH)) {
                     await uploadResources();
+                    const fileName = parsedPath.base;
                     if (callback) callback(fileName);
                     continue;
                 }

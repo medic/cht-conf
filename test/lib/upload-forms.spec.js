@@ -26,7 +26,7 @@ describe('upload-forms', () => {
     const insertOrReplace = sinon.stub();
     const logWarn = sinon.stub(log, 'warn');
     return uploadForms.__with__({ insertOrReplace, validateForms })(async () => {
-      await uploadForms(`${BASE_DIR}/no-instance-id`, FORMS_SUBDIR, { forms: ['dne'] });
+      await uploadForms.execute(`${BASE_DIR}/no-instance-id`, FORMS_SUBDIR, { forms: ['dne'] });
       expect(insertOrReplace.called).to.be.false;
       expect(logWarn.args[0][0]).to.equal('No matches found for files matching form filter: dne.xml');
     });
@@ -39,7 +39,7 @@ describe('upload-forms', () => {
     return uploadForms.__with__({ validateForms })(async () => {
       const logInfo = sinon.stub(log, 'info');
       const logWarn = sinon.stub(log, 'warn');
-      await uploadForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
+      await uploadForms.execute(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
       expect(logInfo.args[0][0]).to.equal('Preparing form for upload: example.xml…');
       expect(logWarn.callCount).to.equal(2);
       expect(logWarn.args[0][0]).to.equal(
@@ -71,7 +71,7 @@ describe('upload-forms', () => {
       validateForms: sinon.stub().rejects('The error')
     })(async () => {
       try {
-        await uploadForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
+        await uploadForms.execute(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
         assert.fail('Expected Error to be thrown.');
       } catch (e) {
         expect(insertOrReplace.called).to.be.false;

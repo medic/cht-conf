@@ -1,5 +1,5 @@
 const environment = require('../lib/environment');
-const uploadForms = require('../lib/upload-forms');
+const uploadForms = require('../lib/upload-forms').execute;
 
 const uploadContactForms = (forms) => {
   return uploadForms(environment.pathToProject, 'contact', {

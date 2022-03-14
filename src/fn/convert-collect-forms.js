@@ -1,4 +1,4 @@
-const convertForms = require('../lib/convert-forms');
+const convertForms = require('../lib/convert-forms').execute;
 const environment = require('../lib/environment');
 
 module.exports = {

@@ -2,6 +2,7 @@ const api = require('../lib/api');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { info } = require('../lib/log');
+const APP_SETTINGS_DIR = 'app_settings';
 
 function uploadAppSettings(api) {
   const settings = fs.read(`${environment.pathToProject}/app_settings.json`);
@@ -28,6 +29,7 @@ function uploadAppSettings(api) {
 
 module.exports = {
   uploadAppSettings,
+  APP_SETTINGS_DIR,
   requiresInstance: true,
   execute: () => uploadAppSettings(api())
 };
