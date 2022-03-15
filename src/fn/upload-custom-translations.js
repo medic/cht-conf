@@ -13,12 +13,12 @@ const {
   TranslationException
 } = require('@medic/translation-checker');
 
-const TRANSLATIONS_PATH = 'translations';
+const { TRANSLATIONS_DIR_PATH } = require('../lib/project-paths');
 
 const execute = async () => {
   const db = pouch(environment.apiUrl);
 
-  const dir = `${environment.pathToProject}/${TRANSLATIONS_PATH}`;
+  const dir = `${environment.pathToProject}/${TRANSLATIONS_DIR_PATH}`;
 
   let fileNames;
   let formatErrorsFound = 0;
@@ -181,6 +181,6 @@ async function genericTranslationsStructure(db) {
 
 module.exports = {
   requiresInstance: true,
-  TRANSLATIONS_PATH,
+  TRANSLATIONS_DIR_PATH,
   execute
 };

@@ -1,10 +1,10 @@
 const convertForms = require('../lib/convert-forms').execute;
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
-const path = require('path');
+const { CONTACT_FORMS_PATH } = require('../lib/project-paths');
 
 const convertContactForm = (forms) => {
-  const dir = `${environment.pathToProject}/forms/contact`;
+  const dir = `${environment.pathToProject}/${CONTACT_FORMS_PATH}`;
   const placeTypesJson = `${dir}/place-types.json`;
 
   let PLACE_TYPES;
@@ -90,6 +90,6 @@ const convertContactForm = (forms) => {
 module.exports = {
   requiresInstance: false,
   convertContactForm,
-  CONTACT_FORMS_PATH: path.join('forms', 'contact'),
+  CONTACT_FORMS_PATH,
   execute: () => convertContactForm(environment.extraArgs)
 };

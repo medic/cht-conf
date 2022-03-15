@@ -8,7 +8,7 @@ const parseTargets = require('../lib/parse-targets');
 const { warn } = require('../lib/log');
 const parsePurge = require('../lib/parse-purge');
 const validateAppSettings = require('../lib/validate-app-settings');
-const APP_SETTINGS_DIR = 'app_settings';
+const { APP_SETTINGS_DIR_PATH } = require('../lib/project-paths');
 
 const compileAppSettings = async () => {
   const options = parseExtraArgs(environment.extraArgs);
@@ -42,7 +42,7 @@ const compileAppSettingsForProject = async (projectDir, options) => {
 
   const readOptionalJson = path => fs.exists(path) ? fs.readJson(path) : undefined;
   let appSettings;
-  const baseSettingsPath = path.join(projectDir, `${APP_SETTINGS_DIR}/base_settings.json`);
+  const baseSettingsPath = path.join(projectDir, `${APP_SETTINGS_DIR_PATH}/base_settings.json`);
   const appSettingsPath = path.join(projectDir, 'app_settings.json');
   const esLintFilePath = path.join(projectDir, '.eslintrc');
 
@@ -57,10 +57,10 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   if (fs.exists(baseSettingsPath)) {
     // using modular config so should override anything already defined in app_settings.json
     appSettings = fs.readJson(baseSettingsPath);
-    if(appSettings.forms) {
+    if (appSettings.forms) {
       warn('forms should be defined in a separate <config_repo>/app_settings/forms.json file.');
     }
-    if(appSettings.schedules) {
+    if (appSettings.schedules) {
       warn('schedules should be defined in a separate <config_repo>/app_settings/schedules.json file.');
     }
     const formSettings = readOptionalJson(path.join(projectDir, 'app_settings/forms.json'));
@@ -108,7 +108,7 @@ function applyTransforms(app_settings, inherited) {
     rules.forEach(k => {
       const parts = k.split('.');
       let t = target;
-      while(parts.length > 1) {
+      while (parts.length > 1) {
         t = t[parts[0]];
         parts.shift();
       }
@@ -123,7 +123,7 @@ function applyTransforms(app_settings, inherited) {
       .forEach(k => {
         const parts = k.split('.');
         let t = target;
-        while(parts.length > 1) {
+        while (parts.length > 1) {
           t = t[parts[0]];
           parts.shift();
         }
@@ -147,7 +147,7 @@ function applyTransforms(app_settings, inherited) {
       .forEach(k => {
         const parts = k.split('.');
         let t = target;
-        while(parts.length > 1) {
+        while (parts.length > 1) {
           t = t[parts[0]];
           parts.shift();
         }
@@ -179,6 +179,6 @@ const parseExtraArgs = (extraArgs = []) => {
 
 module.exports = {
   requiresInstance: false,
-  APP_SETTINGS_DIR,
+  APP_SETTINGS_DIR_PATH,
   execute: compileAppSettings
 };

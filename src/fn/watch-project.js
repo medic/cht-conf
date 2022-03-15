@@ -10,9 +10,9 @@ const convertForms = require('../lib/convert-forms');
 const uploadForms = require('../lib/upload-forms');
 const { convertAppForms, APP_FORMS_PATH } = require('./convert-app-forms');
 const { convertContactForm, CONTACT_FORMS_PATH } = require('./convert-contact-forms');
-const { uploadAppSettings, APP_SETTINGS_DIR } = require('./upload-app-settings');
+const { uploadAppSettings, APP_SETTINGS_DIR_PATH } = require('./upload-app-settings');
 const compileAppSettings = require('./compile-app-settings').execute;
-const { execute: uploadCustomTranslations, TRANSLATIONS_PATH } = require('./upload-custom-translations');
+const { execute: uploadCustomTranslations, TRANSLATIONS_DIR_PATH } = require('./upload-custom-translations');
 const { execute: uploadResources, RESOURCES_DIR_PATH, RESOURCE_CONFIG_PATH } = require('./upload-resources');
 
 const formMediaRegex = /^[a-zA-Z0-9_]+(?:-media)$/;
@@ -154,14 +154,14 @@ const watchProject = {
                     continue;
                 }
 
-                if (parsedPath.dir === path.join(environment.pathToProject, TRANSLATIONS_PATH)) {
+                if (parsedPath.dir === path.join(environment.pathToProject, TRANSLATIONS_DIR_PATH)) {
                     await uploadCustomTranslations();
                     const fileName = parsedPath.base;
                     if (callback) callback(fileName);
                     continue;
                 }
 
-                if (parsedPath.dir === path.join(environment.pathToProject, APP_SETTINGS_DIR)) {
+                if (parsedPath.dir === path.join(environment.pathToProject, APP_SETTINGS_DIR_PATH)) {
                     const fileName = parsedPath.base;
                     processConfigFiles(api, fileName);
                     continue;

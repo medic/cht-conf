@@ -1,6 +1,6 @@
 const convertForms = require('../lib/convert-forms').execute;
 const environment = require('../lib/environment');
-const path = require('path');
+const { APP_FORMS_PATH } = require('../lib/project-paths');
 
 const convertAppForms = (forms) => {
   return convertForms(environment.pathToProject, 'app', {
@@ -13,6 +13,6 @@ const convertAppForms = (forms) => {
 module.exports = {
   requiresInstance: false,
   convertAppForms,
-  APP_FORMS_PATH: path.join('forms', 'app'),
+  APP_FORMS_PATH: APP_FORMS_PATH,
   execute: () => convertAppForms(environment.extraArgs)
 };

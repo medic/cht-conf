@@ -6,9 +6,7 @@ const processJson = (json) => {
     resources: json
   };
 };
-
-const RESOURCE_CONFIG_PATH = 'resources.json';
-const RESOURCES_DIR_PATH = 'resources';
+const { RESOURCE_CONFIG_PATH, RESOURCES_DIR_PATH } = require('../lib/project-paths');
 
 module.exports = {
   requiresInstance: true,
