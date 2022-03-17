@@ -121,7 +121,7 @@ describe('watch-project', function () {
       .then(docs => {
         expect(docs.rows.filter(row => row.id === 'resources')).to.not.be.empty;
       })
-      .then(() => {
+      .finally(() => {
         fs.writeJson(resourceJsonPath, {});
       });
   });
@@ -139,7 +139,7 @@ describe('watch-project', function () {
         const appForms = fs.fs.readdirSync(appFormDir);
         expect(appForms).to.include(`${form}.xml`);
       })
-      .then(() => cleanFormDir(appFormDir, form));
+      .finally(() => cleanFormDir(appFormDir, form));
   });
 
   it('watch-project: upload app forms', () => {
@@ -156,7 +156,7 @@ describe('watch-project', function () {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
       })
-      .then(() => cleanFormDir(appFormDir, form));
+      .finally(() => cleanFormDir(appFormDir, form));
   });
 
   it('watch-project: upload app form on properties change', () => {
@@ -171,7 +171,32 @@ describe('watch-project', function () {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
       })
-      .then(() => cleanFormDir(appFormDir, form));
+      .finally(() => cleanFormDir(appFormDir, form));
+  });
+
+  it('watch-project: upload app form on form-media change', () => {
+    const form = 'death';
+    copySampleForms('upload-app-form');
+
+    const dummyPng = 'test.png';
+    const formMediaDir = path.join(appFormDir, `${form}-media`);
+    const createFormMediaDir = () => {
+      fs.fs.mkdirSync(formMediaDir);
+      fs.fs.writeFileSync(path.join(formMediaDir, dummyPng), '');
+    };
+
+    api.giveResponses({ status: 200, body: { ok: true } });
+
+    return watchWrapper(createFormMediaDir, dummyPng)
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        const docIds = docs.rows.map(row => row.id);
+        expect(docIds).to.include(`form:${form}`);
+      })
+      .finally(() => {
+        fs.fs.rmdirSync(formMediaDir, { recursive: true });
+        cleanFormDir(appFormDir, form);
+      });
   });
 
   it('watch-project: convert contact forms', () => {
@@ -186,7 +211,7 @@ describe('watch-project', function () {
         const contactForms = fs.fs.readdirSync(contactFormsDir);
         expect(contactForms).to.include(`${form}.xml`);
       })
-      .then(() => cleanFormDir(contactFormsDir, form));
+      .finally(() => cleanFormDir(contactFormsDir, form));
   });
 
   it('watch-project: upload contact forms', () => {
@@ -203,7 +228,7 @@ describe('watch-project', function () {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:contact:${form.replace('-', ':')}`);
       })
-      .then(() => cleanFormDir(contactFormsDir, form));
+      .finally(() => cleanFormDir(contactFormsDir, form));
   });
 
 });
