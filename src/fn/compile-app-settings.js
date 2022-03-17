@@ -8,7 +8,21 @@ const parseTargets = require('../lib/parse-targets');
 const { warn } = require('../lib/log');
 const parsePurge = require('../lib/parse-purge');
 const validateAppSettings = require('../lib/validate-app-settings');
-const { APP_SETTINGS_DIR_PATH } = require('../lib/project-paths');
+const { APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('../lib/project-paths');
+
+// we can't used named capture groups yet
+const JS_FILE_MATCHER = /^(.+)(\.js)$/; // 2 groups get the file name and extension
+const JSON_FILE_MATCHER = /^([\w]+)(\.json)$/;
+const configFileMatcher = (fileName) => {
+  const jsFileMatchResult = fileName.match(JS_FILE_MATCHER);
+  // the first element is always the whole matched string, then our first file name group
+  if (jsFileMatchResult) return jsFileMatchResult[1];
+
+  const jsonFileMatchResult = fileName.match(JSON_FILE_MATCHER);
+  if (jsonFileMatchResult) return jsonFileMatchResult[1];
+
+  return null;
+};
 
 const compileAppSettings = async () => {
   const options = parseExtraArgs(environment.extraArgs);
@@ -24,7 +38,7 @@ const compileAppSettings = async () => {
     appSettings = await compileAppSettingsForProject(projectDir, options);
   }
 
-  fs.writeJson(path.join(projectDir, 'app_settings.json'), appSettings);
+  fs.writeJson(path.join(projectDir, APP_SETTINGS_JSON_PATH), appSettings);
 };
 
 const compileAppSettingsForProject = async (projectDir, options) => {
@@ -43,7 +57,7 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   const readOptionalJson = path => fs.exists(path) ? fs.readJson(path) : undefined;
   let appSettings;
   const baseSettingsPath = path.join(projectDir, `${APP_SETTINGS_DIR_PATH}/base_settings.json`);
-  const appSettingsPath = path.join(projectDir, 'app_settings.json');
+  const appSettingsPath = path.join(projectDir, APP_SETTINGS_JSON_PATH);
   const esLintFilePath = path.join(projectDir, '.eslintrc');
 
   // Fail if no eslintrc file is found
@@ -180,5 +194,6 @@ const parseExtraArgs = (extraArgs = []) => {
 module.exports = {
   requiresInstance: false,
   APP_SETTINGS_DIR_PATH,
+  configFileMatcher,
   execute: compileAppSettings
 };

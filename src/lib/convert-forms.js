@@ -21,47 +21,52 @@ E	pip uninstall pyxform-medic
 E` + INSTALLATION_INSTRUCTIONS;
 
 const FORM_EXTENSION = '.xlsx';
-const FORM_FILE_MATCHER = (fileName) => {
-  return fileName.endsWith(FORM_EXTENSION) &&
+const formFileMatcher = (fileName) => {
+  if (fileName.endsWith(FORM_EXTENSION) &&
     !fileName.startsWith('~$') // ignore Excel "owner files"
-    && fileName !== 'PLACE_TYPE-create.xlsx' && fileName !== 'PLACE_TYPE-edit.xlsx';
+    && fileName !== 'PLACE_TYPE-create.xlsx' && fileName !== 'PLACE_TYPE-edit.xlsx') {
+    return fileName.slice(0, fileName.length - FORM_EXTENSION.length);
+  }
+  return null;
+};
+
+const execute = async (projectDir, subDirectory, options) => {
+  if (!options) options = {};
+
+  const formsDir = getFormDir(projectDir, subDirectory);
+
+  if (!fs.exists(formsDir)) {
+    warn(`Forms dir not found: ${formsDir}`);
+    return Promise.resolve();
+  }
+
+  const filesToConvert = argsFormFilter(formsDir, FORM_EXTENSION, options)
+    .filter(name => formFileMatcher(name));
+
+  for (let xls of filesToConvert) {
+    const originalSourcePath = `${formsDir}/${xls}`;
+    let sourcePath;
+
+    if (options.force_data_node) {
+      const temporaryPath = `${fs.mkdtemp()}/${options.force_data_node}.xlsx`;
+      fs.copy(originalSourcePath, temporaryPath);
+      sourcePath = temporaryPath;
+    } else sourcePath = originalSourcePath;
+
+    const targetPath = `${fs.withoutExtension(originalSourcePath)}.xml`;
+
+    info('Converting form', originalSourcePath, '…');
+    await xls2xform(sourcePath, targetPath);
+    const hiddenFields = await getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`);
+    await fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
+    trace('Converted form', originalSourcePath);
+  }
 };
 
 module.exports = {
   SUPPORTED_EXTENSIONS: [FORM_EXTENSION],
-  FORM_FILE_MATCHER,
-  execute: async (projectDir, subDirectory, options) => {
-    if (!options) options = {};
-
-    const formsDir = getFormDir(projectDir, subDirectory);
-
-    if (!fs.exists(formsDir)) {
-      warn(`Forms dir not found: ${formsDir}`);
-      return Promise.resolve();
-    }
-
-    const filesToConvert = argsFormFilter(formsDir, FORM_EXTENSION, options)
-      .filter(name => FORM_FILE_MATCHER(name));
-
-    for (let xls of filesToConvert) {
-      const originalSourcePath = `${formsDir}/${xls}`;
-      let sourcePath;
-
-      if (options.force_data_node) {
-        const temporaryPath = `${fs.mkdtemp()}/${options.force_data_node}.xlsx`;
-        fs.copy(originalSourcePath, temporaryPath);
-        sourcePath = temporaryPath;
-      } else sourcePath = originalSourcePath;
-
-      const targetPath = `${fs.withoutExtension(originalSourcePath)}.xml`;
-
-      info('Converting form', originalSourcePath, '…');
-      await xls2xform(sourcePath, targetPath);
-      const hiddenFields = await getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`);
-      await fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
-      trace('Converted form', originalSourcePath);
-    }
-  }
+  formFileMatcher,
+  execute
 };
 
 const xls2xform = (sourcePath, targetPath) =>

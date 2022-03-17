@@ -2,10 +2,10 @@ const api = require('../lib/api');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { info } = require('../lib/log');
-const { APP_SETTINGS_DIR_PATH } = require('../lib/project-paths');
+const { APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('../lib/project-paths');
 
-function uploadAppSettings(api) {
-  const settings = fs.read(`${environment.pathToProject}/app_settings.json`);
+const uploadAppSettings = (api) => {
+  const settings = fs.read(`${environment.pathToProject}/${APP_SETTINGS_JSON_PATH}`);
   return api.updateAppSettings(settings)
     .then(JSON.parse)
     .then(json => {
@@ -25,11 +25,12 @@ function uploadAppSettings(api) {
         }
       }
     });
-}
+};
 
 module.exports = {
   uploadAppSettings,
   APP_SETTINGS_DIR_PATH,
+  APP_SETTINGS_JSON_PATH,
   requiresInstance: true,
   execute: () => uploadAppSettings(api())
 };

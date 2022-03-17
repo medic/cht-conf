@@ -2,6 +2,7 @@ const path = require('path');
 // Paths Relative to the Project
 module.exports = {
     APP_SETTINGS_DIR_PATH: 'app_settings',
+    APP_SETTINGS_JSON_PATH: 'app_settings.json',
     APP_FORMS_PATH: path.join('forms', 'app'),
     CONTACT_FORMS_PATH: path.join('forms', 'contact'),
     TRANSLATIONS_DIR_PATH: 'translations',
