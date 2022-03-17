@@ -13,6 +13,6 @@ const convertAppForms = (forms) => {
 module.exports = {
   requiresInstance: false,
   convertAppForms,
-  APP_FORMS_PATH: APP_FORMS_PATH,
+  APP_FORMS_PATH,
   execute: () => convertAppForms(environment.extraArgs)
 };

@@ -8,9 +8,16 @@ const { watchProject } = require('../../src/fn/watch-project');
 const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
 const { getTranslationDoc, expectTranslationDocs } = require('./utils');
 
-const { APP_FORMS_PATH, CONTACT_FORMS_PATH, RESOURCE_CONFIG_PATH, APP_SETTINGS_DIR_PATH } = require('../../src/lib/project-paths');
+const {
+  APP_FORMS_PATH,
+  CONTACT_FORMS_PATH,
+  COLLECT_FORMS_PATH,
+  RESOURCE_CONFIG_PATH,
+  APP_SETTINGS_DIR_PATH
+} = require('../../src/lib/project-paths');
 const testDir = path.join(__dirname, '../data/skeleton');
 const appFormDir = path.join(testDir, APP_FORMS_PATH);
+const collectFormsDir = path.join(testDir, COLLECT_FORMS_PATH);
 const contactFormsDir = path.join(testDir, CONTACT_FORMS_PATH);
 const settingsPath = path.join(testDir, APP_SETTINGS_DIR_PATH, 'base_settings.json');
 const sampleTranslationPath = path.join(testDir, 'translations', 'messages-en.properties');
@@ -72,7 +79,6 @@ function watchWrapper(action, file) {
 }
 
 describe('watch-project', function () {
-  this.timeout(5000);
 
   beforeEach(() => {
     sinon.stub(environment, 'pathToProject').get(() => testDir);
@@ -143,6 +149,18 @@ describe('watch-project', function () {
       .then(() => cleanFormDir(appFormDir, form));
   });
 
+  it('watch-project: convert collect forms', () => {
+    const form = 'f';
+    const copyForm = () => copySampleForms('collect-xlsx', COLLECT_FORMS_PATH);
+
+    return watchWrapper(copyForm, `${form}.xlsx`)
+      .then(() => {
+        const appForms = fs.fs.readdirSync(collectFormsDir);
+        expect(appForms).to.include(`${form}.xml`);
+      })
+      .then(() => cleanFormDir(collectFormsDir, form));
+  });
+
   it('watch-project: upload app forms', () => {
     const form = 'death';
     const copySampleForm = () => {
@@ -158,6 +176,23 @@ describe('watch-project', function () {
         expect(docIds).to.include(`form:${form}`);
       })
       .then(() => cleanFormDir(appFormDir, form));
+  });
+
+  it('watch-project: upload convert forms', () => {
+    const form = 'f';
+    const copySampleForm = () => {
+      copySampleForms('collect-xml', COLLECT_FORMS_PATH);
+    };
+
+    api.giveResponses({ status: 200, body: { ok: true } });
+
+    return watchWrapper(copySampleForm, `${form}.xml`)
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        const docIds = docs.rows.map(row => row.id);
+        expect(docIds).to.include(`form:${form}`);
+      })
+      .then(() => cleanFormDir(collectFormsDir, form));
   });
 
   it('watch-project: upload app form on properties change', () => {

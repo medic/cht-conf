@@ -6,10 +6,12 @@ const Queue = require('queue-promise');
 const watcher = require('@parcel/watcher');
 const { uploadAppForms } = require('./upload-app-forms');
 const { uploadContactForms } = require('./upload-contact-forms');
+const { uploadCollectForms } = require('./upload-collect-forms');
 const convertForms = require('../lib/convert-forms');
 const uploadForms = require('../lib/upload-forms');
 const { convertAppForms, APP_FORMS_PATH } = require('./convert-app-forms');
 const { convertContactForm, CONTACT_FORMS_PATH } = require('./convert-contact-forms');
+const { convertCollectForms, COLLECT_FORMS_PATH } = require('./convert-collect-forms');
 const { uploadAppSettings, APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('./upload-app-settings');
 const { execute: compileAppSettings, configFileMatcher } = require('./compile-app-settings');
 const { execute: uploadCustomTranslations, TRANSLATIONS_DIR_PATH } = require('./upload-custom-translations');
@@ -47,16 +49,19 @@ const waitForKillSignal = () => {
 };
 
 const processAppForm = (fileName) => {
-    if (uploadForms.formFileMatcher(fileName)) {
+    let form = uploadForms.formFileMatcher(fileName);
+    if (form) {
         eventQueue.enqueue(async () => {
-            await uploadAppForms([fileName.split('.')[0]]);
+            await uploadAppForms([form]);
             return fileName;
         });
         return true;
     }
-    if (convertForms.formFileMatcher(fileName)) {
+
+    form = convertForms.formFileMatcher(fileName);
+    if (form) {
         eventQueue.enqueue(async () => {
-            await convertAppForms([fileName.split('.')[0]]);
+            await convertAppForms([form]);
             return fileName;
         });
         return true;
@@ -90,6 +95,27 @@ const processContactForm = (fileName) => {
     if (form) {
         eventQueue.enqueue(async () => {
             await uploadContactForms([form]);
+            return fileName;
+        });
+        return true;
+    }
+    return false;
+};
+
+const processCollectForm = (fileName) => {
+    let form = uploadForms.formFileMatcher(fileName);
+    if (form) {
+        eventQueue.enqueue(async () => {
+            await uploadCollectForms([form]);
+            return fileName;
+        });
+        return true;
+    }
+
+    form = convertForms.formFileMatcher(fileName);
+    if (form) {
+        eventQueue.enqueue(async () => {
+            await convertCollectForms([form]);
             return fileName;
         });
         return true;
@@ -153,6 +179,12 @@ const watchProject = {
                     processContactForm(fileName);
                     continue;
                 }
+
+                if (parsedPath.dir === path.join(environment.pathToProject, COLLECT_FORMS_PATH)) {
+                    processCollectForm(fileName);
+                    continue;
+                }
+
 
                 if (parsedPath.dir === path.join(environment.pathToProject, TRANSLATIONS_DIR_PATH)) {
                     await uploadCustomTranslations();
