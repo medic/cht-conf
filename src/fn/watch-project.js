@@ -18,16 +18,11 @@ const { execute: uploadResources, RESOURCES_DIR_PATH, RESOURCE_CONFIG_PATH } = r
 const formMediaRegex = /^[a-zA-Z0-9_]+(?:-media)$/;
 
 const uploadInitialState = (api) => {
-    return Promise.all(
-        [
-            uploadResources(),
-            uploadAppForms(environment.extraArgs),
-            uploadContactForms(environment.extraArgs),
-            uploadCustomTranslations(),
-            uploadAppSettings(api)
-        ]
-    );
-};
+await uploadResources();
+await uploadAppForms(environment.extraArgs);
+await uploadContactForms(environment.extraArgs);
+await uploadCustomTranslations();
+await uploadAppSettings(api);
 
 let fsEventsSubscription;
 let eventQueue;
@@ -138,7 +133,7 @@ const watchProject = {
                 const changePath = event.path;
                 const parsedPath = path.parse(changePath);
 
-                if (parsedPath.dir.replace(environment.pathToProject, '').startsWith(`/${APP_FORMS_PATH}`)) {
+if (parsed.dir === path.join(environment.pathToProject, APP_FORMS_PATH))
                     const relativeFormsDir = parsedPath.dir.replace(environment.pathToProject, '');
                     const fileName = parsedPath.base;
                     if (!processAppForm(fileName) && !relativeFormsDir.endsWith(APP_FORMS_PATH)) {

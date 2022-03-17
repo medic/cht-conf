@@ -104,7 +104,7 @@ describe('watch-project', function () {
   it('watch-project: upload app settings', () => {
     return watchWrapper(editAppSettings, 'app_settings.json')
       .then(mockApi.getAppSettings)
-      .then((settings) => { return JSON.parse(settings.content); })
+.then((settings) => JSON.parse(settings.content))
       .then((settings) => expect(settings.locale).equal('es'));
   });
 
@@ -113,14 +113,14 @@ describe('watch-project', function () {
     fs.fs.unlinkSync(appSettingsPath);
     expect(fs.fs.existsSync(appSettingsPath)).to.be.false;
     return watchWrapper(editBaseSettings, 'base_settings.json')
-      .then(() => { return fs.readJson(appSettingsPath); })
+.then(() => fs.readJson(appSettingsPath))
       .then((settings) => expect(settings.locale).equal('es'));
   });
 
   it('watch-project: upload custom translations', () => {
     return uploadCustomTranslations()
       .then(() => expectTranslationDocs(api, 'en'))
-      .then(watchWrapper(editTranslations, 'messages-en.properties'))
+.then(() => watchWrapper(editTranslations, 'messages-en.properties'))
       .then(() => getTranslationDoc(api, 'en'))
       .then(messages => {
         assert.deepEqual(messages.custom, { a: 'first', test: 'new' });
@@ -143,7 +143,8 @@ describe('watch-project', function () {
     const copyForm = () => copySampleForms('convert-app-form');
     return watchWrapper(copyForm, 'death.xlsx')
       .then(() => {
-        expect(fs.fs.readdirSync(appFormPath).find(file => file === 'death.xml')).to.be.not.undefined;
+const appForms = fs.fs.readdirSync(appFormPath);
+expect(appForms).to.include('death.xml');
       })
       .then(() => {
         fs.fs.readdirSync(appFormPath).filter(name => name.startsWith('death')).forEach(file => fs.fs.unlinkSync(path.join(appFormPath, file)));
@@ -161,7 +162,8 @@ describe('watch-project', function () {
     return watchWrapper(copySampleForm, 'death.xml')
       .then(() => api.db.allDocs())
       .then(docs => {
-        expect(docs.rows.filter(row => row.id === 'form:death')).to.not.be.empty;
+const docIds = doc.rows.map(row => row.id);
+expect(dicIds).to.include('form:death');
       })
       .then(() => {
         const appFormPath = path.join(testDir, 'forms', 'app');
@@ -175,7 +177,8 @@ describe('watch-project', function () {
     return watchWrapper(editAppFormProperties, 'death.properties.json')
       .then(() => api.db.allDocs())
       .then(docs => {
-        expect(docs.rows.filter(row => row.id === 'form:death')).to.not.be.empty;
+const docIds = doc.rows.map(row => row.id);
+expect(dicIds).to.include('form:death');
       })
       .then(() => {
         const appFormPath = path.join(testDir, 'forms', 'app');
@@ -194,7 +197,8 @@ describe('watch-project', function () {
     return watchWrapper(copyForm, 'household-create.xlsx')
       .then(() => api.db.allDocs())
       .then(() => {
-        expect(fs.fs.readdirSync(contactFormPath).find(file => file === 'household-create.xml')).to.be.not.undefined;
+const contactForms = fs.fs.readdirSync(contactFormPath);
+expect(contactForms).to.include('household-create.xml');
       })
       .then(() => {
         fs.fs.readdirSync(contactFormPath).filter(name => !name.startsWith('.')).forEach(file => fs.fs.unlinkSync(path.join(contactFormPath, file)));
@@ -212,7 +216,8 @@ describe('watch-project', function () {
     return watchWrapper(copyContactForm, 'chw_area-edit.xml')
       .then(() => api.db.allDocs())
       .then(docs => {
-        expect(docs.rows.filter(row => row.id === 'form:contact:chw_area:edit')).to.not.be.empty;
+const docIds = doc.rows.map(row => row.id);
+expect(dicIds).to.include('form:contact:chw_area:edit');
       })
       .then(() => {
         const appFormPath = path.join(testDir, 'forms', 'contact');
