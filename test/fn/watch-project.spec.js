@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const path = require('path');
 const api = require('../api-stub');
 const fs = require('../../src/lib/sync-fs');
+const fse = require('fs-extra');
 const environment = require('../../src/lib/environment');
 const { watchProject } = require('../../src/fn/watch-project');
 const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
@@ -63,9 +64,11 @@ function editAppFormProperties() {
 
 function copySampleForms(sampleDir, destination = path.join('forms', 'app')) {
   const absSampleDir = path.join(testDir, 'sample-forms', sampleDir);
-  fs.fs.readdirSync(absSampleDir).forEach(file => {
-    fs.fs.copyFileSync(path.join(absSampleDir, file), path.join(testDir, destination, file));
-  });
+  fse.copySync(absSampleDir, path.join(testDir, destination));
+}
+
+function cleanFormDir(formDir, form) {
+  fs.fs.readdirSync(formDir).filter(name => name.startsWith(form)).forEach(file => fse.removeSync(path.join(formDir, file)));
 }
 
 function watchWrapper(action, file) {
@@ -79,7 +82,6 @@ function watchWrapper(action, file) {
 }
 
 describe('watch-project', function () {
-  this.timeout(10000);
   beforeEach(() => {
     sinon.stub(environment, 'pathToProject').get(() => testDir);
     sinon.stub(environment, 'extraArgs').get(() => { });
@@ -132,10 +134,6 @@ describe('watch-project', function () {
         fs.writeJson(resourceJsonPath, {});
       });
   });
-
-  const cleanFormDir = (formDir, form) => {
-    fs.fs.readdirSync(formDir).filter(name => name.startsWith(form)).forEach(file => fs.fs.unlinkSync(path.join(formDir, file)));
-  };
 
   it('watch-project: convert app forms', () => {
     const form = 'death';
@@ -212,12 +210,10 @@ describe('watch-project', function () {
 
   it('watch-project: upload app form on form-media change', () => {
     const form = 'death';
-    copySampleForms('upload-app-form');
-
+    copySampleForms('form-media');
     const dummyPng = 'test.png';
     const formMediaDir = path.join(appFormDir, `${form}-media`);
     const createFormMediaDir = () => {
-      fs.fs.mkdirSync(formMediaDir);
       fs.fs.writeFileSync(path.join(formMediaDir, dummyPng), '');
     };
 
@@ -230,8 +226,6 @@ describe('watch-project', function () {
         expect(docIds).to.include(`form:${form}`);
       })
       .then(() => {
-        fs.fs.unlinkSync(path.join(formMediaDir, dummyPng));
-        fs.fs.rmdirSync(formMediaDir, { recursive: true, force: true });
         cleanFormDir(appFormDir, form);
       });
   });
