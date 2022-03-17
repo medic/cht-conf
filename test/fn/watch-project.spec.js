@@ -121,7 +121,7 @@ describe('watch-project', function () {
       .then(docs => {
         expect(docs.rows.filter(row => row.id === 'resources')).to.not.be.empty;
       })
-      .finally(() => {
+      .then(() => {
         fs.writeJson(resourceJsonPath, {});
       });
   });
@@ -139,7 +139,7 @@ describe('watch-project', function () {
         const appForms = fs.fs.readdirSync(appFormDir);
         expect(appForms).to.include(`${form}.xml`);
       })
-      .finally(() => cleanFormDir(appFormDir, form));
+      .then(() => cleanFormDir(appFormDir, form));
   });
 
   it('watch-project: upload app forms', () => {
@@ -156,7 +156,7 @@ describe('watch-project', function () {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
       })
-      .finally(() => cleanFormDir(appFormDir, form));
+      .then(() => cleanFormDir(appFormDir, form));
   });
 
   it('watch-project: upload app form on properties change', () => {
@@ -171,7 +171,7 @@ describe('watch-project', function () {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
       })
-      .finally(() => cleanFormDir(appFormDir, form));
+      .then(() => cleanFormDir(appFormDir, form));
   });
 
   it('watch-project: upload app form on form-media change', () => {
@@ -193,8 +193,9 @@ describe('watch-project', function () {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
       })
-      .finally(() => {
-        fs.fs.rmdirSync(formMediaDir, { recursive: true });
+      .then(() => {
+        fs.fs.unlinkSync(path.join(formMediaDir, dummyPng));
+        fs.fs.rmdirSync(formMediaDir, { recursive: true, force: true });
         cleanFormDir(appFormDir, form);
       });
   });
@@ -211,7 +212,7 @@ describe('watch-project', function () {
         const contactForms = fs.fs.readdirSync(contactFormsDir);
         expect(contactForms).to.include(`${form}.xml`);
       })
-      .finally(() => cleanFormDir(contactFormsDir, form));
+      .then(() => cleanFormDir(contactFormsDir, form));
   });
 
   it('watch-project: upload contact forms', () => {
@@ -228,7 +229,7 @@ describe('watch-project', function () {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:contact:${form.replace('-', ':')}`);
       })
-      .finally(() => cleanFormDir(contactFormsDir, form));
+      .then(() => cleanFormDir(contactFormsDir, form));
   });
 
 });
