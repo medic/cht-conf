@@ -79,7 +79,7 @@ function watchWrapper(action, file) {
 }
 
 describe('watch-project', function () {
-
+  this.timeout(10000);
   beforeEach(() => {
     sinon.stub(environment, 'pathToProject').get(() => testDir);
     sinon.stub(environment, 'extraArgs').get(() => { });
