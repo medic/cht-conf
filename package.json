@@ -89,6 +89,6 @@
     "rewire": "^5.0.0",
     "semantic-release": "^18.0.0",
     "sinon": "^7.3.2",
-    "fs-extra": "^10.0.1"
+    "fs-extra": "8.1.0"
   }
 }
