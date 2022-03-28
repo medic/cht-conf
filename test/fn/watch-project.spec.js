@@ -128,7 +128,8 @@ describe('watch-project', function () {
     return watchWrapper(editResources, 'resources.json')
       .then(() => api.db.allDocs())
       .then(docs => {
-        expect(docs.rows.filter(row => row.id === 'resources')).to.not.be.empty;
+        const docIds = docs.rows.map(row => row.id);
+        expect(docIds).to.include('resources');
       })
       .then(() => {
         fs.writeJson(resourceJsonPath, {});
