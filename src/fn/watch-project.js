@@ -212,7 +212,11 @@ const watchProject = {
 
 
                 if (parsedPath.dir === path.join(environment.pathToProject, TRANSLATIONS_DIR_PATH)) {
-                    await uploadCustomTranslations();
+                    try {
+                        await uploadCustomTranslations();
+                    } catch (e) {
+                        error(e);
+                    }
                     if (callback) callback(fileName);
                     continue;
                 }
@@ -228,7 +232,11 @@ const watchProject = {
                 }
 
                 if (parsedPath.base === RESOURCE_CONFIG_PATH || parsedPath.dir === path.join(environment.pathToProject, RESOURCES_DIR_PATH)) {
-                    await uploadResources();
+                    try {
+                        await uploadResources();
+                    } catch (e) {
+                        error(e);
+                    }
                     if (callback) callback(fileName);
                     continue;
                 }
