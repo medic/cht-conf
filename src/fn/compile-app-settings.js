@@ -12,7 +12,7 @@ const { APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('../lib/projec
 
 // we can't used named capture groups yet
 const JS_FILE_MATCHER = /^(.+)(\.js)$/; // 2 groups get the file name and extension
-const JSON_FILE_MATCHER = /^([\w]+)(\.json)$/;
+const JSON_FILE_MATCHER = /^(.+)(\.json)$/;
 const configFileMatcher = (fileName) => {
   const jsFileMatchResult = fileName.match(JS_FILE_MATCHER);
   // the first element is always the whole matched string, then our first file name group

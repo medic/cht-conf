@@ -177,6 +177,22 @@ describe('watch-project', function () {
       .then(() => cleanFormDir(appFormDir, form));
   });
 
+  it('watch-project: delete app forms', () => {
+    const form = 'death';
+    copySampleForms('upload-app-form');
+    const deleteForm = () => {
+      cleanFormDir(appFormDir, form);
+    };
+    return api.db.put({ _id: `form:${form}` })
+      .then(() => watchWrapper(deleteForm, `${form}.xml`))
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        const doc = docs.rows.find(doc => doc.id === `form:${form}`);
+        expect(doc).to.be.undefined;
+      })
+      .then(() => cleanFormDir(appFormDir, form));
+  });
+
   it('watch-project: upload convert forms', () => {
     const form = 'f';
     const copySampleForm = () => {

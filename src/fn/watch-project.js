@@ -9,6 +9,7 @@ const { uploadContactForms } = require('./upload-contact-forms');
 const { uploadCollectForms } = require('./upload-collect-forms');
 const convertForms = require('../lib/convert-forms');
 const uploadForms = require('../lib/upload-forms');
+const { deleteForms } = require('../fn/delete-forms');
 const { convertAppForms, APP_FORMS_PATH } = require('./convert-app-forms');
 const { convertContactForm, CONTACT_FORMS_PATH } = require('./convert-contact-forms');
 const { convertCollectForms, COLLECT_FORMS_PATH } = require('./convert-collect-forms');
@@ -16,6 +17,12 @@ const { uploadAppSettings, APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = req
 const { execute: compileAppSettings, configFileMatcher } = require('./compile-app-settings');
 const { execute: uploadCustomTranslations, TRANSLATIONS_DIR_PATH } = require('./upload-custom-translations');
 const { execute: uploadResources, RESOURCES_DIR_PATH, RESOURCE_CONFIG_PATH } = require('./upload-resources');
+
+const watcherEvents = {
+    CreateEvent: 'create',
+    DeleteEvent: 'delete',
+    UpdateEvent: 'update'
+};
 
 const uploadInitialState = async (api) => {
     await uploadResources();
@@ -48,7 +55,22 @@ const waitForKillSignal = () => {
     });
 };
 
-const processAppForm = (fileName) => {
+const deleteForm = (fileName) => {
+    let form = uploadForms.formFileMatcher(fileName) || convertForms.formFileMatcher(fileName);
+    if (form) {
+        eventQueue.enqueue(async () => {
+            await deleteForms([form]);
+            return fileName;
+        });
+        return true;
+    }
+    return false;
+};
+
+const processAppForm = (eventType, fileName) => {
+    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName)) {
+        return true;
+    }
     let form = uploadForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
@@ -81,7 +103,10 @@ const processAppFormMedia = (formMediaDir, fileName) => {
     return false;
 };
 
-const processContactForm = (fileName) => {
+const processContactForm = (eventType, fileName) => {
+    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName)) {
+        return true;
+    }
     let form = convertForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
@@ -102,7 +127,10 @@ const processContactForm = (fileName) => {
     return false;
 };
 
-const processCollectForm = (fileName) => {
+const processCollectForm = (eventType, fileName) => {
+    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName)) {
+        return true;
+    }
     let form = uploadForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
@@ -156,15 +184,12 @@ const watchProject = {
                 return;
             }
             for (const event of events) {
-                if (event.type !== 'update' && event.type !== 'create') {
-                    continue;
-                }
                 const changePath = event.path;
                 const parsedPath = path.parse(changePath);
                 const fileName = parsedPath.base;
 
                 if (parsedPath.dir === path.join(environment.pathToProject, APP_FORMS_PATH)) {
-                    processAppForm(fileName);
+                    processAppForm(event.type, fileName);
                     continue;
                 }
 
@@ -176,12 +201,12 @@ const watchProject = {
                 }
 
                 if (parsedPath.dir === path.join(environment.pathToProject, CONTACT_FORMS_PATH)) {
-                    processContactForm(fileName);
+                    processContactForm(event.type, fileName);
                     continue;
                 }
 
                 if (parsedPath.dir === path.join(environment.pathToProject, COLLECT_FORMS_PATH)) {
-                    processCollectForm(fileName);
+                    processCollectForm(event.type, fileName);
                     continue;
                 }
 
