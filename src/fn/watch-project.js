@@ -56,7 +56,7 @@ const waitForKillSignal = () => {
 };
 
 const deleteForm = (fileName) => {
-    let form = uploadForms.formFileMatcher(fileName) || convertForms.formFileMatcher(fileName);
+    const form = uploadForms.formFileMatcher(fileName) || convertForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
             await deleteForms([form]);
@@ -212,12 +212,10 @@ const watchProject = {
 
 
                 if (parsedPath.dir === path.join(environment.pathToProject, TRANSLATIONS_DIR_PATH)) {
-                    try {
+                    eventQueue.enqueue(async () => {
                         await uploadCustomTranslations();
-                    } catch (e) {
-                        error(e);
-                    }
-                    if (callback) callback(fileName);
+                        return fileName;
+                    });
                     continue;
                 }
 
@@ -232,12 +230,10 @@ const watchProject = {
                 }
 
                 if (parsedPath.base === RESOURCE_CONFIG_PATH || parsedPath.dir === path.join(environment.pathToProject, RESOURCES_DIR_PATH)) {
-                    try {
+                    eventQueue.enqueue(async () => {
                         await uploadResources();
-                    } catch (e) {
-                        error(e);
-                    }
-                    if (callback) callback(fileName);
+                        return fileName;
+                    });
                     continue;
                 }
             }
@@ -248,7 +244,7 @@ const watchProject = {
                 callback(file);
             }
         });
-        eventQueue.on('reject', err => error(err));
+        eventQueue.on('reject', err => error('watch-mode: Error while processing change,', err));
 
         info('watching', environment.pathToProject, 'for changes');
         await blockFn();
