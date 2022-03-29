@@ -1,3 +1,10 @@
+## [3.10.2](https://github.com/medic/cht-conf/compare/v3.10.1...v3.10.2) (2022-03-29)
+
+
+### Bug Fixes
+
+* **#371:** allow more characters in form name validation ([265bc48](https://github.com/medic/cht-conf/commit/265bc487d38201e4b3a96ee3d8939c7cba97b5a2)), closes [#371](https://github.com/medic/cht-conf/issues/371) [medic/cht-conf#471](https://github.com/medic/cht-conf/issues/471)
+
 ## [3.10.1](https://github.com/medic/cht-conf/compare/v3.10.0...v3.10.1) (2022-02-23)
 
 
