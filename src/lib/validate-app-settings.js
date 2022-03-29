@@ -1,7 +1,7 @@
 const joi = require('@hapi/joi');
 
 const FormsSchema = joi.object().pattern(
-  /\w{1,30}/,
+  joi.string().min(1),
   joi.object({
     meta: joi.object({
       code: joi.string().required(),
@@ -10,7 +10,7 @@ const FormsSchema = joi.object().pattern(
       subject_key: joi.string()
     }).required(),
     fields: joi.object().pattern(
-      /\w{1,30}/,
+      joi.string().min(1),
       joi.object({
         type: joi.string().required(),
         labels: joi.object({
