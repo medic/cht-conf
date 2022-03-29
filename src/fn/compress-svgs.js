@@ -16,6 +16,6 @@ module.exports = {
           .then(() => svgo.optimize(fs.read(path), { path }))
           .then(result => fs.write(path, result.data))
           .then(() => trace('Compressed', path))
-          .then(() => warn('Make sure you compare the content of your SVG files before merging to the master branch - sometimes optimising can change their contents!')),
+          .then(() => warn('Make sure you compare the content of your SVG files before merging to the default branch - sometimes optimising can change their contents!')),
         Promise.resolve())
 };

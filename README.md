@@ -317,7 +317,7 @@ Breaking| perf(#2): remove reporting rates feature <br/> BREAKING CHANGE: report
 
 ### Releasing betas
 
-1. Checkout `master`
+1. Checkout the default branch, for example `main`
 1. Run `npm version --no-git-tag-version <major>.<minor>.<patch>-beta.1`. This will only update the versions in `package.json` and `package-lock.json`. It will not create a git tag and not create an associated commit.
 1. Run `npm publish --tag beta`. This will publish your beta tag to npm's beta channel.
 

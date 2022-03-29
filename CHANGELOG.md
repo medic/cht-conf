@@ -199,7 +199,7 @@ As of this release no docs on the server will be touched unless some configurati
 
 ### New action to bulk-edit contacts
 
-You can now bulk edit contacts at once by providing a CSV. For more information, read [the documentation](https://github.com/medic/cht-conf/blob/master/README.md#editing-contacts-across-the-hierarchy).
+You can now bulk edit contacts at once by providing a CSV. For more information, read [the documentation](https://github.com/medic/cht-conf/blob/main/README.md#editing-contacts-across-the-hierarchy).
 
 [#297](https://github.com/medic/cht-conf/issues/297)
 

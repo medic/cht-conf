@@ -64,7 +64,7 @@ module.exports.getDefaultRemote = async () => {
 
 /**
  * Returns the upstream of the current branch,
- * in the form of repo/branch, eg. 'origin/master'.
+ * in the form of repo/branch, eg. 'origin/main'.
  *
  * Returns `null` if there are no upstreams repos configured.
  */
