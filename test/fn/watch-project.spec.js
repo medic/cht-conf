@@ -193,6 +193,22 @@ describe('watch-project', function () {
       .then(() => cleanFormDir(appFormDir, form));
   });
 
+  it('watch-project: do not delete app form when a form part exists', () => {
+    const form = 'death';
+    copySampleForms('delete-form');
+    const deleteForm = () => {
+      fse.removeSync(path.join(appFormDir, `${form}.xml`));
+    };
+    return api.db.put({ _id: `form:${form}` })
+      .then(() => watchWrapper(deleteForm, `${form}.xml`))
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        const doc = docs.rows.find(doc => doc.id === `form:${form}`);
+        expect(doc).to.be.not.undefined;
+      })
+      .then(() => cleanFormDir(appFormDir, form));
+  });
+
   it('watch-project: upload convert forms', () => {
     const form = 'f';
     const copySampleForm = () => {

@@ -1,7 +1,8 @@
 const environment = require('../lib/environment');
 const process = require('process');
 const path = require('path');
-const { error, info } = require('../lib/log');
+const fs = require('fs');
+const { error, warn, info } = require('../lib/log');
 const Queue = require('queue-promise');
 const watcher = require('@parcel/watcher');
 const { uploadAppForms } = require('./upload-app-forms');
@@ -55,20 +56,27 @@ const waitForKillSignal = () => {
     });
 };
 
-const deleteForm = (fileName) => {
+const deleteForm = (fileName, formDir) => {
     const form = uploadForms.formFileMatcher(fileName) || convertForms.formFileMatcher(fileName);
-    if (form) {
+    if (!form) {
+        return false;
+    }
+    const absFormDirPath = path.join(environment.pathToProject, formDir);
+    const formFiles = fs.readdirSync(absFormDirPath).filter(file => (uploadForms.formFileMatcher(file) || convertForms.formFileMatcher(file)));
+    const canDelete = formFiles.length <= 0;
+    if (canDelete) {
         eventQueue.enqueue(async () => {
             await deleteForms([form]);
             return fileName;
         });
         return true;
     }
+    warn(`You have to delete [ ${formFiles} ] to delete the ${form} form from ${environment.apiUrl}`);
     return false;
 };
 
 const processAppForm = (eventType, fileName) => {
-    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName)) {
+    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName, APP_FORMS_PATH)) {
         return true;
     }
     let form = uploadForms.formFileMatcher(fileName);
@@ -104,7 +112,7 @@ const processAppFormMedia = (formMediaDir, fileName) => {
 };
 
 const processContactForm = (eventType, fileName) => {
-    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName)) {
+    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName, CONTACT_FORMS_PATH)) {
         return true;
     }
     let form = convertForms.formFileMatcher(fileName);
@@ -128,7 +136,7 @@ const processContactForm = (eventType, fileName) => {
 };
 
 const processCollectForm = (eventType, fileName) => {
-    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName)) {
+    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName, COLLECT_FORMS_PATH)) {
         return true;
     }
     let form = uploadForms.formFileMatcher(fileName);
