@@ -20,25 +20,34 @@ E
 E	pip uninstall pyxform-medic
 E` + INSTALLATION_INSTRUCTIONS;
 
-module.exports = async (projectDir, subDirectory, options) => {
-  if(!options) options = {};
+const FORM_EXTENSION = '.xlsx';
+const formFileMatcher = (fileName) => {
+  if (fileName.endsWith(FORM_EXTENSION) &&
+    !fileName.startsWith('~$') // ignore Excel "owner files"
+    && fileName !== 'PLACE_TYPE-create.xlsx' && fileName !== 'PLACE_TYPE-edit.xlsx') {
+    return fileName.slice(0, fileName.length - FORM_EXTENSION.length);
+  }
+  return null;
+};
+
+const execute = async (projectDir, subDirectory, options) => {
+  if (!options) options = {};
 
   const formsDir = getFormDir(projectDir, subDirectory);
 
-  if(!fs.exists(formsDir)) {
+  if (!fs.exists(formsDir)) {
     warn(`Forms dir not found: ${formsDir}`);
     return Promise.resolve();
   }
 
-  const filesToConvert = argsFormFilter(formsDir, '.xlsx', options)
-    .filter(name => !name.startsWith('~$')) // ignore Excel "owner files"
-    .filter(name => name !== 'PLACE_TYPE-create.xlsx' && name !== 'PLACE_TYPE-edit.xlsx');
+  const filesToConvert = argsFormFilter(formsDir, FORM_EXTENSION, options)
+    .filter(name => formFileMatcher(name));
 
   for (let xls of filesToConvert) {
     const originalSourcePath = `${formsDir}/${xls}`;
     let sourcePath;
 
-    if(options.force_data_node) {
+    if (options.force_data_node) {
       const temporaryPath = `${fs.mkdtemp()}/${options.force_data_node}.xlsx`;
       fs.copy(originalSourcePath, temporaryPath);
       sourcePath = temporaryPath;
@@ -54,15 +63,21 @@ module.exports = async (projectDir, subDirectory, options) => {
   }
 };
 
+module.exports = {
+  SUPPORTED_EXTENSIONS: [FORM_EXTENSION],
+  formFileMatcher,
+  execute
+};
+
 const xls2xform = (sourcePath, targetPath) =>
-    exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
-      .catch(e => {
-        if(executableAvailable()) {
-          if(e.includes('unrecognized arguments: --skip_validate')) {
-            throw new Error('Your xls2xform installation appears to be out of date.' + UPDATE_INSTRUCTIONS);
-          } else throw e;
-        } else throw new Error('There was a problem executing xls2xform.  It may not be installed.' + INSTALLATION_INSTRUCTIONS);
-      });
+  exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
+    .catch(e => {
+      if (executableAvailable()) {
+        if (e.includes('unrecognized arguments: --skip_validate')) {
+          throw new Error('Your xls2xform installation appears to be out of date.' + UPDATE_INSTRUCTIONS);
+        } else throw e;
+      } else throw new Error('There was a problem executing xls2xform.  It may not be installed.' + INSTALLATION_INSTRUCTIONS);
+    });
 
 // here we fix the form content in arcane ways.  Seeing as we have out own fork
 // of pyxform, we should probably be doing this fixing there.
@@ -72,33 +87,33 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
   // future changes to the output of xls2xform.
   let xml = fs.read(path)
 
-      // The following copies behaviour from old bash scripts, and will create a
-      // second <meta> element if one already existed.  We may want to actually
-      // merge the two instead.
-      .replace(/<inputs>/, META_XML_SECTION)
+    // The following copies behaviour from old bash scripts, and will create a
+    // second <meta> element if one already existed.  We may want to actually
+    // merge the two instead.
+    .replace(/<inputs>/, META_XML_SECTION)
 
-      // XLSForm does not allow converting a field without a label, so we use
-      // the placeholder NO_LABEL.
-      .replace(/NO_LABEL/g, '')
+    // XLSForm does not allow converting a field without a label, so we use
+    // the placeholder NO_LABEL.
+    .replace(/NO_LABEL/g, '')
 
-      // No comment.
-      .replace(/.*DELETE_THIS_LINE.*(\r|\n)/g, '')
-      ;
+    // No comment.
+    .replace(/.*DELETE_THIS_LINE.*(\r|\n)/g, '')
+    ;
 
   // Enketo _may_ not work with forms which define a default language - see
   // https://github.com/medic/cht-core/issues/3174
-  if(enketo) xml = xml.replace(/ default="true\(\)"/g, '');
+  if (enketo) xml = xml.replace(/ default="true\(\)"/g, '');
 
-  if(hiddenFields) {
+  if (hiddenFields) {
     const r = new RegExp(`<(${hiddenFields.join('|')})(/?)>`, 'g');
     xml = xml.replace(r, '<$1 tag="hidden"$2>');
   }
 
-  if(transformer) xml = transformer(xml, path);
+  if (transformer) xml = transformer(xml, path);
 
 
   // Check for deprecations
-  if(xml.includes('repeat-relevant')) {
+  if (xml.includes('repeat-relevant')) {
     warn('From webapp version 2.14.0, repeat-relevant is no longer required.  See https://github.com/medic/cht-core/issues/3449 for more info.');
   }
 
@@ -106,7 +121,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
 };
 
 function getHiddenFields(propsJson) {
-  if(!fs.exists(propsJson)) return [];
+  if (!fs.exists(propsJson)) return [];
   else return fs.readJson(propsJson).hidden_fields;
 }
 
@@ -116,7 +131,7 @@ function executableAvailable() {
       stdio: ['ignore', 'ignore', 'ignore'],
     });
     return true;
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }

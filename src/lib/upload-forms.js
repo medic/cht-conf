@@ -16,18 +16,40 @@ const {
 const validateForms = require('./validate-forms');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms', 'subject_key', 'hidden_fields'];
+const FORM_EXTENSTION = '.xml';
+const FORM_PROPERTIES_EXTENSION = '.properties.json';
+const FORM_MEDIA_MATCHER = /(.+)-media$/;
+const SUPPORTED_EXTENSIONS = [FORM_EXTENSTION, FORM_PROPERTIES_EXTENSION];
 
-module.exports = async (projectDir, subDirectory, options) => {
+const formFileMatcher = (fileName) => {
+  if (fileName.endsWith(FORM_EXTENSTION)) {
+    return fileName.slice(0, fileName.length - FORM_EXTENSTION.length);
+  }
+  if (fileName.endsWith(FORM_PROPERTIES_EXTENSION)) {
+    return fileName.slice(0, fileName.length - FORM_PROPERTIES_EXTENSION.length);
+  }
+  return null;
+};
+
+const formMediaMatcher = (formMediaDir) => {
+  const matchResult = formMediaDir.match(FORM_MEDIA_MATCHER);
+  if (matchResult) {
+    return matchResult[1]; // return the captured form name
+  }
+  return null;
+};
+
+const execute = async (projectDir, subDirectory, options) => {
   await validateForms(projectDir, subDirectory, options);
   const db = pouch();
   if (!options) options = {};
   const formsDir = getFormDir(projectDir, subDirectory);
-  if(!fs.exists(formsDir)) {
+  if (!fs.exists(formsDir)) {
     log.info(`Forms dir not found: ${formsDir}`);
     return;
   }
 
-  const fileNames = argsFormFilter(formsDir, '.xml', options);
+  const fileNames = argsFormFilter(formsDir, FORM_EXTENSTION, options);
   for (const fileName of fileNames) {
     log.info(`Preparing form for upload: ${fileName}…`);
 
@@ -35,7 +57,7 @@ module.exports = async (projectDir, subDirectory, options) => {
     const baseDocId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
 
     const mediaDirExists = fs.exists(mediaDir);
-    if(!mediaDirExists) {
+    if (!mediaDirExists) {
       log.info(`No media directory found at ${mediaDir} for form ${xformPath}`);
     }
 
@@ -48,7 +70,7 @@ module.exports = async (projectDir, subDirectory, options) => {
     };
 
     const internalId = readIdFrom(xml);
-    if(internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/cht-core/issues/3342.');
+    if (internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/cht-core/issues/3342.');
 
     const docId = `form:${baseDocId}`;
     const doc = {
@@ -60,7 +82,7 @@ module.exports = async (projectDir, subDirectory, options) => {
       context: options.default_context,
     };
 
-    const propertiesPath = `${formsDir}/${baseFileName}.properties.json`;
+    const propertiesPath = `${formsDir}/${baseFileName}${FORM_PROPERTIES_EXTENSION}`;
     updateFromPropertiesFile(doc, propertiesPath);
 
     doc._attachments = mediaDirExists ? attachmentsFromDir(mediaDir) : {};
@@ -78,6 +100,14 @@ module.exports = async (projectDir, subDirectory, options) => {
     // update hash regardless
     await warnUploadOverwrite.postUploadForm(doc, xml, properties);
   }
+};
+
+module.exports = {
+  SUPPORTED_EXTENSIONS,
+  FORM_MEDIA_MATCHER,
+  formFileMatcher,
+  formMediaMatcher,
+  execute
 };
 
 const updateFromPropertiesFile = (doc, path) => {

@@ -1,11 +1,18 @@
-const convertForms = require('../lib/convert-forms');
+const convertForms = require('../lib/convert-forms').execute;
 const environment = require('../lib/environment');
+const { APP_FORMS_PATH } = require('../lib/project-paths');
+
+const convertAppForms = (forms) => {
+  return convertForms(environment.pathToProject, 'app', {
+    enketo: true,
+    forms: forms,
+    transformer: xml => xml.replace('</instance>', '</instance>\n      <instance id="contact-summary"/>'),
+  });
+};
 
 module.exports = {
   requiresInstance: false,
-  execute: () => convertForms(environment.pathToProject, 'app', {
-    enketo: true,
-    forms: environment.extraArgs,
-    transformer: xml => xml.replace('</instance>', '</instance>\n      <instance id="contact-summary"/>'),
-  })
+  convertAppForms,
+  APP_FORMS_PATH,
+  execute: () => convertAppForms(environment.extraArgs)
 };

@@ -1,0 +1,12 @@
+{
+    "title":{
+		"en": "Death",
+		"sw": ""
+	},
+    "icon": "icon-death-general",
+    "context": {
+        "person": true,
+        "place": false,
+        "expression": "!contact.muted && !contact.date_of_death && contact.contact_type === 'household_contact'"
+    }
+}

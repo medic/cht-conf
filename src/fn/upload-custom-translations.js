@@ -13,10 +13,12 @@ const {
   TranslationException
 } = require('@medic/translation-checker');
 
+const { TRANSLATIONS_DIR_PATH } = require('../lib/project-paths');
+
 const execute = async () => {
   const db = pouch(environment.apiUrl);
 
-  const dir = `${environment.pathToProject}/translations`;
+  const dir = `${environment.pathToProject}/${TRANSLATIONS_DIR_PATH}`;
 
   let fileNames;
   let formatErrorsFound = 0;
@@ -85,7 +87,7 @@ const execute = async () => {
       languageName = 'TODO: please ask admin to set this in settings UI';
     } else {
       let languageNativeName = iso639.getNativeName(languageCode);
-      if (languageNativeName !== languageName){
+      if (languageNativeName !== languageName) {
         languageName = `${languageNativeName} (${languageName})`;
       }
     }
@@ -95,7 +97,7 @@ const execute = async () => {
     let doc;
     try {
       doc = await db.get(id);
-    } catch(e) {
+    } catch (e) {
       if (e.status === 404) {
         doc = await newDocFor(fileName, db, languageName, languageCode);
       }
@@ -127,7 +129,7 @@ function parse(filePath, options) {
 }
 
 function overwriteProperties(doc, props) {
-  if(doc.generic) {
+  if (doc.generic) {
     // 3.4.0 translation structure
     doc.custom = props;
   } else if (doc.values) {
@@ -179,5 +181,6 @@ async function genericTranslationsStructure(db) {
 
 module.exports = {
   requiresInstance: true,
+  TRANSLATIONS_DIR_PATH,
   execute
 };

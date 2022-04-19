@@ -1,11 +1,18 @@
 const environment = require('../lib/environment');
-const uploadForms = require('../lib/upload-forms');
+const uploadForms = require('../lib/upload-forms').execute;
+const CONTACT_FORMS_PATH = require('../lib/project-paths');
+
+const uploadContactForms = (forms) => {
+  return uploadForms(environment.pathToProject, 'contact', {
+    id_prefix: 'contact:',
+    forms: forms,
+    default_context: { person: false, place: false },
+  });
+};
 
 module.exports = {
   requiresInstance: true,
-  execute: () => uploadForms(environment.pathToProject, 'contact', {
-    id_prefix: 'contact:',
-    forms: environment.extraArgs,
-    default_context: { person:false, place:false },
-  })
+  uploadContactForms,
+  CONTACT_FORMS_PATH,
+  execute: () => uploadContactForms(environment.extraArgs)
 };

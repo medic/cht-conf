@@ -5,25 +5,7 @@ const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
 const log = require('../../src/lib/log');
 const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
-
-const getTranslationDoc = (lang) => {
-  return api.db.get(`messages-${lang}`)
-    .then(doc => {
-      assert.equal(doc.code, lang);
-      assert.equal(doc.type, 'translations');
-      return doc;
-    });
-};
-
-const expectTranslationDocs = (...expectedLangs) => {
-  const expectedIds = expectedLangs.map(lang => `messages-${lang}`);
-  return api.db
-    .allDocs()
-    .then(res => {
-      const actualIds = res.rows.filter(row => row.id.startsWith('messages-')).map(row => row.id);
-      assert.deepEqual(actualIds, expectedIds);
-    });
-};
+const { getTranslationDoc,  expectTranslationDocs } = require('./utils');
 
 describe('upload-custom-translations', () => {
 
@@ -55,8 +37,8 @@ describe('upload-custom-translations', () => {
     it('should upload simple translations', () => {
       mockTestDir(`simple`);
       return uploadCustomTranslations()
-        .then(() => expectTranslationDocs('en'))
-        .then(() => getTranslationDoc('en'))
+        .then(() => expectTranslationDocs(api, 'en'))
+        .then(() => getTranslationDoc(api, 'en'))
         .then(messagesEn => {
           assert.deepEqual(messagesEn.values, { a:'first', b:'second', c:'third' });
           assert(!messagesEn.generic);
@@ -67,15 +49,15 @@ describe('upload-custom-translations', () => {
     it('should upload translations for multiple languages', () => {
       mockTestDir(`multi-lang`);
       return uploadCustomTranslations()
-        .then(() => expectTranslationDocs('en', 'fr'))
-        .then(() => getTranslationDoc('en'))
+        .then(() => expectTranslationDocs(api, 'en', 'fr'))
+        .then(() => getTranslationDoc(api, 'en'))
         .then(messagesEn => {
           assert(messagesEn.name === 'English');
           assert.deepEqual(messagesEn.values, { one: 'one' });
           assert(!messagesEn.generic);
           assert(!messagesEn.custom);
         })
-        .then(() => getTranslationDoc('fr'))
+        .then(() => getTranslationDoc(api, 'fr'))
         .then(messagesFr => {
           assert(messagesFr.name === 'Français (French)');
           assert.deepEqual(messagesFr.values, { one: 'un(e)' });
@@ -87,8 +69,8 @@ describe('upload-custom-translations', () => {
     it('should upload translations containing equals signs', () => {
       mockTestDir(`contains-equals`);
       return uploadCustomTranslations()
-        .then(() => expectTranslationDocs('en'))
-        .then(() => getTranslationDoc('en'))
+        .then(() => expectTranslationDocs(api, 'en'))
+        .then(() => getTranslationDoc(api, 'en'))
         .then(messagesEn => {
           assert.deepEqual(messagesEn.values, {
             'some.words':'one equals one',
@@ -110,14 +92,14 @@ describe('upload-custom-translations', () => {
           values: { a: 'first' }
         })
         .then(() => uploadCustomTranslations())
-        .then(() => expectTranslationDocs('en', 'fr'))
-        .then(() => getTranslationDoc('en'))
+        .then(() => expectTranslationDocs(api, 'en', 'fr'))
+        .then(() => getTranslationDoc(api, 'en'))
         .then(messagesEn => {
           assert.deepEqual(messagesEn.values, { a:'first' });
           assert(!messagesEn.generic);
           assert(!messagesEn.custom);
         })
-        .then(() => getTranslationDoc('fr'))
+        .then(() => getTranslationDoc(api, 'fr'))
         .then(messagesFr => {
           assert.deepEqual(messagesFr.values, { one: 'un(e)' });
           assert(!messagesFr.generic);
@@ -129,8 +111,8 @@ describe('upload-custom-translations', () => {
       mockTestDir(`unknown-lang`);
       sinon.replace(log, 'warn', sinon.fake());
       return uploadCustomTranslations()
-        .then(() => expectTranslationDocs('qp'))
-        .then(() => getTranslationDoc('qp'))
+        .then(() => expectTranslationDocs(api, 'qp'))
+        .then(() => getTranslationDoc(api, 'qp'))
         .then(messagesQp => {
           assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
           assert(log.warn.lastCall.calledWithMatch('\'qp\' is not a recognized ISO 639 language code, please ask admin to set the name'));
@@ -151,8 +133,8 @@ describe('upload-custom-translations', () => {
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
         mockTestDir(`simple`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('en'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.values, { a:'first', b:'second', c:'third' });
             assert(!messagesEn.generic);
@@ -165,15 +147,15 @@ describe('upload-custom-translations', () => {
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
         mockTestDir(`multi-lang`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('en', 'fr'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en', 'fr'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert(messagesEn.name === 'English');
             assert.deepEqual(messagesEn.values, { one: 'one' });
             assert(!messagesEn.generic);
             assert(!messagesEn.custom);
           })
-          .then(() => getTranslationDoc('fr'))
+          .then(() => getTranslationDoc(api, 'fr'))
           .then(messagesFr => {
             assert(messagesFr.name === 'Français (French)');
             assert.deepEqual(messagesFr.values, { one: 'un(e)' });
@@ -187,8 +169,8 @@ describe('upload-custom-translations', () => {
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
         mockTestDir(`contains-equals`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('en'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.values, {
               'some.words':'one equals one',
@@ -210,8 +192,8 @@ describe('upload-custom-translations', () => {
             values: { a:'first', from_custom:'third' }
           })
           .then(() => uploadCustomTranslations())
-          .then(() => expectTranslationDocs('en'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.values, { a:'first', from_custom: 'overwritten', from_custom_new: 'new' });
             assert(!messagesEn.generic);
@@ -237,8 +219,8 @@ describe('upload-custom-translations', () => {
       it('should set default name for unknown language', () => {
         mockTestDir(`unknown-lang`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('qp'))
-          .then(() => getTranslationDoc('qp'))
+          .then(() => expectTranslationDocs(api, 'qp'))
+          .then(() => getTranslationDoc(api, 'qp'))
           .then(messagesQp => {
             assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
           });
@@ -253,8 +235,8 @@ describe('upload-custom-translations', () => {
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
         mockTestDir(`simple`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('en'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, { a:'first', b:'second', c:'third' });
             assert.deepEqual(messagesEn.generic, {});
@@ -267,15 +249,15 @@ describe('upload-custom-translations', () => {
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
         mockTestDir(`multi-lang`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('en', 'fr'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en', 'fr'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert(messagesEn.name === 'English');
             assert.deepEqual(messagesEn.custom, { one: 'one' });
             assert.deepEqual(messagesEn.generic, {});
             assert(!messagesEn.values);
           })
-          .then(() => getTranslationDoc('fr'))
+          .then(() => getTranslationDoc(api, 'fr'))
           .then(messagesFr => {
             assert(messagesFr.name === 'Français (French)');
             assert.deepEqual(messagesFr.custom, { one: 'un(e)' });
@@ -289,8 +271,8 @@ describe('upload-custom-translations', () => {
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
         mockTestDir(`contains-equals`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('en'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, {
               'some.words':'one equals one',
@@ -313,8 +295,8 @@ describe('upload-custom-translations', () => {
             custom: { c: 'third' }
           })
           .then(() => uploadCustomTranslations())
-          .then(() => expectTranslationDocs('en'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.generic, { a: 'first' });
             assert.deepEqual(messagesEn.custom, { from_custom: 'overwritten', from_custom_new: 'new' });
@@ -334,8 +316,8 @@ describe('upload-custom-translations', () => {
             custom: { c: 'third' }
           })
           .then(() => uploadCustomTranslations())
-          .then(() => expectTranslationDocs('en'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.generic, { a: 'first' });
             assert.deepEqual(messagesEn.custom, { });
@@ -362,14 +344,14 @@ describe('upload-custom-translations', () => {
             generic: { a: 'first' }
           }))
           .then(() => uploadCustomTranslations())
-          .then(() => expectTranslationDocs('en', 'fr'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en', 'fr'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.generic, { a:'first' });
             assert(!messagesEn.custom);
             assert(!messagesEn.values);
           })
-          .then(() => getTranslationDoc('fr'))
+          .then(() => getTranslationDoc(api, 'fr'))
           .then(messagesFr => {
             assert.deepEqual(messagesFr.custom, { one: 'un(e)' });
             assert.deepEqual(messagesFr.generic, {});
@@ -380,8 +362,8 @@ describe('upload-custom-translations', () => {
       it('should set default name for unknown language', () => {
         mockTestDir(`unknown-lang`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('qp'))
-          .then(() => getTranslationDoc('qp'))
+          .then(() => expectTranslationDocs(api, 'qp'))
+          .then(() => getTranslationDoc(api, 'qp'))
           .then(messagesQp => {
             assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
           });
@@ -398,8 +380,8 @@ describe('upload-custom-translations', () => {
       it('should upload simple translations', () => {
         mockTestDir(`simple`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('en'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, { a:'first', b:'second', c:'third' });
             assert.deepEqual(messagesEn.generic, {});
@@ -410,15 +392,15 @@ describe('upload-custom-translations', () => {
       it('should upload translations for multiple languages', () => {
         mockTestDir(`multi-lang`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('en', 'fr'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en', 'fr'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert(messagesEn.name === 'English');
             assert.deepEqual(messagesEn.custom, { one: 'one' });
             assert.deepEqual(messagesEn.generic, {});
             assert(!messagesEn.values);
           })
-          .then(() => getTranslationDoc('fr'))
+          .then(() => getTranslationDoc(api, 'fr'))
           .then(messagesFr => {
             assert(messagesFr.name === 'Français (French)');
             assert.deepEqual(messagesFr.custom, { one: 'un(e)' });
@@ -430,8 +412,8 @@ describe('upload-custom-translations', () => {
       it('should upload translations containing equals signs', () => {
         mockTestDir(`contains-equals`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('en'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, {
               'some.words':'one equals one',
@@ -445,8 +427,8 @@ describe('upload-custom-translations', () => {
       it('should set default name for unknown language', () => {
         mockTestDir(`unknown-lang`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('qp'))
-          .then(() => getTranslationDoc('qp'))
+          .then(() => expectTranslationDocs(api, 'qp'))
+          .then(() => getTranslationDoc(api, 'qp'))
           .then(messagesQp => {
             assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
           });
@@ -455,8 +437,8 @@ describe('upload-custom-translations', () => {
       it('should properly upload translations containing escaped exclamation marks', () => {
         mockTestDir(`escaped-exclamation`);
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('en'))
-          .then(() => getTranslationDoc('en'))
+          .then(() => expectTranslationDocs(api, 'en'))
+          .then(() => getTranslationDoc(api, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, {
               'one.escaped.exclamation':'one equals one!',
@@ -471,7 +453,7 @@ describe('upload-custom-translations', () => {
         mockTestDir('contains-empty-messages');
         sinon.replace(log, 'warn', sinon.fake());
         return uploadCustomTranslations()
-          .then(() => expectTranslationDocs('en'))
+          .then(() => expectTranslationDocs(api, 'en'))
           .then(() => {
             assert(log.warn.lastCall.calledWithMatch(
               '1 empty messages trying to compile translations'));

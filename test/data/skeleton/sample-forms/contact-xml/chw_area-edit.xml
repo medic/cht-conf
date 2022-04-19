@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Edit CHV Area</h:title>
+    <model>
+      <instance>
+        <data delimiter="#" id="contact:chw_area:edit" prefix="J1!contact:chw_area:edit!" version="2019-12-09">
+          <chw_area>
+            <name/>
+            <contact/>
+            <geolocation/>
+          </chw_area>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/chw_area/name" required="true()" type="string"/>
+      <bind nodeset="/data/chw_area/contact" type="string"/>
+      <bind nodeset="/data/chw_area/geolocation" type="geopoint"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <group ref="/data/chw_area">
+      <label>Edit CHV Area</label>
+      <input ref="/data/chw_area/name">
+        <label>Name</label>
+      </input>
+      <input appearance="db-object bind-id-only" ref="/data/chw_area/contact">
+        <label>Contact</label>
+      </input>
+      <input ref="/data/chw_area/geolocation">
+        <label>Location</label>
+      </input>
+    </group>
+  </h:body>
+</h:html>

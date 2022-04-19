@@ -8,7 +8,7 @@
   },
   "scripts": {
     "clean": "rm -rf ./build/",
-    "eslint": "eslint src/**/*.js test/*.js test/**/*.js",
+    "eslint": "eslint 'src/**/*.js' test/*.js 'test/**/*.js'",
     "docker-start-couchdb": "npm run docker-stop-couchdb && docker run -d -p 6984:5984 --rm --name cht-conf-couchdb couchdb:2.3.1 && sh test/scripts/wait_for_response_code.sh 6984 200 CouchDB",
     "docker-stop-couchdb": "docker stop cht-conf-couchdb || true",
     "test": "npm run eslint && npm run docker-start-couchdb && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha --forbid-only ../../test/**/*.spec.js && cd ../.. && npm run docker-stop-couchdb",
@@ -37,6 +37,7 @@
   "dependencies": {
     "@hapi/joi": "^16.1.8",
     "@medic/translation-checker": "^1.0.1",
+    "@parcel/watcher": "^2.0.5",
     "canonical-json": "0.0.4",
     "csv-parse": "^4.16.0",
     "dom-compare": "^0.6.0",
@@ -56,6 +57,7 @@
     "pouchdb-core": "^7.2.2",
     "pouchdb-mapreduce": "^7.2.2",
     "properties": "^1.2.1",
+    "queue-promise": "^2.2.1",
     "readline-sync": "^1.4.10",
     "redact-basic-auth": "^1.0.1",
     "request": "^2.88.2",
@@ -86,6 +88,7 @@
     "pouchdb-adapter-memory": "^7.2.2",
     "rewire": "^5.0.0",
     "semantic-release": "^18.0.0",
-    "sinon": "^7.3.2"
+    "sinon": "^7.3.2",
+    "fs-extra": "8.1.0"
   }
 }
