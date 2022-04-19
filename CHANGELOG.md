@@ -1,3 +1,10 @@
+# [3.11.0](https://github.com/medic/cht-conf/compare/v3.10.2...v3.11.0) (2022-04-19)
+
+
+### Features
+
+* **#477:** adds watch-project action ([7a3efc5](https://github.com/medic/cht-conf/commit/7a3efc5efcbd98d8a6b03e801945201ed17ac00f)), closes [#477](https://github.com/medic/cht-conf/issues/477)
+
 ## [3.10.2](https://github.com/medic/cht-conf/compare/v3.10.1...v3.10.2) (2022-03-29)
 
 
