@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const log = require('../../src/lib/log');
 
 const validateForms = rewire('../../src/lib/validate-forms');
+const xformGenerationValidation = rewire('../../src/lib/validation/form/can-generate-xform');
 
 const BASE_DIR = 'data/lib/upload-forms';
 const FORMS_SUBDIR = '.';
@@ -39,18 +40,21 @@ describe('validate-forms', () => {
     const apiMock = () => ({
       formsValidate: formsValidateMock
     });
-    return validateForms.__with__({api: apiMock})(async () => {
-      try {
-        await validateForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
-        assert.fail('Expected Error to be thrown.');
-      } catch (e) {
-        expect(formsValidateMock.called).to.be.true;
-        assert.include(e.message, 'One or more forms appears to have errors found by the API validation endpoint.');
-        assert.notInclude(e.message, 'One or more forms appears to be missing <meta><instanceID/></meta> node.');
-        expect(logInfo.args[0][0]).to.equal('Validating form: example.xml…');
-        expect(logError.callCount).to.equal(1);
-      }
-    });
+
+    return xformGenerationValidation.__with__({ api: apiMock })(
+      async () => validateForms.__with__({ xformGenerationValidation })(async () => {
+        try {
+          await validateForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
+          assert.fail('Expected Error to be thrown.');
+        } catch (e) {
+          expect(formsValidateMock.called).to.be.true;
+          assert.include(e.message, 'One or more forms appears to have errors found by the API validation endpoint.');
+          assert.notInclude(e.message, 'One or more forms appears to be missing <meta><instanceID/></meta> node.');
+          expect(logInfo.args[0][0]).to.equal('Validating form: example.xml…');
+          expect(logError.callCount).to.equal(1);
+        }
+      })
+    );
   });
 
   it('should execute all validations and fail with all the errors concatenated', () => {
@@ -60,18 +64,21 @@ describe('validate-forms', () => {
     const apiMock = () => ({
       formsValidate: formsValidateMock
     });
-    return validateForms.__with__({api: apiMock})(async () => {
-      try {
-        await validateForms(`${BASE_DIR}/good-and-bad-forms`, FORMS_SUBDIR);
-        assert.fail('Expected Error to be thrown.');
-      } catch (e) {
-        assert.include(e.message, 'One or more forms appears to have errors found by the API validation endpoint.');
-        assert.include(e.message, 'One or more forms appears to be missing <meta><instanceID/></meta> node.');
-        expect(logInfo.args[0][0]).to.equal('Validating form: example-no-id.xml…');
-        expect(logInfo.args[1][0]).to.equal('Validating form: example.xml…');
-        expect(logError.callCount).to.equal(2);
-      }
-    });
+
+    return xformGenerationValidation.__with__({ api: apiMock })(
+      async () => validateForms.__with__({ xformGenerationValidation })(async () => {
+        try {
+          await validateForms(`${BASE_DIR}/good-and-bad-forms`, FORMS_SUBDIR);
+          assert.fail('Expected Error to be thrown.');
+        } catch (e) {
+          assert.include(e.message, 'One or more forms appears to have errors found by the API validation endpoint.');
+          assert.include(e.message, 'One or more forms appears to be missing <meta><instanceID/></meta> node.');
+          expect(logInfo.args[0][0]).to.equal('Validating form: example-no-id.xml…');
+          expect(logInfo.args[1][0]).to.equal('Validating form: example.xml…');
+          expect(logError.callCount).to.equal(2);
+        }
+      })
+    );
   });
 
   it('should resolve OK if all validations pass', () => {
@@ -79,9 +86,12 @@ describe('validate-forms', () => {
     const apiMock = () => ({
       formsValidate: sinon.stub().resolves({ok:true})
     });
-    return validateForms.__with__({api: apiMock})(async () => {
-      await validateForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
-      expect(logInfo.args[0][0]).to.equal('Validating form: example.xml…');
-    });
+
+    return xformGenerationValidation.__with__({ api: apiMock })(
+      async () => validateForms.__with__({ xformGenerationValidation })(async () => {
+        await validateForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
+        expect(logInfo.args[0][0]).to.equal('Validating form: example.xml…');
+      })
+    );
   });
 });

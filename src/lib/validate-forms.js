@@ -1,12 +1,13 @@
-const api = require('./api');
 const argsFormFilter = require('./args-form-filter');
 const fs = require('./sync-fs');
 const log = require('./log');
 const {
   getFormDir,
-  getFormFilePaths,
-  formHasInstanceId
+  getFormFilePaths
 } = require('./forms-utils');
+
+const instanceIdValidation = require('./validation/form/has-instance-id');
+const xformGenerationValidation = require('./validation/form/can-generate-xform');
 
 module.exports = async (projectDir, subDirectory, options={}) => {
 
@@ -16,49 +17,35 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     return;
   }
 
-  let idValidationsPassed = true;
-  let validateFormsPassed = true;
+  const idValidationsPassed = { errors: [], warnings: [] };
+  const validateFormsPassed = { errors: [], warnings: [] };
 
   const fileNames = argsFormFilter(formsDir, '.xml', options);
   for (const fileName of fileNames) {
     log.info(`Validating form: ${fileName}…`);
 
-    const { xformPath, filePath } = getFormFilePaths(formsDir, fileName);
+    const { xformPath } = getFormFilePaths(formsDir, fileName); //filePath
     const xml = fs.read(xformPath);
 
-    if(!formHasInstanceId(xml)) {
-      log.error(`Form at ${xformPath} appears to be missing <meta><instanceID/></meta> node. This form will not work on CHT webapp.`);
-      idValidationsPassed = false;
-      continue;
-    }
-    try {
-      await _formsValidate(xml);
-    } catch (err) {
-      log.error(`Error found while validating "${filePath}". Validation response: ${err.message}`);
-      validateFormsPassed = false;
-    }
+    const localIdValidationsPassed = await instanceIdValidation.execute({ xformPath, xmlStr: xml });
+    idValidationsPassed.errors.push(...(localIdValidationsPassed.errors || []));
+    idValidationsPassed.warnings.push(...(localIdValidationsPassed.warnings || []));
+    const localValidateFormsPassed = await xformGenerationValidation.execute({ xformPath, xmlStr: xml });
+    validateFormsPassed.errors.push(...(localValidateFormsPassed.errors || []));
+    validateFormsPassed.warnings.push(...(localValidateFormsPassed.warnings || []));
   }
   // Once all the fails were checked raise an exception if there were errors
   let errors = [];
-  if (!validateFormsPassed) {
+  if (validateFormsPassed.errors.length) {
+    validateFormsPassed.errors.forEach(errorMsg => log.error(errorMsg));
     errors.push('One or more forms appears to have errors found by the API validation endpoint.');
   }
-  if (!idValidationsPassed) {
+  if (idValidationsPassed.errors.length) {
+    idValidationsPassed.errors.forEach(errorMsg => log.error(errorMsg));
     errors.push('One or more forms appears to be missing <meta><instanceID/></meta> node.');
   }
   if (errors.length) {
     // the blank spaces are a trick to align the errors in the log ;)
     throw new Error(errors.join('\n             '));
   }
-};
-
-let validateEndpointNotFoundLogged = false;
-const _formsValidate = async (xml) => {
-  const resp = await api().formsValidate(xml);
-  if (resp.formsValidateEndpointFound === false && !validateEndpointNotFoundLogged) {
-    log.warn('Form validation endpoint not found in your version of CHT Core, ' +
-      'no form will be checked before push');
-    validateEndpointNotFoundLogged = true; // Just log the message once
-  }
-  return resp;
 };
