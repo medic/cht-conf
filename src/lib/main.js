@@ -123,13 +123,13 @@ module.exports = async (argv, env) => {
   // Build up actions
   //
   let actions = cmdArgs._;
-  if (!actions.length) {
+  if (actions.length) {
+    const unsupported = actions.filter(a => !supportedActions.includes(a));
+    if(unsupported.length) {
+      throw new Error(`Unsupported action(s): ${unsupported.join(' ')}`);
+    }
+  } else {
     actions = !cmdArgs.archive ? defaultActions : defaultArchiveActions;
-  }
-
-  const unsupported = actions.filter(a => !supportedActions.includes(a));
-  if(unsupported.length) {
-    throw new Error(`Unsupported action(s): ${unsupported.join(' ')}`);
   }
 
   if (cmdArgs['skip-git-check']) {
