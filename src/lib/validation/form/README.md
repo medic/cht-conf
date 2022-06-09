@@ -6,8 +6,9 @@ Their module should look something like this:
 
 ```js
 module.exports = {
-  requiresInstance: true,
-  execute: async ({ xformPath, xmlStr, xmlDoc }) => {
+  requiresInstance: false,
+  skipFurtherValidation: true,
+  execute: async ({ xformPath, xmlStr }) => {
     ...
   }
 };
@@ -15,10 +16,11 @@ module.exports = {
 
 ## Module Exports
 
-| Field              | Required                     | Notes                                                                                                                                                 |
-|--------------------|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `requiresInstance` | Optional, defaults to `true` | The validation needs the user to have provided a instance location, e.g. via `--local` or `--instance`                                                |
-| `execute`          | Required                     | The function that is run when the validation is executed. The provided input argument contains the form XML data as both a string and a XML Document. |
+| Field                   | Required                       | Notes                                                                                                                                                                                                                                                        |
+|-------------------------|--------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `requiresInstance`      | Optional, defaults to `true`   | The validation needs the user to have provided a instance location, e.g. via `--local` or `--instance`                                                                                                                                                       |
+| `skipFurtherValidation` | Optional, defaults to `false`  | When `true`, additional validations will not be performed on a form that fails the current validation. The goal is to avoid unnecessary noise in the validation log for forms that are grossly invalid (e.g. XML files that are not actually xForms at all). |
+| `execute`               | Required                       | The function that is run when the validation is executed. The provided input argument contains the form XML string.                                                                                                                                          |
 
 ## Result
 

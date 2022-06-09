@@ -1,4 +1,5 @@
 const argsFormFilter = require('./args-form-filter');
+const environment = require('./environment');
 const fs = require('./sync-fs');
 const log = require('./log');
 const {
@@ -6,46 +7,74 @@ const {
   getFormFilePaths
 } = require('./forms-utils');
 
-const instanceIdValidation = require('./validation/form/has-instance-id');
-const xformGenerationValidation = require('./validation/form/can-generate-xform');
+const VALIDATIONS_PATH = fs.path.resolve(__dirname, './validation/form');
+const validations = fs.readdir(VALIDATIONS_PATH)
+  .filter(name => name.endsWith('.js'))
+  .map(validationName => {
+    const validation = require(fs.path.join(VALIDATIONS_PATH, validationName));
+    validation.name = validationName;
+    if(!Object.hasOwnProperty.call(validation, 'requiresInstance')) {
+      validation.requiresInstance = true;
+    }
+    if(!Object.hasOwnProperty.call(validation, 'skipFurtherValidation')) {
+      validation.skipFurtherValidation = false;
+    }
+
+    return validation;
+  })
+  .sort((a, b) => {
+    if(a.skipFurtherValidation && !b.skipFurtherValidation) {
+      return -1;
+    }
+    if(!a.skipFurtherValidation && b.skipFurtherValidation) {
+      return 1;
+    }
+    return a.name.localeCompare(b.name);
+  });
 
 module.exports = async (projectDir, subDirectory, options={}) => {
 
   const formsDir = getFormDir(projectDir, subDirectory);
   if(!formsDir) {
-    log.info(`Forms dir not found: ${formsDir}`);
+    log.info(`Forms dir not found: ${projectDir}/forms/${subDirectory}`);
     return;
   }
 
-  const idValidationsPassed = { errors: [], warnings: [] };
-  const validateFormsPassed = { errors: [], warnings: [] };
-
   const fileNames = argsFormFilter(formsDir, '.xml', options);
-  for (const fileName of fileNames) {
+
+  let errorFound = false;
+  for(const fileName of fileNames) {
     log.info(`Validating form: ${fileName}…`);
+
+    const instanceProvided = environment.apiUrl;
+    if(!instanceProvided) {
+      log.warn('Some validations have been skipped because they require a CHT instance.');
+    }
 
     const { xformPath } = getFormFilePaths(formsDir, fileName); //filePath
     const xml = fs.read(xformPath);
 
-    const localIdValidationsPassed = await instanceIdValidation.execute({ xformPath, xmlStr: xml });
-    idValidationsPassed.errors.push(...(localIdValidationsPassed.errors || []));
-    idValidationsPassed.warnings.push(...(localIdValidationsPassed.warnings || []));
-    const localValidateFormsPassed = await xformGenerationValidation.execute({ xformPath, xmlStr: xml });
-    validateFormsPassed.errors.push(...(localValidateFormsPassed.errors || []));
-    validateFormsPassed.warnings.push(...(localValidateFormsPassed.warnings || []));
+    const valParams = { xformPath, xmlStr: xml };
+    for(const validation of validations) {
+      if(validation.requiresInstance && !instanceProvided) {
+        continue;
+      }
+
+      const output = await validation.execute(valParams);
+      if(output.warnings) {
+        output.warnings.forEach(warnMsg => log.warn(warnMsg));
+      }
+      if(output.errors && output.errors.length) {
+        output.errors.forEach(errorMsg => log.error(errorMsg));
+        errorFound = true;
+        if(validation.skipFurtherValidation) {
+          break;
+        }
+      }
+    }
   }
-  // Once all the fails were checked raise an exception if there were errors
-  let errors = [];
-  if (validateFormsPassed.errors.length) {
-    validateFormsPassed.errors.forEach(errorMsg => log.error(errorMsg));
-    errors.push('One or more forms appears to have errors found by the API validation endpoint.');
-  }
-  if (idValidationsPassed.errors.length) {
-    idValidationsPassed.errors.forEach(errorMsg => log.error(errorMsg));
-    errors.push('One or more forms appears to be missing <meta><instanceID/></meta> node.');
-  }
-  if (errors.length) {
-    // the blank spaces are a trick to align the errors in the log ;)
-    throw new Error(errors.join('\n             '));
+
+  if(errorFound) {
+    throw new Error('One or more forms have failed validation.');
   }
 };
