@@ -5,6 +5,9 @@ const fs = require('fs');
 const { error, warn, info } = require('../lib/log');
 const Queue = require('queue-promise');
 const watcher = require('@parcel/watcher');
+const { validateAppForms } = require('./validate-app-forms');
+const { validateContactForms } = require('./validate-contact-forms');
+const { validateCollectForms } = require('./validate-collect-forms');
 const { uploadAppForms } = require('./upload-app-forms');
 const { uploadContactForms } = require('./upload-contact-forms');
 const { uploadCollectForms } = require('./upload-collect-forms');
@@ -26,6 +29,8 @@ const watcherEvents = {
 };
 
 const uploadInitialState = async (api) => {
+    await validateAppForms(environment.extraArgs);
+    await validateContactForms(environment.extraArgs);
     await uploadResources();
     await uploadAppForms(environment.extraArgs);
     await uploadContactForms(environment.extraArgs);
@@ -82,6 +87,7 @@ const processAppForm = (eventType, fileName) => {
     let form = uploadForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
+            await validateAppForms([form]);
             await uploadAppForms([form]);
             return fileName;
         });
@@ -103,6 +109,7 @@ const processAppFormMedia = (formMediaDir, fileName) => {
     const form = uploadForms.formMediaMatcher(formMediaDir);
     if (form) {
         eventQueue.enqueue(async () => {
+            await validateAppForms([form]);
             await uploadAppForms([form]);
             return fileName;
         });
@@ -127,6 +134,7 @@ const processContactForm = (eventType, fileName) => {
     form = uploadForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
+            await validateContactForms([form]);
             await uploadContactForms([form]);
             return fileName;
         });
@@ -142,6 +150,7 @@ const processCollectForm = (eventType, fileName) => {
     let form = uploadForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
+            await validateCollectForms([form]);
             await uploadCollectForms([form]);
             return fileName;
         });

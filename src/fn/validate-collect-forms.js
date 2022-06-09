@@ -1,7 +1,12 @@
 const validateForms = require('../lib/validate-forms');
 const environment = require('../lib/environment');
 
+const validateCollectForms = (forms) => {
+  return validateForms(environment.pathToProject, 'collect', { forms });
+};
+
 module.exports = {
   requiresInstance: false,
-  execute: () => validateForms(environment.pathToProject, 'collect', { forms: environment.extraArgs })
+  validateCollectForms,
+  execute: () => validateCollectForms(environment.extraArgs)
 };
