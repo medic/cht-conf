@@ -21,6 +21,9 @@ const defaultActions = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'validate-app-forms',
+  'validate-collect-forms',
+  'validate-contact-forms',
   'backup-all-forms',
   'delete-all-forms',
   'upload-app-forms',
@@ -38,6 +41,9 @@ const defaultArchiveActions = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'validate-app-forms',
+  'validate-collect-forms',
+  'validate-contact-forms',
   'upload-app-forms',
   'upload-collect-forms',
   'upload-contact-forms',
@@ -135,6 +141,16 @@ module.exports = async (argv, env) => {
   if (cmdArgs['skip-git-check']) {
     actions = actions.filter(a => a !== 'check-git');
   }
+
+  const addFormValidationIfNecessary = (formType) => {
+    const updateFormsIndex = actions.indexOf(`upload-${formType}-forms`);
+    if (updateFormsIndex >= 0 && actions.indexOf(`validate-${formType}-forms`) < 0) {
+      actions.splice(updateFormsIndex, 0, `validate-${formType}-forms`);
+    }
+  };
+  addFormValidationIfNecessary('app');
+  addFormValidationIfNecessary('collect');
+  addFormValidationIfNecessary('contact');
 
   actions = actions.map(actionName => {
     const action = require(`../fn/${actionName}`);
