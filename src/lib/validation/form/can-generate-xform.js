@@ -1,16 +1,9 @@
-const { formHasInstanceId } = require('../../forms-utils');
 const api = require('../../api');
 
 module.exports = {
-  requiresInstance: true,
   execute: async ({ xformPath, xmlStr }) => {
     const warnings = [];
     const errors = [];
-
-    if(!formHasInstanceId(xmlStr)) {
-      return { errors, warnings };
-    }
-
     try {
       const resp = await api().formsValidate(xmlStr);
       if (resp.formsValidateEndpointFound === false) {

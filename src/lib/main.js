@@ -157,9 +157,9 @@ module.exports = async (argv, env) => {
   //
   const projectName = fs.path.basename(pathToProject);
 
-  let apiUrl;
-  if (actions.some(action => action.requiresInstance)) {
-    apiUrl = getApiUrl(cmdArgs, env);
+  const apiUrl = getApiUrl(cmdArgs, env);
+  const requiresInstance = actions.some(action => action.requiresInstance);
+  if (requiresInstance) {
     if (!apiUrl) {
       throw new Error('Failed to obtain a url to the API');
     }
@@ -180,7 +180,7 @@ module.exports = async (argv, env) => {
     cmdArgs['skip-translation-check']
   );
 
-  if (apiUrl) {
+  if (requiresInstance && apiUrl) {
     await api().available();
   }
 

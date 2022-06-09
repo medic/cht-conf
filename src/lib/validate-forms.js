@@ -40,16 +40,16 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     return;
   }
 
+  const instanceProvided = environment.apiUrl;
+  if(!instanceProvided) {
+    log.warn('Some validations have been skipped because they require a CHT instance.');
+  }
+
   const fileNames = argsFormFilter(formsDir, '.xml', options);
 
   let errorFound = false;
   for(const fileName of fileNames) {
     log.info(`Validating form: ${fileName}…`);
-
-    const instanceProvided = environment.apiUrl;
-    if(!instanceProvided) {
-      log.warn('Some validations have been skipped because they require a CHT instance.');
-    }
 
     const { xformPath } = getFormFilePaths(formsDir, fileName); //filePath
     const xml = fs.read(xformPath);
