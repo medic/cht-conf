@@ -101,7 +101,7 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
 
   if (contactIds.length === 0) {
     usage();
-    throw Error('Action "move-contacts" is missing required list of contact_id to be moved');
+    throw Error('Action "move-contacts" is missing required list of contacts to be moved');
   }
 
   if (!args.parent) {
@@ -137,7 +137,7 @@ ${bold('cht-conf\'s move-contacts action')}
 When combined with 'upload-docs' this action effectively moves a contact from one place in the hierarchy to another.
 
 ${bold('USAGE')}
-cht --local move-contacts -- --contactIds=<id1>,<id2> --parent=<parent_id>
+cht --local move-contacts -- --contacts=<id1>,<id2> --parent=<parent_id>
 
 ${bold('OPTIONS')}
 --contacts=<id1>,<id2>
