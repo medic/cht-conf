@@ -175,6 +175,7 @@ describe('main', () => {
         'validate-app-forms', 'upload-app-forms'
       ], undefined
     );
+    expect(mocks.environment.initialize.args[0][7]).to.be.undefined;
   });
 
   it('--skip-validate for upload forms actions', async () => {
@@ -188,6 +189,7 @@ describe('main', () => {
     );
     expect(mocks.warn.callCount).to.equal(1);
     expect(mocks.warn.args[0][0]).to.equal('Skipping all form validation.');
+    expect(mocks.environment.initialize.args[0][7]).to.eq(true);
   });
 
   it('--skip-validate for validate forms actions', async () => {
@@ -202,6 +204,7 @@ describe('main', () => {
     );
     expect(mocks.warn.callCount).to.equal(1);
     expect(mocks.warn.args[0][0]).to.equal('Skipping all form validation.');
+    expect(mocks.environment.initialize.args[0][7]).to.eq(true);
   });
 
   describe('--archive', () => {

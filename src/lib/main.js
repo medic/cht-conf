@@ -142,7 +142,8 @@ module.exports = async (argv, env) => {
     actions = actions.filter(a => a !== 'check-git');
   }
 
-  if(cmdArgs['skip-validate']) {
+  const skipValidate = cmdArgs['skip-validate'];
+  if(skipValidate) {
     warn('Skipping all form validation.');
     const validateActions = [
       'validate-app-forms',
@@ -203,7 +204,8 @@ module.exports = async (argv, env) => {
     extraArgs,
     apiUrl,
     cmdArgs.force,
-    cmdArgs['skip-translation-check']
+    cmdArgs['skip-translation-check'],
+    skipValidate
   );
 
   if (requiresInstance && apiUrl) {

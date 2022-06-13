@@ -87,6 +87,7 @@ describe('watch-project', function () {
     sinon.stub(environment, 'extraArgs').get(() => { });
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'skipTranslationCheck').get(() => false);
+    sinon.stub(environment, 'skipValidate').get(() => false);
     sinon.stub(environment, 'force').get(() => false);
     return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } }).then(() => api.start());
   });
@@ -293,6 +294,24 @@ describe('watch-project', function () {
         expect(docIds).to.include(`form:contact:${form.replace('-', ':')}`);
       })
       .then(() => cleanFormDir(contactFormsDir, form));
+  });
+
+  it('watch-project: upload app forms --skip-validate', () => {
+    sinon.stub(environment, 'skipValidate').get(() => true);
+    const form = 'death';
+    const copySampleForm = () => {
+      copySampleForms('upload-app-form');
+    };
+
+    return watchWrapper(copySampleForm, `${form}.xml`)
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        const docIds = docs.rows.map(row => row.id);
+        expect(docIds).to.include(`form:${form}`);
+        // No requests should have been made to the api since the validations were not run
+        expect(api.requestLog()).to.be.empty;
+      })
+      .then(() => cleanFormDir(appFormDir, form));
   });
 
 });

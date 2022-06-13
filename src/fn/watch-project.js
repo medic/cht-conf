@@ -28,10 +28,17 @@ const watcherEvents = {
     UpdateEvent: 'update'
 };
 
+const runValidation = async (validation, forms) => {
+    if(environment.skipValidate) {
+        return;
+    }
+    await validation(forms);
+};
+
 const uploadInitialState = async (api) => {
-    await validateAppForms(environment.extraArgs);
-    await validateContactForms(environment.extraArgs);
     await uploadResources();
+    await runValidation(validateAppForms, environment.extraArgs);
+    await runValidation(validateContactForms, environment.extraArgs);
     await uploadAppForms(environment.extraArgs);
     await uploadContactForms(environment.extraArgs);
     await uploadCustomTranslations();
@@ -87,7 +94,7 @@ const processAppForm = (eventType, fileName) => {
     let form = uploadForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
-            await validateAppForms([form]);
+            await runValidation(validateAppForms, [form]);
             await uploadAppForms([form]);
             return fileName;
         });
@@ -109,7 +116,7 @@ const processAppFormMedia = (formMediaDir, fileName) => {
     const form = uploadForms.formMediaMatcher(formMediaDir);
     if (form) {
         eventQueue.enqueue(async () => {
-            await validateAppForms([form]);
+            await runValidation(validateAppForms,[form]);
             await uploadAppForms([form]);
             return fileName;
         });
@@ -134,7 +141,7 @@ const processContactForm = (eventType, fileName) => {
     form = uploadForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
-            await validateContactForms([form]);
+            await runValidation(validateContactForms,[form]);
             await uploadContactForms([form]);
             return fileName;
         });
@@ -150,7 +157,7 @@ const processCollectForm = (eventType, fileName) => {
     let form = uploadForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
-            await validateCollectForms([form]);
+            await runValidation(validateCollectForms,[form]);
             await uploadCollectForms([form]);
             return fileName;
         });

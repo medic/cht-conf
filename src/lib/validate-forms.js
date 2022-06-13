@@ -51,7 +51,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
   for(const fileName of fileNames) {
     log.info(`Validating form: ${fileName}…`);
 
-    const { xformPath } = getFormFilePaths(formsDir, fileName); //filePath
+    const { xformPath } = getFormFilePaths(formsDir, fileName);
     const xml = fs.read(xformPath);
 
     const valParams = { xformPath, xmlStr: xml };
