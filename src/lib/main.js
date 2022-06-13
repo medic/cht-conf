@@ -142,15 +142,25 @@ module.exports = async (argv, env) => {
     actions = actions.filter(a => a !== 'check-git');
   }
 
-  const addFormValidationIfNecessary = (formType) => {
-    const updateFormsIndex = actions.indexOf(`upload-${formType}-forms`);
-    if (updateFormsIndex >= 0 && actions.indexOf(`validate-${formType}-forms`) < 0) {
-      actions.splice(updateFormsIndex, 0, `validate-${formType}-forms`);
-    }
-  };
-  addFormValidationIfNecessary('app');
-  addFormValidationIfNecessary('collect');
-  addFormValidationIfNecessary('contact');
+  if(cmdArgs['skip-validate']) {
+    warn('Skipping all form validation.');
+    const validateActions = [
+      'validate-app-forms',
+      'validate-collect-forms',
+      'validate-contact-forms'
+    ];
+    actions = actions.filter(action => !validateActions.includes(action));
+  } else {
+    const addFormValidationIfNecessary = (formType) => {
+      const updateFormsIndex = actions.indexOf(`upload-${formType}-forms`);
+      if (updateFormsIndex >= 0 && actions.indexOf(`validate-${formType}-forms`) < 0) {
+        actions.splice(updateFormsIndex, 0, `validate-${formType}-forms`);
+      }
+    };
+    addFormValidationIfNecessary('app');
+    addFormValidationIfNecessary('collect');
+    addFormValidationIfNecessary('contact');
+  }
 
   actions = actions.map(actionName => {
     const action = require(`../fn/${actionName}`);

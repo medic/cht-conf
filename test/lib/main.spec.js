@@ -177,6 +177,33 @@ describe('main', () => {
     );
   });
 
+  it('--skip-validate for upload forms actions', async () => {
+    await main([...normalArgv, '--local', '--skip-validate', 'upload-collect-forms', 'upload-contact-forms', 'upload-app-forms'], {});
+    expectExecuteActionBehavior(
+      [
+        'upload-collect-forms',
+        'upload-contact-forms',
+        'upload-app-forms'
+      ], undefined
+    );
+    expect(mocks.warn.callCount).to.equal(1);
+    expect(mocks.warn.args[0][0]).to.equal('Skipping all form validation.');
+  });
+
+  it('--skip-validate for validate forms actions', async () => {
+    await main([...normalArgv, '--local', '--skip-validate', 'validate-collect-forms', 'validate-contact-forms',
+      'validate-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-app-forms'], {});
+    expectExecuteActionBehavior(
+      [
+        'upload-collect-forms',
+        'upload-contact-forms',
+        'upload-app-forms'
+      ], undefined
+    );
+    expect(mocks.warn.callCount).to.equal(1);
+    expect(mocks.warn.args[0][0]).to.equal('Skipping all form validation.');
+  });
+
   describe('--archive', () => {
     it('default actions', async () => {
       await main([...normalArgv, '--archive', '--destination=foo'], {});
