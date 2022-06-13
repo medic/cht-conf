@@ -1,3 +1,10 @@
+## [3.11.1](https://github.com/medic/cht-conf/compare/v3.11.0...v3.11.1) (2022-06-13)
+
+
+### Bug Fixes
+
+* **#482:** move-contacts usage docs ([5fa86c8](https://github.com/medic/cht-conf/commit/5fa86c8e98797d8920ee20f2e7f16c98aa969201)), closes [#482](https://github.com/medic/cht-conf/issues/482)
+
 # [3.11.0](https://github.com/medic/cht-conf/compare/v3.10.2...v3.11.0) (2022-04-19)
 
 
