@@ -28,11 +28,11 @@ const watcherEvents = {
     UpdateEvent: 'update'
 };
 
-const runValidation = async (validation, forms) => {
+const runValidation = (validation, forms) => {
     if(environment.skipValidate) {
         return;
     }
-    await validation(forms);
+    return validation(forms);
 };
 
 const uploadInitialState = async (api) => {
