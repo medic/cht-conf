@@ -532,10 +532,10 @@ describe('move-contacts', () => {
   describe('parseExtraArgs', () => {
     const parseExtraArgs = moveContactsModule.__get__('parseExtraArgs');
     it('undefined arguments', () => {
-      expect(() => parseExtraArgs(__dirname, undefined)).to.throw('required list of contact_id');
+      expect(() => parseExtraArgs(__dirname, undefined)).to.throw('required list of contacts');
     });
 
-    it('empty arguments', () => expect(() => parseExtraArgs(__dirname, [])).to.throw('required list of contact_id'));
+    it('empty arguments', () => expect(() => parseExtraArgs(__dirname, [])).to.throw('required list of contacts'));
 
     it('contacts only', () => expect(() => parseExtraArgs(__dirname, ['--contacts=a'])).to.throw('required parameter parent'));
 
