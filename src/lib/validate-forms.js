@@ -41,9 +41,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
   }
 
   const instanceProvided = environment.apiUrl;
-  if(!instanceProvided) {
-    log.warn('Some validations have been skipped because they require a CHT instance.');
-  }
+  let validationSkipped = false;
 
   const fileNames = argsFormFilter(formsDir, '.xml', options);
 
@@ -57,6 +55,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     const valParams = { xformPath, xmlStr: xml };
     for(const validation of validations) {
       if(validation.requiresInstance && !instanceProvided) {
+        validationSkipped = true;
         continue;
       }
 
@@ -74,6 +73,9 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     }
   }
 
+  if(validationSkipped) {
+    log.warn('Some validations have been skipped because they require a CHT instance.');
+  }
   if(errorFound) {
     throw new Error('One or more forms have failed validation.');
   }

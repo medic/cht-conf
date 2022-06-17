@@ -76,8 +76,8 @@ describe('validate-forms', () => {
       expect(logInfo.callCount).to.equal(1);
       expect(logInfo.args[0][0]).to.equal('Validating form: example.xml…');
       expect(logWarn.callCount).to.equal(2);
-      expect(logWarn.args[0][0]).to.equal('Some validations have been skipped because they require a CHT instance.');
-      expect(logWarn.args[1][0]).to.equal('Warning');
+      expect(logWarn.args[0][0]).to.equal('Warning');
+      expect(logWarn.args[1][0]).to.equal('Some validations have been skipped because they require a CHT instance.');
     });
   });
 
