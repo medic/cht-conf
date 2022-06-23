@@ -300,7 +300,6 @@ Execute `npm test` to run static analysis checks and the test suite. Requires Do
 1. Get the pull request reviewed and approved.
 1. When doing the squash and merge, make sure that your commit message is clear and readable and follows the strict format described in the commit format section below. If the commit message does not comply, automatic release will fail.
 1. In case you are planning to merge the pull request with a merge commit, make sure that every commit in your branch respects the format. 
-1. Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org), under the "Product - Releases" category.
 
 ### Commit format
 The commit format should follow this [conventional-changelog angular preset](https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-angular). Examples are provided below.
