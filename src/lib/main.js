@@ -21,6 +21,9 @@ const defaultActions = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'validate-app-forms',
+  'validate-collect-forms',
+  'validate-contact-forms',
   'backup-all-forms',
   'delete-all-forms',
   'upload-app-forms',
@@ -38,6 +41,9 @@ const defaultArchiveActions = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'validate-app-forms',
+  'validate-collect-forms',
+  'validate-contact-forms',
   'upload-app-forms',
   'upload-collect-forms',
   'upload-contact-forms',
@@ -123,17 +129,38 @@ module.exports = async (argv, env) => {
   // Build up actions
   //
   let actions = cmdArgs._;
-  if (!actions.length) {
+  if (actions.length) {
+    const unsupported = actions.filter(a => !supportedActions.includes(a));
+    if(unsupported.length) {
+      throw new Error(`Unsupported action(s): ${unsupported.join(' ')}`);
+    }
+  } else {
     actions = !cmdArgs.archive ? defaultActions : defaultArchiveActions;
-  }
-
-  const unsupported = actions.filter(a => !supportedActions.includes(a));
-  if(unsupported.length) {
-    throw new Error(`Unsupported action(s): ${unsupported.join(' ')}`);
   }
 
   if (cmdArgs['skip-git-check']) {
     actions = actions.filter(a => a !== 'check-git');
+  }
+
+  const skipValidate = cmdArgs['skip-validate'];
+  if(skipValidate) {
+    warn('Skipping all form validation.');
+    const validateActions = [
+      'validate-app-forms',
+      'validate-collect-forms',
+      'validate-contact-forms'
+    ];
+    actions = actions.filter(action => !validateActions.includes(action));
+  } else {
+    const addFormValidationIfNecessary = (formType) => {
+      const updateFormsIndex = actions.indexOf(`upload-${formType}-forms`);
+      if (updateFormsIndex >= 0 && actions.indexOf(`validate-${formType}-forms`) < 0) {
+        actions.splice(updateFormsIndex, 0, `validate-${formType}-forms`);
+      }
+    };
+    addFormValidationIfNecessary('app');
+    addFormValidationIfNecessary('collect');
+    addFormValidationIfNecessary('contact');
   }
 
   actions = actions.map(actionName => {
@@ -157,9 +184,9 @@ module.exports = async (argv, env) => {
   //
   const projectName = fs.path.basename(pathToProject);
 
-  let apiUrl;
-  if (actions.some(action => action.requiresInstance)) {
-    apiUrl = getApiUrl(cmdArgs, env);
+  const apiUrl = getApiUrl(cmdArgs, env);
+  const requiresInstance = actions.some(action => action.requiresInstance);
+  if (requiresInstance) {
     if (!apiUrl) {
       throw new Error('Failed to obtain a url to the API');
     }
@@ -177,10 +204,11 @@ module.exports = async (argv, env) => {
     extraArgs,
     apiUrl,
     cmdArgs.force,
-    cmdArgs['skip-translation-check']
+    cmdArgs['skip-translation-check'],
+    skipValidate
   );
 
-  if (apiUrl) {
+  if (requiresInstance && apiUrl) {
     await api().available();
   }
 

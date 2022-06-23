@@ -119,7 +119,7 @@ describe('main', () => {
     expect(mocks.executeAction.args[0][0].name).to.eq('initialise-project-layout');
   });
 
-  const expectExecuteActionBehavior = (expectedActions, expectedExtraParams, needsApi) => {
+  const expectExecuteActionBehavior = (expectedActions, expectedExtraParams) => {
     if (Array.isArray(expectedActions)) {
       expect(mocks.executeAction.args.map(args => args[0].name)).to.deep.eq(expectedActions);
     } else {
@@ -128,18 +128,18 @@ describe('main', () => {
 
     expect(mocks.environment.initialize.args[0][3]).to.deep.eq(expectedExtraParams);
 
-    expect(mocks.environment.initialize.args[0][4]).to.eq(needsApi ? 'http://api' : undefined);
+    expect(mocks.environment.initialize.args[0][4]).to.eq('http://api');
   };
 
   it('--local no COUCH_URL', async () => {
     await main([...normalArgv, '--local'], {});
-    expectExecuteActionBehavior(defaultActions, undefined, true);
+    expectExecuteActionBehavior(defaultActions, undefined);
   });
 
   it('--local with COUCH_URL to localhost', async () => {
     const COUCH_URL = 'http://user:pwd@localhost:5988/medic';
     await main([...normalArgv, '--local'], { COUCH_URL });
-    expectExecuteActionBehavior(defaultActions, undefined, true);
+    expectExecuteActionBehavior(defaultActions, undefined);
   });
 
   it('--instance + 2 ordered actions', async () => {
@@ -166,6 +166,49 @@ describe('main', () => {
     }
   });
 
+  it('add validate forms actions for upload forms actions', async () => {
+    await main([...normalArgv, '--local', 'upload-collect-forms', 'upload-contact-forms', 'upload-app-forms'], {});
+    expectExecuteActionBehavior(
+      [
+        'validate-collect-forms', 'upload-collect-forms',
+        'validate-contact-forms', 'upload-contact-forms',
+        'validate-app-forms', 'upload-app-forms'
+      ], undefined
+    );
+    expect(mocks.environment.initialize.args[0][7]).to.be.undefined;
+  });
+
+  it('--skip-validate for upload forms actions', async () => {
+    await main([...normalArgv, '--local', '--skip-validate', 'upload-collect-forms', 'upload-contact-forms', 'upload-app-forms'], {});
+    expectExecuteActionBehavior(
+      [
+        'upload-collect-forms',
+        'upload-contact-forms',
+        'upload-app-forms'
+      ], undefined
+    );
+    expect(mocks.warn.callCount).to.equal(1);
+    expect(mocks.warn.args[0][0]).to.equal('Skipping all form validation.');
+    // The skipValidate param should be `true` when initializing the environment
+    expect(mocks.environment.initialize.args[0][7]).to.eq(true);
+  });
+
+  it('--skip-validate for validate forms actions', async () => {
+    await main([...normalArgv, '--local', '--skip-validate', 'validate-collect-forms', 'validate-contact-forms',
+      'validate-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-app-forms'], {});
+    expectExecuteActionBehavior(
+      [
+        'upload-collect-forms',
+        'upload-contact-forms',
+        'upload-app-forms'
+      ], undefined
+    );
+    expect(mocks.warn.callCount).to.equal(1);
+    expect(mocks.warn.args[0][0]).to.equal('Skipping all form validation.');
+    // The skipValidate param should be `true` when initializing the environment
+    expect(mocks.environment.initialize.args[0][7]).to.eq(true);
+  });
+
   describe('--archive', () => {
     it('default actions', async () => {
       await main([...normalArgv, '--archive', '--destination=foo'], {});
@@ -176,7 +219,7 @@ describe('main', () => {
 
     it('single action', async () => {
       await main([...normalArgv, '--archive', '--destination=foo', 'upload-app-settings'], {});
-      expectExecuteActionBehavior('upload-app-settings', undefined, true);
+      expectExecuteActionBehavior('upload-app-settings', undefined);
       expect(userPrompt.keyInYN.callCount).to.eq(0);
     });
 

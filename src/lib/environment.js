@@ -12,7 +12,8 @@ const initialize = (
   extraArgs,
   apiUrl,
   force,
-  skipTranslationCheck
+  skipTranslationCheck,
+  skipValidate
 ) => {
   if (state.initialized) {
     throw Error('environment is already initialized');
@@ -26,7 +27,8 @@ const initialize = (
     isArchiveMode,
     pathToProject,
     force,
-    skipTranslationCheck
+    skipTranslationCheck,
+    skipValidate
   });
 };
 
@@ -51,6 +53,7 @@ module.exports = {
   get apiUrl() { return getState('apiUrl'); },
   get force() { return getState('force'); },
   get skipTranslationCheck() { return getState('skipTranslationCheck'); },
+  get skipValidate() { return getState('skipValidate'); },
 
   /**
    * Return `true` if the environment **seems** to be production.

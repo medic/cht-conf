@@ -13,7 +13,6 @@ const {
   readTitleFrom,
   readIdFrom
 } = require('./forms-utils');
-const validateForms = require('./validate-forms');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms', 'subject_key', 'hidden_fields'];
 const FORM_EXTENSTION = '.xml';
@@ -40,7 +39,6 @@ const formMediaMatcher = (formMediaDir) => {
 };
 
 const execute = async (projectDir, subDirectory, options) => {
-  await validateForms(projectDir, subDirectory, options);
   const db = pouch();
   if (!options) options = {};
   const formsDir = getFormDir(projectDir, subDirectory);

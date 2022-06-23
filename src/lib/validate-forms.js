@@ -1,64 +1,82 @@
-const api = require('./api');
 const argsFormFilter = require('./args-form-filter');
+const environment = require('./environment');
 const fs = require('./sync-fs');
 const log = require('./log');
 const {
   getFormDir,
-  getFormFilePaths,
-  formHasInstanceId
+  getFormFilePaths
 } = require('./forms-utils');
+
+const VALIDATIONS_PATH = fs.path.resolve(__dirname, './validation/form');
+const validations = fs.readdir(VALIDATIONS_PATH)
+  .filter(name => name.endsWith('.js'))
+  .map(validationName => {
+    const validation = require(fs.path.join(VALIDATIONS_PATH, validationName));
+    validation.name = validationName;
+    if(!Object.hasOwnProperty.call(validation, 'requiresInstance')) {
+      validation.requiresInstance = true;
+    }
+    if(!Object.hasOwnProperty.call(validation, 'skipFurtherValidation')) {
+      validation.skipFurtherValidation = false;
+    }
+
+    return validation;
+  })
+  .sort((a, b) => {
+    if(a.skipFurtherValidation && !b.skipFurtherValidation) {
+      return -1;
+    }
+    if(!a.skipFurtherValidation && b.skipFurtherValidation) {
+      return 1;
+    }
+    return a.name.localeCompare(b.name);
+  });
 
 module.exports = async (projectDir, subDirectory, options={}) => {
 
   const formsDir = getFormDir(projectDir, subDirectory);
   if(!formsDir) {
-    log.info(`Forms dir not found: ${formsDir}`);
+    log.info(`Forms dir not found: ${projectDir}/forms/${subDirectory}`);
     return;
   }
 
-  let idValidationsPassed = true;
-  let validateFormsPassed = true;
+  const instanceProvided = environment.apiUrl;
+  let validationSkipped = false;
 
   const fileNames = argsFormFilter(formsDir, '.xml', options);
-  for (const fileName of fileNames) {
+
+  let errorFound = false;
+  for(const fileName of fileNames) {
     log.info(`Validating form: ${fileName}…`);
 
-    const { xformPath, filePath } = getFormFilePaths(formsDir, fileName);
+    const { xformPath } = getFormFilePaths(formsDir, fileName);
     const xml = fs.read(xformPath);
 
-    if(!formHasInstanceId(xml)) {
-      log.error(`Form at ${xformPath} appears to be missing <meta><instanceID/></meta> node. This form will not work on CHT webapp.`);
-      idValidationsPassed = false;
-      continue;
-    }
-    try {
-      await _formsValidate(xml);
-    } catch (err) {
-      log.error(`Error found while validating "${filePath}". Validation response: ${err.message}`);
-      validateFormsPassed = false;
-    }
-  }
-  // Once all the fails were checked raise an exception if there were errors
-  let errors = [];
-  if (!validateFormsPassed) {
-    errors.push('One or more forms appears to have errors found by the API validation endpoint.');
-  }
-  if (!idValidationsPassed) {
-    errors.push('One or more forms appears to be missing <meta><instanceID/></meta> node.');
-  }
-  if (errors.length) {
-    // the blank spaces are a trick to align the errors in the log ;)
-    throw new Error(errors.join('\n             '));
-  }
-};
+    const valParams = { xformPath, xmlStr: xml };
+    for(const validation of validations) {
+      if(validation.requiresInstance && !instanceProvided) {
+        validationSkipped = true;
+        continue;
+      }
 
-let validateEndpointNotFoundLogged = false;
-const _formsValidate = async (xml) => {
-  const resp = await api().formsValidate(xml);
-  if (resp.formsValidateEndpointFound === false && !validateEndpointNotFoundLogged) {
-    log.warn('Form validation endpoint not found in your version of CHT Core, ' +
-      'no form will be checked before push');
-    validateEndpointNotFoundLogged = true; // Just log the message once
+      const output = await validation.execute(valParams);
+      if(output.warnings) {
+        output.warnings.forEach(warnMsg => log.warn(warnMsg));
+      }
+      if(output.errors && output.errors.length) {
+        output.errors.forEach(errorMsg => log.error(errorMsg));
+        errorFound = true;
+        if(validation.skipFurtherValidation) {
+          break;
+        }
+      }
+    }
   }
-  return resp;
+
+  if(validationSkipped) {
+    log.warn('Some validations have been skipped because they require a CHT instance.');
+  }
+  if(errorFound) {
+    throw new Error('One or more forms have failed validation.');
+  }
 };

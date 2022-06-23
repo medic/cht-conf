@@ -63,6 +63,9 @@ ${bold('OPTIONS')}
   --skip-translation-check
     Skips checking message translations
 
+  --skip-validate
+    Skips form validation  
+
   --force
     CAN BE DANGEROUS! Passes yes to all commands and any where that would prompt to overwrite changes will overwrite automatically. 
 `);
