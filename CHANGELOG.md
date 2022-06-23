@@ -1,3 +1,10 @@
+# [3.12.0](https://github.com/medic/cht-conf/compare/v3.11.1...v3.12.0) (2022-06-23)
+
+
+### Features
+
+* **#484:** add actions for validating forms ([f2a6a8e](https://github.com/medic/cht-conf/commit/f2a6a8ef75561426ce2a6b542cdf1a255c869c6e)), closes [#484](https://github.com/medic/cht-conf/issues/484) [#481](https://github.com/medic/cht-conf/issues/481)
+
 ## [3.11.1](https://github.com/medic/cht-conf/compare/v3.11.0...v3.11.1) (2022-06-13)
 
 
