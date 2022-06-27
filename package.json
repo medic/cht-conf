@@ -67,7 +67,7 @@
     "terser-webpack-plugin": "^1.4.3",
     "uuid": "^8.3.2",
     "webpack": "^4.46.0",
-    "xmldom": "^0.6.0"
+    "@xmldom/xmldom": "^0.7.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^13.2.0",
