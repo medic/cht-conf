@@ -1,4 +1,5 @@
 const { assert, expect } = require('chai');
+const fs = require('fs');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
@@ -102,10 +103,21 @@ describe('validate-forms', () => {
   });
 
   it('should resolve OK if all validations pass', () => {
-    return validateForms.__with__({ validations: [mockValidation(), mockValidation(), mockValidation()] })(async () => {
+    const validation = mockValidation();
+    return validateForms.__with__({ validations: [validation, mockValidation(), mockValidation()] })(async () => {
       await validateForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
       expect(logInfo.callCount).to.equal(1);
       expect(logInfo.args[0][0]).to.equal('Validating form: example.xml…');
+      // Assert params passed to validations
+      const {args} = validation.execute;
+      expect(args.length).to.equal(1);
+      const { xformPath, xmlStr, xmlDoc } = args[0][0];
+      const expectedXmlPath = `${BASE_DIR}/merge-properties/forms/${FORMS_SUBDIR}/example.xml`;
+      const expectedXmlStr = fs.readFileSync(expectedXmlPath, 'utf8');
+      expect(xformPath).to.equal(expectedXmlPath);
+      expect(xmlStr).to.equal(expectedXmlStr);
+      // Make sure valid xml doc is passed in
+      expect(xmlDoc.getElementsByTagName('h:title')[0].textContent).to.equal('Merge properties');
     });
   });
 
