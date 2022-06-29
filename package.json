@@ -38,6 +38,7 @@
     "@hapi/joi": "^16.1.8",
     "@medic/translation-checker": "^1.0.1",
     "@parcel/watcher": "^2.0.5",
+    "@xmldom/xmldom": "^0.8.2",
     "canonical-json": "0.0.4",
     "csv-parse": "^4.16.0",
     "dom-compare": "^0.6.0",
@@ -67,7 +68,7 @@
     "terser-webpack-plugin": "^1.4.3",
     "uuid": "^8.3.2",
     "webpack": "^4.46.0",
-    "@xmldom/xmldom": "^0.8.2"
+    "xpath": "0.0.32"
   },
   "devDependencies": {
     "@commitlint/cli": "^13.2.0",

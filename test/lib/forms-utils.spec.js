@@ -1,8 +1,11 @@
 const { expect } = require('chai');
 const path = require('path');
+const { DOMParser } = require('@xmldom/xmldom');
 const formUtils = require('../../src/lib/forms-utils');
 
-const getXml = (opts = { metaNodes: '<instanceID/>', title: 'Has Instance ID', id: 'ABC' }) => `
+const domParser = new DOMParser();
+
+const getXml = (opts = { metaNodes: '<instanceID/>', title: 'Has Instance ID', id: 'ABC', includeBinds: true }) => `
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
@@ -10,10 +13,11 @@ const getXml = (opts = { metaNodes: '<instanceID/>', title: 'Has Instance ID', i
     <model>
       <instance>
         <data id="${opts.id}" version="2015-06-05">
-          <name>Billy Bob</name>
+          <name>Harambe</name>
           <age/>
         </data>
       </instance>
+      <instance id="contact-summary"/>
       <bind nodeset="/data/name" type="string" />
       <bind nodeset="/data/age" type="int" relevant="/data/name != ''" />        
       <meta>
@@ -30,6 +34,12 @@ const getXml = (opts = { metaNodes: '<instanceID/>', title: 'Has Instance ID', i
     </input>
   </h:body>
 </h:html>`;
+
+const getXmlDoc = opts => domParser.parseFromString(getXml(opts));
+
+const emptyXml = `
+<?xml version="1.0"?>
+<h:html xmlns:h="http://www.w3.org/1999/xhtml"></h:html>`;
 
 const projectDir = path.join(__dirname, '../data/convert-app-forms');
 
@@ -104,6 +114,84 @@ describe('form-utils', () => {
     it('returns an empty string when the form id is empty', () => {
       const id = formUtils.readIdFrom(getXml({ id: '' }));
       expect(id).to.equal('');
+    });
+  });
+
+  describe('getNode', () => {
+    const xmlDoc = getXmlDoc();
+
+    it('returns a node selected by an absolute XPath', () => {
+      const node = formUtils.getNode(xmlDoc, '/h:html/h:head/model/instance/data/name');
+      expect(node.textContent).to.equal('Harambe');
+    });
+
+    it('returns a node selected by a relative XPath', () => {
+      const ageNode = formUtils.getNode(xmlDoc, '/h:html/h:head/model/instance/data/age');
+
+      const node = formUtils.getNode(ageNode, '../name');
+      expect(node.textContent).to.equal('Harambe');
+    });
+
+    it('returns undefined when the node does not exist', () => {
+      const node = formUtils.getNode(xmlDoc, '/data/non-existent-node');
+      expect(node).to.be.undefined;
+    });
+  });
+
+  describe('getNodes', () => {
+    const xmlDoc = getXmlDoc();
+
+    it('returns a multiple selected nodes', () => {
+      const nodes = formUtils.getNodes(xmlDoc, '/h:html/h:head/model/bind');
+      expect(nodes.length).to.equal(2);
+      expect(nodes[0].getAttribute('nodeset')).to.equal('/data/name');
+      expect(nodes[1].getAttribute('nodeset')).to.equal('/data/age');
+    });
+
+    it('returns a single node selected by an absolute XPath', () => {
+      const nodes = formUtils.getNodes(xmlDoc, '/h:html/h:head/model/instance/data/name');
+      expect(nodes.length).to.equal(1);
+      expect(nodes[0].textContent).to.equal('Harambe');
+    });
+
+    it('returns a single node selected by a relative XPath', () => {
+      const ageNode = formUtils.getNode(xmlDoc, '/h:html/h:head/model/instance/data/age');
+
+      const nodes = formUtils.getNodes(ageNode, '../name');
+      expect(nodes.length).to.equal(1);
+      expect(nodes[0].textContent).to.equal('Harambe');
+    });
+
+    it('returns an empty array when the nodes do not exist', () => {
+      const nodes = formUtils.getNodes(xmlDoc, '/data/non-existent-node');
+      expect(nodes).to.be.empty;
+    });
+  });
+
+  describe('getBindNodes', () => {
+    it('returns the bind nodes for the given form', () => {
+      const nodes = formUtils.getBindNodes(getXmlDoc());
+      expect(nodes.length).to.equal(2);
+      expect(nodes[0].getAttribute('nodeset')).to.equal('/data/name');
+      expect(nodes[1].getAttribute('nodeset')).to.equal('/data/age');
+    });
+
+    it('returns an empty array when no bind nodes exist', () => {
+      const nodes = formUtils.getBindNodes(domParser.parseFromString(emptyXml));
+      expect(nodes).to.be.empty;
+    });
+  });
+
+  describe('getPrimaryInstanceNode', () => {
+    it('returns the first instance node for the given form', () => {
+      const node = formUtils.getPrimaryInstanceNode(getXmlDoc());
+      // Assert node has children and it not the empty contact-summary instance
+      expect(node.hasChildNodes()).to.be.true;
+    });
+
+    it('returns undefined when no instance nodes exist', () => {
+      const node = formUtils.getPrimaryInstanceNode(domParser.parseFromString(emptyXml));
+      expect(node).to.be.undefined;
     });
   });
 });
