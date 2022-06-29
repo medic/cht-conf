@@ -44,6 +44,11 @@ describe('validate-forms', () => {
     expect(canGeneratexForm.requiresInstance).to.equal(true);
     expect(canGeneratexForm.skipFurtherValidation).to.equal(false);
 
+    const checkXPathsExist = validations.shift();
+    expect(checkXPathsExist.name).to.equal('check-xpaths-exist.js');
+    expect(checkXPathsExist.requiresInstance).to.equal(false);
+    expect(checkXPathsExist.skipFurtherValidation).to.equal(false);
+
     expect(validations).to.be.empty;
   });
 
