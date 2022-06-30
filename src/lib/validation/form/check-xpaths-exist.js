@@ -8,18 +8,28 @@ certainly an error (since it could never return any other result). This validati
 calculate, constraint, readonly, relevant, and required expressions and returns an error for any simple XPaths that
 point to a non-existant node. More complex dynamic XPath expressions are not validated (since their results could vary
 at runtime depending on the data in the form).
+
+https://github.com/medic/cht-conf/issues/479
 */
 
 const { getNode, getBindNodes, getPrimaryInstanceNode } = require('../../forms-utils');
 
-// TODO Refactor and document
-const XPATH_SPECIAL_CHARS = /\/\/|[*@:[\]]/g;
-const XPATH_PATTERN = /[/\w.*@:[\]-]*\/[/\w.*@:[\]-]+/g;
+const SUPPORTED_CHAR = '[/\\w.-]';
+const UNSUPPORTED_CHAR = '[*@:[\\]]';
+const XPATH_CHAR = `(${SUPPORTED_CHAR}|${UNSUPPORTED_CHAR})`;
+const UNSUPPORTED_XPATH_PATTERN = new RegExp(`\\/\\/|${UNSUPPORTED_CHAR}`, 'g');
+const XPATH_PATTERN = new RegExp(`${XPATH_CHAR}*\\/${XPATH_CHAR}+`, 'g');
 
 const extractSimpleXpaths = (expression) => {
+  /*
+  "Simple" XPaths look a lot like subsections of complex XPaths. To ensure that we never accidentally extract part of a
+  complex XPath, we first just match on all possible XPaths (simple and complex). Then we do a second pass to filter the
+  list down to just the XPaths that have a supported beginning section (since that is a cheep check). Finally, we filter
+  out any complex XPaths (with unsupported characters).
+   */
   return (expression.match(XPATH_PATTERN) || [])
     .filter(xpath => xpath.startsWith('/') || xpath.startsWith('./') || xpath.startsWith('../'))
-    .filter(xpath => !xpath.match(XPATH_SPECIAL_CHARS));
+    .filter(xpath => !xpath.match(UNSUPPORTED_XPATH_PATTERN));
 };
 
 const isValidXpath = (nodeset, xpathToValidate, instance) => {
@@ -27,13 +37,11 @@ const isValidXpath = (nodeset, xpathToValidate, instance) => {
     // Absolute XPath. Evaluate it relative to the instance
     return getNode(instance, xpathToValidate.substring(1));
   }
-
   // Relative XPath. Evaluate it relative to the current node
   const currentNode = getNode(instance, nodeset.substring(1));
   if(!currentNode) {
     throw new Error(`Could not find model node referenced by bind nodeset: ${nodeset}`);
   }
-
   return getNode(currentNode, xpathToValidate);
 };
 
@@ -45,7 +53,6 @@ const extractInvalidXPaths = (nodeset, expression, instance) => {
 const getField = (bind, instance) => {
   const nodeset = bind.getAttribute('nodeset');
   const getInvalidXPaths = (expression) => extractInvalidXPaths(nodeset, expression, instance);
-
   return {
     nodeset,
     calculate: getInvalidXPaths(bind.getAttribute('calculate')),
@@ -88,7 +95,7 @@ module.exports = {
           const recordError = (expressionName) => {
             const xpaths = field[expressionName];
             if(xpaths.length) {
-              errors.push(`  - ${expressionName} for ${field.nodeset} contains ${xpaths}`);
+              errors.push(`  - ${expressionName} for ${field.nodeset} contains [${xpaths.join(', ')}]`);
             }
           };
           recordError('calculate');
@@ -101,7 +108,6 @@ module.exports = {
     } catch(e) {
       errors.push(`Error encountered while validating XPaths in form at ${xformPath}: ${e.message}`);
     }
-
     return { errors, warnings: [] };
   }
 };
