@@ -14,11 +14,19 @@ https://github.com/medic/cht-conf/issues/479
 
 const { getNode, getBindNodes, getPrimaryInstanceNode } = require('../../forms-utils');
 
+// Characters used in simple XPaths
 const SUPPORTED_CHAR = '[/\\w.-]';
+// Special characters used in complex XPaths
 const UNSUPPORTED_CHAR = '[*@:[\\]]';
 const XPATH_CHAR = `(${SUPPORTED_CHAR}|${UNSUPPORTED_CHAR})`;
-const UNSUPPORTED_XPATH_PATTERN = new RegExp(`\\/\\/|${UNSUPPORTED_CHAR}`, 'g');
-const XPATH_PATTERN = new RegExp(`${XPATH_CHAR}*\\/${XPATH_CHAR}+`, 'g');
+// Some XPaths lookup nodes in separate instances (e.g. instance('contact-summary')/context/pregnancy_uuid)
+const INSTANCE = `instance\\([\\w-'"]+\\)`;
+// Look ahead and make sure there are an even number of quotes following the match (this means that the match itself is not in quotes).
+const LOOK_AHEADS_FOR_EVEN_QUOTES = `(?=([^"]*"[^"]*")*[^"]*$)(?=([^']*'[^']*')*[^']*$)`;
+// Matches on all possible XPaths (simple and complex) not in quotes. May start with an instance reference. Must include a slash.
+const XPATH_PATTERN = new RegExp(`(${INSTANCE}|)${XPATH_CHAR}*\\/${XPATH_CHAR}+${LOOK_AHEADS_FOR_EVEN_QUOTES}`, 'g');
+// Matches on XPaths containing complex calculations (note that '//' indicates a deep lookup, which we do not validate)
+const UNSUPPORTED_XPATH_PATTERN = new RegExp(`\\/\\/|${UNSUPPORTED_CHAR}|${INSTANCE}`, 'g');
 
 const extractSimpleXpaths = (expression) => {
   /*

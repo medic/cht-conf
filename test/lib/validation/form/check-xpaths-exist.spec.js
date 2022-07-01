@@ -148,6 +148,20 @@ describe('check-xpaths-exist', () => {
     './/title',
     '@style',
     'price/@exchange',
+    `instance('contact-summary')/context/pregnancy_uuid`,
+    `instance(&quot;contact-summary&quot;)/context/pregnancy_uuid`,
+    'https://www.google.com/',
+    'www.google.com/hello/world',
+    `'File Path: /Users/joe/Desktop/myfile.txt is invalid'`,
+    '&quot;File Path: /Users/joe/Desktop/myfile.txt is invalid&quot;',
+    `/data/name = '/Users/joe/Desktop/myfile.txt'`,
+    `/data/name = &quot;/Users/joe/Desktop/myfile.txt&quot;`,
+    // Known limitation where the apostrophe in "Joe's" causes the XPath to be ignored.
+    `concat(/Users/joe/Desktop/myfile.txt, &quot;Joe's File&quot;)`,
+    `concat(&quot;/Users/joe/Desktop/myfile.txt&quot;, &quot;Joe's File&quot;)`,
+    `concat('/Users/joe/Desktop/myfile.txt', 'Joe&quot;s File')`,
+    `concat(&quot;/Users/joe/Desktop/myfile.txt&quot;, &quot;Joe's File&quot;)`,
+    '10/2'
   ].forEach(xpath => {
     it(`resolves OK for invalid complex XPath(s) [${xpath}]`, () => {
       const fields = [{ name: '/data/summary/details', type: 'string', calculate: xpath }];
@@ -180,6 +194,16 @@ describe('check-xpaths-exist', () => {
           ))), &quot;%Y-%m-%d&quot;)`,
       invalidXPaths: ['../invalid', '../invalid', '../invalid', '/data/summary/invalid']
     },
+    { expression: 'concat(&quot;hello&quot;, /invalid, &quot;world&quot;)', invalidXPaths: ['/invalid'] },
+    { expression: `concat('hello', /invalid, 'world')`, invalidXPaths: ['/invalid'] },
+    { expression: `concat('hello', /invalid, &quot;world&quot;)`, invalidXPaths: ['/invalid'] },
+    { expression: `instance()/context/pregnancy_uuid`, invalidXPaths: ['/context/pregnancy_uuid'] },
+    // The following two are the only known "false-positive" cases where an error is reported when it should not be. They
+    // are sufficiently rare edge cases that it should not be a problem. Additionally, the only thing needed to fix these
+    // cases is for the string literal containing the XPath to be quoted with the same quote character as the other
+    // string literal that follows. So, even if a form hits this case, it can be mitigated easily.
+    { expression: `concat(&quot;/Users/joe/Desktop/myfile.txt&quot;, 'Joe&quot;s File')`, invalidXPaths: ['/Users/joe/Desktop/myfile.txt'] },
+    { expression: `concat('/Users/joe/Desktop/myfile.txt', &quot;Joe's File&quot;)`, invalidXPaths: ['/Users/joe/Desktop/myfile.txt'] },
   ].forEach(({ expression, invalidXPaths }) => {
     it(`returns error(s) for invalid simple XPath(s) [${expression}]`, () => {
       const fields = [{ name: '/data/summary/details', type: 'string', calculate: expression }];
@@ -264,7 +288,7 @@ describe('check-xpaths-exist', () => {
     return checkXPathsExist.execute({ xformPath, xmlDoc: getXmlDoc(fields) })
       .then(output => {
         expect(output.warnings).is.empty;
-        const expectedErrors = [`EError encountered while validating XPaths in form at ${xformPath}: Could not find model node referenced by bind nodeset: /data/summary/invalid`];
+        const expectedErrors = [`Error encountered while validating XPaths in form at ${xformPath}: Could not find model node referenced by bind nodeset: /data/summary/invalid`];
         expect(output.errors).to.deep.equal(expectedErrors);
       });
   });
