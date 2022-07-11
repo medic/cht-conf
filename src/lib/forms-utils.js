@@ -73,7 +73,7 @@ module.exports = {
    * @param {string} xmlDoc the XML document
    * @returns {boolean}
    */
-  formHasInstanceId: xmlDoc => getNode(xmlDoc, `${XPATH_MODEL}/meta/instanceID`) !== undefined,
+  formHasInstanceId: xmlDoc => getNode(xmlDoc, `//meta/instanceID`) !== undefined,
 
   // This isn't really how to parse XML, but we have fairly good control over the
   // input and this code is working so far.  This may break with changes to the
