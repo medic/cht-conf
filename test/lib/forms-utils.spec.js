@@ -83,37 +83,13 @@ describe('form-utils', () => {
 
   describe('formHasInstanceId', () => {
     it('returns true when the form has an instance ID', () => {
-      const hasInstanceId = formUtils.formHasInstanceId(getXml());
+      const hasInstanceId = formUtils.formHasInstanceId(getXmlDoc());
       expect(hasInstanceId).to.equal(true);
     });
 
     it('returns false when the form does not have an instance ID', () => {
-      const hasInstanceId = formUtils.formHasInstanceId(getXml({ metaNodes: '' }));
+      const hasInstanceId = formUtils.formHasInstanceId(getXmlDoc({ metaNodes: '' }));
       expect(hasInstanceId).to.equal(false);
-    });
-  });
-
-  describe('readTitleFrom', () => {
-    it('returns the title when the form has a title', () => {
-      const title = formUtils.readTitleFrom(getXml());
-      expect(title).to.equal('Has Instance ID');
-    });
-
-    it('returns an empty string when the form title is empty', () => {
-      const title = formUtils.readTitleFrom(getXml({ title: '' }));
-      expect(title).to.equal('');
-    });
-  });
-
-  describe('readIdFrom', () => {
-    it('returns the id when the form has an id', () => {
-      const id = formUtils.readIdFrom(getXml());
-      expect(id).to.equal('ABC');
-    });
-
-    it('returns an empty string when the form id is empty', () => {
-      const id = formUtils.readIdFrom(getXml({ id: '' }));
-      expect(id).to.equal('');
     });
   });
 
@@ -192,6 +168,30 @@ describe('form-utils', () => {
     it('returns undefined when no instance nodes exist', () => {
       const node = formUtils.getPrimaryInstanceNode(domParser.parseFromString(emptyXml));
       expect(node).to.be.undefined;
+    });
+  });
+
+  describe('readTitleFrom', () => {
+    it('returns the title when the form has a title', () => {
+      const title = formUtils.readTitleFrom(getXml());
+      expect(title).to.equal('Has Instance ID');
+    });
+
+    it('returns an empty string when the form title is empty', () => {
+      const title = formUtils.readTitleFrom(getXml({ title: '' }));
+      expect(title).to.equal('');
+    });
+  });
+
+  describe('readIdFrom', () => {
+    it('returns the id when the form has an id', () => {
+      const id = formUtils.readIdFrom(getXml());
+      expect(id).to.equal('ABC');
+    });
+
+    it('returns an empty string when the form id is empty', () => {
+      const id = formUtils.readIdFrom(getXml({ id: '' }));
+      expect(id).to.equal('');
     });
   });
 });
