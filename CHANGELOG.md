@@ -1,3 +1,10 @@
+# [3.13.0](https://github.com/medic/cht-conf/compare/v3.12.0...v3.13.0) (2022-07-12)
+
+
+### Features
+
+* **#479:** validate simple XPaths in forms ([#486](https://github.com/medic/cht-conf/issues/486)) ([9df4a63](https://github.com/medic/cht-conf/commit/9df4a630e4bf69d6f6d102c6ae538f9e0bf10282)), closes [#479](https://github.com/medic/cht-conf/issues/479) [#479](https://github.com/medic/cht-conf/issues/479)
+
 # [3.12.0](https://github.com/medic/cht-conf/compare/v3.11.1...v3.12.0) (2022-06-23)
 
 
