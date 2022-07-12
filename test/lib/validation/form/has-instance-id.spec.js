@@ -1,9 +1,11 @@
 const { expect } = require('chai');
+const { DOMParser } = require('@xmldom/xmldom');
 
 const hasInstanceId = require('../../../../src/lib/validation/form/has-instance-id');
+const domParser = new DOMParser();
 
 const xformPath = '/my/form/path/form.xml';
-const getXml = (metaNodes = '') => `
+const getXmlDoc = (metaNodes = '') => domParser.parseFromString(`
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
@@ -25,11 +27,11 @@ const getXml = (metaNodes = '') => `
       <label>What is the name?</label>
     </input>
   </h:body>
-</h:html>`;
+</h:html>`);
 
 describe('has-instance-id', () => {
   it('should resolve OK when form has instance id', () => {
-    return hasInstanceId.execute({ xformPath, xmlStr: getXml('<instanceID/>') })
+    return hasInstanceId.execute({ xformPath, xmlDoc: getXmlDoc('<instanceID/>') })
       .then(output => {
         expect(output.warnings).is.empty;
         expect(output.errors).is.empty;
@@ -37,7 +39,7 @@ describe('has-instance-id', () => {
   });
 
   it('should return error when form does not have an instance id', () => {
-    return hasInstanceId.execute({ xformPath, xmlStr: getXml() })
+    return hasInstanceId.execute({ xformPath, xmlDoc: getXmlDoc() })
       .then(output => {
         expect(output.warnings).is.empty;
         expect(output.errors).deep

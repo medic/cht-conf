@@ -1,4 +1,13 @@
+const xpath = require('xpath');
 const fs = require('./sync-fs');
+
+const XPATH_MODEL = '/h:html/h:head/model';
+
+const getNode = (currentNode, path) =>
+  xpath.parse(path).select1({ node: currentNode, allowAnyNamespaceForNoPrefix: true });
+
+const getNodes = (currentNode, path) =>
+  xpath.parse(path).select({ node: currentNode, allowAnyNamespaceForNoPrefix: true });
 
 module.exports = {
   /**
@@ -29,24 +38,53 @@ module.exports = {
     };
   },
 
-  // This isn't really how to parse XML, but we have fairly good control over the
-  // input and this code is working so far.  This may break with changes to the
-  // formatting of output from xls2xform.
+  /**
+   * Returns the node from the form XML specified by the given XPath.
+   * @param {Element} currentNode the current node in the form XML document
+   * @param {string} path the XPath expression
+   * @returns {Element} the selected node or `undefined` if not found
+   */
+  getNode,
+
+  /**
+   * Returns the nodes from the form XML specified by the given XPath.
+   * @param {Element} currentNode the current node in the form XML document
+   * @param {string} path the XPath expression
+   * @returns {Element} the selected nodes or an empty array if none are found
+   */
+  getNodes,
+
+  /**
+   * Returns the `bind` nodes for the given form XML.
+   * @param {Document} xmlDoc the form XML document
+   * @returns {Element}
+   */
+  getBindNodes: xmlDoc => getNodes(xmlDoc, `${XPATH_MODEL}/bind`),
+
+  /**
+   * Returns the primary (first) `instance` node for the given form XML.
+   * @param {Document} xmlDoc the form XML document
+   * @returns {Element}
+   */
+  getPrimaryInstanceNode: xmlDoc => getNode(xmlDoc, `${XPATH_MODEL}/instance`),
 
   /**
    * Check whether the XForm has the <instanceID/> tag.
-   * @param {string} xml the XML string
+   * @param {string} xmlDoc the XML document
    * @returns {boolean}
    */
-  formHasInstanceId: xml => xml.includes('<instanceID/>'),
+  formHasInstanceId: xmlDoc => getNode(xmlDoc, `//meta/instanceID`) !== undefined,
 
+  // This isn't really how to parse XML, but we have fairly good control over the
+  // input and this code is working so far.  This may break with changes to the
+  // formatting of output from xls2xform.
   /**
    * Get the title string inside the <h:title> tag
    * @param {string} xml the XML string
    * @returns {string}
    */
   readTitleFrom: xml =>
-      xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>')),
+    xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>')),
 
   /**
    * Get the ID of the form
@@ -54,7 +92,7 @@ module.exports = {
    * @returns {string}
    */
   readIdFrom: xml =>
-      xml.match(/<model>[^]*<\/model>/)[0]
-        .match(/<instance>[^]*<\/instance>/)[0]
-        .match(/id="([^"]*)"/)[1],
+    xml.match(/<model>[^]*<\/model>/)[0]
+      .match(/<instance>[^]*<\/instance>/)[0]
+      .match(/id="([^"]*)"/)[1],
 };

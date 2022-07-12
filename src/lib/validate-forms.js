@@ -1,3 +1,4 @@
+const { DOMParser } = require('@xmldom/xmldom');
 const argsFormFilter = require('./args-form-filter');
 const environment = require('./environment');
 const fs = require('./sync-fs');
@@ -7,6 +8,7 @@ const {
   getFormFilePaths
 } = require('./forms-utils');
 
+const domParser = new DOMParser();
 const VALIDATIONS_PATH = fs.path.resolve(__dirname, './validation/form');
 const validations = fs.readdir(VALIDATIONS_PATH)
   .filter(name => name.endsWith('.js'))
@@ -52,7 +54,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     const { xformPath } = getFormFilePaths(formsDir, fileName);
     const xml = fs.read(xformPath);
 
-    const valParams = { xformPath, xmlStr: xml };
+    const valParams = { xformPath, xmlStr: xml, xmlDoc: domParser.parseFromString(xml) };
     for(const validation of validations) {
       if(validation.requiresInstance && !instanceProvided) {
         validationSkipped = true;
