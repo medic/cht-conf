@@ -20,10 +20,14 @@ const testDir = path.join(__dirname, '../data/skeleton');
 const appFormDir = path.join(testDir, APP_FORMS_PATH);
 const collectFormsDir = path.join(testDir, COLLECT_FORMS_PATH);
 const contactFormsDir = path.join(testDir, CONTACT_FORMS_PATH);
-const settingsPath = path.join(testDir, APP_SETTINGS_DIR_PATH, 'base_settings.json');
+const snapshotsDir = path.join(testDir, '.snapshots');
+const baseSettingsPath = path.join(testDir, APP_SETTINGS_DIR_PATH, 'base_settings.json');
+const appSettingsPath = path.join(testDir, 'app_settings.json');
 const sampleTranslationPath = path.join(testDir, 'translations', 'messages-en.properties');
 const resourceJsonPath = path.join(testDir, RESOURCE_CONFIG_PATH);
-const appSettings = fs.readJson(settingsPath);
+const baseSettings = fs.readJson(baseSettingsPath);
+const appSettings = fs.readJson(appSettingsPath);
+const messagesEn = fs.read(sampleTranslationPath);
 
 const mockApi = {
   updateAppSettings: (content) => {
@@ -36,15 +40,15 @@ const mockApi = {
 };
 
 function editBaseSettings() {
-  const appSettings = fs.readJson(settingsPath);
+  const appSettings = fs.readJson(baseSettingsPath);
   appSettings.locale = 'es';
-  fs.writeJson(settingsPath, appSettings);
+  fs.writeJson(baseSettingsPath, appSettings);
 }
 
 function editAppSettings() {
-  const appSettings = fs.readJson(path.join(testDir, 'app_settings.json'));
+  const appSettings = fs.readJson(appSettingsPath);
   appSettings.locale = 'es';
-  fs.writeJson(path.join(testDir, 'app_settings.json'), appSettings);
+  fs.writeJson(appSettingsPath, appSettings);
 }
 
 function editTranslations() {
@@ -94,7 +98,13 @@ describe('watch-project', function () {
 
   afterEach(() => {
     sinon.restore();
-    fs.writeJson(settingsPath, appSettings);
+    fs.writeJson(baseSettingsPath, baseSettings);
+    fs.writeJson(appSettingsPath, appSettings);
+    fs.write(sampleTranslationPath, messagesEn);
+    if(fs.exists(snapshotsDir)) {
+      fs.deleteFilesInFolder(snapshotsDir);
+      fs.fs.rmdirSync(snapshotsDir);
+    }
     watchProject.close();
     return api.stop();
   });
