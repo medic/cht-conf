@@ -177,7 +177,7 @@ describe('watch-project', function () {
       copySampleForms('upload-app-form');
     };
 
-    api.giveResponses({ status: 200, body: { ok: true } });
+    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(copySampleForm, `${form}.xml`)
       .then(() => api.db.allDocs())
@@ -226,7 +226,7 @@ describe('watch-project', function () {
       copySampleForms('collect-xml', COLLECT_FORMS_PATH);
     };
 
-    api.giveResponses({ status: 200, body: { ok: true } });
+    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(copySampleForm, `${form}.xml`)
       .then(() => api.db.allDocs())
@@ -241,7 +241,7 @@ describe('watch-project', function () {
     const form = 'death';
     copySampleForms('upload-properties');
 
-    api.giveResponses({ status: 200, body: { ok: true } });
+    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(editAppFormProperties, `${form}.properties.json`)
       .then(() => api.db.allDocs())
@@ -261,7 +261,7 @@ describe('watch-project', function () {
       fs.fs.writeFileSync(path.join(formMediaDir, dummyPng), '');
     };
 
-    api.giveResponses({ status: 200, body: { ok: true } });
+    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(createFormMediaDir, dummyPng)
       .then(() => api.db.allDocs())
@@ -295,7 +295,7 @@ describe('watch-project', function () {
       copySampleForms('contact-xml', path.join('forms', 'contact'));
     };
 
-    api.giveResponses({ status: 200, body: { ok: true } });
+    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(copyContactForm, `${form}.xml`)
       .then(() => api.db.allDocs())

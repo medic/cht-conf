@@ -8,7 +8,7 @@ Their module should look something like this:
 module.exports = {
   requiresInstance: false,
   skipFurtherValidation: true,
-  execute: async ({ xformPath, xmlStr }) => {
+  execute: async ({ xformPath, xmlStr, xmlDoc, apiVersion }) => {
     ...
   }
 };
