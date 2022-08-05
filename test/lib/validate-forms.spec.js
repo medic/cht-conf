@@ -52,7 +52,12 @@ describe('validate-forms', () => {
     expect(checkXPathsExist.requiresInstance).to.equal(false);
     expect(checkXPathsExist.skipFurtherValidation).to.equal(false);
 
-    expect(validations).to.be.empty;
+    const deprecatedAppearance = validations.shift();
+    expect(deprecatedAppearance.name).to.equal('deprecated-appearance.js');
+    expect(deprecatedAppearance.requiresInstance).to.equal(true);
+    expect(deprecatedAppearance.skipFurtherValidation).to.equal(false);
+
+    expect(validations, 'Update this test if you have added a new form validation.').to.be.empty;
   });
 
   it('should throw an error when there are validation errors', () => {
