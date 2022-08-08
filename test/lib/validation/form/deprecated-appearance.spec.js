@@ -56,12 +56,13 @@ const assertEmpty = (output) => {
   expect(output.errors, output.errors).is.empty;
 };
 
+const LATEST_VERSION = '999.99.99';
 const ERROR_HEADER = `Form at ${xformPath} contains fields with the deprecated \`horizontal\`/\`compact\` appearance. ` +
   'These have been deprecated in favor of the `columns` appearance. Please update the following fields:';
 
 describe('deprecated-appearance', () => {
   it(`resolves OK for form with no appearances`, () => {
-    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc() })
+    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(), apiVersion: LATEST_VERSION })
       .then(output => assertEmpty(output));
   });
 
@@ -73,7 +74,7 @@ describe('deprecated-appearance', () => {
       streetNbr: 'columns-pack no-buttons',
       city: 'columns-10'
     };
-    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances) })
+    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion: LATEST_VERSION })
       .then(output => assertEmpty(output));
   });
 
@@ -85,7 +86,7 @@ describe('deprecated-appearance', () => {
       streetNbr: 'compact-1',
       city: 'compact-10'
     };
-    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances) })
+    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion: LATEST_VERSION })
       .then(output => {
         expect(output.errors).is.empty;
         expect(output.warnings).to.have.length(6);
@@ -106,7 +107,7 @@ describe('deprecated-appearance', () => {
       streetNbr: 'compact-1 hidden',
       city: 'compact-10 compact-9 compact-8 compact-7'
     };
-    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances) })
+    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion: LATEST_VERSION })
       .then(output => {
         expect(output.errors).is.empty;
         expect(output.warnings).to.have.length(6);
@@ -117,5 +118,52 @@ describe('deprecated-appearance', () => {
         expect(output.warnings[4]).to.equal(`  - /data/address/street-nbr: replace [compact-1] with [columns-1 no-buttons]`);
         expect(output.warnings[5]).to.equal(`  - /data/address/city: replace [compact-10] with [columns-10 no-buttons]`);
       });
+  });
+
+  it(`resolves OK for deprecated appearances when no api version is available`, () => {
+    const appearances = {
+      name: 'horizontal',
+      age: 'horizontal-compact',
+      address: 'compact',
+      streetNbr: 'compact-1',
+      city: 'compact-10'
+    };
+    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances) })
+      .then(output => assertEmpty(output));
+  });
+
+  [
+    ['horizontal', '3.15.0'],
+    ['horizontal-compact', '3.15.0'],
+    ['compact', '3.15.0'],
+    ['compact-1', '3.15.0'],
+  ].forEach(([ appearance, apiVersion ]) => {
+    it(`resolves OK for deprecated [${appearance}] appearance when api version is [${apiVersion}]`, () => {
+      const appearances = {
+        name: appearance
+      };
+      return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion })
+        .then(output => assertEmpty(output));
+    });
+  });
+
+  [
+    ['horizontal', '4.0.0', 'columns'],
+    ['horizontal-compact', '4.0.0', 'columns-pack'],
+    ['compact', '4.0.0', 'columns-pack no-buttons'],
+    ['compact-1', '4.0.0', 'columns-1 no-buttons'],
+  ].forEach(([ appearance, apiVersion, replacement ]) => {
+    it(`returns error for deprecated [${appearance}] appearance when api version is [${apiVersion}]`, () => {
+      const appearances = {
+        name: appearance
+      };
+      return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion })
+        .then(output => {
+          expect(output.errors).is.empty;
+          expect(output.warnings).to.have.length(2);
+          expect(output.warnings[0]).to.equal(ERROR_HEADER);
+          expect(output.warnings[1]).to.equal(`  - /data/name: replace [${appearance}] with [${replacement}]`);
+        });
+    });
   });
 });
