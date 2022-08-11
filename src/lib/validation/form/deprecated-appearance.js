@@ -6,22 +6,22 @@ const { getNodes } = require('../../forms-utils');
 const getDeprecatedAppearances = (apiVersion) => [
   {
     match: appearance => appearance.match(/(?:^|\s)horizontal-compact(?:$|\s)/),
-    replacement: () => 'columns-pack',
+    getReplacement: () => 'columns-pack',
     versionDeprecated: '4.0.0'
   },
   {
     match: appearance => appearance.match(/(?:^|\s)horizontal(?:$|\s)/),
-    replacement: () => 'columns',
+    getReplacement: () => 'columns',
     versionDeprecated: '4.0.0'
   },
   {
     match: appearance => appearance.match(/(?:^|\s)compact-(\d{1,2})(?:$|\s)/),
-    replacement: (match) => `columns-${match[1].trim()} no-buttons`,
+    getReplacement: (match) => `columns-${match[1].trim()} no-buttons`,
     versionDeprecated: '4.0.0'
   },
   {
     match: appearance => appearance.match(/(?:^|\s)compact(?:$|\s)/),
-    replacement: () => 'columns-pack no-buttons',
+    getReplacement: () => 'columns-pack no-buttons',
     versionDeprecated: '4.0.0'
   },
 ].filter(deprecatedAppearance => semver.gte(apiVersion, deprecatedAppearance.versionDeprecated));
@@ -47,7 +47,7 @@ const hasDeprecatedAppearance = ({ deprecatedAppearance }) => deprecatedAppearan
 const createWarning = ({ ref, appearance, deprecatedAppearance }) => {
   const match = deprecatedAppearance.match(appearance);
   const originalAppearance = match[0].trim();
-  const newAppearance = deprecatedAppearance.replacement(match);
+  const newAppearance = deprecatedAppearance.getReplacement(match);
   return `  - ${ref}: replace [${originalAppearance}] with [${newAppearance}]`;
 };
 
