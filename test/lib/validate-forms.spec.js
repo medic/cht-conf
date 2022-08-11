@@ -144,7 +144,7 @@ describe('validate-forms', () => {
       const {args} = validation.execute;
       expect(args.length).to.equal(1);
       const { apiVersion } = args[0][0];
-      expect(apiVersion).to.be.undefined;
+      expect(apiVersion).to.be.null;
     });
   });
 
@@ -159,7 +159,7 @@ describe('validate-forms', () => {
       const {args} = validation.execute;
       expect(args.length).to.equal(1);
       const { apiVersion } = args[0][0];
-      expect(apiVersion).to.be.undefined;
+      expect(apiVersion).to.be.null;
       expect(api().version.callCount).to.equal(0);
     });
   });

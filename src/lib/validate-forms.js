@@ -1,7 +1,6 @@
 const { DOMParser } = require('@xmldom/xmldom');
-const semver = require('semver');
 const argsFormFilter = require('./args-form-filter');
-const getApiVersion = require('./get-api-version');
+const { getValidApiVersion } = require('./get-api-version');
 const environment = require('./environment');
 const fs = require('./sync-fs');
 const log = require('./log');
@@ -45,13 +44,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
   }
 
   const instanceProvided = environment.apiUrl;
-  let apiVersion;
-  if(instanceProvided) {
-    const version = await getApiVersion();
-    if (semver.valid(version)) {
-      apiVersion = version;
-    }
-  }
+  const apiVersion = instanceProvided ? await getValidApiVersion() : null;
   let validationSkipped = false;
 
   const fileNames = argsFormFilter(formsDir, '.xml', options);

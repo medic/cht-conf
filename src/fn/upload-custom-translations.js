@@ -2,7 +2,7 @@ const semver = require('semver');
 
 const environment = require('../lib/environment');
 const pouch = require('../lib/db');
-const getApiVersion = require('../lib/get-api-version');
+const { getValidApiVersion } = require('../lib/get-api-version');
 const iso639 = require('iso-639-1');
 const log = require('../lib/log');
 const properties = require('properties');
@@ -168,9 +168,9 @@ function idFor(fileName) {
 }
 
 async function genericTranslationsStructure(db) {
-  const version = await getApiVersion();
+  const version = await getValidApiVersion();
 
-  if (semver.valid(version)) {
+  if (version) {
     return semver.gte(version, '3.4.0');
   }
 
