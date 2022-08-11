@@ -62,7 +62,8 @@ const ERROR_HEADER = `Form at ${xformPath} contains fields with the deprecated \
 
 describe('deprecated-appearance', () => {
   it(`resolves OK for form with no appearances`, () => {
-    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(), apiVersion: LATEST_VERSION })
+    return deprecatedAppearance
+      .execute({ xformPath, xmlDoc: getXmlDoc(), apiVersion: LATEST_VERSION })
       .then(output => assertEmpty(output));
   });
 
@@ -74,7 +75,8 @@ describe('deprecated-appearance', () => {
       streetNbr: 'columns-pack no-buttons',
       city: 'columns-10'
     };
-    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion: LATEST_VERSION })
+    return deprecatedAppearance
+      .execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion: LATEST_VERSION })
       .then(output => assertEmpty(output));
   });
 
@@ -86,7 +88,8 @@ describe('deprecated-appearance', () => {
       streetNbr: 'compact-1',
       city: 'compact-10'
     };
-    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion: LATEST_VERSION })
+    return deprecatedAppearance
+      .execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion: LATEST_VERSION })
       .then(output => {
         expect(output.errors).is.empty;
         expect(output.warnings).to.have.length(6);
@@ -107,7 +110,8 @@ describe('deprecated-appearance', () => {
       streetNbr: 'compact-1 hidden',
       city: 'compact-10 compact-9 compact-8 compact-7'
     };
-    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion: LATEST_VERSION })
+    return deprecatedAppearance
+      .execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion: LATEST_VERSION })
       .then(output => {
         expect(output.errors).is.empty;
         expect(output.warnings).to.have.length(6);
@@ -128,7 +132,8 @@ describe('deprecated-appearance', () => {
       streetNbr: 'compact-1',
       city: 'compact-10'
     };
-    return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances) })
+    return deprecatedAppearance
+      .execute({ xformPath, xmlDoc: getXmlDoc(appearances) })
       .then(output => assertEmpty(output));
   });
 
@@ -142,7 +147,8 @@ describe('deprecated-appearance', () => {
       const appearances = {
         name: appearance
       };
-      return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion })
+      return deprecatedAppearance
+        .execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion })
         .then(output => assertEmpty(output));
     });
   });
@@ -157,7 +163,8 @@ describe('deprecated-appearance', () => {
       const appearances = {
         name: appearance
       };
-      return deprecatedAppearance.execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion })
+      return deprecatedAppearance
+        .execute({ xformPath, xmlDoc: getXmlDoc(appearances), apiVersion })
         .then(output => {
           expect(output.errors).is.empty;
           expect(output.warnings).to.have.length(2);
