@@ -52,19 +52,19 @@ const createWarning = ({ ref, appearance, deprecatedAppearance }) => {
 };
 
 const populateWarningHeader = (xformPath, warnings) => {
-  if(warnings.length) {
+  if (warnings.length) {
     warnings.unshift(`Form at ${xformPath} contains fields with the deprecated \`horizontal\`/\`compact\` appearance. ` +
       'These have been deprecated in favor of the `columns` appearance. Please update the following fields:');
   }
 };
 
 const validateDeprecatedAppearances = async({ xformPath, xmlDoc, apiVersion }) => {
-  if(!apiVersion) {
+  if (!apiVersion) {
     return { warnings: [], errors: [], };
   }
 
   const deprecatedAppearances = getDeprecatedAppearances(apiVersion);
-  if(!deprecatedAppearances.length) {
+  if (!deprecatedAppearances.length) {
     return { warnings: [], errors: [], };
   }
 

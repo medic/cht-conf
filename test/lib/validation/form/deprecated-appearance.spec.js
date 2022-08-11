@@ -137,7 +137,7 @@ describe('deprecated-appearance', () => {
     ['horizontal-compact', '3.15.0'],
     ['compact', '3.15.0'],
     ['compact-1', '3.15.0'],
-  ].forEach(([ appearance, apiVersion ]) => {
+  ].forEach(([appearance, apiVersion]) => {
     it(`resolves OK for deprecated [${appearance}] appearance when api version is [${apiVersion}]`, () => {
       const appearances = {
         name: appearance
@@ -152,7 +152,7 @@ describe('deprecated-appearance', () => {
     ['horizontal-compact', '4.0.0', 'columns-pack'],
     ['compact', '4.0.0', 'columns-pack no-buttons'],
     ['compact-1', '4.0.0', 'columns-1 no-buttons'],
-  ].forEach(([ appearance, apiVersion, replacement ]) => {
+  ].forEach(([appearance, apiVersion, replacement]) => {
     it(`returns error for deprecated [${appearance}] appearance when api version is [${apiVersion}]`, () => {
       const appearances = {
         name: appearance
