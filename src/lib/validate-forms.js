@@ -60,7 +60,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
       xformPath,
       xmlStr: xml,
       xmlDoc: domParser.parseFromString(xml),
-      apiVersion
+      apiVersion,
     };
     for(const validation of validations) {
       if(validation.requiresInstance && !instanceProvided) {
