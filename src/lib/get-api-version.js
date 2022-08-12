@@ -14,7 +14,7 @@ const getApiVersion = async () => {
     version = ddoc.deploy_info && ddoc.deploy_info.version;
   }
 
-  return semver.valid(version) ? version : null;
+  return version;
 };
 
 const getValidApiVersion = async () => {
