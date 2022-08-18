@@ -49,6 +49,11 @@ describe('validate-forms', () => {
     expect(checkXPathsExist.requiresInstance).to.equal(false);
     expect(checkXPathsExist.skipFurtherValidation).to.equal(false);
 
+    const noRequiredNotes = validations.shift();
+    expect(noRequiredNotes.name).to.equal('no-required-notes.js');
+    expect(noRequiredNotes.requiresInstance).to.equal(false);
+    expect(noRequiredNotes.skipFurtherValidation).to.equal(false);
+
     expect(validations).to.be.empty;
   });
 
