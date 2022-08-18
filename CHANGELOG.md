@@ -1,3 +1,10 @@
+# [3.14.0](https://github.com/medic/cht-conf/compare/v3.13.0...v3.14.0) (2022-08-18)
+
+
+### Features
+
+* **#494:** validate notes are not required in forms ([#496](https://github.com/medic/cht-conf/issues/496)) ([a5a8e09](https://github.com/medic/cht-conf/commit/a5a8e096a478373a43e63f0f606a2919bade8982)), closes [#494](https://github.com/medic/cht-conf/issues/494)
+
 # [3.13.0](https://github.com/medic/cht-conf/compare/v3.12.0...v3.13.0) (2022-07-12)
 
 
