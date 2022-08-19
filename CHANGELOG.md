@@ -1,3 +1,10 @@
+# [3.15.0](https://github.com/medic/cht-conf/compare/v3.14.0...v3.15.0) (2022-08-19)
+
+
+### Features
+
+* **#500:** Validate deprecated appearances in forms ([#501](https://github.com/medic/cht-conf/issues/501)) ([1e52c0c](https://github.com/medic/cht-conf/commit/1e52c0c769fbd27ee6a764358ef2a0463ae3023f)), closes [#500](https://github.com/medic/cht-conf/issues/500)
+
 # [3.14.0](https://github.com/medic/cht-conf/compare/v3.13.0...v3.14.0) (2022-08-18)
 
 
