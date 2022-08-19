@@ -1,5 +1,6 @@
 const { DOMParser } = require('@xmldom/xmldom');
 const argsFormFilter = require('./args-form-filter');
+const { getValidApiVersion } = require('./get-api-version');
 const environment = require('./environment');
 const fs = require('./sync-fs');
 const log = require('./log');
@@ -43,6 +44,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
   }
 
   const instanceProvided = environment.apiUrl;
+  const apiVersion = instanceProvided ? await getValidApiVersion() : null;
   let validationSkipped = false;
 
   const fileNames = argsFormFilter(formsDir, '.xml', options);
@@ -54,7 +56,12 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     const { xformPath } = getFormFilePaths(formsDir, fileName);
     const xml = fs.read(xformPath);
 
-    const valParams = { xformPath, xmlStr: xml, xmlDoc: domParser.parseFromString(xml) };
+    const valParams = {
+      xformPath,
+      xmlStr: xml,
+      xmlDoc: domParser.parseFromString(xml),
+      apiVersion,
+    };
     for(const validation of validations) {
       if(validation.requiresInstance && !instanceProvided) {
         validationSkipped = true;

@@ -8,7 +8,7 @@ Their module should look something like this:
 module.exports = {
   requiresInstance: false,
   skipFurtherValidation: true,
-  execute: async ({ xformPath, xmlStr }) => {
+  execute: async ({ xformPath, xmlStr, xmlDoc, apiVersion }) => {
     ...
   }
 };
@@ -16,11 +16,11 @@ module.exports = {
 
 ## Module Exports
 
-| Field                   | Required                       | Notes                                                                                                                                                                                                                                                        |
-|-------------------------|--------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `requiresInstance`      | Optional, defaults to `true`   | The validation needs the user to have provided a instance location, e.g. via `--local` or `--instance`                                                                                                                                                       |
-| `skipFurtherValidation` | Optional, defaults to `false`  | When `true`, additional validations will not be performed on a form that fails the current validation. The goal is to avoid unnecessary noise in the validation log for forms that are grossly invalid (e.g. XML files that are not actually xForms at all). |
-| `execute`               | Required                       | The function that is run when the validation is executed. The provided input argument contains the form XML string.                                                                                                                                          |
+| Field                   | Required                       | Notes                                                                                                                                                                                                                                                                                                                             |
+|-------------------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `requiresInstance`      | Optional, defaults to `true`   | The validation needs the user to have provided a instance location, e.g. via `--local` or `--instance`                                                                                                                                                                                                                            |
+| `skipFurtherValidation` | Optional, defaults to `false`  | When `true`, additional validations will not be performed on a form that fails the current validation. The goal is to avoid unnecessary noise in the validation log for forms that are grossly invalid (e.g. XML files that are not actually xForms at all).                                                                      |
+| `execute(opts)`         | Required                       | The function that is run when the validation is executed. The available ops are:<br>* `xformPath` - the file path to the form<br>* `xmlStr` - string value of the form XML<br>* `xmlDoc` - Document value of the form XML<br>* `apiVersion` - the version of the CHT instance (if connection information was provided) or `null`  |
 
 ## Result
 

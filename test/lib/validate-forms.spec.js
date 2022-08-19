@@ -3,6 +3,7 @@ const fs = require('fs');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
+const api = require('../../src/lib/api');
 const log = require('../../src/lib/log');
 const environment = require('../../src/lib/environment');
 
@@ -24,9 +25,11 @@ describe('validate-forms', () => {
 
   beforeEach(() => {
     sinon.stub(environment, 'apiUrl').get(() => true);
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
     logInfo = sinon.stub(log, 'info');
     logWarn = sinon.stub(log, 'warn');
     logError = sinon.stub(log, 'error');
+    sinon.stub(api(), 'version').resolves('1.0.0');
   });
 
   afterEach(sinon.restore);
@@ -49,12 +52,17 @@ describe('validate-forms', () => {
     expect(checkXPathsExist.requiresInstance).to.equal(false);
     expect(checkXPathsExist.skipFurtherValidation).to.equal(false);
 
+    const deprecatedAppearance = validations.shift();
+    expect(deprecatedAppearance.name).to.equal('deprecated-appearance.js');
+    expect(deprecatedAppearance.requiresInstance).to.equal(true);
+    expect(deprecatedAppearance.skipFurtherValidation).to.equal(false);
+
     const noRequiredNotes = validations.shift();
     expect(noRequiredNotes.name).to.equal('no-required-notes.js');
     expect(noRequiredNotes.requiresInstance).to.equal(false);
     expect(noRequiredNotes.skipFurtherValidation).to.equal(false);
 
-    expect(validations).to.be.empty;
+    expect(validations, 'Update this test if you have added a new form validation.').to.be.empty;
   });
 
   it('should throw an error when there are validation errors', () => {
@@ -121,13 +129,43 @@ describe('validate-forms', () => {
       // Assert params passed to validations
       const {args} = validation.execute;
       expect(args.length).to.equal(1);
-      const { xformPath, xmlStr, xmlDoc } = args[0][0];
+      const { xformPath, xmlStr, xmlDoc, apiVersion } = args[0][0];
       const expectedXmlPath = `${BASE_DIR}/merge-properties/forms/${FORMS_SUBDIR}/example.xml`;
       const expectedXmlStr = fs.readFileSync(expectedXmlPath, 'utf8');
       expect(xformPath).to.equal(expectedXmlPath);
       expect(xmlStr).to.equal(expectedXmlStr);
       // Make sure valid xml doc is passed in
       expect(xmlDoc.getElementsByTagName('h:title')[0].textContent).to.equal('Merge properties');
+      expect(apiVersion).to.equal('1.0.0');
+    });
+  });
+
+  it('should not pass invalid api version to validations', () => {
+    api().version.resolves('invalid');
+    const validation = mockValidation();
+    return validateForms.__with__({ validations: [validation] })(async () => {
+      await validateForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
+      // Assert params passed to validations
+      const {args} = validation.execute;
+      expect(args.length).to.equal(1);
+      const { apiVersion } = args[0][0];
+      expect(apiVersion).to.be.null;
+    });
+  });
+
+  it('should not pass api version to validations when no instance provided', () => {
+    sinon.stub(environment, 'apiUrl').get(() => false);
+    const validation = {
+      execute: sinon.stub().resolves({ })
+    };
+    return validateForms.__with__({ validations: [validation] })(async () => {
+      await validateForms(`${BASE_DIR}/merge-properties`, FORMS_SUBDIR);
+      // Assert params passed to validations
+      const {args} = validation.execute;
+      expect(args.length).to.equal(1);
+      const { apiVersion } = args[0][0];
+      expect(apiVersion).to.be.null;
+      expect(api().version.callCount).to.equal(0);
     });
   });
 

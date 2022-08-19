@@ -1,3 +1,5 @@
+const semver = require('semver');
+
 const api = require('./api');
 const db = require('./db');
 
@@ -15,4 +17,8 @@ const getApiVersion = async () => {
   return version;
 };
 
-module.exports = getApiVersion;
+const getValidApiVersion = async () => {
+  return semver.valid(await getApiVersion());
+};
+
+module.exports = { getValidApiVersion };
