@@ -52,15 +52,15 @@ describe('validate-forms', () => {
     expect(checkXPathsExist.requiresInstance).to.equal(false);
     expect(checkXPathsExist.skipFurtherValidation).to.equal(false);
 
-    const noRequiredNotes = validations.shift();
-    expect(noRequiredNotes.name).to.equal('no-required-notes.js');
-    expect(noRequiredNotes.requiresInstance).to.equal(false);
-    expect(noRequiredNotes.skipFurtherValidation).to.equal(false);
-
     const deprecatedAppearance = validations.shift();
     expect(deprecatedAppearance.name).to.equal('deprecated-appearance.js');
     expect(deprecatedAppearance.requiresInstance).to.equal(true);
     expect(deprecatedAppearance.skipFurtherValidation).to.equal(false);
+
+    const noRequiredNotes = validations.shift();
+    expect(noRequiredNotes.name).to.equal('no-required-notes.js');
+    expect(noRequiredNotes.requiresInstance).to.equal(false);
+    expect(noRequiredNotes.skipFurtherValidation).to.equal(false);
 
     expect(validations, 'Update this test if you have added a new form validation.').to.be.empty;
   });
