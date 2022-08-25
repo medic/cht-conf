@@ -18,7 +18,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Setting up python 2.X
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '2.7.18'
         architecture: 'x64'
