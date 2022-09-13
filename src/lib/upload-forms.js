@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const fs = require('./sync-fs');
 const log = require('./log');
 const insertOrReplace = require('./insert-or-replace');
+const saveCurrentFormToOldForm = require('./save-current-form-to-old-form')
 const pouch = require('./db');
 const warnUploadOverwrite = require('./warn-upload-overwrite');
 const {
@@ -90,6 +91,7 @@ const execute = async (projectDir, subDirectory, options) => {
 
     const changes = await warnUploadOverwrite.preUploadForm(db, doc, xml, properties);
     if (changes) {
+      await saveCurrentFormToOldForm(db, doc);
       await insertOrReplace(db, doc);
       log.info(`Form ${filePath} uploaded`);
     } else {
