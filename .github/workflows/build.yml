@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
     name: Build for Node version ${{ matrix.node-version }}
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04 # 22.04 does not support Python 2.x
 
     strategy:
       matrix:
