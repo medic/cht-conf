@@ -330,7 +330,7 @@ Builds brought to you courtesy of GitHub actions.
 
 # Copyright
 
-Copyright 2013-2019 Medic Mobile, Inc. <hello@medicmobile.org>
+Copyright 2013-2022 Medic Mobile, Inc. <hello@medic.org>
 
 # License
 
