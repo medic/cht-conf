@@ -105,8 +105,7 @@ describe('watch-project', function () {
       fs.deleteFilesInFolder(snapshotsDir);
       fs.fs.rmdirSync(snapshotsDir);
     }
-    watchProject.close();
-    return api.stop();
+    return watchProject.close().then(() => api.stop());
   });
 
   it('watch-project: upload app settings', () => {
