@@ -38,7 +38,7 @@ const lineageConstraints = async (repository, parentDoc) => {
 };
 
 /*
-Enforce the whitelist of allowed parents for each contact type
+Enforce the list of allowed parents for each contact type
 Ensure we are not creating a circular hierarchy
 */
 const getHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) => {
