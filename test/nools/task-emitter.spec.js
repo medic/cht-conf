@@ -205,6 +205,9 @@ describe('task-emitter', () => {
               expect(emitted[0]).to.nested.include({
                 'contact.name': 'foo',
               });
+              expect(emitted[0]).to.nested.include({
+                'contact._id': 'c-2',
+              });
               expect(mockHeading.calledOnce).to.be.true;
               expect(mockHeading.args[0]).to.deep.eq([config.c, config.c.reports[0]]);
             }

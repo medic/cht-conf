@@ -85,7 +85,7 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
       contactLabel = taskDefinition.contactLabel;
     }
 
-    return contactLabel ? { name: contactLabel } : c.contact;
+    return contactLabel ? { ...c.contact, name: contactLabel } : c.contact;
   }
 
   function emitForEvents(scheduledTaskIdx) {
@@ -129,6 +129,10 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         resolved: taskDefinition.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
         actions: initActions(taskDefinition.actions, event),
       };
+
+      if (!task.contact?._id){
+        task.contact._id = c.contact && c.contact._id;
+      }
 
       if (scheduledTaskIdx !== undefined) {
         task._id += '-' + scheduledTaskIdx;
