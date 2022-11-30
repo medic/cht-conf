@@ -165,8 +165,8 @@ describe('target emitter', () => {
 
         // then
         assert.deepEqual(emitted, [
-          { _id: 'c-2~pT-1', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id: true },
+          { _id: 'c-2~pT-1', _type: 'target', date: TEST_DATE },
+          { _type: '_complete', _id: true },
         ]);
       });
 
