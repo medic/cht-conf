@@ -149,6 +149,27 @@ describe('target emitter', () => {
         ]);
       });
 
+      it('should default to "now" if target date is a function returning null', () => {
+        // given
+        const target = aPersonBasedTarget();
+        target.date = () => null ;
+        // and
+        const config = {
+          c: personWithoutReports(),
+          targets: [ target ],
+          tasks: [],
+        };
+
+        // when
+        const emitted = runNoolsLib(config).emitted;
+
+        // then
+        assert.deepEqual(emitted, [
+          { _id: 'c-2~pT-1', _type:'target', date:TEST_DATE },
+          { _type:'_complete', _id: true },
+        ]);
+      });
+
       it('should not emit if appliesToType doesnt match', () => {
         // given
         const target = aPersonBasedTarget();
