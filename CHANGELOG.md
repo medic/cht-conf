@@ -1,3 +1,10 @@
+## [3.15.1](https://github.com/medic/cht-conf/compare/v3.15.0...v3.15.1) (2022-12-06)
+
+
+### Bug Fixes
+
+* **#123:** Target date default to Now ([#516](https://github.com/medic/cht-conf/issues/516)) ([312219e](https://github.com/medic/cht-conf/commit/312219e8f7d55340513cf0b2be9bdf276762a23a)), closes [#123](https://github.com/medic/cht-conf/issues/123)
+
 # [3.15.0](https://github.com/medic/cht-conf/compare/v3.14.0...v3.15.0) (2022-08-19)
 
 
