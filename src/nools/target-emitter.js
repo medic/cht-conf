@@ -23,10 +23,10 @@ function targetEmitter(targets, c, Utils, Target, emit) {
 
 function determineDate(targetConfig, Utils, c, r) {
   if (typeof targetConfig.date === 'function') {
-    return targetConfig.date(c, r) || Utils.now().getTime();
+    return targetConfig.date(c, r);
   }
 
-  if (targetConfig.date === undefined || targetConfig.date === null || targetConfig.date === 'now') {
+  if (targetConfig.date === undefined || targetConfig.date === 'now') {
     return Utils.now().getTime();
   }
 
