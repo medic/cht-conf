@@ -8,3 +8,5 @@ upload-docs.*.log.json
 *.swp
 coverage
 .nyc_output
+.DS_Store
+test/.DS_Store
