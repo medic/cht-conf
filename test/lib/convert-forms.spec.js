@@ -44,5 +44,11 @@ describe('convert-forms', () => {
       await convertForms.execute('./path', 'app', { forms: ['--debug'] });
       expect(mockXls2xform.callCount).to.eq(2);
     }));
+
+    it('escape whitespaces in path and convert forms', () => withMocks(async () => {
+      await convertForms.execute('./path with space', 'app');
+      expect(mockXls2xform.callCount).to.eq(2);
+      expect(mockXls2xform.args[0]).to.deep.eq(['./path\\ with\\ space/forms/app/b.xlsx', './path\\ with\\ space/forms/app/b.xml']);
+    }));
   });
 });

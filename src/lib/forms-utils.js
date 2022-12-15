@@ -95,4 +95,12 @@ module.exports = {
     xml.match(/<model>[^]*<\/model>/)[0]
       .match(/<instance>[^]*<\/instance>/)[0]
       .match(/id="([^"]*)"/)[1],
+
+  /**
+   * Escape whitespaces in a path.
+   * @param {string} path the path string
+   * @returns {string}
+   */
+  escapeWhitespacesInPath: path => path.replace(/(\s+)/g, '\\$1'),
+  
 };
