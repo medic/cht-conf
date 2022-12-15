@@ -1,3 +1,10 @@
+## [3.15.2](https://github.com/medic/cht-conf/compare/v3.15.1...v3.15.2) (2022-12-15)
+
+
+### Bug Fixes
+
+* **#504:** escape whitespaces in path when converting forms ([#523](https://github.com/medic/cht-conf/issues/523)) ([90859ba](https://github.com/medic/cht-conf/commit/90859ba85a2bd4136b051749d826865fa6a76e0a)), closes [#504](https://github.com/medic/cht-conf/issues/504) [#504](https://github.com/medic/cht-conf/issues/504)
+
 ## [3.15.1](https://github.com/medic/cht-conf/compare/v3.15.0...v3.15.1) (2022-12-06)
 
 
