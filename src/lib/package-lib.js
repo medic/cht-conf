@@ -40,6 +40,11 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         }),
       ],
     },
+    performance: {
+      hints: false,
+      maxEntrypointSize: 512000,
+      maxAssetSize: 512000
+    },
     resolve: {
       alias: {
         'tasks.js': path.join(pathToProject, 'tasks.js'),
