@@ -8,14 +8,17 @@ const watcher = require('@parcel/watcher');
 const { validateAppForms } = require('./validate-app-forms');
 const { validateContactForms } = require('./validate-contact-forms');
 const { validateCollectForms } = require('./validate-collect-forms');
+const { validateTrainingForms } = require('./validate-training-forms');
 const { uploadAppForms } = require('./upload-app-forms');
 const { uploadContactForms } = require('./upload-contact-forms');
 const { uploadCollectForms } = require('./upload-collect-forms');
+const { uploadTrainingForms } = require('./upload-training-forms');
 const convertForms = require('../lib/convert-forms');
 const uploadForms = require('../lib/upload-forms');
 const { deleteForms } = require('../fn/delete-forms');
 const { convertAppForms, APP_FORMS_PATH } = require('./convert-app-forms');
 const { convertContactForm, CONTACT_FORMS_PATH } = require('./convert-contact-forms');
+const { convertTrainingForms, TRAINING_FORMS_PATH } = require('./convert-training-forms');
 const { convertCollectForms, COLLECT_FORMS_PATH } = require('./convert-collect-forms');
 const { uploadAppSettings, APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('./upload-app-settings');
 const { execute: compileAppSettings, configFileMatcher } = require('./compile-app-settings');
@@ -39,8 +42,10 @@ const uploadInitialState = async (api) => {
     await uploadResources();
     await runValidation(validateAppForms, environment.extraArgs);
     await runValidation(validateContactForms, environment.extraArgs);
+    await runValidation(validateTrainingForms, environment.extraArgs);
     await uploadAppForms(environment.extraArgs);
     await uploadContactForms(environment.extraArgs);
+    await uploadTrainingForms(environment.extraArgs);
     await uploadCustomTranslations();
     await uploadAppSettings(api);
 };
@@ -118,6 +123,44 @@ const processAppFormMedia = (formMediaDir, fileName) => {
         eventQueue.enqueue(async () => {
             await runValidation(validateAppForms,[form]);
             await uploadAppForms([form]);
+            return fileName;
+        });
+        return true;
+    }
+    return false;
+};
+
+const processTrainingForm = (eventType, fileName) => {
+    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName, TRAINING_FORMS_PATH)) {
+        return true;
+    }
+    let form = uploadForms.formFileMatcher(fileName);
+    if (form) {
+        eventQueue.enqueue(async () => {
+            await runValidation(validateTrainingForms, [form]);
+            await uploadTrainingForms([form]);
+            return fileName;
+        });
+        return true;
+    }
+
+    form = convertForms.formFileMatcher(fileName);
+    if (form) {
+        eventQueue.enqueue(async () => {
+            await convertTrainingForms([form]);
+            return fileName;
+        });
+        return true;
+    }
+    return false;
+};
+
+const processTrainingFormMedia = (formMediaDir, fileName) => {
+    const form = uploadForms.formMediaMatcher(formMediaDir);
+    if (form) {
+        eventQueue.enqueue(async () => {
+            await runValidation(validateTrainingForms,[form]);
+            await uploadTrainingForms([form]);
             return fileName;
         });
         return true;
@@ -221,6 +264,18 @@ const watchProject = {
                     && path.parse(parsedPath.dir).dir.endsWith(APP_FORMS_PATH)) { // check if the directory's immediate parent is forms/app
                     const dirName = path.parse(parsedPath.dir).base;
                     processAppFormMedia(dirName, fileName);
+                    continue;
+                }
+
+                if (parsedPath.dir === path.join(environment.pathToProject, TRAINING_FORMS_PATH)) {
+                    processTrainingForm(event.type, fileName);
+                    continue;
+                }
+
+                if (parsedPath.dir.startsWith(path.join(environment.pathToProject, TRAINING_FORMS_PATH))
+                    && path.parse(parsedPath.dir).dir.endsWith(TRAINING_FORMS_PATH)) { // check if the directory's immediate parent is forms/training
+                    const dirName = path.parse(parsedPath.dir).base;
+                    processTrainingFormMedia(dirName, fileName);
                     continue;
                 }
 
