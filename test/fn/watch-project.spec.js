@@ -13,11 +13,13 @@ const {
   APP_FORMS_PATH,
   CONTACT_FORMS_PATH,
   COLLECT_FORMS_PATH,
+  TRAINING_FORMS_PATH,
   RESOURCE_CONFIG_PATH,
   APP_SETTINGS_DIR_PATH
 } = require('../../src/lib/project-paths');
 const testDir = path.join(__dirname, '../data/skeleton');
 const appFormDir = path.join(testDir, APP_FORMS_PATH);
+const trainingFormDir = path.join(testDir, TRAINING_FORMS_PATH);
 const collectFormsDir = path.join(testDir, COLLECT_FORMS_PATH);
 const contactFormsDir = path.join(testDir, CONTACT_FORMS_PATH);
 const snapshotsDir = path.join(testDir, '.snapshots');
@@ -270,6 +272,55 @@ describe('watch-project', function () {
       })
       .then(() => {
         cleanFormDir(appFormDir, form);
+      });
+  });
+
+  it('watch-project: convert training forms', () => {
+    const form = 'new_actions_training';
+    const copyForm = () => copySampleForms('training-xlsx', TRAINING_FORMS_PATH);
+
+    return watchWrapper(copyForm, `${form}.xlsx`)
+      .then(() => {
+        const forms = fs.fs.readdirSync(trainingFormDir);
+        expect(forms).to.include(`${form}.xml`);
+      })
+      .then(() => cleanFormDir(trainingFormDir, form));
+  });
+
+  it('watch-project: upload training forms', () => {
+    const form = 'new_actions_training';
+    const copyForm = () => copySampleForms('training-xml', TRAINING_FORMS_PATH);
+
+    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
+
+    return watchWrapper(copyForm, `${form}.xml`)
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        const docIds = docs.rows.map(row => row.id);
+        expect(docIds).to.include(`form:training:${form}`);
+      })
+      .then(() => cleanFormDir(trainingFormDir, form));
+  });
+
+  it('watch-project: upload training form on form-media change', () => {
+    const form = 'training';
+    copySampleForms('training-form-media', TRAINING_FORMS_PATH);
+    const dummyPng = 'test.png';
+    const formMediaDir = path.join(trainingFormDir, `${form}-media`);
+    const createFormMediaDir = () => {
+      fs.fs.writeFileSync(path.join(formMediaDir, dummyPng), '');
+    };
+
+    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
+
+    return watchWrapper(createFormMediaDir, dummyPng)
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        const docIds = docs.rows.map(row => row.id);
+        expect(docIds).to.include(`form:training:${form}`);
+      })
+      .then(() => {
+        cleanFormDir(trainingFormDir, form);
       });
   });
 
