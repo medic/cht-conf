@@ -197,9 +197,6 @@ module.exports = async (argv, env) => {
   }
 };
 
-// Exists for generic mocking purposes
-const executeAction = action => action.execute();
-
 function buildActions(cmdArgs, skipValidate) {
   let actions = cmdArgs._;
   if (actions.length) {
@@ -253,3 +250,5 @@ function buildActions(cmdArgs, skipValidate) {
   });
 }
 
+// Exists for generic mocking purposes
+const executeAction = action => action.execute();
