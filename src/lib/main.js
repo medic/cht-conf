@@ -137,8 +137,10 @@ module.exports = async (argv, env) => {
   const projectName = fs.path.basename(pathToProject);
 
   const requiresInstance = actions.some(action => action.requiresInstance);
-  const apiUrl = getApiUrl(cmdArgs, env);
+  let apiUrl;
   if (requiresInstance) {
+    // getApiUrl makes log parsing statements, so call it only if needed
+    apiUrl = getApiUrl(cmdArgs, env);
     if (!apiUrl) {
       usage();
       throw new Error('Failed to obtain a url to the API');
