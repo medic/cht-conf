@@ -96,7 +96,7 @@ describe('watch-project', function () {
     return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } }).then(() => api.start());
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     sinon.restore();
     fs.writeJson(baseSettingsPath, baseSettings);
     fs.writeJson(appSettingsPath, appSettings);
@@ -105,7 +105,8 @@ describe('watch-project', function () {
       fs.deleteFilesInFolder(snapshotsDir);
       fs.fs.rmdirSync(snapshotsDir);
     }
-    return watchProject.close().then(() => api.stop());
+    await api.stop();
+    await watchProject.close();
   });
 
   it('watch-project: upload app settings', () => {
