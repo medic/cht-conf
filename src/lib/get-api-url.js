@@ -1,6 +1,5 @@
 const userPrompt = require('./user-prompt');
 const url = require('url');
-const usage = require('../cli/usage');
 
 const emoji = require('./emoji');
 const { error, info } = require('./log');
@@ -9,7 +8,6 @@ const getApiUrl = (cmdArgs, env = {}) => {
   const specifiedModes = [cmdArgs.local, cmdArgs.instance, cmdArgs.url, cmdArgs.archive].filter(mode => mode);
   if (specifiedModes.length !== 1) {
     error('Require exactly one of these parameter: --local --instance --url --archive');
-    usage();
     return false;
   }
 
