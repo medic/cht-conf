@@ -129,7 +129,9 @@ describe('main', () => {
 
     expect(mocks.environment.initialize.args[0][3]).to.deep.eq(expectedExtraParams);
 
-    expect(mocks.environment.initialize.args[0][4]).to.eq(expectRequireUrl ? 'http://api' : undefined);
+    if (expectRequireUrl) {
+      expect(mocks.environment.initialize.args[0][4]).to.eq('http://api');
+    }
   };
 
   it('--local no COUCH_URL', async () => {
