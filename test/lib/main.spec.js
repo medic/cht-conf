@@ -135,6 +135,7 @@ describe('main', () => {
   it('--local no COUCH_URL', async () => {
     await main([...normalArgv, '--local'], {});
     expectExecuteActionBehavior(defaultActions, undefined);
+    expect(mocks.usage.called).to.be.false;
   });
 
   it('--local with COUCH_URL to localhost', async () => {
@@ -164,6 +165,7 @@ describe('main', () => {
       expect.fail('Expected error to be thrown');
     } catch(e) {
       expect(mocks.executeAction.called).to.be.false;
+      expect(mocks.usage.calledOnce).to.be.true;
       expect(e.message).to.equal('Unsupported action(s): not-an-action');
     }
   });
