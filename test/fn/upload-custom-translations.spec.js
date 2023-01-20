@@ -21,9 +21,9 @@ describe('upload-custom-translations', () => {
     return api.start();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     sinon.restore();
-    return api.stop();
+    await api.stop();
   });
 
   describe('medic-2.x', () => {
