@@ -252,5 +252,5 @@ function buildActions(cmdArgs, skipValidate) {
 
     return action;
   });
-};
+}
 
