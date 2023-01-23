@@ -15,8 +15,8 @@ describe('upload-forms', () => {
   beforeEach(api.start);
 
   afterEach(() => {
-    api.stop();
     sinon.restore();
+    return api.stop();
   });
 
   const validateForms = sinon.stub().resolves();

@@ -38,8 +38,8 @@ describe('Upload Configuration Docs', () => {
     attachmentsFromDir = sinon.stub();
   });
 
-  afterEach(() => {
-    api.stop();
+  afterEach(async () => {
+    await api.stop();
     sinon.reset();
   });
 
