@@ -28,7 +28,7 @@ describe('warn-upload-overwrite', () => {
 
   afterEach(() => {
     sinon.restore();
-    api.stop();
+    return api.stop();
   });
 
   describe('getStoredHash', () => {
