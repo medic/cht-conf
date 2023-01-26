@@ -18,12 +18,12 @@ describe('get-api-url', () => {
 
   it('multiple destinations yields error', () => {
     const actual = () => getApiUrl({ local: true, instance: 'demo' });
-    expect(actual).to.throw('one of these');
+    expect(actual).to.throw('One of these');
   });
 
   it('no destination yields error', () => {
     const actual = () => getApiUrl({});
-    expect(actual).to.throw('one of these');
+    expect(actual).to.throw('One of these');
   });
 
   describe('--local', () => {

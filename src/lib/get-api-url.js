@@ -9,12 +9,12 @@ const getApiUrl = (cmdArgs, env = {}) => {
   const specifiedModes = [cmdArgs.local, cmdArgs.instance, cmdArgs.url, cmdArgs.archive].filter(mode => mode);
   if (specifiedModes.length !== 1) {
     usage();
-    throw Error('One of these parameter is required: --local --instance --url --archive');
+    throw Error('One of these parameters is required: --local --instance --url --archive');
   }
 
   if (cmdArgs.user && !cmdArgs.instance) {
     usage();
-    throw Error('The --user switch can only be used if accompanied with --instance');
+    throw Error('The --user switch must be accompanied with --instance');
   }
 
   let instanceUrl;
@@ -25,7 +25,7 @@ const getApiUrl = (cmdArgs, env = {}) => {
     // See ./archiving-db.js
     instanceUrl = parseLocalUrl(env.COUCH_URL);
     if (instanceUrl.hostname !== 'localhost') {
-      throw Error(`You used --local but COUCH_URL env var is set to '${instanceUrl.hostname}'.  This may be a remote server.`);
+      throw Error(`--local was specified but COUCH_URL env var is set to '${instanceUrl.hostname}'.  Please use --url for remote servers.`);
     }
   } else if (cmdArgs.instance) {
     const password = userPrompt.question(`${emoji.key}  Password: `, { hideEchoBack: true });
