@@ -3,7 +3,7 @@ const { execSync } = require('child_process');
 const argsFormFilter = require('./args-form-filter');
 const exec = require('./exec-promise');
 const fs = require('./sync-fs');
-const { getFormDir } = require('./forms-utils');
+const { getFormDir, escapeWhitespacesInPath } = require('./forms-utils');
 const { info, trace, warn } = require('./log');
 
 const XLS2XFORM = 'xls2xform-medic';
@@ -56,7 +56,8 @@ const execute = async (projectDir, subDirectory, options) => {
     const targetPath = `${fs.withoutExtension(originalSourcePath)}.xml`;
 
     info('Converting form', originalSourcePath, '…');
-    await xls2xform(sourcePath, targetPath);
+  
+    await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(targetPath));
     const hiddenFields = await getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`);
     await fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
     trace('Converted form', originalSourcePath);
