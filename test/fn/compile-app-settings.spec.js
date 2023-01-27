@@ -4,111 +4,152 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 
 const compileAppSettings = rewire('../../src/fn/compile-app-settings');
-const environment = require('../../src/lib/environment');
 const fs = require('../../src/lib/sync-fs');
 
 let writeJson;
+let environment;
+
+const scenarios = [
+  {
+    description: 'should handle simple config',
+    folder: 'simple/project',
+  },
+  {
+    description: 'should handle derivative app-settings definitions',
+    folder: 'derivative/child',
+  },
+  {
+    description: 'should handle config with no separate task-schedules.json file',
+    folder: 'no-task-schedules.json/project',
+  },
+  {
+    description: 'should handle config with combined targets.js definition',
+    folder: 'targets.js/project',
+  },
+  {
+    description: 'should handle a project with a purge function that need to be merged with other purge config',
+    folder: 'purge/merge-purging-function/project',
+  },
+  {
+    description: 'should handle a project with a purge function',
+    folder: 'purge/purging-function/project',
+  },
+  {
+    description: 'should handle a project with correct purge config',
+    folder: 'purge/purge-correct/project',
+  },
+  {
+    description: 'should handle a project with no export purge config',
+    folder: 'purge/no-export-purge/project',
+  },
+  {
+    description: 'should handle a project with eslint error when --debug flag is present', 
+    folder: 'eslint-error/project',
+    extraArgs: ['--debug'],
+  },
+  {
+    description: 'can overwrite eslint rules with eslintrc file',
+    folder: 'eslintrc/project',
+  },
+  {
+    description: 'should handle a configuration using the base_settings file',
+    folder: 'base-settings/project',
+  },  
+  {
+    description: 'should handle a configuration using the forms.json and schedules.json files',
+    folder: 'sms-modules/project',
+  },
+
+  // REJECTION SCENARIOS
+  {
+    description: 'should reject declarative config with invalid schema',
+    folder: 'invalid-declarative-schema/project',
+    error: 'schema validation errors',
+  },
+  {
+    description: 'should reject a project with both old and new nools config',
+    folder: 'unexpected-legacy-nools-rules/project',
+    error: 'Both legacy and declarative',
+  },
+  {
+    description: 'should reject a project with both purge and purging files',
+    folder: 'purge/both-purge-and-purging/project',
+    error: 'Purge is defined at both',
+  },
+  {
+    description: 'should reject a project purge file exists and its not valid js',
+    folder: 'purge/broken-purge-file/project',
+    error: 'Unexpected token',
+  },
+  {
+    description: 'should reject a project invalid purge file config',
+    folder: 'purge/invalid-purge/project',
+    error: 'Error parsing purge',
+  },
+  {
+    description: 'should reject a project with an uncompilable purging function',
+    folder: 'purge/invalid-purging-function/project',
+    error: 'Unexpected token',
+  },
+  {
+    description: 'should reject a project where purge.fn is not a function',
+    folder: 'purge/purge-fn-not-a-function/project',
+    error: 'fn export to be a function',
+  },
+  {
+    description: 'should reject a project with eslint error',
+    folder: 'eslint-error/project',
+    error: 'Webpack errors when building',
+  },
+  {
+    description: 'should reject a configuration using invalid forms.json or schedules.json files',
+    folder: 'sms-modules/invalid-files',
+    error: 'ValidationError',
+  },
+  {
+    description: 'should reject a project with no .eslintrc file defined',
+    folder: 'missing-eslintrc/project',
+    error: 'No eslint configuration',
+  },
+];
+
 describe('compile-app-settings', () => {
   beforeEach(() => {
     writeJson = sinon.stub(fs, 'writeJson');
     compileAppSettings.__set__('fs', fs);
+
+    environment = {
+      pathToProject: '',
+      extraArgs: [],
+    };
+    compileAppSettings.__set__('environment', environment);
   });
   afterEach(() => {
     sinon.restore();
   });
 
-  it('should handle simple config', () =>
-    test('simple/project'));
+  for (const scenario of scenarios) {
+    it(scenario.description, async () => {
+      const pathToTestProject = path.join(__dirname, '../data/compile-app-settings', scenario.folder);
+      sinon.stub(environment, 'pathToProject').get(() => pathToTestProject);
+      sinon.stub(environment, 'extraArgs').get(() => scenario.extraArgs);
 
-  it('should handle derivative app-settings definitions', () =>
-    test('derivative/child'));
-
-  it('should handle config with no separate task-schedules.json file', () =>
-    test('no-task-schedules.json/project'));
-
-  it('should handle config with combined targets.js definition', () =>
-    test('targets.js/project'));
-
-  it('should reject declarative config with invalid schema', () =>
-    testFails('invalid-declarative-schema/project'));
-
-  it('should reject a project with both old and new nools config', () =>
-    testFails('unexpected-legacy-nools-rules/project'));
-
-  it('should reject a project with both purge and purging files', () =>
-    testFails('purge/both-purge-and-purging/project'));
-
-  it('should reject a project purge file exists and its not valid js', () =>
-    testFails('purge/broken-purge-file/project'));
-
-  it('should reject a project invalid purge file config', () =>
-    testFails('purge/invalid-purge/project'));
-
-  it('should reject a project with an uncompilable purging function', () =>
-    testFails('purge/invalid-purging-function/project'));
-
-  it('should handle a project with a purge function that need to be merged with other purge config', () =>
-    test('purge/merge-purging-function/project'));
-
-  it('should handle a project with no export purge config', () =>
-    test('purge/no-export-purge/project'));
-
-  it('should handle a project with correct purge config', () =>
-    test('purge/purge-correct/project'));
-
-  it('should reject a project where purge.fn is not a function', () =>
-    testFails('purge/purge-fn-not-a-function/project'));
-
-  it('should handle a project with a purge function', () =>
-    test('purge/purging-function/project'));
-
-  it('should reject a project with eslint error', () =>
-    testFails('eslint-error/project'));
-
-  it('can overwrite eslint rules with eslintrc file', () =>
-    test('eslintrc/project'));
-
-  it('should handle a configuration using the base_settings file', () =>
-    test('base-settings/project'));
-
-  it('should handle a configuration using the forms.json and schedules.json files', () =>
-    test('sms-modules/project'));
-
-  it('should reject a configuration using invalid forms.json or schedules.json files', () =>
-    testFails('sms-modules/invalid-files'));
-  
-  it('should reject a project with no .eslintrc file defined', () =>
-    testFails('missing-eslintrc/project'));
-});
-
-async function test(relativeProjectDir) {
-  const testDir = path.join(__dirname, '../data/compile-app-settings', relativeProjectDir);
-  sinon.stub(environment, 'pathToProject').get(() => testDir);
-  sinon.stub(environment, 'extraArgs').get(() => undefined);
-
-  // when
-  await compileAppSettings.execute();
-
-  // then
-  const actual = JSON.parse(JSON.stringify(writeJson.args[0][1]));
-  const expected = JSON.parse(fs.read(`${testDir}/../app_settings.expected.json`));
-  actual.tasks.rules = expected.tasks.rules = '';
-  actual.contact_summary = expected.contact_summary = '';
-  expect(actual).to.deep.eq(expected);
-}
-
-async function testFails(relativeProjectDir) {
-  const testDir = path.join(__dirname, '../data/compile-app-settings', relativeProjectDir);
-
-  // when
-  try {
-    await compileAppSettings.execute(testDir);
-    assert.fail('Expected assertion');
-  } catch (err) {
-    if (err.name === 'AssertionError') {
-      throw err;
-    }
-
-    assert.ok('asserted');
+      const promiseToExecute = compileAppSettings.execute({ skipEslintIgnore: true });
+      if (scenario.error) {
+        try {
+          await promiseToExecute;
+          assert.fail('Expected execute() to throw');
+        } catch (err) {
+          expect(err.toString()).to.include(scenario.error);
+        }
+      } else {
+        await promiseToExecute;
+        const actual = JSON.parse(JSON.stringify(writeJson.args[0][1]));
+        const expected = JSON.parse(fs.read(`${pathToTestProject}/../app_settings.expected.json`));
+        actual.tasks.rules = expected.tasks.rules = '';
+        actual.contact_summary = expected.contact_summary = '';
+        expect(actual).to.deep.eq(expected);
+      }
+    });
   }
-}
+});

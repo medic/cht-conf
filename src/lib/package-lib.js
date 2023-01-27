@@ -63,6 +63,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
           options: {
             baseConfig: baseEslintConfig,
             useEslintrc: true,
+            ignore: !options.skipEslintIgnore,
 
             // pack the library regardless of the eslint result
             failOnError: false,
@@ -90,7 +91,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
       info(stats.toString());
 
       if (stats.hasErrors()) {
-        const hasErrorsNotRelatedToLinting = stats.toJson().errors.some(err => !err.includes('(from ./node_modules/eslint-loader/index.js)'));
+        const hasErrorsNotRelatedToLinting = stats.toJson().errors.some(err => !err.includes('node_modules/eslint-loader'));
         const shouldHalt = options.haltOnLintMessage || hasErrorsNotRelatedToLinting;
         if (shouldHalt) {
           return reject(Error(`Webpack errors when building ${libName}`));

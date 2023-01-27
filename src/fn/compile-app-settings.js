@@ -24,18 +24,18 @@ const configFileMatcher = (fileName) => {
   return null;
 };
 
-const compileAppSettings = async () => {
-  const options = parseExtraArgs(environment.extraArgs);
+const compileAppSettings = async (options = {}) => {
+  const aggregatedOptions = Object.assign({}, options, parseExtraArgs(environment.extraArgs));
   const projectDir = path.resolve(environment.pathToProject);
 
   let appSettings;
   const inheritedPath = path.join(projectDir, 'settings.inherit.json');
   if (fs.exists(inheritedPath)) {
     const inherited = fs.readJson(inheritedPath);
-    appSettings = await compileAppSettingsForProject(path.join(projectDir, inherited.inherit), options);
+    appSettings = await compileAppSettingsForProject(path.join(projectDir, inherited.inherit), aggregatedOptions);
     applyTransforms(appSettings, inherited);
   } else {
-    appSettings = await compileAppSettingsForProject(projectDir, options);
+    appSettings = await compileAppSettingsForProject(projectDir, aggregatedOptions);
   }
 
   fs.writeJson(path.join(projectDir, APP_SETTINGS_JSON_PATH), appSettings);
