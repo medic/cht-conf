@@ -138,10 +138,6 @@ module.exports = async (argv, env) => {
 
   const requiresInstance = actions.some(action => action.requiresInstance);
   const apiUrl = requiresInstance && getApiUrl(cmdArgs, env);
-  if (requiresInstance && !apiUrl) {
-    usage();
-    throw new Error('Failed to obtain a url to the API');
-  }
 
   let extraArgs = cmdArgs['--'];
   if (!extraArgs.length) {
