@@ -1,10 +1,14 @@
-const { assert, expect } = require('chai');
+const chai = require('chai');
 const path = require('path');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const compileAppSettings = rewire('../../src/fn/compile-app-settings');
 const fs = require('../../src/lib/sync-fs');
+const compileAppSettings = rewire('../../src/fn/compile-app-settings');
+
+const { expect } = chai;
+chai.use(require('chai-exclude'));
+chai.use(require('chai-as-promised'));
 
 let writeJson;
 let environment;
@@ -136,19 +140,14 @@ describe('compile-app-settings', () => {
 
       const promiseToExecute = compileAppSettings.execute({ skipEslintIgnore: true });
       if (scenario.error) {
-        try {
-          await promiseToExecute;
-          assert.fail('Expected execute() to throw');
-        } catch (err) {
-          expect(err.toString()).to.include(scenario.error);
-        }
+        await expect(promiseToExecute).to.be.rejectedWith(Error, scenario.error);
       } else {
         await promiseToExecute;
         const actual = JSON.parse(JSON.stringify(writeJson.args[0][1]));
         const expected = JSON.parse(fs.read(`${pathToTestProject}/../app_settings.expected.json`));
-        actual.tasks.rules = expected.tasks.rules = '';
-        actual.contact_summary = expected.contact_summary = '';
-        expect(actual).to.deep.eq(expected);
+        expect(actual)
+          .excludingEvery(['rules', 'contact_summary'])
+          .to.deep.eq(expected);
       }
     });
   }
