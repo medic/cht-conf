@@ -78,6 +78,10 @@ const api = {
     return request.get(`${environment.instanceUrl}/api/v1/users-info`, { qs: queryParams, json: true });
   },
 
+  getExport(type) {
+    return request.get(`${environment.instanceUrl}/api/v2/export/${type}`, { json: true });
+  },
+
   uploadSms(messages) {
     return request({
       uri: `${environment.instanceUrl}/api/sms`,
