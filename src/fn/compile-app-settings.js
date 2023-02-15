@@ -101,8 +101,10 @@ const compileAppSettingsForProject = async (projectDir, options) => {
     appSettings = fs.readJson(appSettingsPath);
   }
   appSettings.contact_summary = await compileContactSummary(projectDir, options);
+  const compiledRules = await compileNoolsRules(projectDir, options);
   appSettings.tasks = {
-    rules: await compileNoolsRules(projectDir, options),
+    rules: compiledRules.rules,
+    isDeclarative: compiledRules.isDeclarative,
     schedules: readOptionalJson(taskSchedulesPath),
     targets: parseTargets(projectDir),
   };

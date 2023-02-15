@@ -1,31 +1,52 @@
+const semver = require('semver');
+
 const api = require('../lib/api');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
+const { getValidApiVersion } = require('../lib/get-api-version');
 const { info } = require('../lib/log');
 const { APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('../lib/project-paths');
 
-const uploadAppSettings = (api) => {
-  const settings = fs.read(`${environment.pathToProject}/${APP_SETTINGS_JSON_PATH}`);
-  return api.updateAppSettings(settings)
-    .then(JSON.parse)
-    .then(json => {
-      // As per https://github.com/medic/cht-core/issues/3674, this endpoint
-      // will return 200 even when upload fails.
-      if (!json.success) {
-        throw new Error(json.error);
-      }
+const uploadAppSettings = async api => {
+  const appSettings = fs.read(`${environment.pathToProject}/${APP_SETTINGS_JSON_PATH}`);
+  await augmentDeclarativeWithNoolsBoilerplate(appSettings);
+  const requestResult = await api.updateAppSettings(appSettings);
+  const json = JSON.parse(requestResult);
+  // As per https://github.com/medic/cht-core/issues/3674, this endpoint
+  // will return 200 even when upload fails.
+  if (!json.success) {
+    throw new Error(json.error);
+  }
 
-      if ('updated' in json) {
-        // the `updated` param was added in 3.9
-        // https://github.com/medic/cht-core/issues/6315
-        if (!json.updated) {
-          info('Settings not updated - no changes detected');
-        } else {
-          info('Settings updated successfully');
-        }
-      }
-    });
+  if ('updated' in json) {
+    // the `updated` param was added in 3.9
+    // https://github.com/medic/cht-core/issues/6315
+    if (!json.updated) {
+      info('Settings not updated - no changes detected');
+    } else {
+      info('Settings updated successfully');
+    }
+  }
 };
+
+// https://github.com/medic/cht-core/issues/6506 added in 4.2
+// augmented during upload so compile-app-settings doesn't require a url on the command-line
+async function augmentDeclarativeWithNoolsBoilerplate(appSettings) {
+  if (!appSettings || !appSettings.tasks || !appSettings.tasks.isDeclarative) {
+    return;
+  }
+
+  const actualCoreVersion = getValidApiVersion(appSettings);
+  const addNoolsBoilerplate = semver.lt(actualCoreVersion, '4.2.0');
+  if (addNoolsBoilerplate) {
+    appSettings.tasks.rules =   `define Target { _id: null, contact: null, deleted: null, type: null, pass: null, date: null, groupBy: null }
+define Contact { contact: null, reports: null, tasks: null }
+define Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, readyStart: null, readyEnd: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }
+rule GenerateEvents {
+  when { c: Contact } then { ${appSettings.tasks.rules} }
+}`;
+  }
+}
 
 module.exports = {
   uploadAppSettings,

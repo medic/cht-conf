@@ -25,10 +25,14 @@ const compileNoolsRules = async (projectDir, options = {}) => {
       throw new Error(`Both legacy and declarative files found. You should either have rules.nools.js xor ${DECLARATIVE_NOOLS_FILES} files.`);
     }
 
-    return options.minifyScripts ? minifyNools(legacyRules) : legacyRules;
-  } else {
-    return compileDeclarativeFiles(projectDir, options);
+    const rules = options.minifyScripts ? minifyNools(legacyRules) : legacyRules;
+    return { rules };
   }
+
+  return {
+    rules: await compileDeclarativeFiles(projectDir, options),
+    isDeclarative: true,
+  };
 };
 
 const findMissingDeclarativeFiles = projectDir => DECLARATIVE_NOOLS_FILES.filter(filename => {
@@ -47,13 +51,7 @@ const compileDeclarativeFiles = async (projectDir, options) => {
   const pathToDeclarativeLib = path.join(__dirname, '../nools/lib.js');
   const baseEslintPath = path.join(__dirname, '../nools/.eslintrc');
   
-  const code = await pack(projectDir, pathToDeclarativeLib, baseEslintPath, options);
-  return `define Target { _id: null, contact: null, deleted: null, type: null, pass: null, date: null, groupBy: null }
-define Contact { contact: null, reports: null, tasks: null }
-define Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, readyStart: null, readyEnd: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }
-rule GenerateEvents {
-  when { c: Contact } then { ${code} }
-}`;
+  return pack(projectDir, pathToDeclarativeLib, baseEslintPath, options);
 };
 
 module.exports = compileNoolsRules;

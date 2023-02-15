@@ -42,7 +42,9 @@ describe('compile nools-rules', () => {
     return compileNoolsRules
       .__with__(mocks)(() => compileNoolsRules('/project', { minifyScripts: true }))
       .then(actual => {
-        expect(actual).to.eq('define Target {_id: null}define Contact {contact: null,reports: null}rule GenerateEvents {when {c: Contact}then {var now = Utils.now();var today = new Date();}}');
+        expect(actual).to.deep.eq({
+          rules: 'define Target {_id: null}define Contact {contact: null,reports: null}rule GenerateEvents {when {c: Contact}then {var now = Utils.now();var today = new Date();}}',
+        });
         expect(mocks.pack.callCount).to.eq(0);
       });
   });
@@ -72,10 +74,8 @@ describe('compile nools-rules', () => {
 
     return compileNoolsRules
       .__with__(mocks)(() => compileNoolsRules(expectedProjectPath, options))
-      .then(actualCode => {
-        expect(actualCode).to.include('define Target {');
-        expect(actualCode).to.include('define Contact {');
-        expect(actualCode).to.include('{ code }');
+      .then(({ rules: actualCode }) => {
+        expect(actualCode).to.eq('code');
         expect(mocks.pack.callCount).to.eq(1);
 
         const [actualProjectPath, actualEntryPath, actualLintPath, actualOptions] = mocks.pack.args[0];
