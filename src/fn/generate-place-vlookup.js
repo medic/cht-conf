@@ -4,10 +4,13 @@ const API = require('../lib/api');
 const DB = require('../lib/db');
 const fs = require('../lib/sync-fs');
 const environment = require('../lib/environment');
+const { info } = require('../lib/log');
 
-const BATCH_SIZE = 2;
+const BATCH_SIZE = 1000;
 const PLACE_NAME = 'Place Name';
 const PLACE_UUID = 'Place UUID';
+const DEFAULT_PLACE_TYPES = ['district_hospital', 'health_center', 'clinic'];
+const MAX_LINEAGE_DEPTH = 3;
 
 const getPlaceTypes = async (db) => {
   const { settings: { contact_types } } = await db.get('settings');
@@ -16,14 +19,12 @@ const getPlaceTypes = async (db) => {
       .filter(({ person }) => !person)
       .map(({ id }) => id);
   }
-  return ['district_hospital', 'health_center', 'clinic'];
+  return DEFAULT_PLACE_TYPES;
 };
 
-const getIdentDataForPlaces = async (db, api) => {
-  const placeTypes = await getPlaceTypes(db);
-  const contactsCsv = await api.getExport('contacts');
+const getIdentDataForPlaces = async (db, api, placeType) => {
+  const contactsCsv = await api.getExport('contacts', { filters: { types: { selected: [placeType] } } });
   return csvParse(contactsCsv, { columns: true })
-    .filter(({ type }) => placeTypes.includes(type))
     .map(({ id, rev }) => ({ id, rev }));
 };
 
@@ -47,7 +48,7 @@ const getContactDictionary = async (db, contactsData) => {
   for (const batch of contactBatches) {
     (await getDocs(db, batch))
       .filter(({ _id, name, type }) => _id && name && type)
-      .forEach(({ _id, name, type, parent }) => contactDict[_id] = { _id, name, type, parent });
+      .forEach(({ _id, name, type, parent }) => contactDict[_id] = { _id, name, type, parent });// TODO Might not need type here
   }
   return contactDict;
 };
@@ -60,55 +61,36 @@ const getContactName = (contactDict, _id) => {
   return contact.name;
 };
 
-const getLineage = (contactDict, { parent }, lineage = '') => {
-  if (!parent) {
+const getLineage = (contactDict, { parent }, lineage = '', depth = 0) => {
+  if (!parent || depth === MAX_LINEAGE_DEPTH) {
     return lineage;
   }
   const name = getContactName(contactDict, parent._id);
   const newLineage = `${lineage}${lineage.length ? ' - ' : ''}${name}`;
-  return getLineage(contactDict, parent, newLineage);
+  return getLineage(contactDict, parent, newLineage, depth + 1);
 };
 
-const sortByPlaceName = contactsForType => contactsForType.sort((a, b) => a[PLACE_NAME].localeCompare(b[PLACE_NAME]));
+const compareByPlaceName = (a, b) => a[PLACE_NAME].localeCompare(b[PLACE_NAME]);
 
-const getVlookupDictionary = (contactDict) => {
-  const vlookupDict = {};
-  Object
-    .values(contactDict)
-    .forEach((contact) => {
-      const lineage = getLineage(contactDict, contact);
-      const placeName = `${contact.name}${lineage ? ` (${lineage})` : ''}`;
-      const contactsForType = vlookupDict[contact.type] || [];
-      contactsForType.push({
-        [PLACE_NAME]: placeName,
-        [PLACE_UUID]: contact._id,
-      });
-      vlookupDict[contact.type] = contactsForType;
-    });
+const getVlookupData = (contactDict, ids) => ids
+  .map(id => contactDict[id])
+  .map(contact => {
+    const lineage = getLineage(contactDict, contact);
+    const placeName = `${contact.name}${lineage ? ` (${lineage})` : ''}`;
+    return {
+      [PLACE_NAME]: placeName,
+      [PLACE_UUID]: contact._id,
+    };
+  })
+  .sort(compareByPlaceName);
 
-  Object
-    .values(vlookupDict)
-    .forEach(sortByPlaceName);
-  return vlookupDict;
-};
-
-const writeVlookupCsvFiles = (vlookupDict) => {
-  const json2csvParser = new Json2csvParser({
-    fields: [PLACE_NAME, PLACE_UUID],
-    doubleQuote: '\'',
-    flatten: true
-  });
+const writeVlookupCsvFile = (json2csvParser, vlookupData, type) => {
   const csvDirPath = `${environment.pathToProject}/vlookup.csv`;
   if (!fs.exists(csvDirPath)) {
     fs.mkdir(csvDirPath);
   }
-
-  Object
-    .entries(vlookupDict)
-    .forEach(([key, value]) => {
-      const csv = json2csvParser.parse(value);
-      fs.write(`${csvDirPath}/contact.${key}_VLOOKUP.csv`, csv);
-    });
+  const csv = json2csvParser.parse(vlookupData);
+  fs.write(`${csvDirPath}/contact.${type}_VLOOKUP.csv`, csv);
 };
 
 module.exports = {
@@ -116,10 +98,24 @@ module.exports = {
   execute: async () => {
     const api = API();
     const db = DB();
+    const json2csvParser = new Json2csvParser({
+      fields: [PLACE_NAME, PLACE_UUID],
+      doubleQuote: '\'',
+      flatten: true
+    });
 
-    const placesIdentData = await getIdentDataForPlaces(db, api);
-    const contactDict = await getContactDictionary(db, placesIdentData);
-    const vlookupDict = getVlookupDictionary(contactDict);
-    writeVlookupCsvFiles(vlookupDict);
+    const contactsByIdDict = {};
+    const idsByTypeDict = {};
+    for (const placeType of await getPlaceTypes(db)) {
+      const placesIdentData = await getIdentDataForPlaces(db, api, placeType);
+      info(`Fetching data for ${placesIdentData.length} ${placeType} contacts...`);
+      const contactDict = await getContactDictionary(db, placesIdentData);
+      Object.assign(contactsByIdDict, contactDict);
+      idsByTypeDict[placeType] = Object.keys(contactDict);
+    }
+    for (const [type, ids] of Object.entries(idsByTypeDict)) {
+      const vlookupData = getVlookupData(contactsByIdDict, ids);
+      writeVlookupCsvFile(json2csvParser, vlookupData, type);
+    }
   }
 };
