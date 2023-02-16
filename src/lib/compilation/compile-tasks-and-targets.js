@@ -1,13 +1,13 @@
 const path = require('path');
 
-const fs = require('./sync-fs');
+const fs = require('../sync-fs');
 const pack = require('./package-lib');
-const minifyNools = require('./minify-nools');
+const nools = require('../nools-utils');
 const validateDeclarativeSchema = require('./validate-declarative-schema');
 
 const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js' ];
 
-const compileNoolsRules = async (projectDir, options = {}) => {
+const compileTasksAndTargets = async (projectDir, options = {}) => {
   const tryLoadLegacyRules = legacyNoolsFilePath => {
     let result;
     if (fs.exists(legacyNoolsFilePath)) {
@@ -25,7 +25,7 @@ const compileNoolsRules = async (projectDir, options = {}) => {
       throw new Error(`Both legacy and declarative files found. You should either have rules.nools.js xor ${DECLARATIVE_NOOLS_FILES} files.`);
     }
 
-    const rules = options.minifyScripts ? minifyNools(legacyRules) : legacyRules;
+    const rules = options.minifyScripts ? nools.minify(legacyRules) : legacyRules;
     return { rules };
   }
 
@@ -48,10 +48,10 @@ const compileDeclarativeFiles = async (projectDir, options) => {
 
   validateDeclarativeSchema(projectDir, options.haltOnSchemaError);
 
-  const pathToDeclarativeLib = path.join(__dirname, '../nools/lib.js');
-  const baseEslintPath = path.join(__dirname, '../nools/.eslintrc');
+  const pathToDeclarativeLib = path.join(__dirname, '../../nools/lib.js');
+  const baseEslintPath = path.join(__dirname, '../../nools/.eslintrc');
   
   return pack(projectDir, pathToDeclarativeLib, baseEslintPath, options);
 };
 
-module.exports = compileNoolsRules;
+module.exports = compileTasksAndTargets;

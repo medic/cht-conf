@@ -43,12 +43,11 @@ describe('upload-app-settings', () => {
         }
       };
 
-      return uploadAppSettings.__with__(mocks)(async () => {
-        await uploadAppSettings.execute();
-        expect(apiUpload.calledOnce).to.be.true;
-        const isNoolsAdded = apiUpload.args[0][0].tasks.rules !== rules;
-        expect(isNoolsAdded).to.eq(scenario.expectNools);
-      });
+      uploadAppSettings.__set__(mocks);
+      await uploadAppSettings.execute();
+      expect(apiUpload.calledOnce).to.be.true;
+      const isNoolsAdded = apiUpload.args[0][0].tasks.rules !== rules;
+      expect(isNoolsAdded).to.eq(scenario.expectNools);
     });
   }  
 });

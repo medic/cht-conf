@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const joi = require('@hapi/joi');
 const rewire = require('rewire');
 
-const validateDeclarativeSchema = rewire('../../src/lib/validate-declarative-schema');
+const validateDeclarativeSchema = rewire('../../../src/lib/compilation/validate-declarative-schema');
 
 const actionsCollection = {
   oneActionReportType: [

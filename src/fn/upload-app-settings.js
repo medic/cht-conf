@@ -5,6 +5,7 @@ const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { getValidApiVersion } = require('../lib/get-api-version');
 const { info } = require('../lib/log');
+const nools = require('../lib/nools-utils');
 const { APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('../lib/project-paths');
 
 const uploadAppSettings = async api => {
@@ -39,12 +40,7 @@ async function augmentDeclarativeWithNoolsBoilerplate(appSettings) {
   const actualCoreVersion = getValidApiVersion(appSettings);
   const addNoolsBoilerplate = semver.lt(actualCoreVersion, '4.2.0');
   if (addNoolsBoilerplate) {
-    appSettings.tasks.rules =   `define Target { _id: null, contact: null, deleted: null, type: null, pass: null, date: null, groupBy: null }
-define Contact { contact: null, reports: null, tasks: null }
-define Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, readyStart: null, readyEnd: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }
-rule GenerateEvents {
-  when { c: Contact } then { ${appSettings.tasks.rules} }
-}`;
+    appSettings.tasks.rules = nools.addBoilerplateToCode(appSettings.tasks.rules);
   }
 }
 
