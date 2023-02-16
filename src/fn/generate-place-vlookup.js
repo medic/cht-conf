@@ -47,8 +47,8 @@ const getContactDictionary = async (db, contactsData) => {
   const contactDict = {};
   for (const batch of contactBatches) {
     (await getDocs(db, batch))
-      .filter(({ _id, name, type }) => _id && name && type)
-      .forEach(({ _id, name, type, parent }) => contactDict[_id] = { _id, name, type, parent });// TODO Might not need type here
+      .filter(({ _id, name }) => _id && name)
+      .forEach(({ _id, name, parent }) => contactDict[_id] = { _id, name, parent });
   }
   return contactDict;
 };
