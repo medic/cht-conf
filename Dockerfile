@@ -1,23 +1,28 @@
-FROM ubuntu:18.04
-MAINTAINER DevOps "devops@medicmobile.org"
+FROM node:16-slim
 
+RUN apt update \
+    && apt install --no-install-recommends -y \
+      build-essential \
+      chromium \
+      curl \
+      git \
+      openssh-client \
+      python3-pip \
+      python3-setuptools \
+      xsltproc \
+    # Remove chromium to save space. We only installed it to get the transitive dependencies that are needed
+    # when running tests with puppeteer. (puppeteer-chromium-resolver will always download its own version of chromium)
+    && apt remove -y chromium \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN echo "==> Installing Python dependencies" && \
-    apt-get update -y   && \
-    apt-get install --no-install-recommends -y -q \
-            build-essential python-setuptools     \
-            python python-pip python-dev          \
-            libffi-dev  libssl-dev                \
-            libxml2-dev libxslt1-dev zlib1g-dev   \
-            git wget python-wheel curl
-
-RUN echo "====> Installing cht-conf python stuff"    &&\
-    python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-
-RUN curl -sL https://deb.nodesource.com/setup_12.x -o nodesource_setup.sh
-RUN bash nodesource_setup.sh
-RUN apt-get install -y nodejs
+RUN python3 -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
 RUN npm install -g cht-conf
 
-CMD ["tail", "-f", "/dev/null"]
+# Using the 1000:1000 user is recommended for VSCode dev containers
+# https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user
+USER node
+
+WORKDIR /workdir
+
+ENTRYPOINT ["cht"]
