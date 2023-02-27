@@ -71,7 +71,7 @@ If you are not using VSCode, you can use the Docker image as a standalone utilit
 
 #### Note on connecting to a local CHT instance
 
-When using `cht-conf` within a Docker container to connect to a CHT instance that is running on your local machine (a development instance or one running in Docker), you cannot use the `--local` flag or `localhost`/`...my.local-ip.co` in your `--url` parameter (since these will be interpreted as "local to the container"). Instead, you can use the IP address of your host machine on the local network in your `--url` parameter. Do not forget to set the `--accept-self-signed-certs` flag and make sure the port your CHT instance is hosted on is open in your firewall. 
+When using `cht-conf` within a Docker container to connect to a CHT instance that is running on your local machine (e.g. a development instance), you cannot use the `--local` flag or `localhost` in your `--url` parameter (since these will be interpreted as "local to the container"). Instead, you can use a `...my.local-ip.co` if you have one or the IP address of your host machine on the local network in your `--url` parameter. Make sure the port your CHT instance is hosted on is open in your firewall (and do not forget to set the `--accept-self-signed-certs` flag if connecting directly to your local IP address). 
 
 ```shell
 cht --url=https://medic:password@192.168.1.248:10443 --accept-self-signed-certs upload-app-forms
