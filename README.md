@@ -32,13 +32,18 @@ As Administrator:
 
 ### Docker
 
-CHT Conf can also be run from within a Docker container. This is useful if you already have Docker installed and do not wish to configure the various `cht-conf` dependencies on your local machine. The necessary dependencies are pre-packaged in the Docker image.
+CHT Conf can also be run from within a Docker container. This is useful if you already have Docker installed and do not wish to configure the various dependencies required for developing CHT apps on your local machine. The necessary dependencies are pre-packaged in the Docker image.
 
 #### Building the image
 
-Clone this repository and navigate to the directory: `git clone https://github.com/medic/cht-conf.git && cd cht-conf`.
+Run the following commands to create a new project directory and build the Docker image:
 
-Build the Docker image named "cht-conf": `docker build -t cht-conf .`.
+```shell
+mkdir cht-project
+cd cht-project
+curl https://raw.githubusercontent.com/medic/cht-conf/main/Dockerfile > Dockerfile
+docker build -t cht-conf .
+```
 
 #### Using the image
 
@@ -46,36 +51,47 @@ The resulting Docker image can be used as a [VSCode Development Container](https
 
 ##### VSCode Development Container
 
-If you are using VSCode, you can use the Docker image as a Development Container. This will allow you to use the `cht-conf` utility from within VSCode.
+If you want to develop CHT apps with VSCode, you can use the Docker image as a Development Container. This will allow you to use the `cht-conf` utility and its associated tech stack from within VSCode (without needing to install dependencies like NodeJS on your host system).
 
-In VSCode, install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+[Install VSCode](https://code.visualstudio.com/) if you do not have it already.
 
-In your project directory, add a `.devcontainer.json` file with the following contents:
+Run the following commands from within your project directory to download the `.devcontainer.json` config file, install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers), and open the project directory in VSCode:
 
-```.json
-{
-  "image": "cht-conf",
-  // Required to run tests with Puppeteer
-  // https://pptr.dev/guides/docker
-  "capAdd": ["SYS_ADMIN"]
-}
+```shell
+curl https://raw.githubusercontent.com/medic/cht-conf/dev-container/.devcontainer.json > .devcontainer.json
+code --install-extension ms-vscode-remote.remote-containers
+code -n .
 ```
 
-In VSCode, open the Command Palette (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Reopen in Container`.
+Open the Command Palette in VSCode (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Reopen in Container`. This will open your workspace inside the `cht-conf` container. You can use the `cht` commands by opening a terminal in VSCode (_Ctrl+Shift+\`_ or _Cmd+Shift+\`_).
 
-This will open your workspace inside the `cht-conf` container. You can use the `cht` commands by opening a terminal in VSCode (_Ctrl+Shift+\`_ or _Cmd+Shift+\`_).
+Run the following command in the VSCode terminal to bootstrap your new CHT project:
+
+```shell
+cht initialise-project-layout
+```
+
+###### Terminal environment
+
+When opening a terminal in VSCode in a development container, the terminal will be running on the _container environment_ by default. This is what gives you access to the various `cht` commands.  However, this also means you do NOT have access, within the default VSCode terminal, to commands from your _host environment_. So, for example, you cannot run `docker` commands since Docker is not installed inside the container.
+
+To open a terminal running on you _host environment_ in VSCode, open the Command Palette (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Create New Integrated Terminal (Local)`. Just remember that you will NOT be able to run `cht` commands from this terminal since cht-conf is not installed on your host machine.
 
 ##### Standalone Docker utility
 
-If you are not using VSCode, you can use the Docker image as a standalone utility from the command line.  Instead of using the `cht ...` command, you can run `docker run -it --rm -v "$PWD":/workdir cht-conf ...`. This will create an ephemeral container with access to your current directory that will run the given cht command. (e.g. `docker run -it --rm -v "$PWD":/workdir cht-conf convert-app-forms`)
+If you are not using VSCode, you can use the Docker image as a standalone utility from the command line.  Instead of using the `cht ...` command, you can run `docker run -it --rm -v "$PWD":/workdir cht-conf ...`. This will create an ephemeral container with access to your current directory that will run the given cht command. 
+
+Run the following command inside the project directory to bootstrap your new CHT project:
+
+```shell
+docker run -it --rm -v "$PWD":/workdir cht-conf initialise-project-layout
+```
 
 #### Note on connecting to a local CHT instance
 
-When using `cht-conf` within a Docker container to connect to a CHT instance that is running on your local machine (e.g. a development instance), you cannot use the `--local` flag or `localhost` in your `--url` parameter (since these will be interpreted as "local to the container"). Instead, you can use a `...my.local-ip.co` if you have one or the IP address of your host machine on the local network in your `--url` parameter. Make sure the port your CHT instance is hosted on is open in your firewall (and do not forget to set the `--accept-self-signed-certs` flag if connecting directly to your local IP address). 
+When using `cht-conf` within a Docker container to connect to a CHT instance that is running on your local machine (e.g. a development instance), you cannot use the `--local` flag or `localhost` in your `--url` parameter (since these will be interpreted as "local to the container"). 
 
-```shell
-cht --url=https://medic:password@192.168.1.248:10443 --accept-self-signed-certs upload-app-forms
-```
+It is recommended to run a local CHT instance using the [CHT Docker Helper script](https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/). You can connect to the resulting `...my.local-ip.co` URL from the Docker container (or the VSCode terminal). (Just make sure the port your CHT instance is hosted on is not blocked by your firewall). 
 
 ## Bash completion
 
