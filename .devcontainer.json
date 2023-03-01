@@ -1,0 +1,6 @@
+{
+  "image": "cht-conf",
+  // Required to run tests with Puppeteer
+  // https://pptr.dev/guides/docker
+  "capAdd": ["SYS_ADMIN"]
+}
