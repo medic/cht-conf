@@ -1,0 +1,9 @@
+{
+  "name": "cht-conf",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "cht-conf",
+  "workspaceFolder": "/workdir",
+  // Required to run tests with Puppeteer
+  // https://pptr.dev/guides/docker
+  "capAdd": ["SYS_ADMIN"]
+}

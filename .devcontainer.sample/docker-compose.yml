@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  cht-conf:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Bypass exisiting entrypoint so container does not immediatly stop
+    entrypoint: sleep infinity
+    volumes:
+      - ..:/workdir
