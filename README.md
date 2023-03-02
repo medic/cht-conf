@@ -58,7 +58,7 @@ If you want to develop CHT apps with VSCode, you can use the Docker image as a D
 Run the following commands from within your project directory to download the `.devcontainer.json` config file, install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers), and open the project directory in VSCode:
 
 ```shell
-curl https://raw.githubusercontent.com/medic/cht-conf/dev-container/.devcontainer.json > .devcontainer.json
+curl https://raw.githubusercontent.com/medic/cht-conf/main/devcontainer.config/.devcontainer.json > .devcontainer.json
 code --install-extension ms-vscode-remote.remote-containers
 code -n .
 ```
