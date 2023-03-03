@@ -71,7 +71,7 @@ When opening VSCode, you may be prompted with the question:
 
 Choose, "Yes, I trust the authors".
 
-Open the Command Palette in VSCode (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Reopen in Container`. This will open your workspace inside the `cht-conf` container. You can use the `cht` commands by opening a terminal in VSCode (_Ctrl+Shift+\`_ or _Cmd+Shift+\`_).
+Open the Command Palette in VSCode (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Reopen in Container`. This will open your workspace inside the `cht-conf` container. You can use the `cht` commands by opening a terminal in VSCode (_Ctrl+Shift+\`_ or _Cmd+Shift+\`_). If prompted "Do you trust the authors..." choose "Trust Folder & Continue".
 
 Run the following command in the VSCode terminal to bootstrap your new CHT project:
 
