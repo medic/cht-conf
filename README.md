@@ -32,15 +32,17 @@ As Administrator:
 
 ### Docker
 
-CHT Conf can also be run from within a Docker container. This is useful if you already have Docker installed and do not wish to configure the various dependencies required for developing CHT apps on your local machine. The necessary dependencies are pre-packaged in the Docker image.
+CHT Conf can also be run from within a Docker container. This is useful if you are already familiar with Docker and do not wish to configure the various dependencies required for developing CHT apps on your local machine. The necessary dependencies are pre-packaged in the Docker image.
 
 #### Building the image
 
-Run the following commands to create a new project directory and build the Docker image:
+Install [Docker](https://www.docker.com/). If you are using Windows, you also need to enable the [Windows Subsystem for Linux (WSL2)](https://learn.microsoft.com/en-us/windows/wsl/install) to perform the following steps.
+
+Using the terminal (or the WLS shell on Windows: _Start > wsl_), run the following commands to create a new project directory and build the Docker image:
 
 ```shell
-mkdir cht-project
-cd cht-project
+mkdir -p ~/cht-project
+cd ~/cht-project
 curl https://raw.githubusercontent.com/medic/cht-conf/main/Dockerfile > Dockerfile
 docker build -t cht-conf .
 ```
@@ -55,13 +57,19 @@ If you want to develop CHT apps with VSCode, you can use the Docker image as a D
 
 [Install VSCode](https://code.visualstudio.com/) if you do not have it already.
 
-Run the following commands from within your project directory to download the `.devcontainer.json` config file, install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers), and open the project directory in VSCode:
+Using the terminal (or the WLS shell on Windows: _Start > wsl_), run the following commands from within your project directory (created above) to download the `.devcontainer.json` config file, install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers), and open the project directory in VSCode:
 
 ```shell
 curl https://raw.githubusercontent.com/medic/cht-conf/main/devcontainer.config/.devcontainer.json > .devcontainer.json
 code --install-extension ms-vscode-remote.remote-containers
 code -n .
 ```
+
+When opening VSCode, you may be prompted with the question:
+
+> **Do you trust the authors of the files in this folder?**
+
+Choose, "Yes, I trust the authors".
 
 Open the Command Palette in VSCode (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Reopen in Container`. This will open your workspace inside the `cht-conf` container. You can use the `cht` commands by opening a terminal in VSCode (_Ctrl+Shift+\`_ or _Cmd+Shift+\`_).
 
