@@ -64,6 +64,7 @@ cd ~/cht-project
 curl -s https://raw.githubusercontent.com/medic/cht-conf/main/devcontainer.config/.devcontainer.json > .devcontainer.json
 code --install-extension ms-vscode-remote.remote-containers
 code -n .
+```
 
 When opening VSCode, you may be prompted with the question:
 
