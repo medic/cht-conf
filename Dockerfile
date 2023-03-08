@@ -9,6 +9,7 @@ RUN apt update \
       openssh-client \
       python3-pip \
       python3-setuptools \
+      python3-wheel \
       xsltproc \
     # Remove chromium to save space. We only installed it to get the transitive dependencies that are needed
     # when running tests with puppeteer. (puppeteer-chromium-resolver will always download its own version of chromium)
