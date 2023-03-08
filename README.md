@@ -44,7 +44,7 @@ Using the terminal (or the WLS shell on Windows: _Start > wsl_), run the followi
 mkdir -p ~/cht-project
 cd ~/cht-project
 curl https://raw.githubusercontent.com/medic/cht-conf/main/Dockerfile > Dockerfile
-docker build -t cht-conf .
+docker build -t cht-ide .
 ```
 
 #### Using the image
@@ -61,7 +61,7 @@ Using the terminal (or the WLS shell on Windows: _Start > wsl_), run the followi
 
 ```shell
 cd ~/cht-project
-curl -s https://raw.githubusercontent.com/medic/cht-conf/main/devcontainer.config/.devcontainer.json > .devcontainer.json
+curl -s https://raw.githubusercontent.com/medic/cht-conf/main/devcontainer.cht-ide/.devcontainer.json > .devcontainer.json
 code --install-extension ms-vscode-remote.remote-containers
 code -n .
 ```
@@ -72,7 +72,7 @@ When opening VSCode, you may be prompted with the question:
 
 Choose, "Yes, I trust the authors".
 
-Open the Command Palette in VSCode (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Reopen in Container`. This will open your workspace inside the `cht-conf` container. You can use the `cht` commands by opening a terminal in VSCode (_Ctrl+Shift+\`_ or _Cmd+Shift+\`_). If prompted "Do you trust the authors..." choose "Trust Folder & Continue".
+Open the Command Palette in VSCode (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Reopen in Container`. This will open your workspace inside a container based on the `cht-ide` image. You can use the `cht` commands by opening a terminal in VSCode (_Ctrl+Shift+\`_ or _Cmd+Shift+\`_). If prompted "Do you trust the authors..." choose "Trust Folder & Continue".
 
 Run the following command in the VSCode terminal to bootstrap your new CHT project:
 
@@ -88,12 +88,12 @@ To open a terminal running on you _host environment_ in VSCode, open the Command
 
 ##### Standalone Docker utility
 
-If you are not using VSCode, you can use the Docker image as a standalone utility from the command line.  Instead of using the `cht ...` command, you can run `docker run -it --rm -v "$PWD":/workdir cht-conf ...`. This will create an ephemeral container with access to your current directory that will run the given cht command. 
+If you are not using VSCode, you can use the Docker image as a standalone utility from the command line.  Instead of using the `cht ...` command, you can run `docker run -it --rm -v "$PWD":/workdir cht-ide ...`. This will create an ephemeral container with access to your current directory that will run the given cht command. (Do not include the `cht` part of the command, just your desired actions/parameters.)
 
 Run the following command inside the project directory to bootstrap your new CHT project:
 
 ```shell
-docker run -it --rm -v "$PWD":/workdir cht-conf initialise-project-layout
+docker run -it --rm -v "$PWD":/workdir cht-ide initialise-project-layout
 ```
 
 #### Note on connecting to a local CHT instance
