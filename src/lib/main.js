@@ -21,14 +21,17 @@ const defaultActions = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'convert-training-forms',
   'validate-app-forms',
   'validate-collect-forms',
   'validate-contact-forms',
+  'validate-training-forms',
   'backup-all-forms',
   'delete-all-forms',
   'upload-app-forms',
   'upload-collect-forms',
   'upload-contact-forms',
+  'upload-training-forms',
   'upload-resources',
   'upload-branding',
   'upload-partners',
@@ -41,12 +44,15 @@ const defaultArchiveActions = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'convert-training-forms',
   'validate-app-forms',
   'validate-collect-forms',
   'validate-contact-forms',
+  'validate-training-forms',
   'upload-app-forms',
   'upload-collect-forms',
   'upload-contact-forms',
+  'upload-training-forms',
   'upload-resources',
   'upload-branding',
   'upload-partners',
@@ -148,7 +154,8 @@ module.exports = async (argv, env) => {
     const validateActions = [
       'validate-app-forms',
       'validate-collect-forms',
-      'validate-contact-forms'
+      'validate-contact-forms',
+      'validate-training-forms',
     ];
     actions = actions.filter(action => !validateActions.includes(action));
   } else {
@@ -161,6 +168,7 @@ module.exports = async (argv, env) => {
     addFormValidationIfNecessary('app');
     addFormValidationIfNecessary('collect');
     addFormValidationIfNecessary('contact');
+    addFormValidationIfNecessary('training');
   }
 
   actions = actions.map(actionName => {
