@@ -1,3 +1,10 @@
+## [3.15.3](https://github.com/medic/cht-conf/compare/v3.15.2...v3.15.3) (2023-02-28)
+
+
+### Bug Fixes
+
+* **#538:** support node 18 ([f7fb90c](https://github.com/medic/cht-conf/commit/f7fb90c0feb87e23311b97aa44fc3f5b60e17d10)), closes [#538](https://github.com/medic/cht-conf/issues/538)
+
 ## [3.15.2](https://github.com/medic/cht-conf/compare/v3.15.1...v3.15.2) (2022-12-15)
 
 

@@ -25,6 +25,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
       filename: outputFilename,
       libraryTarget: options.libraryTarget ? 'umd' : undefined,
       globalObject: options.libraryTarget,
+      hashFunction: 'sha512' // remove when we upgrade to webpack 5
     },
     optimization: {
       minimize: !!options.minifyScripts,
