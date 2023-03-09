@@ -1,3 +1,10 @@
+# [3.16.0](https://github.com/medic/cht-conf/compare/v3.15.3...v3.16.0) (2023-03-09)
+
+
+### Features
+
+* **medic/cht-core#6598:** Command line to convert and upload training forms ([#529](https://github.com/medic/cht-conf/issues/529)) ([fb700ef](https://github.com/medic/cht-conf/commit/fb700ef94fc8a0b86bb9bdeab36f42bc93970d20)), closes [medic/cht-core#6598](https://github.com/medic/cht-core/issues/6598)
+
 ## [3.15.3](https://github.com/medic/cht-conf/compare/v3.15.2...v3.15.3) (2023-02-28)
 
 
