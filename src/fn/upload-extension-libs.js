@@ -1,5 +1,8 @@
-const fs = require('fs/promises');
-const fsConstants = require('fs').constants;
+const util = require('util');
+const fs = require('fs');
+
+const readdir = util.promisify(fs.readdir);
+const stat = util.promisify(fs.stat);
 
 const environment = require('../lib/environment');
 const pouch = require('../lib/db');
@@ -13,11 +16,11 @@ const DOC_ID = 'extension-libs';
 
 const getConfiguredLibs = async (dir) => {
   try {
-    const stats = await fs.stat(dir, fsConstants.R_OK);
+    const stats = await stat(dir, fs.constants.R_OK);
     if (!stats.isDirectory()) {
       return []; // file, not directory
     }
-    return await fs.readdir(dir);
+    return await readdir(dir);
   } catch(e) {
     return []; // no readable configuration directory
   }

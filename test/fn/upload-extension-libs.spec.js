@@ -2,55 +2,55 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const fs = require('fs/promises');
-
 const uploadExtensionLibs = rewire('../../src/fn/upload-extension-libs');
 const log = require('../../src/lib/log');
 const warnUploadOverwrite = require('../../src/lib/warn-upload-overwrite');
 
 describe('Upload extension libs', () => {
-  let db;
   let attachmentsFromDir;
   let insertOrReplace;
+  let readdir;
+  let stat;
 
-  before(() => {
-    db = {};
+  beforeEach(() => {
     sinon.stub(log, 'info');
-    sinon.stub(fs, 'stat');
-    sinon.stub(fs, 'readdir');
     sinon.stub(warnUploadOverwrite, 'preUploadDoc');
     sinon.stub(warnUploadOverwrite, 'postUploadDoc');
     attachmentsFromDir = sinon.stub();
+    readdir = sinon.stub();
+    stat = sinon.stub();
     insertOrReplace = sinon.stub().resolves();
-    uploadExtensionLibs.__set__('pouch', () => db);
+    uploadExtensionLibs.__set__('pouch', () => {});
     uploadExtensionLibs.__set__('environment', {
       apiUrl: 'test',
       pathToProject: '/testpath'
     });
     uploadExtensionLibs.__set__('attachmentsFromDir', attachmentsFromDir);
     uploadExtensionLibs.__set__('insertOrReplace', insertOrReplace);
+    uploadExtensionLibs.__set__('readdir', readdir);
+    uploadExtensionLibs.__set__('stat', stat);
   });
 
   afterEach(() => {
-    sinon.reset();
+    sinon.restore();
   });
 
   describe('getConfiguredLibs', () => {
 
     it('log and skip when dir does not exist', async () => {
-      fs.stat.throws(new Error('file not found'));
+      stat.throws(new Error('file not found'));
       await uploadExtensionLibs.execute();
       expect(attachmentsFromDir.callCount).to.equal(0);
       expect(insertOrReplace.callCount).to.equal(0);
-      expect(fs.stat.callCount).to.equal(1);
-      expect(fs.stat.args[0][0]).to.equal('/testpath/extension-libs');
+      expect(stat.callCount).to.equal(1);
+      expect(stat.args[0][0]).to.equal('/testpath/extension-libs');
       expect(log.info.callCount).to.equal(1);
       expect(log.info.args[0][0]).to.equal('No configuration found at "/testpath/extension-libs" - not uploading extension-libs');
     });
 
     it('log and skip when path is not dir', async () => {
       const stats = { isDirectory: sinon.stub().returns(false) };
-      fs.stat.resolves(stats);
+      stat.resolves(stats);
       await uploadExtensionLibs.execute();
       expect(attachmentsFromDir.callCount).to.equal(0);
       expect(insertOrReplace.callCount).to.equal(0);
@@ -59,9 +59,9 @@ describe('Upload extension libs', () => {
     });
 
     it('log and skip when dir is empty', async () => {
-      const stat = { isDirectory: sinon.stub().returns(true) };
-      fs.stat.resolves(stat);
-      fs.readdir.resolves([]);
+      const stats = { isDirectory: sinon.stub().returns(true) };
+      stat.resolves(stats);
+      readdir.resolves([]);
       await uploadExtensionLibs.execute();
       expect(attachmentsFromDir.callCount).to.equal(0);
       expect(insertOrReplace.callCount).to.equal(0);
@@ -74,8 +74,8 @@ describe('Upload extension libs', () => {
   describe('updates doc', () => {
 
     beforeEach(() => {
-      fs.stat.resolves({ isDirectory: sinon.stub().returns(true) });
-      fs.readdir.resolves([ 'script.js', 'data.json' ]);
+      stat.resolves({ isDirectory: sinon.stub().returns(true) });
+      readdir.resolves([ 'script.js', 'data.json' ]);
     });
 
     it('does nothing if doc matches remote', async () => {
