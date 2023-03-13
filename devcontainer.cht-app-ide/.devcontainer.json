@@ -1,5 +1,5 @@
 {
-  "image": "cht-ide",
+  "image": "public.ecr.aws/s5s3h4s7/cht-app-ide:latest",
   // Required to run tests with Puppeteer
   // https://pptr.dev/guides/docker
   "capAdd": ["SYS_ADMIN"]

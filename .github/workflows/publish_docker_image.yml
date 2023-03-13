@@ -1,4 +1,4 @@
-name: Publish cht-ide image
+name: Publish cht-app-ide image
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 env:
   AWS_REGION: eu-west-2
-  ECR_REPOSITORY: cht-ide
+  ECR_REPOSITORY: cht-app-ide
 
 jobs:
   deploy:
