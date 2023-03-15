@@ -83,7 +83,7 @@ If you are not using VSCode, you can use the Docker image as a standalone utilit
 Run the following command inside the project directory to bootstrap your new CHT project:
 
 ```shell
-docker run -it --rm -v "$PWD":/workdir public.ecr.aws/s5s3h4s7/cht-app-ide initialise-project-layout
+docker run -it --rm -v "$PWD":/workdir public.ecr.aws/medic/cht-app-ide initialise-project-layout
 ```
 
 #### Note on connecting to a local CHT instance
