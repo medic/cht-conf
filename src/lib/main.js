@@ -235,22 +235,6 @@ function buildActions(cmdArgs, skipValidate) {
     addFormValidationIfNecessary('training');
   }
 
-  actions = actions.map(actionName => {
-    const action = require(`../fn/${actionName}`);
-
-    if (typeof action.execute !== 'function') {
-      throw new Error(`${actionName} has not been implemented correctly: no 'execute' function`);
-    }
-
-    if (!Object.hasOwnProperty.call(action, 'requiresInstance')) {
-      action.requiresInstance = true;
-    }
-
-    action.name = actionName;
-
-    return action;
-  });
-
   return actions.map(actionName => {
     const action = require(`../fn/${actionName}`);
 
