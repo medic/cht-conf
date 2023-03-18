@@ -1,3 +1,10 @@
+## [3.16.1](https://github.com/medic/cht-conf/compare/v3.16.0...v3.16.1) (2023-03-18)
+
+
+### Bug Fixes
+
+* **#524:** Don't display usage() information for commands which run successfully ([5b265e7](https://github.com/medic/cht-conf/commit/5b265e753d035b326ff8d6bac0a9aabc923048fb)), closes [#524](https://github.com/medic/cht-conf/issues/524) [#524](https://github.com/medic/cht-conf/issues/524)
+
 # [3.16.0](https://github.com/medic/cht-conf/compare/v3.15.3...v3.16.0) (2023-03-09)
 
 
