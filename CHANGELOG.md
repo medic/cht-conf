@@ -1,3 +1,10 @@
+## [3.16.2](https://github.com/medic/cht-conf/compare/v3.16.1...v3.16.2) (2023-03-18)
+
+
+### Bug Fixes
+
+* **#533:** compile-app-settings with --debug flag should ignore eslint errors ([5592efe](https://github.com/medic/cht-conf/commit/5592efe0ccee0165fa8690f7d4494e7ed7057beb)), closes [#533](https://github.com/medic/cht-conf/issues/533) [#533](https://github.com/medic/cht-conf/issues/533)
+
 ## [3.16.1](https://github.com/medic/cht-conf/compare/v3.16.0...v3.16.1) (2023-03-18)
 
 
