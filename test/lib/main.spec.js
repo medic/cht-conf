@@ -106,9 +106,10 @@ describe('main', () => {
     await main([...normalArgv, 'initialise-project-layout'], {});
     expect(mocks.executeAction.callCount).to.deep.eq(1);
     expect(mocks.executeAction.args[0][0].name).to.eq('initialise-project-layout');
+    expect(mocks.usage.called).to.be.false;
   });
 
-  const expectExecuteActionBehavior = (expectedActions, expectedExtraParams) => {
+  const expectExecuteActionBehavior = (expectedActions, expectedExtraParams, expectRequireUrl = true) => {
     if (Array.isArray(expectedActions)) {
       expect(mocks.executeAction.args.map(args => args[0].name)).to.deep.eq(expectedActions);
     } else {
@@ -117,12 +118,15 @@ describe('main', () => {
 
     expect(mocks.environment.initialize.args[0][3]).to.deep.eq(expectedExtraParams);
 
-    expect(mocks.environment.initialize.args[0][4]).to.eq('http://api');
+    if (expectRequireUrl) {
+      expect(mocks.environment.initialize.args[0][4]).to.eq('http://api');
+    }
   };
 
   it('--local no COUCH_URL', async () => {
     await main([...normalArgv, '--local'], {});
     expectExecuteActionBehavior(defaultActions, undefined);
+    expect(mocks.usage.called).to.be.false;
   });
 
   it('--local with COUCH_URL to localhost', async () => {
@@ -134,7 +138,7 @@ describe('main', () => {
   it('--instance + 2 ordered actions', async () => {
     await main([...normalArgv, '--instance=test.app', 'convert-app-forms', 'compile-app-settings'], {});
     expect(mocks.executeAction.callCount).to.deep.eq(2);
-    expectExecuteActionBehavior('convert-app-forms', undefined);
+    expectExecuteActionBehavior('convert-app-forms', undefined, false);
     expect(mocks.executeAction.args[1][0].name).to.eq('compile-app-settings');
   });
 
@@ -142,7 +146,8 @@ describe('main', () => {
     const formName = 'form-name';
     await main([...normalArgv, '--local', 'convert-app-forms', '--', formName], {});
     expect(mocks.executeAction.callCount).to.deep.eq(1);
-    expectExecuteActionBehavior('convert-app-forms', [formName]);
+    expectExecuteActionBehavior('convert-app-forms', [formName], false);
+    expect(mocks.usage.called).to.be.false;
   });
 
   it('unsupported action', async () => {
@@ -151,6 +156,7 @@ describe('main', () => {
       expect.fail('Expected error to be thrown');
     } catch(e) {
       expect(mocks.executeAction.called).to.be.false;
+      expect(mocks.usage.calledOnce).to.be.true;
       expect(e.message).to.equal('Unsupported action(s): not-an-action');
     }
   });
