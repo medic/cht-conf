@@ -77,19 +77,20 @@
     "@semantic-release/git": "^10.0.0",
     "body-parser": "^1.19.0",
     "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
     "chai-exclude": "^2.0.3",
     "chai-shallow-deep-equal": "^1.4.6",
     "chai-xml": "^0.4.0",
     "eslint-plugin-node": "^11.1.0",
     "express": "^4.17.1",
     "express-pouchdb": "^4.2.0",
+    "fs-extra": "8.1.0",
     "husky": "^7.0.2",
     "mocha": "^6.2.3",
     "nyc": "^15.1.0",
     "pouchdb-adapter-memory": "^7.2.2",
     "rewire": "^5.0.0",
     "semantic-release": "^18.0.0",
-    "sinon": "^7.3.2",
-    "fs-extra": "8.1.0"
+    "sinon": "^7.3.2"
   }
 }
