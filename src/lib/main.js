@@ -21,14 +21,17 @@ const defaultActions = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'convert-training-forms',
   'validate-app-forms',
   'validate-collect-forms',
   'validate-contact-forms',
+  'validate-training-forms',
   'backup-all-forms',
   'delete-all-forms',
   'upload-app-forms',
   'upload-collect-forms',
   'upload-contact-forms',
+  'upload-training-forms',
   'upload-resources',
   'upload-branding',
   'upload-partners',
@@ -41,12 +44,15 @@ const defaultArchiveActions = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'convert-training-forms',
   'validate-app-forms',
   'validate-collect-forms',
   'validate-contact-forms',
+  'validate-training-forms',
   'upload-app-forms',
   'upload-collect-forms',
   'upload-contact-forms',
+  'upload-training-forms',
   'upload-resources',
   'upload-branding',
   'upload-partners',
@@ -207,12 +213,13 @@ function buildActions(cmdArgs, skipValidate) {
     actions = actions.filter(a => a !== 'check-git');
   }
 
-  if (skipValidate) {
+  if(skipValidate) {
     warn('Skipping all form validation.');
     const validateActions = [
       'validate-app-forms',
       'validate-collect-forms',
-      'validate-contact-forms'
+      'validate-contact-forms',
+      'validate-training-forms',
     ];
     actions = actions.filter(action => !validateActions.includes(action));
   } else {
@@ -225,7 +232,24 @@ function buildActions(cmdArgs, skipValidate) {
     addFormValidationIfNecessary('app');
     addFormValidationIfNecessary('collect');
     addFormValidationIfNecessary('contact');
+    addFormValidationIfNecessary('training');
   }
+
+  actions = actions.map(actionName => {
+    const action = require(`../fn/${actionName}`);
+
+    if (typeof action.execute !== 'function') {
+      throw new Error(`${actionName} has not been implemented correctly: no 'execute' function`);
+    }
+
+    if (!Object.hasOwnProperty.call(action, 'requiresInstance')) {
+      action.requiresInstance = true;
+    }
+
+    action.name = actionName;
+
+    return action;
+  });
 
   return actions.map(actionName => {
     const action = require(`../fn/${actionName}`);
