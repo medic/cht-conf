@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+  <h:head>
+    <h:title>training</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/training/action_icons/action_icons_note_1:label">
+            <value>The "New Action" icon at the bottom of your app has changed to a big blue plus icon.</value>
+          </text>
+          <text id="/training/ending/ending_note_1:label">
+            <value>If you do not understand these changes, please contact your supervisor.</value>
+          </text>
+          <text id="/training/ending/ending_note_2:label">
+            <value>When you're ready, go ahead and start using your app.</value>
+          </text>
+          <text id="/training/intro/intro_note_1:label">
+            <value>There have been some changes to icons in your app. The next few screens will show you the difference.</value>
+          </text>
+          <text id="/training/intro/intro_note_2:label">
+            <value>Read each screen carefully and tap "Next" if you understand. If you need extra support, please contact your supervisor.</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <training id="training" prefix="J1!training!" delimiter="#" version="2023-01-18 04:35:53">
+          <intro tag="hidden">
+            <intro_note_1 tag="hidden"/>
+            <intro_note_2 tag="hidden"/>
+          </intro>
+          <action_icons tag="hidden">
+            <action_icons_note_1 tag="hidden"/>
+          </action_icons>
+          <ending tag="hidden">
+            <ending_note_1 tag="hidden"/>
+            <ending_note_2 tag="hidden"/>
+          </ending>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </training>
+      </instance>
+      <bind nodeset="/training/intro/intro_note_1" readonly="true()" type="string"/>
+      <bind nodeset="/training/intro/intro_note_2" readonly="true()" type="string"/>
+      <bind nodeset="/training/action_icons/action_icons_note_1" readonly="true()" type="string"/>
+      <bind nodeset="/training/ending/ending_note_1" readonly="true()" type="string"/>
+      <bind nodeset="/training/ending/ending_note_2" readonly="true()" type="string"/>
+      <bind nodeset="/training/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/training/intro">
+      <input ref="/training/intro/intro_note_1">
+        <label ref="jr:itext('/training/intro/intro_note_1:label')"/>
+      </input>
+      <input ref="/training/intro/intro_note_2">
+        <label ref="jr:itext('/training/intro/intro_note_2:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/training/action_icons">
+      <input ref="/training/action_icons/action_icons_note_1">
+        <label ref="jr:itext('/training/action_icons/action_icons_note_1:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/training/ending">
+      <input ref="/training/ending/ending_note_1">
+        <label ref="jr:itext('/training/ending/ending_note_1:label')"/>
+      </input>
+      <input ref="/training/ending/ending_note_2">
+        <label ref="jr:itext('/training/ending/ending_note_2:label')"/>
+      </input>
+    </group>
+  </h:body>
+</h:html>

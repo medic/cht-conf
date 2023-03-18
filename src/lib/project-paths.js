@@ -6,6 +6,7 @@ module.exports = {
     APP_FORMS_PATH: path.join('forms', 'app'),
     CONTACT_FORMS_PATH: path.join('forms', 'contact'),
     COLLECT_FORMS_PATH: path.join('forms', 'collect'),
+    TRAINING_FORMS_PATH: path.join('forms', 'training'),
     TRANSLATIONS_DIR_PATH: 'translations',
     RESOURCE_CONFIG_PATH: 'resources.json',
     RESOURCES_DIR_PATH: 'resources'

@@ -21,14 +21,17 @@ const defaultActions = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'convert-training-forms',
   'validate-app-forms',
   'validate-collect-forms',
   'validate-contact-forms',
+  'validate-training-forms',
   'backup-all-forms',
   'delete-all-forms',
   'upload-app-forms',
   'upload-collect-forms',
   'upload-contact-forms',
+  'upload-training-forms',
   'upload-resources',
   'upload-branding',
   'upload-partners',
@@ -41,12 +44,15 @@ const defaultArchiveActions = [
   'convert-app-forms',
   'convert-collect-forms',
   'convert-contact-forms',
+  'convert-training-forms',
   'validate-app-forms',
   'validate-collect-forms',
   'validate-contact-forms',
+  'validate-training-forms',
   'upload-app-forms',
   'upload-collect-forms',
   'upload-contact-forms',
+  'upload-training-forms',
   'upload-resources',
   'upload-branding',
   'upload-partners',
@@ -128,69 +134,16 @@ module.exports = async (argv, env) => {
   //
   // Build up actions
   //
-  let actions = cmdArgs._;
-  if (actions.length) {
-    const unsupported = actions.filter(a => !supportedActions.includes(a));
-    if(unsupported.length) {
-      throw new Error(`Unsupported action(s): ${unsupported.join(' ')}`);
-    }
-  } else {
-    actions = !cmdArgs.archive ? defaultActions : defaultArchiveActions;
-  }
-
-  if (cmdArgs['skip-git-check']) {
-    actions = actions.filter(a => a !== 'check-git');
-  }
-
   const skipValidate = cmdArgs['skip-validate'];
-  if(skipValidate) {
-    warn('Skipping all form validation.');
-    const validateActions = [
-      'validate-app-forms',
-      'validate-collect-forms',
-      'validate-contact-forms'
-    ];
-    actions = actions.filter(action => !validateActions.includes(action));
-  } else {
-    const addFormValidationIfNecessary = (formType) => {
-      const updateFormsIndex = actions.indexOf(`upload-${formType}-forms`);
-      if (updateFormsIndex >= 0 && actions.indexOf(`validate-${formType}-forms`) < 0) {
-        actions.splice(updateFormsIndex, 0, `validate-${formType}-forms`);
-      }
-    };
-    addFormValidationIfNecessary('app');
-    addFormValidationIfNecessary('collect');
-    addFormValidationIfNecessary('contact');
-  }
-
-  actions = actions.map(actionName => {
-    const action = require(`../fn/${actionName}`);
-
-    if (typeof action.execute !== 'function') {
-      throw new Error(`${actionName} has not been implemented correctly: no 'execute' function`);
-    }
-
-    if (!Object.hasOwnProperty.call(action, 'requiresInstance')) {
-      action.requiresInstance = true;
-    }
-
-    action.name = actionName;
-
-    return action;
-  });
+  const actions = buildActions(cmdArgs, skipValidate);
 
   //
   // Initialize the environment
   //
   const projectName = fs.path.basename(pathToProject);
 
-  const apiUrl = getApiUrl(cmdArgs, env);
   const requiresInstance = actions.some(action => action.requiresInstance);
-  if (requiresInstance) {
-    if (!apiUrl) {
-      throw new Error('Failed to obtain a url to the API');
-    }
-  }
+  const apiUrl = requiresInstance && getApiUrl(cmdArgs, env);
 
   let extraArgs = cmdArgs['--'];
   if (!extraArgs.length) {
@@ -243,6 +196,61 @@ module.exports = async (argv, env) => {
     await info('All actions completed.');
   }
 };
+
+function buildActions(cmdArgs, skipValidate) {
+  let actions = cmdArgs._;
+  if (actions.length) {
+    const unsupported = actions.filter(a => !supportedActions.includes(a));
+    if (unsupported.length) {
+      usage();
+      throw new Error(`Unsupported action(s): ${unsupported.join(' ')}`);
+    }
+  } else {
+    actions = !cmdArgs.archive ? defaultActions : defaultArchiveActions;
+  }
+
+  if (cmdArgs['skip-git-check']) {
+    actions = actions.filter(a => a !== 'check-git');
+  }
+
+  if(skipValidate) {
+    warn('Skipping all form validation.');
+    const validateActions = [
+      'validate-app-forms',
+      'validate-collect-forms',
+      'validate-contact-forms',
+      'validate-training-forms',
+    ];
+    actions = actions.filter(action => !validateActions.includes(action));
+  } else {
+    const addFormValidationIfNecessary = (formType) => {
+      const updateFormsIndex = actions.indexOf(`upload-${formType}-forms`);
+      if (updateFormsIndex >= 0 && actions.indexOf(`validate-${formType}-forms`) < 0) {
+        actions.splice(updateFormsIndex, 0, `validate-${formType}-forms`);
+      }
+    };
+    addFormValidationIfNecessary('app');
+    addFormValidationIfNecessary('collect');
+    addFormValidationIfNecessary('contact');
+    addFormValidationIfNecessary('training');
+  }
+
+  return actions.map(actionName => {
+    const action = require(`../fn/${actionName}`);
+
+    if (typeof action.execute !== 'function') {
+      throw new Error(`${actionName} has not been implemented correctly: no 'execute' function`);
+    }
+
+    if (!Object.hasOwnProperty.call(action, 'requiresInstance')) {
+      action.requiresInstance = true;
+    }
+
+    action.name = actionName;
+
+    return action;
+  });
+}
 
 // Exists for generic mocking purposes
 const executeAction = action => action.execute();

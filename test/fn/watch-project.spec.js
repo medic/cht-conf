@@ -13,11 +13,13 @@ const {
   APP_FORMS_PATH,
   CONTACT_FORMS_PATH,
   COLLECT_FORMS_PATH,
+  TRAINING_FORMS_PATH,
   RESOURCE_CONFIG_PATH,
   APP_SETTINGS_DIR_PATH
 } = require('../../src/lib/project-paths');
 const testDir = path.join(__dirname, '../data/skeleton');
 const appFormDir = path.join(testDir, APP_FORMS_PATH);
+const trainingFormDir = path.join(testDir, TRAINING_FORMS_PATH);
 const collectFormsDir = path.join(testDir, COLLECT_FORMS_PATH);
 const contactFormsDir = path.join(testDir, CONTACT_FORMS_PATH);
 const snapshotsDir = path.join(testDir, '.snapshots');
@@ -71,8 +73,20 @@ function copySampleForms(sampleDir, destination = path.join('forms', 'app')) {
   fse.copySync(absSampleDir, path.join(testDir, destination));
 }
 
-function cleanFormDir(formDir, form) {
-  fs.fs.readdirSync(formDir).filter(name => name.startsWith(form)).forEach(file => fse.removeSync(path.join(formDir, file)));
+function cleanFolders(folderPaths) {
+  (folderPaths || []).forEach(folder => {
+    if (!fs.exists(folder)) {
+      return;
+    }
+    fs.deleteFilesInFolder(folder);
+  });
+}
+
+function deleteFormFromFolder(folderPath, formFileName) {
+  fs.fs
+    .readdirSync(folderPath)
+    .filter(fileName => fileName.startsWith(formFileName))
+    .forEach(file => fse.removeSync(path.join(folderPath, file)));
 }
 
 function watchWrapper(action, file) {
@@ -97,11 +111,12 @@ describe('watch-project', function () {
   });
 
   afterEach(async () => {
+    cleanFolders([ appFormDir, collectFormsDir, trainingFormDir, contactFormsDir ]);
     sinon.restore();
     fs.writeJson(baseSettingsPath, baseSettings);
     fs.writeJson(appSettingsPath, appSettings);
     fs.write(sampleTranslationPath, messagesEn);
-    if(fs.exists(snapshotsDir)) {
+    if (fs.exists(snapshotsDir)) {
       fs.deleteFilesInFolder(snapshotsDir);
       fs.fs.rmdirSync(snapshotsDir);
     }
@@ -142,9 +157,7 @@ describe('watch-project', function () {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include('resources');
       })
-      .then(() => {
-        fs.writeJson(resourceJsonPath, {});
-      });
+      .then(() => fs.writeJson(resourceJsonPath, {}));
   });
 
   it('watch-project: convert app forms', () => {
@@ -155,8 +168,7 @@ describe('watch-project', function () {
       .then(() => {
         const appForms = fs.fs.readdirSync(appFormDir);
         expect(appForms).to.include(`${form}.xml`);
-      })
-      .then(() => cleanFormDir(appFormDir, form));
+      });
   });
 
   it('watch-project: convert collect forms', () => {
@@ -167,8 +179,7 @@ describe('watch-project', function () {
       .then(() => {
         const appForms = fs.fs.readdirSync(collectFormsDir);
         expect(appForms).to.include(`${form}.xml`);
-      })
-      .then(() => cleanFormDir(collectFormsDir, form));
+      });
   });
 
   it('watch-project: upload app forms', () => {
@@ -184,24 +195,20 @@ describe('watch-project', function () {
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
-      })
-      .then(() => cleanFormDir(appFormDir, form));
+      });
   });
 
   it('watch-project: delete app forms', () => {
     const form = 'death';
     copySampleForms('upload-app-form');
-    const deleteForm = () => {
-      cleanFormDir(appFormDir, form);
-    };
+    const deleteForm = () => deleteFormFromFolder(appFormDir, form);
     return api.db.put({ _id: `form:${form}` })
       .then(() => watchWrapper(deleteForm, `${form}.xml`))
       .then(() => api.db.allDocs())
       .then(docs => {
         const doc = docs.rows.find(doc => doc.id === `form:${form}`);
         expect(doc).to.be.undefined;
-      })
-      .then(() => cleanFormDir(appFormDir, form));
+      });
   });
 
   it('watch-project: do not delete app form when a form part exists', () => {
@@ -216,8 +223,7 @@ describe('watch-project', function () {
       .then(docs => {
         const doc = docs.rows.find(doc => doc.id === `form:${form}`);
         expect(doc).to.be.not.undefined;
-      })
-      .then(() => cleanFormDir(appFormDir, form));
+      });
   });
 
   it('watch-project: upload convert forms', () => {
@@ -233,8 +239,7 @@ describe('watch-project', function () {
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
-      })
-      .then(() => cleanFormDir(collectFormsDir, form));
+      });
   });
 
   it('watch-project: upload app form on properties change', () => {
@@ -248,8 +253,7 @@ describe('watch-project', function () {
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
-      })
-      .then(() => cleanFormDir(appFormDir, form));
+      });
   });
 
   it('watch-project: upload app form on form-media change', () => {
@@ -268,9 +272,50 @@ describe('watch-project', function () {
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
-      })
+      });
+  });
+
+  it('watch-project: convert training forms', () => {
+    const form = 'new_actions_training';
+    const copyForm = () => copySampleForms('training-xlsx', TRAINING_FORMS_PATH);
+
+    return watchWrapper(copyForm, `${form}.xlsx`)
       .then(() => {
-        cleanFormDir(appFormDir, form);
+        const forms = fs.fs.readdirSync(trainingFormDir);
+        expect(forms).to.include(`${form}.xml`);
+      });
+  });
+
+  it('watch-project: upload training forms', () => {
+    const form = 'new_actions_training';
+    const copyForm = () => copySampleForms('training-xml', TRAINING_FORMS_PATH);
+
+    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
+
+    return watchWrapper(copyForm, `${form}.xml`)
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        const docIds = docs.rows.map(row => row.id);
+        expect(docIds).to.include(`form:training:${form}`);
+      });
+  });
+
+  it('watch-project: upload training form on form-media change', () => {
+    const form = 'training';
+    copySampleForms('training-form-media', TRAINING_FORMS_PATH);
+    const dummyPng = 'test.png';
+    const formMediaDir = path.join(trainingFormDir, `${form}-media`);
+    const createFormMediaDir = () => {
+      fs.fs.writeFileSync(path.join(formMediaDir, dummyPng), '');
+    };
+
+    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
+
+    return watchWrapper(createFormMediaDir, dummyPng)
+      .then(() => api.db.allDocs())
+      .then(docs => {
+        const docIds = docs.rows.map(row => row.id);
+        expect(docIds).to.include(`form:training:${form}`);
       });
   });
 
@@ -285,8 +330,7 @@ describe('watch-project', function () {
       .then(() => {
         const contactForms = fs.fs.readdirSync(contactFormsDir);
         expect(contactForms).to.include(`${form}.xml`);
-      })
-      .then(() => cleanFormDir(contactFormsDir, form));
+      });
   });
 
   it('watch-project: upload contact forms', () => {
@@ -302,8 +346,7 @@ describe('watch-project', function () {
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:contact:${form.replace('-', ':')}`);
-      })
-      .then(() => cleanFormDir(contactFormsDir, form));
+      });
   });
 
   it('watch-project: upload app forms --skip-validate', () => {
@@ -320,8 +363,7 @@ describe('watch-project', function () {
         expect(docIds).to.include(`form:${form}`);
         // No requests should have been made to the api since the validations were not run
         expect(api.requestLog()).to.be.empty;
-      })
-      .then(() => cleanFormDir(appFormDir, form));
+      });
   });
 
 });

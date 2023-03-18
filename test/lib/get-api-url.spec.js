@@ -6,28 +6,24 @@ const getApiUrl = rewire('../../src/lib/get-api-url');
 const userPrompt = rewire('../../src/lib/user-prompt');
 
 describe('get-api-url', () => {
-  let error, readline;
+  let readline;
   beforeEach(() => {
-    error = sinon.stub();
     readline = {
       question: sinon.stub().throws('unexpected'),
       keyInYN: sinon.stub().throws('unexpected'),
     };
     userPrompt.__set__('readline', readline);
-    getApiUrl.__set__('error', error);
     getApiUrl.__set__('userPrompt', userPrompt);
   });
 
   it('multiple destinations yields error', () => {
-    const actual = getApiUrl({ local: true, instance: 'demo' });
-    expect(error.args[0][0]).to.include('one of these');
-    expect(actual).to.eq(false);
+    const actual = () => getApiUrl({ local: true, instance: 'demo' });
+    expect(actual).to.throw('One of these');
   });
 
   it('no destination yields error', () => {
-    const actual = getApiUrl({});
-    expect(error.args[0][0]).to.include('one of these');
-    expect(actual).to.eq(false);
+    const actual = () => getApiUrl({});
+    expect(actual).to.throw('One of these');
   });
 
   describe('--local', () => {
@@ -42,9 +38,8 @@ describe('get-api-url', () => {
     });
 
     it('warn if environment variable targets remote', () => {
-      const actual = getApiUrl({ local: true }, { COUCH_URL: 'http://user:pwd@remote:5984/db' });
-      expect(error.args[0][0]).to.include('remote');
-      expect(actual).to.eq(false);
+      const actual = () => getApiUrl({ local: true }, { COUCH_URL: 'http://user:pwd@remote:5984/db' });
+      expect(actual).to.throw('remote');
     });
   });
 
