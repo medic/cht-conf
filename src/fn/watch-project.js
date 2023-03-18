@@ -8,14 +8,17 @@ const watcher = require('@parcel/watcher');
 const { validateAppForms } = require('./validate-app-forms');
 const { validateContactForms } = require('./validate-contact-forms');
 const { validateCollectForms } = require('./validate-collect-forms');
+const { validateTrainingForms } = require('./validate-training-forms');
 const { uploadAppForms } = require('./upload-app-forms');
 const { uploadContactForms } = require('./upload-contact-forms');
 const { uploadCollectForms } = require('./upload-collect-forms');
+const { uploadTrainingForms } = require('./upload-training-forms');
 const convertForms = require('../lib/convert-forms');
 const uploadForms = require('../lib/upload-forms');
 const { deleteForms } = require('../fn/delete-forms');
 const { convertAppForms, APP_FORMS_PATH } = require('./convert-app-forms');
 const { convertContactForm, CONTACT_FORMS_PATH } = require('./convert-contact-forms');
+const { convertTrainingForms, TRAINING_FORMS_PATH } = require('./convert-training-forms');
 const { convertCollectForms, COLLECT_FORMS_PATH } = require('./convert-collect-forms');
 const { uploadAppSettings, APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('./upload-app-settings');
 const { execute: compileAppSettings, configFileMatcher } = require('./compile-app-settings');
@@ -39,8 +42,10 @@ const uploadInitialState = async (api) => {
     await uploadResources();
     await runValidation(validateAppForms, environment.extraArgs);
     await runValidation(validateContactForms, environment.extraArgs);
+    await runValidation(validateTrainingForms, environment.extraArgs);
     await uploadAppForms(environment.extraArgs);
     await uploadContactForms(environment.extraArgs);
+    await uploadTrainingForms(environment.extraArgs);
     await uploadCustomTranslations();
     await uploadAppSettings(api);
 };
@@ -87,15 +92,55 @@ const deleteForm = (fileName, formDir) => {
     return false;
 };
 
-const processAppForm = (eventType, fileName) => {
-    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName, APP_FORMS_PATH)) {
+const getFormCommandContext = (parsedPath) => {
+    if (parsedPath.dir === path.join(environment.pathToProject, APP_FORMS_PATH)) {
+        return {
+            path: APP_FORMS_PATH,
+            validateForms: validateAppForms,
+            uploadForms: uploadAppForms,
+            convertForms: convertAppForms,
+        };
+    }
+
+    if (parsedPath.dir === path.join(environment.pathToProject, TRAINING_FORMS_PATH)) {
+        return {
+            path: TRAINING_FORMS_PATH,
+            validateForms: validateTrainingForms,
+            uploadForms: uploadTrainingForms,
+            convertForms: convertTrainingForms,
+        };
+    }
+
+    if (parsedPath.dir === path.join(environment.pathToProject, CONTACT_FORMS_PATH)) {
+        return {
+            path: CONTACT_FORMS_PATH,
+            validateForms: validateContactForms,
+            uploadForms: uploadContactForms,
+            convertForms: convertContactForm,
+        };
+    }
+
+    if (parsedPath.dir === path.join(environment.pathToProject, COLLECT_FORMS_PATH)) {
+        return {
+            path: COLLECT_FORMS_PATH,
+            validateForms: validateCollectForms,
+            uploadForms: uploadCollectForms,
+            convertForms: convertCollectForms,
+        };
+    }
+
+    return;
+};
+
+const processForm = (eventType, fileName, commandContext) => {
+    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName, commandContext.path)) {
         return true;
     }
     let form = uploadForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
-            await runValidation(validateAppForms, [form]);
-            await uploadAppForms([form]);
+            await runValidation(commandContext.validateForms, [form]);
+            await commandContext.uploadForms([form]);
             return fileName;
         });
         return true;
@@ -104,7 +149,7 @@ const processAppForm = (eventType, fileName) => {
     form = convertForms.formFileMatcher(fileName);
     if (form) {
         eventQueue.enqueue(async () => {
-            await convertAppForms([form]);
+            await commandContext.convertForms([form]);
             return fileName;
         });
         return true;
@@ -112,62 +157,34 @@ const processAppForm = (eventType, fileName) => {
     return false;
 };
 
-const processAppFormMedia = (formMediaDir, fileName) => {
+const getFormMediaCommandContext = (parsedPath) => {
+    if (parsedPath.dir.startsWith(path.join(environment.pathToProject, APP_FORMS_PATH))
+      && path.parse(parsedPath.dir).dir.endsWith(APP_FORMS_PATH)) {
+        // Check if the directory's immediate parent is forms/app
+        return {
+            validateForms: validateAppForms,
+            uploadForms: uploadAppForms,
+        };
+    }
+
+    if (parsedPath.dir.startsWith(path.join(environment.pathToProject, TRAINING_FORMS_PATH))
+      && path.parse(parsedPath.dir).dir.endsWith(TRAINING_FORMS_PATH)) {
+        // Check if the directory's immediate parent is forms/training
+        return {
+            validateForms: validateTrainingForms,
+            uploadForms: uploadTrainingForms,
+        };
+    }
+
+    return;
+};
+
+const processFormMedia = (formMediaDir, fileName, commandContext) => {
     const form = uploadForms.formMediaMatcher(formMediaDir);
     if (form) {
         eventQueue.enqueue(async () => {
-            await runValidation(validateAppForms,[form]);
-            await uploadAppForms([form]);
-            return fileName;
-        });
-        return true;
-    }
-    return false;
-};
-
-const processContactForm = (eventType, fileName) => {
-    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName, CONTACT_FORMS_PATH)) {
-        return true;
-    }
-    let form = convertForms.formFileMatcher(fileName);
-    if (form) {
-        eventQueue.enqueue(async () => {
-            await convertContactForm([form]);
-            return fileName;
-        });
-        return true;
-    }
-
-    form = uploadForms.formFileMatcher(fileName);
-    if (form) {
-        eventQueue.enqueue(async () => {
-            await runValidation(validateContactForms,[form]);
-            await uploadContactForms([form]);
-            return fileName;
-        });
-        return true;
-    }
-    return false;
-};
-
-const processCollectForm = (eventType, fileName) => {
-    if (eventType === watcherEvents.DeleteEvent && deleteForm(fileName, COLLECT_FORMS_PATH)) {
-        return true;
-    }
-    let form = uploadForms.formFileMatcher(fileName);
-    if (form) {
-        eventQueue.enqueue(async () => {
-            await runValidation(validateCollectForms,[form]);
-            await uploadCollectForms([form]);
-            return fileName;
-        });
-        return true;
-    }
-
-    form = convertForms.formFileMatcher(fileName);
-    if (form) {
-        eventQueue.enqueue(async () => {
-            await convertCollectForms([form]);
+            await runValidation(commandContext.validateForms,[form]);
+            await commandContext.uploadForms([form]);
             return fileName;
         });
         return true;
@@ -212,28 +229,18 @@ const watchProject = {
                 const parsedPath = path.parse(changePath);
                 const fileName = parsedPath.base;
 
-                if (parsedPath.dir === path.join(environment.pathToProject, APP_FORMS_PATH)) {
-                    processAppForm(event.type, fileName);
+                const formContext = getFormCommandContext(parsedPath);
+                if (formContext) {
+                    processForm(event.type, fileName, formContext);
                     continue;
                 }
 
-                if (parsedPath.dir.startsWith(path.join(environment.pathToProject, APP_FORMS_PATH))
-                    && path.parse(parsedPath.dir).dir.endsWith(APP_FORMS_PATH)) { // check if the directory's immediate parent is forms/app
+                const formMediaContext = getFormMediaCommandContext(parsedPath);
+                if (formMediaContext) {
                     const dirName = path.parse(parsedPath.dir).base;
-                    processAppFormMedia(dirName, fileName);
+                    processFormMedia(dirName, fileName, formMediaContext);
                     continue;
                 }
-
-                if (parsedPath.dir === path.join(environment.pathToProject, CONTACT_FORMS_PATH)) {
-                    processContactForm(event.type, fileName);
-                    continue;
-                }
-
-                if (parsedPath.dir === path.join(environment.pathToProject, COLLECT_FORMS_PATH)) {
-                    processCollectForm(event.type, fileName);
-                    continue;
-                }
-
 
                 if (parsedPath.dir === path.join(environment.pathToProject, TRANSLATIONS_DIR_PATH)) {
                     eventQueue.enqueue(async () => {

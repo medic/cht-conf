@@ -1,21 +1,20 @@
 const userPrompt = require('./user-prompt');
 const url = require('url');
-const usage = require('../cli/usage');
 
 const emoji = require('./emoji');
-const { error, info } = require('./log');
+const { info } = require('./log');
+const usage = require('../cli/usage');
 
 const getApiUrl = (cmdArgs, env = {}) => {
   const specifiedModes = [cmdArgs.local, cmdArgs.instance, cmdArgs.url, cmdArgs.archive].filter(mode => mode);
   if (specifiedModes.length !== 1) {
-    error('Require exactly one of these parameter: --local --instance --url --archive');
     usage();
-    return false;
+    throw Error('One of these parameters is required: --local --instance --url --archive');
   }
 
   if (cmdArgs.user && !cmdArgs.instance) {
-    error('The --user switch can only be used if followed by --instance');
-    return false;
+    usage();
+    throw Error('The --user switch must be accompanied with --instance');
   }
 
   let instanceUrl;
@@ -26,8 +25,7 @@ const getApiUrl = (cmdArgs, env = {}) => {
     // See ./archiving-db.js
     instanceUrl = parseLocalUrl(env.COUCH_URL);
     if (instanceUrl.hostname !== 'localhost') {
-      error(`You asked to configure localhost, but the COUCH_URL env var is set to '${instanceUrl.hostname}'.  This may be a remote server.`);
-      return false;
+      throw Error(`--local was specified but COUCH_URL env var is set to '${instanceUrl.hostname}'.  Please use --url for remote servers.`);
     }
   } else if (cmdArgs.instance) {
     const password = userPrompt.question(`${emoji.key}  Password: `, { hideEchoBack: true });
