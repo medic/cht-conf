@@ -78,12 +78,12 @@ To open a terminal running on you _host environment_ in VSCode, open the Command
 
 ##### Standalone Docker utility
 
-If you are not using VSCode, you can use the Docker image as a standalone utility from the command line.  Instead of using the `cht ...` command, you can run `docker run -it --rm -v "$PWD":/workdir cht-app-ide ...`. This will create an ephemeral container with access to your current directory that will run the given cht command. (Do not include the `cht` part of the command, just your desired actions/parameters.)
+If you are not using VSCode, you can use the Docker image as a standalone utility from the command line.  Instead of using the `cht ...` command, you can run `docker run -it --rm -v "$PWD":/workdir medicmobile/cht-app-ide ...`. This will create an ephemeral container with access to your current directory that will run the given cht command. (Do not include the `cht` part of the command, just your desired actions/parameters.)
 
 Run the following command inside the project directory to bootstrap your new CHT project:
 
 ```shell
-docker run -it --rm -v "$PWD":/workdir public.ecr.aws/medic/cht-app-ide initialise-project-layout
+docker run -it --rm -v "$PWD":/workdir medicmobile/cht-app-ide initialise-project-layout
 ```
 
 #### Note on connecting to a local CHT instance
