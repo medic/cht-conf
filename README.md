@@ -44,37 +44,7 @@ Install [Docker](https://www.docker.com/). If you are using Windows, you also ne
 
 If you want to develop CHT apps with VSCode, you can use the Docker image as a Development Container. This will allow you to use the `cht-conf` utility and its associated tech stack from within VSCode (without needing to install dependencies like NodeJS on your host system).
 
-[Install VSCode](https://code.visualstudio.com/) if you do not have it already.
-
-Using the terminal (or the WLS shell on Windows: _Start > wsl_), run the following commands from within your project directory (created above) to download the `.devcontainer.json` config file, install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers), and open the project directory in VSCode:
-
-```shell
-mkdir -p ~/cht-project
-cd ~/cht-project
-curl -s https://raw.githubusercontent.com/medic/cht-conf/main/devcontainer.cht-app-ide/.devcontainer.json > .devcontainer.json
-code --install-extension ms-vscode-remote.remote-containers
-code -n .
-```
-
-When opening VSCode, you may be prompted with the question:
-
-> **Do you trust the authors of the files in this folder?**
-
-Choose, "Yes, I trust the authors".
-
-Open the Command Palette in VSCode (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Reopen in Container`. This will open your workspace inside a container based on the `cht-app-ide` image. You can use the `cht` commands by opening a terminal in VSCode (_Ctrl+Shift+\`_ or _Cmd+Shift+\`_). If prompted "Do you trust the authors..." choose "Trust Folder & Continue".
-
-Run the following command in the VSCode terminal to bootstrap your new CHT project:
-
-```shell
-cht initialise-project-layout
-```
-
-###### Terminal environment
-
-When opening a terminal in VSCode in a development container, the terminal will be running on the _container environment_ by default. This is what gives you access to the various `cht` commands.  However, this also means you do NOT have access, within the default VSCode terminal, to commands from your _host environment_. So, for example, you cannot run `docker` commands since Docker is not installed inside the container.
-
-To open a terminal running on you _host environment_ in VSCode, open the Command Palette (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Create New Integrated Terminal (Local)`. Just remember that you will NOT be able to run `cht` commands from this terminal since cht-conf is not installed on your host machine.
+See the [CHT Documentation](https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/#developing-with-vs-code-dev-container) for more information on building CHT apps with VSCode Development Containers.
 
 ##### Standalone Docker utility
 
