@@ -51,7 +51,9 @@ describe('Upload extension libs', () => {
     expect(warnUploadOverwrite.preUploadDoc.callCount).to.equal(1);
     expect(warnUploadOverwrite.postUploadDoc.callCount).to.equal(0);
     expect(insertOrReplace.callCount).to.equal(0);
-    expect(log.info.args[0][0]).to.equal('Extension libs not uploaded as already up to date');
+    expect(log.info.callCount).to.equal(2);
+    expect(log.info.args[0][0]).to.equal('Found extension-libs: script.js, data.json');
+    expect(log.info.args[1][0]).to.equal('Extension libs not uploaded as already up to date');
   });
 
   it('should update doc when attachments found', async () => {
@@ -71,7 +73,9 @@ describe('Upload extension libs', () => {
         'script.js': {}
       }
     });
-    expect(log.info.args[0][0]).to.equal('Extension libs upload complete');
+    expect(log.info.callCount).to.equal(2);
+    expect(log.info.args[0][0]).to.equal('Found extension-libs: script.js, data.json');
+    expect(log.info.args[1][0]).to.equal('Extension libs upload complete');
   });
 
 });

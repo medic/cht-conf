@@ -18,7 +18,8 @@ module.exports = {
       log.info(`No configuration found at "${configurationDir}" - not uploading extension-libs`);
       return;
     }
-    
+
+    log.info(`Found extension-libs: ${Object.keys(attachments).join(', ')}`);
     const doc = {
       _id: DOC_ID,
       _attachments: attachments
