@@ -1,3 +1,11 @@
+# [3.17.0](https://github.com/medic/cht-conf/compare/v3.16.2...v3.17.0) (2023-04-04)
+
+
+### Features
+
+* **#545:** publish cht-app-ide docker image ([#550](https://github.com/medic/cht-conf/issues/550)) ([8b5e62e](https://github.com/medic/cht-conf/commit/8b5e62e8f2191c4457433d30024266aa27ae1129)), closes [#545](https://github.com/medic/cht-conf/issues/545)
+* **#547:** add command for uploading extension libs ([3b13e40](https://github.com/medic/cht-conf/commit/3b13e40e276d37e554cb5863974cea1090ed4585)), closes [#547](https://github.com/medic/cht-conf/issues/547)
+
 ## [3.16.2](https://github.com/medic/cht-conf/compare/v3.16.1...v3.16.2) (2023-03-18)
 
 
