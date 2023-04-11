@@ -1,3 +1,10 @@
+# [3.18.0](https://github.com/medic/cht-conf/compare/v3.17.0...v3.18.0) (2023-04-11)
+
+
+### Features
+
+* **#545:** publish cht-app-ide docker image ([#552](https://github.com/medic/cht-conf/issues/552)) ([77fb697](https://github.com/medic/cht-conf/commit/77fb69753dd155bb5fd8eda7a458d628f9397d73)), closes [#545](https://github.com/medic/cht-conf/issues/545)
+
 # [3.17.0](https://github.com/medic/cht-conf/compare/v3.16.2...v3.17.0) (2023-04-04)
 
 
