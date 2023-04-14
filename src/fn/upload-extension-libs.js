@@ -14,7 +14,7 @@ module.exports = {
     const configurationDir = `${environment.pathToProject}/${projectPaths.EXTENSION_LIBS_PATH}`;
 
     const attachments = attachmentsFromDir(configurationDir);
-    if (!Object.keys(attachments).length) {
+    if (!attachments || !Object.keys(attachments).length) {
       log.info(`No configuration found at "${configurationDir}" - not uploading extension-libs`);
       return;
     }
