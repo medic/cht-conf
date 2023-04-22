@@ -22,16 +22,16 @@ describe('upload-app-settings', () => {
   for (const scenario of scenarios) {
     it(JSON.stringify(scenario), async () => {
       const rules = 'code';
-      const appSettings = {
+      const appSettings = JSON.stringify({
         tasks: {
           isDeclarative: scenario.isDeclarative,
           rules,
         },
-      };
+      });
 
       const apiUpload = sinon.stub().resolves('{ "success": true }');
       const mocks = {
-        getValidApiVersion: sinon.stub().returns(scenario.coreVersion),
+        getValidApiVersion: sinon.stub().resolves(scenario.coreVersion),
         api: () => ({
           updateAppSettings: apiUpload,
         }),
@@ -46,7 +46,7 @@ describe('upload-app-settings', () => {
       uploadAppSettings.__set__(mocks);
       await uploadAppSettings.execute();
       expect(apiUpload.calledOnce).to.be.true;
-      const isNoolsAdded = apiUpload.args[0][0].tasks.rules !== rules;
+      const isNoolsAdded = JSON.parse(apiUpload.args[0][0]).tasks.rules !== rules;
       expect(isNoolsAdded).to.eq(scenario.expectNools);
     });
   }  

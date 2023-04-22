@@ -9,9 +9,10 @@ const nools = require('../lib/nools-utils');
 const { APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('../lib/project-paths');
 
 const uploadAppSettings = async api => {
-  const appSettings = fs.read(`${environment.pathToProject}/${APP_SETTINGS_JSON_PATH}`);
+  const appSettings = JSON.parse(fs.read(`${environment.pathToProject}/${APP_SETTINGS_JSON_PATH}`));
   await augmentDeclarativeWithNoolsBoilerplate(appSettings);
-  const requestResult = await api.updateAppSettings(appSettings);
+  
+  const requestResult = await api.updateAppSettings(JSON.stringify(appSettings));
   const json = JSON.parse(requestResult);
   // As per https://github.com/medic/cht-core/issues/3674, this endpoint
   // will return 200 even when upload fails.
@@ -37,7 +38,7 @@ async function augmentDeclarativeWithNoolsBoilerplate(appSettings) {
     return;
   }
 
-  const actualCoreVersion = getValidApiVersion(appSettings);
+  const actualCoreVersion = await getValidApiVersion(appSettings);
   const addNoolsBoilerplate = semver.lt(actualCoreVersion, '4.2.0');
   if (addNoolsBoilerplate) {
     appSettings.tasks.rules = nools.addBoilerplateToCode(appSettings.tasks.rules);
