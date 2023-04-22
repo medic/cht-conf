@@ -18,8 +18,8 @@ describe('upload-app-settings', () => {
     { coreVersion: '3.99.0-rc2', isDeclarative: true, expectNools: true },
     { coreVersion: '4.2.0', isDeclarative: true, expectNools: false },
 
-    // interesting case when testing on dev
-    { coreVersion: '4.2.0-dev', isDeclarative: true, expectNools: true },
+    // case when testing on dev
+    { coreVersion: '4.2.0-dev.1682192676689', isDeclarative: true, expectNools: false },
   ];
 
   for (const scenario of scenarios) {
