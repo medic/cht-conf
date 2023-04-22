@@ -42,6 +42,9 @@ async function augmentDeclarativeWithNoolsBoilerplate(appSettings) {
   const addNoolsBoilerplate = semver.lt(actualCoreVersion, '4.2.0');
   if (addNoolsBoilerplate) {
     appSettings.tasks.rules = nools.addBoilerplateToCode(appSettings.tasks.rules);
+
+    // do not set the isDeclarative flag when the code has nools boilerplate
+    delete appSettings.tasks.isDeclarative;
   }
 }
 
