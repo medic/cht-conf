@@ -1,3 +1,10 @@
+## [3.18.1](https://github.com/medic/cht-conf/compare/v3.18.0...v3.18.1) (2023-04-24)
+
+
+### Bug Fixes
+
+* **#555:** handle non-existent directory in update-extension-libs ([#557](https://github.com/medic/cht-conf/issues/557)) ([20ea03e](https://github.com/medic/cht-conf/commit/20ea03e27df266b43536addc795e842a47d37f07)), closes [#555](https://github.com/medic/cht-conf/issues/555)
+
 # [3.18.0](https://github.com/medic/cht-conf/compare/v3.17.0...v3.18.0) (2023-04-11)
 
 
