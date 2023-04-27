@@ -1,3 +1,10 @@
+## [3.18.2](https://github.com/medic/cht-conf/compare/v3.18.1...v3.18.2) (2023-04-27)
+
+
+### Bug Fixes
+
+* **#554:** update docker creds used to push cht-app-ide image ([#558](https://github.com/medic/cht-conf/issues/558)) ([59c1b53](https://github.com/medic/cht-conf/commit/59c1b530a2a2dc80b4ba4941283ba38635e97d51)), closes [#554](https://github.com/medic/cht-conf/issues/554)
+
 ## [3.18.1](https://github.com/medic/cht-conf/compare/v3.18.0...v3.18.1) (2023-04-24)
 
 
