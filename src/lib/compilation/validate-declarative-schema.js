@@ -1,6 +1,6 @@
 const path = require('path');
 const joi = require('@hapi/joi');
-const { error, warn } = require('./log');
+const { error, warn } = require('../log');
 
 const err = (filename, message) => details => {
   const acceptedValues = details[0].local.valids ? ` but only ${JSON.stringify(details[0].local.valids)} are allowed` : '';

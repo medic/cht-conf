@@ -1,12 +1,12 @@
 const minimist = require('minimist');
 const path = require('path');
-const compileContactSummary = require('../lib/compile-contact-summary');
-const compileNoolsRules = require('../lib/compile-nools-rules');
+
+const compilation = require('../lib/compilation');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
+const parsePurge = require('../lib/parse-purge');
 const parseTargets = require('../lib/parse-targets');
 const { warn } = require('../lib/log');
-const parsePurge = require('../lib/parse-purge');
 const validateAppSettings = require('../lib/validate-app-settings');
 const { APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('../lib/project-paths');
 
@@ -100,9 +100,11 @@ const compileAppSettingsForProject = async (projectDir, options) => {
     Please create a base_settings.json file in app_settings folder and move any manually defined configurations there.`);
     appSettings = fs.readJson(appSettingsPath);
   }
-  appSettings.contact_summary = await compileContactSummary(projectDir, options);
+  appSettings.contact_summary = await compilation.compileContactSummary(projectDir, options);
+  const compiledTasksAndTargets = await compilation.compileTasksAndTargets(projectDir, options);
   appSettings.tasks = {
-    rules: await compileNoolsRules(projectDir, options),
+    rules: compiledTasksAndTargets.rules,
+    isDeclarative: compiledTasksAndTargets.isDeclarative,
     schedules: readOptionalJson(taskSchedulesPath),
     targets: parseTargets(projectDir),
   };

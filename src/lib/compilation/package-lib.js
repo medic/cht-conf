@@ -4,8 +4,8 @@ const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const webpack = require('webpack');
 
-const fsUtils = require('../lib/sync-fs');
-const { info, warn, error } = require('./log');
+const fsUtils = require('../sync-fs');
+const { info, warn, error } = require('../log');
 
 module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
   const baseEslintConfig = fsUtils.readJson(baseEslintPath);
