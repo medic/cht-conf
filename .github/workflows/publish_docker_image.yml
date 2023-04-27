@@ -5,6 +5,7 @@ on:
     tags: ['v*']
 
 env:
+  DOCKER_HUB_USER: dockermedic
   DOCKER_NAMESPACE: medicmobile
   DOCKER_REPOSITORY: cht-app-ide
 
@@ -19,8 +20,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ env.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PASS }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
