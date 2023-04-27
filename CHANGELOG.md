@@ -1,3 +1,10 @@
+## [3.18.3](https://github.com/medic/cht-conf/compare/v3.18.2...v3.18.3) (2023-04-27)
+
+
+### Bug Fixes
+
+* **#554:** revert change to docker creds after fixing Hub perms ([#559](https://github.com/medic/cht-conf/issues/559)) ([f0ea5ea](https://github.com/medic/cht-conf/commit/f0ea5ea7330d5c5cd9e1516da1f2b60ec85bfc24)), closes [#554](https://github.com/medic/cht-conf/issues/554)
+
 ## [3.18.2](https://github.com/medic/cht-conf/compare/v3.18.1...v3.18.2) (2023-04-27)
 
 
