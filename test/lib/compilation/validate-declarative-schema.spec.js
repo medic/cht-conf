@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const joi = require('@hapi/joi');
+const joi = require('joi');
 const rewire = require('rewire');
 
 const validateDeclarativeSchema = rewire('../../../src/lib/compilation/validate-declarative-schema');
