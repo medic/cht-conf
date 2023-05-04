@@ -4,7 +4,7 @@ const path = require('path');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const compileNoolsRules = rewire('../../src/lib/compile-nools-rules');
+const compileTasksAndTargets = rewire('../../../src/lib/compilation/compile-tasks-and-targets');
 
 const genMocks = () => ({
   fs: {
@@ -14,7 +14,7 @@ const genMocks = () => ({
   pack: sinon.stub().returns('code'),
 });
 
-describe('compile nools-rules', () => {
+describe('compile tasks and targets', () => {
   it('use minified legacy rules when present', () => {
     const mocks = genMocks();
     mocks.fs.exists
@@ -39,10 +39,12 @@ describe('compile nools-rules', () => {
         }
       }`);
     
-    return compileNoolsRules
-      .__with__(mocks)(() => compileNoolsRules('/project', { minifyScripts: true }))
+    return compileTasksAndTargets
+      .__with__(mocks)(() => compileTasksAndTargets('/project', { minifyScripts: true }))
       .then(actual => {
-        expect(actual).to.eq('define Target {_id: null}define Contact {contact: null,reports: null}rule GenerateEvents {when {c: Contact}then {var now = Utils.now();var today = new Date();}}');
+        expect(actual).to.deep.eq({
+          rules: 'define Target {_id: null}define Contact {contact: null,reports: null}rule GenerateEvents {when {c: Contact}then {var now = Utils.now();var today = new Date();}}',
+        });
         expect(mocks.pack.callCount).to.eq(0);
       });
   });
@@ -54,7 +56,7 @@ describe('compile nools-rules', () => {
       .withArgs('/targets.js').returns(true);
     mocks.fs.read.withArgs('/rules.nools.js').returns('define Target {_id: null}');
     
-    return compileNoolsRules.__with__(mocks)(() => compileNoolsRules('/'))
+    return compileTasksAndTargets.__with__(mocks)(() => compileTasksAndTargets('/'))
       .then(() => assert.fail('Expected compilation error'))
       .catch(err => {
         expect(err.message).to.include('Both legacy and declarative');
@@ -70,12 +72,10 @@ describe('compile nools-rules', () => {
       .withArgs('/project/targets.js').returns(true)
       .withArgs('/project/tasks.js').returns(true);
 
-    return compileNoolsRules
-      .__with__(mocks)(() => compileNoolsRules(expectedProjectPath, options))
-      .then(actualCode => {
-        expect(actualCode).to.include('define Target {');
-        expect(actualCode).to.include('define Contact {');
-        expect(actualCode).to.include('{ code }');
+    return compileTasksAndTargets
+      .__with__(mocks)(() => compileTasksAndTargets(expectedProjectPath, options))
+      .then(({ rules: actualCode }) => {
+        expect(actualCode).to.eq('code');
         expect(mocks.pack.callCount).to.eq(1);
 
         const [actualProjectPath, actualEntryPath, actualLintPath, actualOptions] = mocks.pack.args[0];
@@ -97,7 +97,7 @@ describe('compile nools-rules', () => {
       .withArgs('/targets.js').returns(true);
     mocks.fs.read.withArgs('/rules.nools.js').returns('');
     
-    return compileNoolsRules.__with__(mocks)(() => compileNoolsRules('/'))
+    return compileTasksAndTargets.__with__(mocks)(() => compileTasksAndTargets('/'))
       .then(() => assert.fail('Expected compilation error'))
       .catch(err => {
         expect(err.message).to.include('tasks.js');

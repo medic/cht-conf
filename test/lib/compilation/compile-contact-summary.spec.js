@@ -4,9 +4,9 @@ const path = require('path');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const compileContactSummary = rewire('../../src/lib/compile-contact-summary');
+const compileContactSummary = rewire('../../../src/lib/compilation/compile-contact-summary');
 
-const BASE_DIR = path.join(__dirname, '../data/compile-contact-summary');
+const BASE_DIR = path.join(__dirname, '../../data/compile-contact-summary');
 
 const genMocks = () => ({
   fs: {
