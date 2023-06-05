@@ -65,6 +65,15 @@ const api = {
       .then(() => updateAppSettings(content));
   },
 
+  dryRunPurgeConfig: (purgeConfig) => {
+    return request({
+      method: 'POST',
+      url: `${environment.instanceUrl}/api/v1/purging-config/dry-run`,
+      headers: { 'Content-Type': 'application/json' },
+      body: purgeConfig,
+    });
+  },
+
   createUser(userData) {
     return request({
       uri: `${environment.instanceUrl}/api/v1/users`,

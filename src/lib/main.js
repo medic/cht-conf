@@ -15,6 +15,7 @@ const api = require('../lib/api');
 const { info, warn } = log;
 const defaultActions = [
   'check-git',
+  'dry-run-purge-config',
   'compile-app-settings',
   'backup-app-settings',
   'upload-app-settings',
