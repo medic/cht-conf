@@ -343,7 +343,7 @@ Builds brought to you courtesy of GitHub actions.
 
 # Copyright
 
-Copyright 2013-2022 Medic Mobile, Inc. <hello@medic.org>
+Copyright 2013-2023 Medic Mobile, Inc. <hello@medic.org>
 
 # License
 
