@@ -18,8 +18,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Install wheel
-      run: pip install wheel
     - name: Install pyxform
       run: pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
     - name: npm ci and test
