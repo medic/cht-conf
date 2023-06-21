@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
     name: Build for Node version ${{ matrix.node-version }}
-    runs-on: ubuntu-20.04 # 22.04 does not support Python 2.x
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
@@ -18,11 +18,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Setting up python 2.X
-      uses: actions/setup-python@v4
-      with:
-        python-version: '2.x'
-        architecture: 'x64'
     - name: Install wheel
       run: pip install wheel
     - name: Install pyxform
