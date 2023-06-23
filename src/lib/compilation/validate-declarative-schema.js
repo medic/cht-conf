@@ -1,5 +1,5 @@
 const path = require('path');
-const joi = require('@hapi/joi');
+const joi = require('joi');
 const { error, warn } = require('../log');
 
 const err = (filename, message) => details => {

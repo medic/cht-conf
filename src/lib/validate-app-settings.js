@@ -1,4 +1,4 @@
-const joi = require('@hapi/joi');
+const joi = require('joi');
 
 const FormsSchema = joi.object().pattern(
   joi.string().min(1),

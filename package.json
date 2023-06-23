@@ -35,7 +35,7 @@
   },
   "homepage": "https://github.com/medic/cht-conf#readme",
   "dependencies": {
-    "@hapi/joi": "^16.1.8",
+    "joi": "^17.9.2",
     "@medic/translation-checker": "^1.0.1",
     "@parcel/watcher": "^2.0.5",
     "@xmldom/xmldom": "^0.8.2",
