@@ -1,6 +1,6 @@
 const prepareDefinition = require('./definition-preparation');
 const taskDefaults = require('./task-defaults');
-const emitRecurringEvents = require('./task-recurring');
+const getRecurringTasks = require('./task-recurring');
 
 function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
   if (!taskDefinitions) return;
@@ -25,8 +25,8 @@ function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
     switch (taskDefinition.appliesTo) {
       case 'reports':
       case 'scheduled_tasks':
-        for (let idx2=0; idx2<c.reports.length; ++idx2) {
-          emitterContext.r = c.reports[idx2];
+        for (const report of c.reports) {
+          emitterContext.r = report;
           emitTaskDefinition(emitterContext);
         }
         break;
@@ -97,20 +97,19 @@ function emitTaskDefinition(emitterContext) {
   }
 
   function emitForEvents(emitterContext, scheduledTaskIdx) {
-    let partialEmissions;
-    
+    let emissionInfo;
     if (Array.isArray(taskDefinition.events)) {
-      partialEmissions = emitEventsArray(emitterContext, scheduledTaskIdx);
+      emissionInfo = emitEventsArray(emitterContext, scheduledTaskIdx);
     } else {
       if (scheduledTaskIdx) {
-        throw 'not supported';
+        throw Error('appliesTo: "scheduled_tasks" is not supported with recurring tasks');
       }
 
-      partialEmissions = emitRecurringEvents(emitterContext);
+      emissionInfo = getRecurringTasks(emitterContext);
     }
 
-    partialEmissions.forEach(partialEmission => {
-      emitTaskEvent(emitterContext, partialEmission);
+    emissionInfo.forEach(emission => {
+      emitTaskEvent(emitterContext, emission);
     });
   }
 
@@ -149,22 +148,22 @@ function emitTaskDefinition(emitterContext) {
     return result;
   }
 
-  function emitTaskEvent(emitterContext, partialEmission, scheduledTaskIdx) {
+  function emitTaskEvent(emitterContext, emissionInfo, scheduledTaskIdx) {
     const { taskDefinition, Utils, c, r, emit, Task } = emitterContext;
 
-    if (!partialEmission._id) {
-      throw 'partialEmission._id';
+    if (!emissionInfo._id) {
+      throw 'emissionInfo._id';
     }
 
-    if (!partialEmission.date) {
-      throw 'partialEmission.date';
+    if (!emissionInfo.date) {
+      throw 'emissionInfo.date';
     }
 
-    if (!partialEmission.event) {
-      throw 'partialEmission.event';
+    if (!emissionInfo.event) {
+      throw 'emissionInfo.event';
     }
 
-    const { event, date: dueDate } = partialEmission;
+    const { event, date: dueDate } = emissionInfo;
     if (!Utils.isTimely(dueDate, event)) {
       return;
     }
@@ -197,7 +196,7 @@ function emitTaskDefinition(emitterContext) {
       defaultEmission.priorityLabel = priority.label;
     }
   
-    const emission = Object.assign({}, defaultEmission, partialEmission);
+    const emission = Object.assign({}, defaultEmission, emissionInfo);
     delete emission.event;
     emit('task', new Task(emission));
   }

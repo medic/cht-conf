@@ -57,7 +57,7 @@ function getRecurringInterval(events) {
 function getCriteriaInterval(recurringInterval, timelyInterval, events) {
   const expandedTimelyInterval = Interval.fromDateTimes(
     timelyInterval.start.plus({ days: -events.end || 0 }),
-    timelyInterval.end.plus({ days: events.start || 0 }),
+    timelyInterval.end.plus({ days: events.start || 0 })
   );
   return recurringInterval.intersection(expandedTimelyInterval);
 }
@@ -100,7 +100,7 @@ function getIterationInterval(events, recurringInterval, criteriaInterval, perio
 
   return Interval.fromDateTimes(
     advanceDateTimeUsingPeriod(recurringInterval.start, startWithoutPeriod),
-    advanceDateTimeUsingPeriod(recurringInterval.end, endWithoutPeriod, false),
+    advanceDateTimeUsingPeriod(recurringInterval.end, endWithoutPeriod, false)
   );
 }
 

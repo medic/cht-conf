@@ -1,4 +1,4 @@
-const Luxon = require('luxon');
+const luxon = require('luxon');
 
 /*
 Declarative tasks and targets (the elements exported by partner task.js and target.js files), are complex objects containing functions. 
@@ -18,7 +18,7 @@ function bindAllFunctionsToContext(obj, context) {
     var key = keys[i];
     switch(typeof obj[key]) {
       case 'object':
-        const isLuxon = Luxon.Duration.isDuration(obj[key]) || Luxon.DateTime.isDateTime(obj[key]);
+        var isLuxon = luxon.Duration.isDuration(obj[key]) || luxon.DateTime.isDateTime(obj[key]);
         if (!isLuxon) {
           bindAllFunctionsToContext(obj[key], context);
         }
