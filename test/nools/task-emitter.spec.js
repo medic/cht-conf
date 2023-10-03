@@ -1,5 +1,7 @@
 const chai = require('chai');
+const { DateTime } = require('luxon');
 const sinon = require('sinon');
+
 const runNoolsLib = require('../run-nools-lib');
 const {
   TEST_DATE,
@@ -399,7 +401,7 @@ describe('task-emitter', () => {
 
         const [event] = config.tasks[0].events;
         delete event.days;
-        const spy = sinon.spy();
+        const spy = sinon.stub().returns(12345);
         event.dueDate = spy;
 
         // when
@@ -630,28 +632,26 @@ describe('task-emitter', () => {
       expect(invoked).to.be.true;
     });
 
-    describe('scheduled-task based', () => {
-      it('???', () => { // FIXME this test needs a proper name
-        // given
-        const config = {
-          c: personWithReports(aReportWithScheduledTasks(5)),
-          targets: [],
-          tasks: [ aScheduledTaskBasedTask() ],
-        };
+    it('scheduled-task based task', () => {
+      // given
+      const config = {
+        c: personWithReports(aReportWithScheduledTasks(5)),
+        targets: [],
+        tasks: [ aScheduledTaskBasedTask() ],
+      };
 
-        // when
-        const { emitted } = runNoolsLib(config);
+      // when
+      const { emitted } = runNoolsLib(config);
 
-        // then
-        assert.shallowDeepEqual(emitted, [
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id: true },
-        ]);
-      });
+      // then
+      assert.shallowDeepEqual(emitted, [
+        { _type:'task', date:TEST_DAY },
+        { _type:'task', date:TEST_DAY },
+        { _type:'task', date:TEST_DAY },
+        { _type:'task', date:TEST_DAY },
+        { _type:'task', date:TEST_DAY },
+        { _type:'_complete', _id: true },
+      ]);
     });
 
     describe('invalid task type', () => {
@@ -712,6 +712,53 @@ describe('task-emitter', () => {
       });
     });
 
+    describe('recurring task events', () => {
+      beforeEach(() => {
+        const testDate = new Date(TEST_DATE); // 2015-05-09
+        sinon.useFakeTimers(testDate);
+      });
+
+      afterEach(() => {
+        sinon.reset();
+      });
+
+      it('daily recurring task yields 91 task emissions', () => {
+        // given
+        const task = aPersonBasedTask();
+        task.events = {
+          recurringStartDate: DateTime.fromISO('2015-01-01'),
+          recurringEndDate: DateTime.fromISO('2024-01-01'),
+        };
+    
+        const config = {
+          c: personWithoutReports(),
+          targets: [],
+          tasks: [task],
+          utilsMock,
+        };
+    
+        // when
+        const { emitted } = runNoolsLib(config);
+    
+        // then
+        const MS_IN_DAY = 24*60*60*1000;
+        expect(emitted.length).to.eq(92); // 30 prior, 1 today, 60 after, 1 completion event
+        assert.shallowDeepEqual(emitted[0], {
+          _type: 'task',
+          date: TEST_DAY.getTime() - 30 * MS_IN_DAY,
+          resolved: false,
+          contact: { _id: config.c.contact._id },
+          actions:[ { form:'example-form' } ],
+        });
+        assert.shallowDeepEqual(emitted[90], {
+          _type: 'task',
+          date: TEST_DAY.getTime() + 60 * MS_IN_DAY,
+          resolved: false,
+          contact: { _id: config.c.contact._id },
+          actions:[ { form: 'example-form' } ],
+        });
+      });
+    });
   });
 });
 

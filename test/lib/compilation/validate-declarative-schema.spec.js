@@ -123,6 +123,39 @@ describe('validate-declarative-schema', () => {
       ]);
     });
 
+    it('nominal recurring event', () => {
+      const aTask = buildTaskWithAction('report', 'home_visit');
+      aTask.events = { recurringStartDate: '2020-01-01', period: 3 };
+
+      // when
+      const actual = validate([aTask], TaskSchema);
+
+      // then
+      expect(actual).to.be.empty;
+    });
+
+    it('recurring cannot have negative period', () => {
+      const aTask = buildTaskWithAction('report', 'home_visit');
+      aTask.events = { recurringStartDate: '2020-01-01', period: -1 };
+
+      // when
+      const actual = validate([aTask], TaskSchema);
+
+      // then
+      expect(actual).to.have.property('length', 1);
+    });
+
+    it('recurring constrains required units', () => {
+      const aTask = buildTaskWithAction('report', 'home_visit');
+      aTask.events = { recurringStartDate: new Date('2020-01-01'), period: 1, periodUnit: 'years' };
+
+      // when
+      const actual = validate([aTask], TaskSchema);
+
+      // then
+      expect(actual).to.have.property('length', 1);
+    });
+
     it('array.unique internal', () => {
       const schema = joi.array().items(joi.object({
         event: joi.array().items(joi.object()).unique('id'),

@@ -1,12 +1,12 @@
-var prepareDefinition = require('./definition-preparation');
-var taskDefaults = require('./task-defaults');
+const prepareDefinition = require('./definition-preparation');
+const taskDefaults = require('./task-defaults');
+const emitRecurringEvents = require('./task-recurring');
 
 function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
   if (!taskDefinitions) return;
 
-  var taskDefinition, r;
-  for (var idx1 = 0; idx1 < taskDefinitions.length; ++idx1) {
-    taskDefinition = Object.assign({}, taskDefinitions[idx1], taskDefaults);
+  for (let idx1 = 0; idx1 < taskDefinitions.length; ++idx1) {
+    const taskDefinition = Object.assign({}, taskDefinitions[idx1], taskDefaults);
     if (typeof taskDefinition.resolvedIf !== 'function') {
       taskDefinition.resolvedIf = function (contact, report, event, dueDate) {
         return taskDefinition.defaultResolvedIf(contact, report, event, dueDate, Utils);
@@ -14,17 +14,25 @@ function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
     }
     prepareDefinition(taskDefinition);
 
+    const emitterContext = {
+      taskDefinition,
+      c,
+      Utils,
+      Task,
+      emit,
+    };
+
     switch (taskDefinition.appliesTo) {
       case 'reports':
       case 'scheduled_tasks':
-        for (var idx2=0; idx2<c.reports.length; ++idx2) {
-          r = c.reports[idx2];
-          emitTasks(taskDefinition, Utils, Task, emit, c, r);
+        for (let idx2=0; idx2<c.reports.length; ++idx2) {
+          emitterContext.r = c.reports[idx2];
+          emitTaskDefinition(emitterContext);
         }
         break;
       case 'contacts':
         if (c.contact) {
-          emitTasks(taskDefinition, Utils, Task, emit, c);
+          emitTaskDefinition(emitterContext);
         }
         break;
       default:
@@ -33,11 +41,11 @@ function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
   }
 }
 
-function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
-  var i;
+function emitTaskDefinition(emitterContext) {
+  const { taskDefinition, c, r } = emitterContext;
 
   if (taskDefinition.appliesToType) {
-    var type;
+    let type;
     if (taskDefinition.appliesTo === 'contacts') {
       if (!c.contact) {
         // no assigned contact - does not apply
@@ -67,18 +75,18 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         return;
       }
 
-      for (i = 0; i < r.scheduled_tasks.length; i++) {
+      for (let i = 0; i < r.scheduled_tasks.length; i++) {
         if (taskDefinition.appliesIf(c, r, i)) {
-          emitForEvents(i);
+          emitForEvents(emitterContext, i);
         }
       }
     }
   } else {
-    emitForEvents();
+    emitForEvents(emitterContext);
   }
 
   function obtainContactLabelFromSchedule(taskDefinition, c, r) {
-    var contactLabel;
+    let contactLabel;
     if (typeof taskDefinition.contactLabel === 'function') {
       contactLabel = taskDefinition.contactLabel(c, r);
     } else {
@@ -88,10 +96,30 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
     return contactLabel ? { name: contactLabel } : c.contact;
   }
 
-  function emitForEvents(scheduledTaskIdx) {
-    var i, dueDate = null, event, priority, task;
-    for (i = 0; i < taskDefinition.events.length; i++) {
-      event = taskDefinition.events[i];
+  function emitForEvents(emitterContext, scheduledTaskIdx) {
+    let partialEmissions;
+    
+    if (Array.isArray(taskDefinition.events)) {
+      partialEmissions = emitEventsArray(emitterContext, scheduledTaskIdx);
+    } else {
+      if (scheduledTaskIdx) {
+        throw 'not supported';
+      }
+
+      partialEmissions = emitRecurringEvents(emitterContext);
+    }
+
+    partialEmissions.forEach(partialEmission => {
+      emitTaskEvent(emitterContext, partialEmission);
+    });
+  }
+
+  function emitEventsArray(emitterContext, scheduledTaskIdx) {
+    const { Utils } = emitterContext;
+    const result = [];
+    let dueDate = null;
+    for (let i = 0; i < taskDefinition.events.length; i++) {
+      const event = taskDefinition.events[i];
 
       if (event.dueDate) {
         dueDate = event.dueDate(event, c, r, scheduledTaskIdx);
@@ -105,58 +133,84 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         if (event.dueDate) {
           dueDate = event.dueDate(event, c);
         } else {
-          var defaultDueDate = c.contact && c.contact.reported_date ? new Date(c.contact.reported_date) : new Date();
+          const defaultDueDate = c.contact && c.contact.reported_date ? new Date(c.contact.reported_date) : new Date();
           dueDate = new Date(Utils.addDate(defaultDueDate, event.days));
         }
       }
 
-      if (!Utils.isTimely(dueDate, event)) {
-        continue;
-      }
-
-      task = {
-        // One task instance for each event per form that triggers a task, not per contact
-        // Otherwise they collide when contact has multiple reports of the same form
-        _id: (r ? r._id : c.contact && c.contact._id) + '~' + (event.id || i) + '~' + taskDefinition.name,
-        deleted: !!((c.contact && c.contact.deleted) || r ? r.deleted : false),
-        doc: c,
-        contact: obtainContactLabelFromSchedule(taskDefinition, c, r),
-        icon: taskDefinition.icon,
+      const uuidPrefix = r ? r._id : c.contact && c.contact._id;
+      result.push({
+        _id: `${uuidPrefix}~${event.id || i}~${taskDefinition.name}`,
         date: dueDate,
-        readyStart: event.start || 0,
-        readyEnd: event.end || 0,
-        title: taskDefinition.title,
-        resolved: taskDefinition.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
-        actions: initActions(taskDefinition.actions, event),
-      };
-
-      if (scheduledTaskIdx !== undefined) {
-        task._id += '-' + scheduledTaskIdx;
-      }
-
-      priority = taskDefinition.priority;
-      if (typeof priority === 'function') {
-        priority = priority(c, r);
-      }
-
-      if (priority) {
-        task.priority = priority.level;
-        task.priorityLabel = priority.label;
-      }
-
-      emit('task', new Task(task));
+        event,
+      });
     }
+
+    return result;
+  }
+
+  function emitTaskEvent(emitterContext, partialEmission, scheduledTaskIdx) {
+    const { taskDefinition, Utils, c, r, emit, Task } = emitterContext;
+
+    if (!partialEmission._id) {
+      throw 'partialEmission._id';
+    }
+
+    if (!partialEmission.date) {
+      throw 'partialEmission.date';
+    }
+
+    if (!partialEmission.event) {
+      throw 'partialEmission.event';
+    }
+
+    const { event, date: dueDate } = partialEmission;
+    if (!Utils.isTimely(dueDate, event)) {
+      return;
+    }
+  
+    const defaultEmission = {
+      // One task instance for each event per form that triggers a task, not per contact
+      // Otherwise they collide when contact has multiple reports of the same form
+      deleted: !!((c.contact && c.contact.deleted) || r ? r.deleted : false),
+      doc: c,
+      contact: obtainContactLabelFromSchedule(taskDefinition, c, r),
+      icon: taskDefinition.icon,
+      readyStart: event.start || 0,
+      readyEnd: event.end || 0,
+      title: taskDefinition.title,
+      resolved: taskDefinition.resolvedIf(c, r, event, dueDate, scheduledTaskIdx),
+      actions: initActions(taskDefinition.actions, event),
+    };
+    
+    if (scheduledTaskIdx !== undefined) {
+      defaultEmission._id += '-' + scheduledTaskIdx;
+    }
+  
+    let priority = taskDefinition.priority;
+    if (typeof priority === 'function') {
+      priority = priority(c, r);
+    }
+  
+    if (priority) {
+      defaultEmission.priority = priority.level;
+      defaultEmission.priorityLabel = priority.label;
+    }
+  
+    const emission = Object.assign({}, defaultEmission, partialEmission);
+    delete emission.event;
+    emit('task', new Task(emission));
   }
 
   function initActions(actions, event) {
-    return taskDefinition.actions.map(function(action) {
+    return actions.map(function(action) {
       return initAction(action, event);
     });
   }
 
   function initAction(action, event) {
-    var appliesToReport = !!r;
-    var content = {
+    const appliesToReport = !!r;
+    const content = {
       source: 'task',
       source_id: appliesToReport ? r._id : c.contact && c.contact._id,
       contact: c.contact,
