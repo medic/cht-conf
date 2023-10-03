@@ -3,26 +3,36 @@ const { DateTime, Duration, Interval } = require('luxon');
 const DEFAULT_PERIOD = 1;
 const DEFAULT_PERIOD_UNIT = 'day';
 
-function getulateRecurringEvents(emitterContext) {
+/*
+Interval Definitions:
+
+Timely - Interval in which task emissions are used (defined by cht-core)
+Scheduled - Interval in which the user specified the task to recur
+Task - Interval in which a task would be visible to the user if emitted
+Emission - An emission is made if the task interval overlaps this interval
+Iteration - Inverval over which task intervals are evaluated
+*/
+
+function getRecurringEvents(emitterContext) {
   const { name, events } = emitterContext.taskDefinition;
 
   const timelyInterval = getTimelyInterval();
-  const recurringInterval = getRecurringInterval(events);
-  const criteriaInterval = getCriteriaInterval(recurringInterval, timelyInterval, events);
+  const scheduledInterval = getScheduledInterval(events);
+  const emissionInterval = getEmissionInterval(scheduledInterval, timelyInterval, events);
   
   // an invalid interval results if it ends before it starts
-  if (!criteriaInterval || !criteriaInterval.isValid) {
+  if (!emissionInterval || !emissionInterval.isValid) {
     return [];
   }
   
   const periodDuration = getPeriodAsDuration(events);
-  const iterationInterval = getIterationInterval(events, recurringInterval, criteriaInterval, periodDuration);
+  const iterationInterval = getIterationInterval(events, scheduledInterval, emissionInterval, periodDuration);
   
   let dueDateIterator = iterationInterval.start;
   const result = [];
   while (dueDateIterator < iterationInterval.end) {
     const taskInterval = getTaskInterval(dueDateIterator, events);
-    if (criteriaInterval.overlaps(taskInterval)) {
+    if (emissionInterval.overlaps(taskInterval)) {
       const uuidPrefix = emitterContext.r ? emitterContext.r._id : emitterContext.c.contact && emitterContext.c.contact._id;
       result.push({
         _id: `${uuidPrefix}~recurring~${dueDateIterator.toISODate()}~${name}`,
@@ -46,7 +56,7 @@ function getTimelyInterval() {
   );
 }
 
-function getRecurringInterval(events) {
+function getScheduledInterval(events) {
   const START_OF_TIME = DateTime.fromISO('1000-01-01');
   const END_OF_TIME = DateTime.fromISO('3000-01-01');
   const start = userInputToDateTime(events.recurringStartDate) || START_OF_TIME;
@@ -54,12 +64,12 @@ function getRecurringInterval(events) {
   return Interval.fromDateTimes(start.startOf('day'), end.endOf('day'));
 }
 
-function getCriteriaInterval(recurringInterval, timelyInterval, events) {
+function getEmissionInterval(scheduledInterval, timelyInterval, events) {
   const expandedTimelyInterval = Interval.fromDateTimes(
     timelyInterval.start.plus({ days: -events.end || 0 }),
     timelyInterval.end.plus({ days: events.start || 0 })
   );
-  return recurringInterval.intersection(expandedTimelyInterval);
+  return scheduledInterval.intersection(expandedTimelyInterval);
 }
 
 function getPeriodAsDuration(events) {
@@ -85,7 +95,7 @@ function getPeriodAsDuration(events) {
   return periodDuration;
 }
 
-function getIterationInterval(events, recurringInterval, criteriaInterval, period) {
+function getIterationInterval(events, scheduledInterval, emissionInterval, period) {
   const advanceDateTimeUsingPeriod = (from, to, roundToFloor = true) => {
     const aggregator = roundToFloor ? Math.floor : Math.ceil;
     const periodUnit = Object.keys(period.toObject())[0];
@@ -95,12 +105,12 @@ function getIterationInterval(events, recurringInterval, criteriaInterval, perio
   };
   
   // the visibility interval (events.start) must impact the iteration window, but periodic information should be maintained
-  const startWithoutPeriod = criteriaInterval.start.plus({ days: -events.start || 0 });
-  const endWithoutPeriod = criteriaInterval.end.plus({ days: events.end || 0 });
+  const startWithoutPeriod = emissionInterval.start.plus({ days: -events.start || 0 });
+  const endWithoutPeriod = emissionInterval.end.plus({ days: events.end || 0 });
 
   return Interval.fromDateTimes(
-    advanceDateTimeUsingPeriod(recurringInterval.start, startWithoutPeriod),
-    advanceDateTimeUsingPeriod(recurringInterval.end, endWithoutPeriod, false)
+    advanceDateTimeUsingPeriod(scheduledInterval.start, startWithoutPeriod),
+    advanceDateTimeUsingPeriod(scheduledInterval.end, endWithoutPeriod, false)
   );
 }
 
@@ -133,4 +143,4 @@ function userInputToDateTime(input) {
   return result;
 }
 
-module.exports = getulateRecurringEvents;
+module.exports = getRecurringEvents;
