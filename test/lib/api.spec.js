@@ -68,7 +68,7 @@ describe('api', () => {
 
   describe('archive mode', async () => {
     beforeEach(() => sinon.stub(environment, 'isArchiveMode').get(() => true));
-    
+
     it('does not initiate requests to api', async () => {
       await api().version();
       expect(mockRequest.callCount).to.eq(0);
@@ -145,13 +145,13 @@ describe('api', () => {
       api.__set__('cache', cacheSpy);
       let compressibleTypes = await api().getCompressibleTypes();
       expect(compressibleTypes).to.deep.eq(['text/*', 'application/*']);
-      assert.equal(mockRequest.get.callCount, 1);
+      assert.equal(mockRequest.callCount, 1);
       assert.equal(cacheGetSpy.callCount, 0);
 
       // second time the cache is used
       compressibleTypes = await api().getCompressibleTypes();
       expect(compressibleTypes).to.deep.eq(['text/*', 'application/*']);  // same values from cache
-      assert.equal(mockRequest.get.callCount, 1);                      // still 1 request
+      assert.equal(mockRequest.callCount, 1);                      // still 1 request
       assert.equal(cacheGetSpy.callCount, 1);
     });
 
@@ -164,13 +164,13 @@ describe('api', () => {
       api.__set__('cache', cacheSpy);
       let compressibleTypes = await api().getCompressibleTypes();
       expect(compressibleTypes).to.deep.eq([]);
-      assert.equal(mockRequest.get.callCount, 1);
+      assert.equal(mockRequest.callCount, 1);
       assert.equal(cacheGetSpy.callCount, 0);
 
       // second time the cache is used
       compressibleTypes = await api().getCompressibleTypes();
       expect(compressibleTypes).to.deep.eq([]);       // same values from cache
-      assert.equal(mockRequest.get.callCount, 1);  // still 1 request
+      assert.equal(mockRequest.callCount, 1);  // still 1 request
       assert.equal(cacheGetSpy.callCount, 1);
     });
 
@@ -185,13 +185,13 @@ describe('api', () => {
       api.__set__('cache', cacheSpy);
       let compressibleTypes = await api().getCompressibleTypes();
       expect(compressibleTypes).to.deep.eq([]);
-      assert.equal(mockRequest.get.callCount, 1);
+      assert.equal(mockRequest.callCount, 1);
       assert.equal(cacheGetSpy.callCount, 0);
 
       // second time cache is NOT used and value from API is returned
       compressibleTypes = await api().getCompressibleTypes();
       expect(compressibleTypes).to.deep.eq(['text/*', 'application/*']);  // values from API second call
-      assert.equal(mockRequest.get.callCount, 2);  // 2 requests total
+      assert.equal(mockRequest.callCount, 2);  // 2 requests total
       assert.equal(cacheGetSpy.callCount, 0);      // cache not used
     });
   });

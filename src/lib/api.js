@@ -1,4 +1,5 @@
-const request = require('request-promise-native');
+const retry = require('async-retry');
+const rpn = require('request-promise-native');
 
 const archivingApi = require('./archiving-api');
 const environment = require('./environment');
@@ -6,6 +7,8 @@ const log = require('./log');
 const url = require('url');
 
 const cache = new Map();
+
+const request = (...args) => retry(() => rpn(...args), { retries: 0 });
 
 const logDeprecatedTransitions = (settings) => {
   const appSettings = JSON.parse(settings);
@@ -75,7 +78,7 @@ const api = {
   },
 
   getUserInfo(queryParams) {
-    return request.get(`${environment.instanceUrl}/api/v1/users-info`, { qs: queryParams, json: true });
+    return request(`${environment.instanceUrl}/api/v1/users-info`, { qs: queryParams, json: true });
   },
 
   uploadSms(messages) {
@@ -96,7 +99,7 @@ const api = {
     const url = `${environment.apiUrl}/`;
     log.info(`Checking that ${url} is available...`);
     try {
-      await request.get(url);
+      await request(url);
     } catch (err) {
       if (err.statusCode === 401) {
         throw new Error(`Authentication failed connecting to ${url}. `
@@ -188,7 +191,7 @@ const api = {
       if (cache.has('compressibleTypes')) {
         return cache.get('compressibleTypes');
       }
-      const resp = await request.get({ url: configUrl, json: true });
+      const resp = await request({ url: configUrl, json: true });
       const compressibleTypes = resp.compressible_types.split(',').map(s=>s.trim());
       cache.set('compressibleTypes', compressibleTypes);
       return compressibleTypes;
