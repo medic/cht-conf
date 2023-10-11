@@ -69,12 +69,12 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
 
       for (i = 0; i < r.scheduled_tasks.length; i++) {
         if (taskDefinition.appliesIf(c, r, i)) {
-          emitForEvents(c, r, i);
+          emitForEvents(i);
         }
       }
     }
   } else {
-    emitForEvents(c);
+    emitForEvents();
   }
 
   function obtainContactLabelFromSchedule(taskDefinition, c, r) {
@@ -88,7 +88,7 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
     return contactLabel ? { name: contactLabel } : c.contact;
   }
 
-  function emitForEvents(c, r, scheduledTaskIdx) {
+  function emitForEvents(scheduledTaskIdx) {
     var i, dueDate = null, event, priority, task;
 
     var events;
