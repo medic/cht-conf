@@ -117,11 +117,14 @@ const TaskSchema = joi.array().items(
           'should define property "resolvedIf" as: function(contact, report) { ... }.'
         )
       ),
-    events: joi.alternatives().conditional('events', {
-      is: joi.array().length(1),
-      then: joi.array().items(EventSchema('optional')).min(1).required(),
-      otherwise: joi.array().items(EventSchema('required')).unique('id').required(),
-    }),
+    events: joi.alternatives().try(
+      joi.function(),
+      joi.alternatives().conditional('events', {
+        is: joi.array().length(1),
+        then: joi.array().items(EventSchema('optional')).min(1),
+        otherwise: joi.array().items(EventSchema('required')).unique('id'),
+      })
+    ).required(),
     priority: joi.alternatives().try(
       joi.object({
         level: joi.string().valid('high', 'medium').optional(),
