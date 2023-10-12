@@ -123,6 +123,13 @@ describe('validate-declarative-schema', () => {
       ]);
     });
 
+    it('events can be function', () => {
+      const task = buildTaskWithAction('contact');
+      task.events = () => [];
+      const actual = validate([task], TaskSchema);
+      expect(actual).to.be.empty;
+    });
+
     it('array.unique internal', () => {
       const schema = joi.array().items(joi.object({
         event: joi.array().items(joi.object()).unique('id'),
