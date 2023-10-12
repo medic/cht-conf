@@ -90,8 +90,19 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
 
   function emitForEvents(scheduledTaskIdx) {
     var i, dueDate = null, event, priority, task;
-    for (i = 0; i < taskDefinition.events.length; i++) {
-      event = taskDefinition.events[i];
+
+    var events;
+    if (typeof taskDefinition.events === 'function') {
+      events = taskDefinition.events(c, r);
+      if (!Array.isArray(events)) {
+        throw Error('events did not return an array');
+      }
+    } else {
+      events = taskDefinition.events;
+    }
+
+    for (i = 0; i < events.length; i++) {
+      event = events[i];
 
       if (event.dueDate) {
         dueDate = event.dueDate(event, c, r, scheduledTaskIdx);
