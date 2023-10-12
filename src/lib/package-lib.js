@@ -54,25 +54,6 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         'node_modules',
       ],
     },
-    module: {
-      rules: [
-        {
-          enforce: 'pre',
-          test: /\.js$/,
-          loader: 'eslint-loader',
-          exclude: /node_modules/,
-          options: {
-            baseConfig: baseEslintConfig,
-            useEslintrc: true,
-            ignore: !options.skipEslintIgnore,
-
-            // pack the library regardless of the eslint result
-            failOnError: false,
-            failOnWarning: false,
-          },
-        },
-      ],
-    },
     plugins: [
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/), // Ignore all optional deps of moment.js
     ]
