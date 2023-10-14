@@ -42,7 +42,7 @@ const ScheduleSchema = joi.array().items(
     name: joi.string().required(),
     summary: joi.string().allow(''),
     description: joi.string().allow(''),
-    start_from: joi.string(),
+    start_from: joi.alternatives().try(joi.string(), joi.array()),
     start_mid_group: joi.boolean(),
     translation_key: joi.string(),
     messages: joi.array().items(
