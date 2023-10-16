@@ -10,7 +10,7 @@ const { warn } = require('../lib/log');
 const validateAppSettings = require('../lib/validate-app-settings');
 const { APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('../lib/project-paths');
 
-// we can't used named capture groups yet
+// we can't use named capture groups yet
 const JS_FILE_MATCHER = /^(.+)(\.js)$/; // 2 groups get the file name and extension
 const JSON_FILE_MATCHER = /^(.+)(\.json)$/;
 const configFileMatcher = (fileName) => {
