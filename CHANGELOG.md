@@ -1,3 +1,10 @@
+# [3.19.0](https://github.com/medic/cht-conf/compare/v3.18.3...v3.19.0) (2023-10-17)
+
+
+### Features
+
+* **#580:** publish recent commits to npm ([db734e1](https://github.com/medic/cht-conf/commit/db734e1818f8501988a5457237dc32c5667b368c)), closes [#580](https://github.com/medic/cht-conf/issues/580)
+
 ## [3.18.3](https://github.com/medic/cht-conf/compare/v3.18.2...v3.18.3) (2023-04-27)
 
 
