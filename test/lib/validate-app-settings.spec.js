@@ -30,7 +30,7 @@ describe('validate-app-settings', () => {
             patient_id: {
               position: 0,
               flags: { input_digits_only: true },
-              length: [ 5, 13 ],
+              length: [5, 13],
               type: 'string',
               required: true
             }
@@ -80,6 +80,68 @@ describe('validate-app-settings', () => {
           }
         }
       }, '"DR.meta" is required');
+    });
+
+  });
+
+  describe('validateSchedulesSchema', () => {
+    const isValid = (schedulesObject) => {
+      const result = validateAppSettings.validateScheduleSchema(schedulesObject);
+      expect(result.valid).to.be.true;
+    };
+
+    const isNotValid = (schedulesObject, errorMessage) => {
+      const result = validateAppSettings.validateScheduleSchema(schedulesObject);
+      expect(result.valid).to.be.false;
+      expect(result.error.details.length).to.equal(1);
+      expect(result.error.details[0].message).to.equal(errorMessage);
+    };
+
+    it('returns valid for starter schedule.', () => {
+      isValid([{
+        name: 'schedule name',
+        messages: [{
+          translation_key: 'a.b',
+          group: '1',
+          offset: '0'
+        }]
+      }]);
+    });
+
+    it('start_from as string is valid.', () => {
+      isValid([{
+        name: 'schedule name',
+        start_from: 'dob',
+        messages: [{
+          translation_key: 'a.b',
+          group: '1',
+          offset: '0'
+        }]
+      }]);
+    });
+
+    it('start_from as an array is valid.', () => {
+      isValid([{
+        name: 'schedule name',
+        start_from: ['dob', 'lmp_date'],
+        messages: [{
+          translation_key: 'a.b',
+          group: '1',
+          offset: '0'
+        }]
+      }]);
+    });
+
+    it('start_from as a number is invalid.', () => {
+      isNotValid([{
+        name: 'schedule name',
+        start_from: 1,
+        messages: [{
+          translation_key: 'a.b',
+          group: '1',
+          offset: '0'
+        }]
+      }], '"[0].start_from" must be one of [string, array]');
     });
 
   });
