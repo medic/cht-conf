@@ -139,7 +139,7 @@ describe('api', () => {
     it('call the API and parse types from string correctly', async () => {
       sinon.stub(environment, 'isArchiveMode').get(() => false);
       sinon.stub(environment, 'force').get(() => false);
-      sinon.stub(mockRequest, 'get').resolves({'compressible_types':'text/*, application/*', 'compression_level':'8'});
+      mockRequest.resolves({'compressible_types':'text/*, application/*', 'compression_level':'8'});
       const cacheSpy = new Map();
       const cacheGetSpy = sinon.spy(cacheSpy, 'get');
       api.__set__('cache', cacheSpy);
@@ -158,7 +158,7 @@ describe('api', () => {
     it('returns empty if API returns 404', async () => {
       sinon.stub(environment, 'isArchiveMode').get(() => false);
       sinon.stub(environment, 'force').get(() => false);
-      sinon.stub(mockRequest, 'get').rejects({statusCode:404});
+      mockRequest.rejects({statusCode:404});
       const cacheSpy = new Map();
       const cacheGetSpy = sinon.spy(cacheSpy, 'get');
       api.__set__('cache', cacheSpy);
@@ -177,7 +177,7 @@ describe('api', () => {
     it('returns empty if API returns error and without caching result', async () => {
       sinon.stub(environment, 'isArchiveMode').get(() => false);
       sinon.stub(environment, 'force').get(() => false);
-      const getReqStub = sinon.stub(mockRequest, 'get');
+      const getReqStub = mockRequest;
       getReqStub.onCall(0).rejects('The error');
       getReqStub.onCall(1).resolves({'compressible_types':'text/*, application/*', 'compression_level':'8'});
       const cacheSpy = new Map();
@@ -202,7 +202,7 @@ describe('api', () => {
 
     async function testAvailableError(response, expected) {
       sinon.stub(environment, 'isArchiveMode').get(() => false);
-      sinon.stub(mockRequest, 'get').rejects(response);
+      mockRequest.rejects(response);
       try {
         await api().available();
         assert.fail('Expected error to be thrown');
@@ -213,7 +213,7 @@ describe('api', () => {
 
     it('should not throw if no error found in request', async () => {
       sinon.stub(environment, 'isArchiveMode').get(() => false);
-      sinon.stub(mockRequest, 'get').resolves('okey dokey');
+      sinon.stub(mockRequest).resolves('okey dokey');
       await api().available();
     });
 
@@ -251,7 +251,7 @@ describe('api', () => {
 
     it('should return if archive mode is enabled even when api is not available', async () => {
       sinon.stub(environment, 'isArchiveMode').get(() => true);
-      sinon.stub(mockRequest, 'get').rejects('Ups');
+      sinon.stub(mockRequest).rejects('Ups');
       await api().available();
       expect(mockRequest.callCount).to.eq(0);   // api is not called
     });
