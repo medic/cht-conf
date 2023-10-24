@@ -8,7 +8,16 @@ const url = require('url');
 
 const cache = new Map();
 
-const request = (...args) => retry(() => rpn(...args), { retries: 0 });
+const _request = (method) => (...args) => retry(() => rpn[method](...args), { retries: 0 });
+const request = {
+  get: _request('get'),
+  head: _request('head'),
+  options: _request('options'),
+  post: _request('post'),
+  put: _request('put'),
+  patch: _request('patch'),
+  delete: _request('delete'),
+};
 
 const logDeprecatedTransitions = (settings) => {
   const appSettings = JSON.parse(settings);
@@ -18,7 +27,7 @@ const logDeprecatedTransitions = (settings) => {
   }
 
   const uri = `${environment.instanceUrl}/api/v1/settings/deprecated-transitions`;
-  return request({ uri, method: 'GET', json: true })
+  return request.get({ uri, json: true })
     .then(transitions => {
       (transitions || []).forEach(transition => {
         const transitionSetting = appSettings.transitions[transition.name];
@@ -37,8 +46,7 @@ const logDeprecatedTransitions = (settings) => {
 };
 
 const updateAppSettings = (settings) => {
-  return request({
-    method: 'PUT',
+  return request.put({
     url: `${environment.apiUrl}/_design/medic/_rewrite/update_settings/medic?replace=1`,
     headers: {'Content-Type': 'application/json'},
     body: settings,
@@ -48,7 +56,7 @@ const updateAppSettings = (settings) => {
 const api = {
   getAppSettings: () => {
     const url = `${environment.apiUrl}/_design/medic/_rewrite/app_settings/medic`;
-    return request({ url, json: true })
+    return request.get({ url, json: true })
       .catch(err => {
         if(err.statusCode === 404) {
           throw new Error(`Failed to fetch existing app_settings from ${url}.\n` +
@@ -69,22 +77,20 @@ const api = {
   },
 
   createUser(userData) {
-    return request({
+    return request.post({
       uri: `${environment.instanceUrl}/api/v1/users`,
-      method: 'POST',
       json: true,
       body: userData,
     });
   },
 
   getUserInfo(queryParams) {
-    return request(`${environment.instanceUrl}/api/v1/users-info`, { qs: queryParams, json: true });
+    return request.get(`${environment.instanceUrl}/api/v1/users-info`, { qs: queryParams, json: true });
   },
 
   uploadSms(messages) {
-    return request({
+    return request.post({
       uri: `${environment.instanceUrl}/api/sms`,
-      method: 'POST',
       json: true,
       body: { messages },
     });
@@ -99,8 +105,9 @@ const api = {
     const url = `${environment.apiUrl}/`;
     log.info(`Checking that ${url} is available...`);
     try {
-      await request(url);
+      await request.get(url);
     } catch (err) {
+      console.log('err', err);
       if (err.statusCode === 401) {
         throw new Error(`Authentication failed connecting to ${url}. `
           + 'Check the supplied username and password and try again.');
@@ -119,7 +126,7 @@ const api = {
   },
 
   version() {
-    return request({ uri: `${environment.instanceUrl}/api/deploy-info`, method: 'GET', json: true }) // endpoint added in 3.5
+    return request.get({ uri: `${environment.instanceUrl}/api/deploy-info`, json: true }) // endpoint added in 3.5
       .then(deploy_info => deploy_info && deploy_info.version);
   },
 
@@ -153,8 +160,7 @@ const api = {
       // (old version), so we assume form is valid but return special result
       return Promise.resolve({ok: true, formsValidateEndpointFound: false});
     }
-    return request({
-      method: 'POST',
+    return request.post({
       uri: `${environment.instanceUrl}/api/v1/forms/validate`,
       headers: { 'Content-Type': 'application/xml' },
       body: formXml,
@@ -191,7 +197,7 @@ const api = {
       if (cache.has('compressibleTypes')) {
         return cache.get('compressibleTypes');
       }
-      const resp = await request({ url: configUrl, json: true });
+      const resp = await request.get({ url: configUrl, json: true });
       const compressibleTypes = resp.compressible_types.split(',').map(s=>s.trim());
       cache.set('compressibleTypes', compressibleTypes);
       return compressibleTypes;
