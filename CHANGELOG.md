@@ -1,3 +1,10 @@
+# [3.20.0](https://github.com/medic/cht-conf/compare/v3.19.0...v3.20.0) (2023-10-25)
+
+
+### Features
+
+* **#578:** additional start_from test ([39f6948](https://github.com/medic/cht-conf/commit/39f69487923e35750d8070b9f548d3b0fc582eab)), closes [#578](https://github.com/medic/cht-conf/issues/578)
+
 # [3.19.0](https://github.com/medic/cht-conf/compare/v3.18.3...v3.19.0) (2023-10-17)
 
 
