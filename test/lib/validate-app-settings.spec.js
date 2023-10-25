@@ -120,6 +120,18 @@ describe('validate-app-settings', () => {
       }]);
     });
 
+    it('start_from as single element on array is valid.', () => {
+      isValid([{
+        name: 'schedule name',
+        start_from: ['dob'],
+        messages: [{
+          translation_key: 'a.b',
+          group: '1',
+          offset: '0'
+        }]
+      }]);
+    });
+
     it('start_from as an array is valid.', () => {
       isValid([{
         name: 'schedule name',
