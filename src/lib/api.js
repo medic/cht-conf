@@ -103,7 +103,6 @@ const api = {
     try {
       await request.get(url);
     } catch (err) {
-      console.log('err', err);
       if (err.statusCode === 401) {
         throw new Error(`Authentication failed connecting to ${url}. `
           + 'Check the supplied username and password and try again.');
