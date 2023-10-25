@@ -11,12 +11,8 @@ const cache = new Map();
 const _request = (method) => (...args) => retry(() => rpn[method](...args), { retries: 0 });
 const request = {
   get: _request('get'),
-  head: _request('head'),
-  options: _request('options'),
   post: _request('post'),
   put: _request('put'),
-  patch: _request('patch'),
-  delete: _request('delete'),
 };
 
 const logDeprecatedTransitions = (settings) => {
