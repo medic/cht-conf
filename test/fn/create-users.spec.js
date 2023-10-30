@@ -263,10 +263,16 @@ describe('create-users', function () {
       });
   });
 
-  it('should request user-info in sequence before creating users', () => {
+  it('should request user-info in sequence before creating users', function () {
+    this.timeout(30000);
     mockTestDir(`data/create-users/multiple-existing-place`);
     const pwd = 'Secret_1';
     api.giveResponses(
+      { status: 400, body: { code: 400, error: 'not an offline role' } },
+      { status: 400, body: { code: 400, error: 'not an offline role' } },
+      { status: 400, body: { code: 400, error: 'not an offline role' } },
+      { status: 400, body: { code: 400, error: 'not an offline role' } },
+      { status: 400, body: { code: 400, error: 'not an offline role' } },
       { status: 400, body: { code: 400, error: 'not an offline role' } },
       { body: { total_docs: 12000, warn: true, limit: 10000 } },
       { body: { total_docs: 10200, warn: true, limit: 10000 } },
@@ -288,6 +294,11 @@ describe('create-users', function () {
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.deepEqual(api.requestLog(), [
+          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jack), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jill), body: {} },
