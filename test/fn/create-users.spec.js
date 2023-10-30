@@ -12,7 +12,9 @@ const userPrompt = rewire('../../src/lib/user-prompt');
 const readLine = require('readline-sync');
 const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => testDir);
 
-describe('create-users', () => {
+describe('create-users', function () {
+  this.timeout(15000);
+
   beforeEach(() => {
     createUsers.__set__('userPrompt', userPrompt);
     sinon.stub(environment, 'isArchiveMode').get(() => false);
@@ -86,7 +88,15 @@ describe('create-users', () => {
 
   it('should create user with existent place and not implemented user-info endpoint', () => {
     mockTestDir(`data/create-users/existing-place`);
-    api.giveResponses({ status: 404, body: { code: 404, error: 'not_found' } }, { body: {} });
+    api.giveResponses(
+      { status: 404, body: { code: 404, error: 'not_found' } },
+      { status: 404, body: { code: 404, error: 'not_found' } },
+      { status: 404, body: { code: 404, error: 'not_found' } },
+      { status: 404, body: { code: 404, error: 'not_found' } },
+      { status: 404, body: { code: 404, error: 'not_found' } },
+      { status: 404, body: { code: 404, error: 'not_found' } },
+      { body: {} },
+    );
     const todd = {
       username: 'todd',
       password: 'Secret_1',
@@ -108,6 +118,11 @@ describe('create-users', () => {
       .then(() => /* when */ createUsers.execute())
       .then(() => {
         assert.deepEqual(api.requestLog(), [
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
           { method: 'POST', url: '/api/v1/users', body: todd },
         ]);
@@ -220,7 +235,14 @@ describe('create-users', () => {
       },
     };
 
-    api.giveResponses({ status: 500, body: { code: 500, error: 'boom' } } );
+    api.giveResponses(
+        { status: 500, body: { code: 500, error: 'boom' } },
+        { status: 500, body: { code: 500, error: 'boom' } },
+        { status: 500, body: { code: 500, error: 'boom' } },
+        { status: 500, body: { code: 500, error: 'boom' } },
+        { status: 500, body: { code: 500, error: 'boom' } },
+        { status: 500, body: { code: 500, error: 'boom' } },
+    );
     const qs = {
       facility_id: todd.place,
       role: JSON.stringify(todd.roles),
@@ -231,6 +253,11 @@ describe('create-users', () => {
       .catch(err => {
         assert.deepEqual(err.error, { code: 500, error: 'boom' });
         assert.deepEqual(api.requestLog(), [
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
         ]);
       });

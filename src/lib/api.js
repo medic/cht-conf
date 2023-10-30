@@ -8,7 +8,7 @@ const url = require('url');
 
 const cache = new Map();
 
-const _request = (method) => (...args) => retry(() => rpn[method](...args), { retries: 0 });
+const _request = (method) => (...args) => retry(() => rpn[method](...args), { retries: 5, randomize: false, factor: 1.5 });
 const request = {
   get: _request('get'),
   post: _request('post'),
