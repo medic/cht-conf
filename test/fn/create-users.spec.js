@@ -316,6 +316,11 @@ describe('create-users', function () {
     const pwd = 'Secret_1';
     api.giveResponses(
       { status: 400, body: { code: 400, error: 'not an offline role' } },
+      { status: 400, body: { code: 400, error: 'not an offline role' } },
+      { status: 400, body: { code: 400, error: 'not an offline role' } },
+      { status: 400, body: { code: 400, error: 'not an offline role' } },
+      { status: 400, body: { code: 400, error: 'not an offline role' } },
+      { status: 400, body: { code: 400, error: 'not an offline role' } },
       { body: { total_docs: 12000, warn: true, limit: 10000 } },
       { body: { total_docs: 10200, warn: true, limit: 10000 } },
       { body: { total_docs: 1000, warn: false, limit: 10000 } },
@@ -335,6 +340,11 @@ describe('create-users', function () {
       .catch(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
         assert.deepEqual(api.requestLog(), [
+          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
+          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jack), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jill), body: {} },
