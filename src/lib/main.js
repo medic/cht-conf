@@ -3,7 +3,7 @@ const checkForUpdates = require('../lib/check-for-updates');
 const checkChtConfDependencyVersion = require('../lib/check-cht-conf-dependency-version');
 const environment = require('./environment');
 const fs = require('../lib/sync-fs');
-const getApiUrl = require('../lib/get-api-url');
+const { getApiUrl, isLocalhost } = require('../lib/get-api-url');
 const log = require('../lib/log');
 const userPrompt = require('../lib/user-prompt');
 const redactBasicAuth = require('redact-basic-auth');
@@ -110,10 +110,6 @@ module.exports = async (argv, env) => {
     throw new Error('--destination=<path to save files> is required with --archive.');
   }
 
-  if (cmdArgs['accept-self-signed-certs']) {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
-  }
-
   //
   // Logging
   //
@@ -146,6 +142,10 @@ module.exports = async (argv, env) => {
 
   const requiresInstance = actions.some(action => action.requiresInstance);
   const apiUrl = requiresInstance && getApiUrl(cmdArgs, env);
+
+  if (cmdArgs['accept-self-signed-certs'] || isLocalhost(apiUrl)) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+  }
 
   let extraArgs = cmdArgs['--'];
   if (!extraArgs.length) {
