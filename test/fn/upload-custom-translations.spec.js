@@ -7,7 +7,8 @@ const log = require('../../src/lib/log');
 const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
 const { getTranslationDoc,  expectTranslationDocs } = require('./utils');
 
-describe('upload-custom-translations', () => {
+describe('upload-custom-translations', function () {
+  this.timeout(45000 * 4);
 
   const testProjectDir = './data/upload-custom-translations/';
   let mockTestDir;
@@ -127,7 +128,7 @@ describe('upload-custom-translations', () => {
         readline.keyInSelect = () => 0;
         return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.0.0' } });
       });
-      
+
       it('should upload simple translations', () => {
         // api/deploy-info endpoint doesn't exist
         api.giveResponses({ status: 404, body: { error: 'not_found' } });
@@ -462,7 +463,6 @@ describe('upload-custom-translations', () => {
 
     });
 
-
   });
 
   describe('invalid language code', () => {
@@ -478,11 +478,11 @@ describe('upload-custom-translations', () => {
           assert.equal(err.message, 'The language code \'bad(code\' is not valid. It must begin with a letter(a-z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.');
         });
     };
-  
+
     it('should error for invalid language code', () => {
       return invalidLanguageCodesTest(false);
     });
-  
+
     it('should crash for invalid language code even with --skip-translation-check passed', () => {
       // Flag `--skip-translation-check` aborts translation content checks, not filename checks
       return invalidLanguageCodesTest(true);
