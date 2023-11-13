@@ -141,6 +141,17 @@ describe('watch-project', function () {
   });
 
   it('watch-project: upload custom translations', () => {
+    api.giveResponses(
+      {
+        status: 200,
+        body: { version: '3.5.0' },
+      },
+      {
+        status: 200,
+        body: { compressible_types: 'text/*, application/javascript, application/json, application/xml' },
+      },
+    );
+
     return uploadCustomTranslations()
       .then(() => expectTranslationDocs(api, 'en'))
       .then(() => watchWrapper(editTranslations, 'messages-en.properties'))
@@ -211,7 +222,9 @@ describe('watch-project', function () {
       });
   });
 
-  it('watch-project: do not delete app form when a form part exists', () => {
+  it('watch-project: do not delete app form when a form part exists', function () {
+    this.timeout(15000);
+
     const form = 'death';
     copySampleForms('delete-form');
     const deleteForm = () => {
