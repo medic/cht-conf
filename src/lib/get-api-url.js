@@ -36,7 +36,16 @@ const getApiUrl = (cmdArgs, env = {}) => {
     instanceUrl = new url.URL(cmdArgs.url);
   }
 
-  return `${instanceUrl.href}medic`;
+  instanceUrl.pathname = `${instanceUrl.pathname}medic`;
+  return instanceUrl;
+};
+
+const isLocalhost = (apiUrl) => {
+  if (!apiUrl) {
+    return false;
+  }
+  const localhosts = [/^localhost$/, /^127\.0\.0\.\d+$/];
+  return !!localhosts.find(localhost => localhost.test(apiUrl.hostname));
 };
 
 const parseLocalUrl = (couchUrl) => {
@@ -56,4 +65,7 @@ const parseLocalUrl = (couchUrl) => {
   return new url.URL('http://admin:pass@localhost:5988');
 };
 
-module.exports = getApiUrl;
+module.exports = {
+  getApiUrl,
+  isLocalhost,
+};

@@ -20,7 +20,7 @@ const initialize = (
   }
 
   Object.assign(state, {
-    apiUrl,
+    apiUrl: apiUrl.toString(),
     archiveDestination,
     extraArgs,
     initialized: true,
