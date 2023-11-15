@@ -8,7 +8,7 @@ const uploadCustomTranslations = require('../../src/fn/upload-custom-translation
 const { getTranslationDoc,  expectTranslationDocs } = require('./utils');
 
 describe('upload-custom-translations', function () {
-  this.timeout(45000 * 4);
+  this.timeout(45000);
 
   const testProjectDir = './data/upload-custom-translations/';
   let mockTestDir;
