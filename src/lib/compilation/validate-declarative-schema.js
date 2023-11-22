@@ -82,10 +82,10 @@ const TargetSchema = joi.array().items(
   .unique('id')
   .required();
 
-const EventSchema = idPresence => joi.object({
+const NonRecurringEventSchema = idPresence => joi.object({
     id: joi.string().presence(idPresence),
     days: joi.alternatives().conditional('dueDate', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.number().required() })
-      .error(taskError('"event.days" is a required integer field only when "event.dueDate" is absent')),
+      .error(taskError('"event.days" is a required integer field but only when "event.dueDate" is absent')),
     dueDate: joi.alternatives().conditional('days', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.function().required() })
       .error(taskError('"event.dueDate" is required to be "function(event, contact, report)" only when "event.days" is absent')),
     start: joi.number().min(0).required(),
@@ -117,11 +117,22 @@ const TaskSchema = joi.array().items(
           'should define property "resolvedIf" as: function(contact, report) { ... }.'
         )
       ),
-    events: joi.alternatives().conditional('events', {
-      is: joi.array().length(1),
-      then: joi.array().items(EventSchema('optional')).min(1).required(),
-      otherwise: joi.array().items(EventSchema('required')).unique('id').required(),
-    }),
+    events: joi.alternatives().try(
+      joi.object({
+        recurringStartDate: joi.alternatives().conditional('period', { is: joi.number().greater(1), then: joi.date().required(), otherwise: joi.date().optional() })
+          .error(taskError('"event.recurringStartDate" is a required date field when "event.period" is longer than daily')),
+        recurringEndDate: joi.date().optional(),
+        start: joi.number().min(0).optional(),
+        end: joi.number().min(0).optional(),
+        period: joi.number().min(1).optional(),
+        periodUnit: joi.string().valid('day', 'days', 'month', 'months').optional(),
+      }),
+      joi.alternatives().conditional('events', {
+        is: joi.array().length(1),
+        then: joi.array().items(NonRecurringEventSchema('optional')).min(1).required(),
+        otherwise: joi.array().items(NonRecurringEventSchema('required')).unique('id').required(),
+      }),
+    ).required(),
     priority: joi.alternatives().try(
       joi.object({
         level: joi.string().valid('high', 'medium').optional(),

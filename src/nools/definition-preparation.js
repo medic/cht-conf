@@ -1,3 +1,5 @@
+const luxon = require('luxon');
+
 /*
 Declarative tasks and targets (the elements exported by partner task.js and target.js files), are complex objects containing functions. 
 Definition-preparation.js binds a value for `this` in all the functions within a definition. 
@@ -16,7 +18,10 @@ function bindAllFunctionsToContext(obj, context) {
     var key = keys[i];
     switch(typeof obj[key]) {
       case 'object':
-        bindAllFunctionsToContext(obj[key], context);
+        var isLuxon = luxon.Duration.isDuration(obj[key]) || luxon.DateTime.isDateTime(obj[key]);
+        if (!isLuxon) {
+          bindAllFunctionsToContext(obj[key], context);
+        }
         break;
       case 'function':
         obj[key] = obj[key].bind(context);
