@@ -398,15 +398,6 @@ describe('upload-custom-translations', function () {
       });
 
       it('should replace existent custom values', () => {
-        api.giveResponses(
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-        );
-
         mockTestDir(`with-customs`);
         return api.db
           .put({
@@ -509,10 +500,6 @@ describe('upload-custom-translations', function () {
         // api/deploy-info endpoint exists
         api.giveResponses(
           { status: 200, body: { version: '3.5.0' } },
-          {
-            status: 200,
-            body: { compressible_types: 'text/*, application/javascript, application/json, application/xml' },
-          },
         );
 
         mockTestDir(`simple`);
