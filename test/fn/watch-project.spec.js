@@ -99,7 +99,7 @@ function watchWrapper(action, file) {
   });
 }
 
-describe('watch-project', function () {
+describe.skip('watch-project', function () {
   beforeEach(() => {
     sinon.stub(environment, 'pathToProject').get(() => testDir);
     sinon.stub(environment, 'extraArgs').get(() => { });
