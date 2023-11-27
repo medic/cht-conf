@@ -493,15 +493,12 @@ describe('upload-custom-translations', function () {
 
     describe('3.5.0', () => {
       beforeEach(() => {
+        // api/deploy-info endpoint exists
+        api.giveResponses({ status: 200, body: { version: '3.5.0' } });
         return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } });
       });
 
       it('should upload simple translations', () => {
-        // api/deploy-info endpoint exists
-        api.giveResponses(
-          { status: 200, body: { version: '3.5.0' } },
-        );
-
         mockTestDir(`simple`);
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs(api, 'en'))
@@ -514,15 +511,6 @@ describe('upload-custom-translations', function () {
       });
 
       it('should upload translations for multiple languages', () => {
-        // api/deploy-info endpoint exists
-        api.giveResponses(
-          { status: 200, body: { version: '3.5.0' } },
-          {
-            status: 200,
-            body: { compressible_types: 'text/*, application/javascript, application/json, application/xml' },
-          },
-        );
-
         mockTestDir(`multi-lang`);
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs(api, 'en', 'fr'))
@@ -543,9 +531,6 @@ describe('upload-custom-translations', function () {
       });
 
       it('should upload translations containing equals signs', () => {
-        // api/deploy-info endpoint exists
-        api.giveResponses({ status: 200, body: { version: '3.5.0' } });
-
         mockTestDir(`contains-equals`);
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs(api, 'en'))
@@ -561,9 +546,6 @@ describe('upload-custom-translations', function () {
       });
 
       it('should set default name for unknown language', () => {
-        // api/deploy-info endpoint exists
-        api.giveResponses({ status: 200, body: { version: '3.5.0' } });
-
         mockTestDir(`unknown-lang`);
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs(api, 'qp'))
@@ -574,9 +556,6 @@ describe('upload-custom-translations', function () {
       });
 
       it('should properly upload translations containing escaped exclamation marks', () => {
-        // api/deploy-info endpoint exists
-        api.giveResponses({ status: 200, body: { version: '3.5.0' } });
-
         mockTestDir(`escaped-exclamation`);
         return uploadCustomTranslations()
           .then(() => expectTranslationDocs(api, 'en'))
@@ -592,9 +571,6 @@ describe('upload-custom-translations', function () {
       });
 
       it('upload translations containing empty messages raises warn logs but works', () => {
-        // api/deploy-info endpoint exists
-        api.giveResponses({ status: 200, body: { version: '3.5.0' } });
-
         mockTestDir('contains-empty-messages');
         sinon.replace(log, 'warn', sinon.fake());
         return uploadCustomTranslations()
