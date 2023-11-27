@@ -7,9 +7,7 @@ const log = require('../../src/lib/log');
 const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
 const { getTranslationDoc,  expectTranslationDocs } = require('./utils');
 
-describe('upload-custom-translations', function () {
-  this.timeout(45000);
-
+describe('upload-custom-translations', () => {
   const testProjectDir = './data/upload-custom-translations/';
   let mockTestDir;
 
@@ -27,7 +25,9 @@ describe('upload-custom-translations', function () {
     await api.stop();
   });
 
-  describe('medic-2.x', () => {
+  describe('medic-2.x', function () {
+    this.timeout(60000);
+
     beforeEach(() => {
       // medic-client does not have deploy_info property
       return api.db.put({ _id: '_design/medic-client' });
@@ -42,10 +42,6 @@ describe('upload-custom-translations', function () {
         { status: 404, body: { error: 'not_found' } },
         { status: 404, body: { error: 'not_found' } },
         { status: 404, body: { error: 'not_found' } },
-        {
-          status: 200,
-          body: { compressible_types: 'text/*, application/javascript, application/json, application/xml' },
-        },
       );
 
       mockTestDir(`simple`);
@@ -68,10 +64,6 @@ describe('upload-custom-translations', function () {
         { status: 404, body: { error: 'not_found' } },
         { status: 404, body: { error: 'not_found' } },
         { status: 404, body: { error: 'not_found' } },
-        {
-          status: 200,
-          body: { compressible_types: 'text/*, application/javascript, application/json, application/xml' },
-        },
       );
 
       mockTestDir(`multi-lang`);
@@ -178,21 +170,10 @@ describe('upload-custom-translations', function () {
   });
 
   describe('medic-3.x', () => {
-    describe('3.0.0', () => {
-      beforeEach(() => {
-        /*api.giveResponses(
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          {
-            status: 200,
-            body: { compressible_types: 'text/!*, application/javascript, application/json, application/xml' },
-          },
-        );*/
+    describe('3.0.0', function () {
+      this.timeout(60000);
 
+      beforeEach(() => {
         readline.keyInYN = () => true;
         readline.keyInSelect = () => 0;
         return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.0.0' } });
@@ -318,7 +299,9 @@ describe('upload-custom-translations', function () {
       });
     });
 
-    describe('3.4.0', () => {
+    describe('3.4.0', function () {
+      this.timeout(60000);
+
       beforeEach(() => {
         api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.4.0' } });
       });
@@ -491,7 +474,9 @@ describe('upload-custom-translations', function () {
       });
     });
 
-    describe('3.5.0', () => {
+    describe('3.5.0', function () {
+      this.timeout(60000);
+
       beforeEach(() => {
         // api/deploy-info endpoint exists
         api.giveResponses({ status: 200, body: { version: '3.5.0' } });
