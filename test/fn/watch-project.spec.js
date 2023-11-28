@@ -99,7 +99,7 @@ function watchWrapper(action, file) {
   });
 }
 
-describe.skip('watch-project', () => {
+describe('watch-project', () => {
   beforeEach(() => {
     sinon.stub(environment, 'pathToProject').get(() => testDir);
     sinon.stub(environment, 'extraArgs').get(() => { });
@@ -145,10 +145,6 @@ describe.skip('watch-project', () => {
       {
         status: 200,
         body: { version: '3.5.0' },
-      },
-      {
-        status: 200,
-        body: { compressible_types: 'text/*, application/javascript, application/json, application/xml' },
       },
     );
 
