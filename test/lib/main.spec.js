@@ -275,4 +275,64 @@ describe('main', () => {
     expect(apiAvailable.callCount).to.eq(1);
     expect(mocks.error.callCount).to.eq(0);
   });
+
+  describe('retry', () => {
+    it('should throw after the command failed 6 times', async function () {
+      this.timeout(35000);
+      apiAvailable.resolves(false);
+      const expectedError = new Error('Error: connect ECONNREFUSED');
+      mocks.executeAction.rejects(expectedError);
+      try {
+        await main([...normalArgv, 'upload-app-settings']);
+      } catch (error) {
+        expect(error.message).to.equal('Error: connect ECONNREFUSED');
+        const actionLogs = mocks.info.args.filter(args => args[0].startsWith('Starting action') || args[0].endsWith('Retrying…'));
+        expect(actionLogs).to.deep.equal([
+          ['Starting action: upload-app-settings, attempt #1…'],
+          ['Attempt #1 of action upload-app-settings failed with message: "Error: connect ECONNREFUSED". Retrying…'],
+          ['Starting action: upload-app-settings, attempt #2…'],
+          ['Attempt #2 of action upload-app-settings failed with message: "Error: connect ECONNREFUSED". Retrying…'],
+          ['Starting action: upload-app-settings, attempt #3…'],
+          ['Attempt #3 of action upload-app-settings failed with message: "Error: connect ECONNREFUSED". Retrying…'],
+          ['Starting action: upload-app-settings, attempt #4…'],
+          ['Attempt #4 of action upload-app-settings failed with message: "Error: connect ECONNREFUSED". Retrying…'],
+          ['Starting action: upload-app-settings, attempt #5…'],
+          ['Attempt #5 of action upload-app-settings failed with message: "Error: connect ECONNREFUSED". Retrying…'],
+          ['Starting action: upload-app-settings, attempt #6…']
+        ]);
+      }
+    });
+
+    it('should successfully run the command despite it failing 3 times', async function () {
+      this.timeout(10000);
+      apiAvailable.resolves(false);
+      const expectedError = new Error('Error: connect ECONNREFUSED');
+      mocks.executeAction.onCall(0).rejects(expectedError);
+      mocks.executeAction.onCall(1).rejects(expectedError);
+      mocks.executeAction.onCall(2).rejects(expectedError);
+      mocks.executeAction.resolves();
+      await main([...normalArgv, 'upload-app-settings']);
+      const actionLogs = mocks.info.args.filter(args => args[0].startsWith('Starting action') || args[0].endsWith('Retrying…'));
+      expect(actionLogs).to.deep.equal([
+        ['Starting action: upload-app-settings, attempt #1…'],
+        ['Attempt #1 of action upload-app-settings failed with message: "Error: connect ECONNREFUSED". Retrying…'],
+        ['Starting action: upload-app-settings, attempt #2…'],
+        ['Attempt #2 of action upload-app-settings failed with message: "Error: connect ECONNREFUSED". Retrying…'],
+        ['Starting action: upload-app-settings, attempt #3…'],
+        ['Attempt #3 of action upload-app-settings failed with message: "Error: connect ECONNREFUSED". Retrying…'],
+        ['Starting action: upload-app-settings, attempt #4…'],
+      ]);
+    });
+
+    it('should immediately throw and not retry when the command doesnt exist', async () => {
+      try {
+        await main([...normalArgv, '--local', 'not-an-action'], {});
+        expect.fail('Expected error to be thrown');
+      } catch(e) {
+        expect(mocks.executeAction.called).to.be.false;
+        expect(mocks.usage.calledOnce).to.be.true;
+        expect(e.message).to.equal('Unsupported action(s): not-an-action');
+      }
+    });
+  });
 });

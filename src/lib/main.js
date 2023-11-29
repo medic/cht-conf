@@ -1,4 +1,6 @@
 const open = require('open');
+const retry = require('async-retry');
+
 const checkForUpdates = require('../lib/check-for-updates');
 const checkChtConfDependencyVersion = require('../lib/check-cht-conf-dependency-version');
 const environment = require('./environment');
@@ -189,8 +191,7 @@ module.exports = async (argv, env) => {
   }
 
   for (let action of actions) {
-    info(`Starting action: ${action.name}…`);
-    await executeAction(action);
+    await executeActionWithRetry(action);
     info(`${action.name} complete.`);
   }
 
@@ -252,6 +253,23 @@ function buildActions(cmdArgs, skipValidate) {
 
     return action;
   });
+}
+
+function executeActionWithRetry(action) {
+  return retry(
+    (bail, attempt) => {
+      info(`Starting action: ${action.name}, attempt #${attempt}…`);
+      return executeAction(action);
+    },
+    {
+      retries: 5,
+      randomize: false,
+      factor: 2,
+      onRetry(error, attempt) {
+        info(`Attempt #${attempt} of action ${action.name} failed with message: "${error.message}". Retrying…`);
+      }
+    },
+  );
 }
 
 // Exists for generic mocking purposes
