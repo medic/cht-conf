@@ -16,6 +16,7 @@ let calls;
 describe('warn-upload-overwrite', () => {
 
   beforeEach(() => {
+    api.__set__('request', request);
     warnUploadOverwrite.__set__('api', api);
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'force').get(() => false);
@@ -137,8 +138,7 @@ describe('warn-upload-overwrite', () => {
       });
     });
 
-    it('aborts when local is different from remote and the user requests an abort', function () {
-      this.timeout(30000);
+    it('aborts when local is different from remote and the user requests an abort', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(readline, 'keyInSelect').returns(3);
       sinon.stub(apiStub.db, 'get').resolves({ _rev: 'x' });
@@ -162,8 +162,7 @@ describe('warn-upload-overwrite', () => {
       );
     });
 
-    it('forces execution by returning early', function () {
-      this.timeout(30000);
+    it('forces execution by returning early', () => {
       sinon.stub(environment, 'force').get(() => true);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(readline, 'keyInSelect').returns(-1);
@@ -259,8 +258,7 @@ describe('warn-upload-overwrite', () => {
       });
     });
 
-    it('handles failure of the getAttachment endpoint on doc with no changes', function () {
-      this.timeout(30000);
+    it('handles failure of the getAttachment endpoint on doc with no changes', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(request, 'get').rejects({ error: 'not_found', reason: 'Database does not exist.' });

@@ -1,12 +1,21 @@
 const { expect, assert } = require('chai');
 const sinon = require('sinon');
 const path = require('path');
-const api = require('../api-stub');
+const rewire = require('rewire');
+const rpn = require('request-promise-native');
+const apiStub = require('../api-stub');
 const fs = require('../../src/lib/sync-fs');
 const fse = require('fs-extra');
 const environment = require('../../src/lib/environment');
-const { watchProject } = require('../../src/fn/watch-project');
-const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
+const api = rewire('../../src/lib/api');
+const getApiVersion = rewire('../../src/lib/get-api-version');
+const uploadResourcesFn = rewire('../../src/fn/upload-resources');
+const uploadConfigurationDocs = rewire('../../src/lib/upload-configuration-docs');
+const uploadCustomTranslationsFn = rewire('../../src/fn/upload-custom-translations');
+const warnUploadOverwrite = rewire('../../src/lib/warn-upload-overwrite');
+const validateForms = rewire('../../src/lib/validate-forms');
+const validateAppForms = rewire('../../src/fn/validate-app-forms');
+const watchProjectFn = rewire('../../src/fn/watch-project');
 const { getTranslationDoc, expectTranslationDocs } = require('./utils');
 
 const {
@@ -33,12 +42,12 @@ const messagesEn = fs.read(sampleTranslationPath);
 
 const mockApi = {
   updateAppSettings: (content) => {
-    return api.db.put({ _id: 'app_settings', content })
+    return apiStub.db.put({ _id: 'app_settings', content })
       .then(() => {
         return '{"success": true, "updated": true}';
       });
   },
-  getAppSettings: () => api.db.get('app_settings')
+  getAppSettings: () => apiStub.db.get('app_settings')
 };
 
 function editBaseSettings() {
@@ -91,7 +100,7 @@ function deleteFormFromFolder(folderPath, formFileName) {
 
 function watchWrapper(action, file) {
   return new Promise((resolve,) => {
-    watchProject.watch(mockApi, action, async (path) => {
+    watchProjectFn.watchProject.watch(mockApi, action, async (path) => {
       if (path === file) {
         resolve();
       }
@@ -101,13 +110,27 @@ function watchWrapper(action, file) {
 
 describe('watch-project', () => {
   beforeEach(() => {
+    // the following rewires are set to bypass the retry mechanism on HTTP requests
+    api.__set__('request', rpn);
+    getApiVersion.__set__('api', api);
+    warnUploadOverwrite.__set__('api', api);
+    uploadConfigurationDocs.__set__('warnUploadOverwrite', warnUploadOverwrite);
+    uploadResourcesFn.__set__('uploadConfigurationDocs', uploadConfigurationDocs);
+    uploadCustomTranslationsFn.__set__('warnUploadOverwrite', warnUploadOverwrite);
+    uploadCustomTranslationsFn.__set__('getValidApiVersion', getApiVersion.getValidApiVersion);
+    validateForms.__set__('getValidApiVersion', getApiVersion.getValidApiVersion);
+    validateAppForms.__set__('validateForms', validateForms);
+    watchProjectFn.__set__('uploadResources', uploadResourcesFn.execute);
+    watchProjectFn.__set__('uploadCustomTranslations', uploadCustomTranslationsFn.execute);
+    watchProjectFn.__set__('validateAppForms', validateAppForms.validateAppForms);
+
     sinon.stub(environment, 'pathToProject').get(() => testDir);
     sinon.stub(environment, 'extraArgs').get(() => { });
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'skipTranslationCheck').get(() => false);
     sinon.stub(environment, 'skipValidate').get(() => false);
     sinon.stub(environment, 'force').get(() => false);
-    return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } }).then(() => api.start());
+    return apiStub.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } }).then(() => apiStub.start());
   });
 
   afterEach(async () => {
@@ -120,8 +143,8 @@ describe('watch-project', () => {
       fs.deleteFilesInFolder(snapshotsDir);
       fs.fs.rmdirSync(snapshotsDir);
     }
-    await api.stop();
-    await watchProject.close();
+    await apiStub.stop();
+    await watchProjectFn.watchProject.close();
   });
 
   it('watch-project: upload app settings', () => {
@@ -141,17 +164,17 @@ describe('watch-project', () => {
   });
 
   it('watch-project: upload custom translations', () => {
-    api.giveResponses(
+    apiStub.giveResponses(
       {
         status: 200,
         body: { version: '3.5.0' },
       },
     );
 
-    return uploadCustomTranslations()
-      .then(() => expectTranslationDocs(api, 'en'))
+    return uploadCustomTranslationsFn.execute()
+      .then(() => expectTranslationDocs(apiStub, 'en'))
       .then(() => watchWrapper(editTranslations, 'messages-en.properties'))
-      .then(() => getTranslationDoc(api, 'en'))
+      .then(() => getTranslationDoc(apiStub, 'en'))
       .then(messages => {
         assert.deepEqual(messages.custom, { a: 'first', test: 'new' });
       });
@@ -159,7 +182,7 @@ describe('watch-project', () => {
 
   it('watch-project: upload resources', () => {
     return watchWrapper(editResources, 'resources.json')
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include('resources');
@@ -195,10 +218,10 @@ describe('watch-project', () => {
       copySampleForms('upload-app-form');
     };
 
-    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
+    apiStub.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(copySampleForm, `${form}.xml`)
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
@@ -209,26 +232,24 @@ describe('watch-project', () => {
     const form = 'death';
     copySampleForms('upload-app-form');
     const deleteForm = () => deleteFormFromFolder(appFormDir, form);
-    return api.db.put({ _id: `form:${form}` })
+    return apiStub.db.put({ _id: `form:${form}` })
       .then(() => watchWrapper(deleteForm, `${form}.xml`))
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(docs => {
         const doc = docs.rows.find(doc => doc.id === `form:${form}`);
         expect(doc).to.be.undefined;
       });
   });
 
-  it('watch-project: do not delete app form when a form part exists', function () {
-    this.timeout(15000);
-
+  it('watch-project: do not delete app form when a form part exists', () => {
     const form = 'death';
     copySampleForms('delete-form');
     const deleteForm = () => {
       fse.removeSync(path.join(appFormDir, `${form}.xml`));
     };
-    return api.db.put({ _id: `form:${form}` })
+    return apiStub.db.put({ _id: `form:${form}` })
       .then(() => watchWrapper(deleteForm, `${form}.xml`))
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(docs => {
         const doc = docs.rows.find(doc => doc.id === `form:${form}`);
         expect(doc).to.be.not.undefined;
@@ -241,10 +262,10 @@ describe('watch-project', () => {
       copySampleForms('collect-xml', COLLECT_FORMS_PATH);
     };
 
-    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
+    apiStub.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(copySampleForm, `${form}.xml`)
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
@@ -255,10 +276,10 @@ describe('watch-project', () => {
     const form = 'death';
     copySampleForms('upload-properties');
 
-    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
+    apiStub.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(editAppFormProperties, `${form}.properties.json`)
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
@@ -274,10 +295,10 @@ describe('watch-project', () => {
       fs.fs.writeFileSync(path.join(formMediaDir, dummyPng), '');
     };
 
-    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
+    apiStub.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(createFormMediaDir, dummyPng)
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
@@ -299,10 +320,10 @@ describe('watch-project', () => {
     const form = 'new_actions_training';
     const copyForm = () => copySampleForms('training-xml', TRAINING_FORMS_PATH);
 
-    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
+    apiStub.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(copyForm, `${form}.xml`)
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:training:${form}`);
@@ -318,10 +339,10 @@ describe('watch-project', () => {
       fs.fs.writeFileSync(path.join(formMediaDir, dummyPng), '');
     };
 
-    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
+    apiStub.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(createFormMediaDir, dummyPng)
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:training:${form}`);
@@ -335,7 +356,7 @@ describe('watch-project', () => {
     };
 
     return watchWrapper(copyForm, `${form}.xlsx`)
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(() => {
         const contactForms = fs.fs.readdirSync(contactFormsDir);
         expect(contactForms).to.include(`${form}.xml`);
@@ -348,10 +369,10 @@ describe('watch-project', () => {
       copySampleForms('contact-xml', path.join('forms', 'contact'));
     };
 
-    api.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
+    apiStub.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
     return watchWrapper(copyContactForm, `${form}.xml`)
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:contact:${form.replace('-', ':')}`);
@@ -366,12 +387,12 @@ describe('watch-project', () => {
     };
 
     return watchWrapper(copySampleForm, `${form}.xml`)
-      .then(() => api.db.allDocs())
+      .then(() => apiStub.db.allDocs())
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
         expect(docIds).to.include(`form:${form}`);
         // No requests should have been made to the api since the validations were not run
-        expect(api.requestLog()).to.be.empty;
+        expect(apiStub.requestLog()).to.be.empty;
       });
   });
 

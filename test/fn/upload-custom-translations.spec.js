@@ -1,15 +1,26 @@
 const { assert } = require('chai');
 const sinon = require('sinon');
 const readline = require('readline-sync');
+const rpn = require('request-promise-native');
+const rewire = require('rewire');
 const apiStub = require('../api-stub');
+const api = rewire('../../src/lib/api');
 const environment = require('../../src/lib/environment');
 const log = require('../../src/lib/log');
-const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
+const warnUploadOverwrite = rewire('../../src/lib/warn-upload-overwrite');
+const getApiVersion = rewire('../../src/lib/get-api-version');
+const uploadCustomTranslations = rewire('../../src/fn/upload-custom-translations');
 const { getTranslationDoc,  expectTranslationDocs } = require('./utils');
 
 describe('upload-custom-translations', () => {
   const testProjectDir = './data/upload-custom-translations/';
   let mockTestDir;
+
+  api.__set__('request', rpn);
+  warnUploadOverwrite.__set__('api', api);
+  getApiVersion.__set__('api', api);
+  uploadCustomTranslations.__set__('warnUploadOverwrite', warnUploadOverwrite);
+  uploadCustomTranslations.__set__('getValidApiVersion', getApiVersion.getValidApiVersion);
 
   beforeEach(() => {
     mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => `${testProjectDir}${testDir}`);
@@ -37,11 +48,6 @@ describe('upload-custom-translations', () => {
       // api/deploy-info endpoint doesn't exist
       apiStub.giveResponses(
         { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
         {
           status: 200,
           body: { compressible_types: 'text/*, application/javascript, application/json, application/xml' },
@@ -49,7 +55,7 @@ describe('upload-custom-translations', () => {
       );
 
       mockTestDir(`simple`);
-      return uploadCustomTranslations()
+      return uploadCustomTranslations.execute()
         .then(() => expectTranslationDocs(apiStub, 'en'))
         .then(() => getTranslationDoc(apiStub, 'en'))
         .then(messagesEn => {
@@ -63,11 +69,6 @@ describe('upload-custom-translations', () => {
       // api/deploy-info endpoint doesn't exist
       apiStub.giveResponses(
         { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
         {
           status: 200,
           body: { compressible_types: 'text/*, application/javascript, application/json, application/xml' },
@@ -75,7 +76,7 @@ describe('upload-custom-translations', () => {
       );
 
       mockTestDir(`multi-lang`);
-      return uploadCustomTranslations()
+      return uploadCustomTranslations.execute()
         .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
         .then(() => getTranslationDoc(apiStub, 'en'))
         .then(messagesEn => {
@@ -97,15 +98,10 @@ describe('upload-custom-translations', () => {
       // api/deploy-info endpoint doesn't exist
       apiStub.giveResponses(
         { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
       );
 
       mockTestDir(`contains-equals`);
-      return uploadCustomTranslations()
+      return uploadCustomTranslations.execute()
         .then(() => expectTranslationDocs(apiStub, 'en'))
         .then(() => getTranslationDoc(apiStub, 'en'))
         .then(messagesEn => {
@@ -122,11 +118,6 @@ describe('upload-custom-translations', () => {
       // api/deploy-info endpoint doesn't exist
       apiStub.giveResponses(
         { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
       );
 
       mockTestDir(`custom-lang`);
@@ -138,7 +129,7 @@ describe('upload-custom-translations', () => {
           type: 'translations',
           values: { a: 'first' }
         })
-        .then(() => uploadCustomTranslations())
+        .then(() => uploadCustomTranslations.execute())
         .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
         .then(() => getTranslationDoc(apiStub, 'en'))
         .then(messagesEn => {
@@ -158,16 +149,11 @@ describe('upload-custom-translations', () => {
       // api/deploy-info endpoint doesn't exist
       apiStub.giveResponses(
         { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
-        { status: 404, body: { error: 'not_found' } },
       );
 
       mockTestDir(`unknown-lang`);
       sinon.replace(log, 'warn', sinon.fake());
-      return uploadCustomTranslations()
+      return uploadCustomTranslations.execute()
         .then(() => expectTranslationDocs(apiStub, 'qp'))
         .then(() => getTranslationDoc(apiStub, 'qp'))
         .then(messagesQp => {
@@ -191,14 +177,9 @@ describe('upload-custom-translations', () => {
         // api/deploy-info endpoint doesn't exist
         apiStub.giveResponses(
           { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
         );
         mockTestDir(`simple`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -212,14 +193,9 @@ describe('upload-custom-translations', () => {
         // api/deploy-info endpoint doesn't exist
         apiStub.giveResponses(
           { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
         );
         mockTestDir(`multi-lang`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -241,14 +217,9 @@ describe('upload-custom-translations', () => {
         // api/deploy-info endpoint doesn't exist
         apiStub.giveResponses(
           { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
         );
         mockTestDir(`contains-equals`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -271,7 +242,7 @@ describe('upload-custom-translations', () => {
             type: 'translations',
             values: { a:'first', from_custom:'third' }
           })
-          .then(() => uploadCustomTranslations())
+          .then(() => uploadCustomTranslations.execute())
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -290,7 +261,7 @@ describe('upload-custom-translations', () => {
             name: 'English',
             type: 'translations'
           })
-          .then(() => uploadCustomTranslations())
+          .then(() => uploadCustomTranslations.execute())
           .catch(err => {
             assert.equal(err.message, 'Existent translation doc messages-en is malformed');
           });
@@ -298,7 +269,7 @@ describe('upload-custom-translations', () => {
 
       it('should set default name for unknown language', () => {
         mockTestDir(`unknown-lang`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'qp'))
           .then(() => getTranslationDoc(apiStub, 'qp'))
           .then(messagesQp => {
@@ -318,14 +289,9 @@ describe('upload-custom-translations', () => {
         // api/deploy-info endpoint doesn't exist
         apiStub.giveResponses(
           { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
         );
         mockTestDir(`simple`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -339,14 +305,9 @@ describe('upload-custom-translations', () => {
         // api/deploy-info endpoint doesn't exist
         apiStub.giveResponses(
           { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
         );
         mockTestDir(`multi-lang`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -368,14 +329,9 @@ describe('upload-custom-translations', () => {
         // api/deploy-info endpoint doesn't exist
         apiStub.giveResponses(
           { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
         );
         mockTestDir(`contains-equals`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -399,7 +355,7 @@ describe('upload-custom-translations', () => {
             generic: { a: 'first' },
             custom: { c: 'third' }
           })
-          .then(() => uploadCustomTranslations())
+          .then(() => uploadCustomTranslations.execute())
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -420,7 +376,7 @@ describe('upload-custom-translations', () => {
             generic: { a: 'first' },
             custom: { c: 'third' }
           })
-          .then(() => uploadCustomTranslations())
+          .then(() => uploadCustomTranslations.execute())
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -433,11 +389,6 @@ describe('upload-custom-translations', () => {
       it('should work correctly when falling back to testing messages-en', () => {
         // api/deploy-info endpoint doesn't exist
         apiStub.giveResponses(
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
-          { status: 404, body: { error: 'not_found' } },
           { status: 404, body: { error: 'not_found' } },
         );
         mockTestDir(`custom-lang`);
@@ -455,7 +406,7 @@ describe('upload-custom-translations', () => {
             type: 'translations',
             generic: { a: 'first' }
           }))
-          .then(() => uploadCustomTranslations())
+          .then(() => uploadCustomTranslations.execute())
           .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -473,7 +424,7 @@ describe('upload-custom-translations', () => {
 
       it('should set default name for unknown language', () => {
         mockTestDir(`unknown-lang`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'qp'))
           .then(() => getTranslationDoc(apiStub, 'qp'))
           .then(messagesQp => {
@@ -494,7 +445,7 @@ describe('upload-custom-translations', () => {
           { status: 200, body: { version: '3.5.0' } },
         );
         mockTestDir(`simple`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -510,7 +461,7 @@ describe('upload-custom-translations', () => {
           { status: 200, body: { version: '3.5.0' } },
         );
         mockTestDir(`multi-lang`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -532,7 +483,7 @@ describe('upload-custom-translations', () => {
         // api/deploy-info endpoint exists
         apiStub.giveResponses({ status: 200, body: { version: '3.5.0' } });
         mockTestDir(`contains-equals`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -549,7 +500,7 @@ describe('upload-custom-translations', () => {
         // api/deploy-info endpoint exists
         apiStub.giveResponses({ status: 200, body: { version: '3.5.0' } });
         mockTestDir(`unknown-lang`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'qp'))
           .then(() => getTranslationDoc(apiStub, 'qp'))
           .then(messagesQp => {
@@ -561,7 +512,7 @@ describe('upload-custom-translations', () => {
         // api/deploy-info endpoint exists
         apiStub.giveResponses({ status: 200, body: { version: '3.5.0' } });
         mockTestDir(`escaped-exclamation`);
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
@@ -579,7 +530,7 @@ describe('upload-custom-translations', () => {
         apiStub.giveResponses({ status: 200, body: { version: '3.5.0' } });
         mockTestDir('contains-empty-messages');
         sinon.replace(log, 'warn', sinon.fake());
-        return uploadCustomTranslations()
+        return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => {
             assert(log.warn.lastCall.calledWithMatch(
@@ -596,7 +547,7 @@ describe('upload-custom-translations', () => {
     const invalidLanguageCodesTest = (skipTranslationCheck) => {
       mockTestDir(`invalid-lang`);
       sinon.stub(environment, 'skipTranslationCheck').get(() => skipTranslationCheck);
-      return uploadCustomTranslations()
+      return uploadCustomTranslations.execute()
         .then(() => {
           assert.fail('Expected error to be thrown');
         })
@@ -618,7 +569,7 @@ describe('upload-custom-translations', () => {
 
   it('invalid placeholders throws error', () => {
     mockTestDir('contains-placeholder-wrong');
-    return uploadCustomTranslations()
+    return uploadCustomTranslations.execute()
       .then(() => {
         assert.fail('Expected error to be thrown');
       })
@@ -633,7 +584,7 @@ describe('upload-custom-translations', () => {
 
   it('invalid messageformat throws error', () => {
     mockTestDir('contains-messageformat-wrong');
-    return uploadCustomTranslations()
+    return uploadCustomTranslations.execute()
       .then(() => {
         assert.fail('Expected error to be thrown');
       })

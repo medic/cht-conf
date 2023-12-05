@@ -2,33 +2,35 @@ const { assert } = require('chai');
 const querystring = require('querystring');
 const rewire = require('rewire');
 const sinon = require('sinon');
+const rpn = require('request-promise-native');
 
-const api = require('../api-stub');
+const apiStub = require('../api-stub');
 const environment = require('../../src/lib/environment');
 
 const createUsers = rewire('../../src/fn/create-users');
 const userPrompt = rewire('../../src/lib/user-prompt');
+const api = rewire('../../src/lib/api');
 
 const readLine = require('readline-sync');
 const mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => testDir);
 
-describe('create-users', function () {
-  this.timeout(15000);
-
+describe('create-users', () => {
   beforeEach(() => {
+    api.__set__('request', rpn);
     createUsers.__set__('userPrompt', userPrompt);
+    createUsers.__set__('api', api);
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'force').get(() => false);
-    return api.start();
+    return apiStub.start();
   });
   afterEach(() => {
     sinon.restore();
-    return api.stop();
+    return apiStub.stop();
   });
 
   it('should create a user with place defined as a string', function() {
     mockTestDir(`data/create-users/existing-place`);
-    api.giveResponses({ body: {} }, { body: {} });
+    apiStub.giveResponses({ body: {} }, { body: {} });
     const todd = {
       username: 'todd',
       password: 'Secret_1',
@@ -49,7 +51,7 @@ describe('create-users', function () {
     return assertDbEmpty()
       .then(() => /* when */ createUsers.execute())
       .then(() => {
-        assert.deepEqual(api.requestLog(), [
+        assert.deepEqual(apiStub.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
           { method: 'POST', url: '/api/v1/users', body: todd },
         ]);
@@ -58,7 +60,7 @@ describe('create-users', function () {
 
   it('should create user with existent place and response from user-info', () => {
     mockTestDir(`data/create-users/existing-place`);
-    api.giveResponses({ body: { total_docs: 1000, warn: false } }, { body: {} });
+    apiStub.giveResponses({ body: { total_docs: 1000, warn: false } }, { body: {} });
     const todd = {
       username: 'todd',
       password: 'Secret_1',
@@ -79,7 +81,7 @@ describe('create-users', function () {
     return assertDbEmpty()
       .then(() => /* when */ createUsers.execute())
       .then(() => {
-        assert.deepEqual(api.requestLog(), [
+        assert.deepEqual(apiStub.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
           { method: 'POST', url: '/api/v1/users', body: todd },
         ]);
@@ -88,12 +90,7 @@ describe('create-users', function () {
 
   it('should create user with existent place and not implemented user-info endpoint', () => {
     mockTestDir(`data/create-users/existing-place`);
-    api.giveResponses(
-      { status: 404, body: { code: 404, error: 'not_found' } },
-      { status: 404, body: { code: 404, error: 'not_found' } },
-      { status: 404, body: { code: 404, error: 'not_found' } },
-      { status: 404, body: { code: 404, error: 'not_found' } },
-      { status: 404, body: { code: 404, error: 'not_found' } },
+    apiStub.giveResponses(
       { status: 404, body: { code: 404, error: 'not_found' } },
       { body: {} },
     );
@@ -117,12 +114,7 @@ describe('create-users', function () {
     return assertDbEmpty()
       .then(() => /* when */ createUsers.execute())
       .then(() => {
-        assert.deepEqual(api.requestLog(), [
-          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+        assert.deepEqual(apiStub.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
           { method: 'POST', url: '/api/v1/users', body: todd },
         ]);
@@ -131,7 +123,7 @@ describe('create-users', function () {
 
   it('should require user input before creating user with too many docs', () => {
     mockTestDir(`data/create-users/existing-place`);
-    api.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } }, { body: {} });
+    apiStub.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } }, { body: {} });
     const todd = {
       username: 'todd',
       password: 'Secret_1',
@@ -154,7 +146,7 @@ describe('create-users', function () {
       .then(() => /* when */ createUsers.execute())
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
-        assert.deepEqual(api.requestLog(), [
+        assert.deepEqual(apiStub.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
           { method: 'POST', url: '/api/v1/users', body: todd },
         ]);
@@ -163,7 +155,7 @@ describe('create-users', function () {
 
   it('should not create user if no input when too many docs', () => {
     mockTestDir(`data/create-users/existing-place`);
-    api.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } } );
+    apiStub.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } } );
     const todd = {
       username: 'todd',
       password: 'Secret_1',
@@ -188,7 +180,7 @@ describe('create-users', function () {
       })
       .catch(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
-        assert.deepEqual(api.requestLog(), [
+        assert.deepEqual(apiStub.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
         ]);
       });
@@ -197,7 +189,7 @@ describe('create-users', function () {
   it('force should create users without interaction', () => {
     sinon.stub(environment, 'force').get(() => true);
     mockTestDir(`data/create-users/existing-place`);
-    api.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } },{ body: {} });
+    apiStub.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } },{ body: {} });
     const todd = {
       username: 'todd',
       password: 'Secret_1',
@@ -218,7 +210,7 @@ describe('create-users', function () {
     return assertDbEmpty()
       .then(() => /* when */ createUsers.execute())
       .then(() => {
-        assert.deepEqual(api.requestLog(), [
+        assert.deepEqual(apiStub.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
           { method: 'POST', url: '/api/v1/users', body: todd },
         ]);
@@ -235,13 +227,8 @@ describe('create-users', function () {
       },
     };
 
-    api.giveResponses(
-        { status: 500, body: { code: 500, error: 'boom' } },
-        { status: 500, body: { code: 500, error: 'boom' } },
-        { status: 500, body: { code: 500, error: 'boom' } },
-        { status: 500, body: { code: 500, error: 'boom' } },
-        { status: 500, body: { code: 500, error: 'boom' } },
-        { status: 500, body: { code: 500, error: 'boom' } },
+    apiStub.giveResponses(
+      { status: 500, body: { code: 500, error: 'boom' } },
     );
     const qs = {
       facility_id: todd.place,
@@ -252,27 +239,16 @@ describe('create-users', function () {
       .then(r => assert.equal(r, 'Expected to reject'))
       .catch(err => {
         assert.deepEqual(err.error, { code: 500, error: 'boom' });
-        assert.deepEqual(api.requestLog(), [
-          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
+        assert.deepEqual(apiStub.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + querystring.stringify(qs), body: {} },
         ]);
       });
   });
 
-  it('should request user-info in sequence before creating users', function () {
-    this.timeout(30000);
+  it('should request user-info in sequence before creating users', () => {
     mockTestDir(`data/create-users/multiple-existing-place`);
     const pwd = 'Secret_1';
-    api.giveResponses(
-      { status: 400, body: { code: 400, error: 'not an offline role' } },
-      { status: 400, body: { code: 400, error: 'not an offline role' } },
-      { status: 400, body: { code: 400, error: 'not an offline role' } },
-      { status: 400, body: { code: 400, error: 'not an offline role' } },
-      { status: 400, body: { code: 400, error: 'not an offline role' } },
+    apiStub.giveResponses(
       { status: 400, body: { code: 400, error: 'not an offline role' } },
       { body: { total_docs: 12000, warn: true, limit: 10000 } },
       { body: { total_docs: 10200, warn: true, limit: 10000 } },
@@ -293,12 +269,7 @@ describe('create-users', function () {
       .then(() => createUsers.execute())
       .then(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
-        assert.deepEqual(api.requestLog(), [
-          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
+        assert.deepEqual(apiStub.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jack), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jill), body: {} },
@@ -314,12 +285,7 @@ describe('create-users', function () {
   it('should interrupt execution when user fails to confirm user', () => {
     mockTestDir(`data/create-users/multiple-existing-place`);
     const pwd = 'Secret_1';
-    api.giveResponses(
-      { status: 400, body: { code: 400, error: 'not an offline role' } },
-      { status: 400, body: { code: 400, error: 'not an offline role' } },
-      { status: 400, body: { code: 400, error: 'not an offline role' } },
-      { status: 400, body: { code: 400, error: 'not an offline role' } },
-      { status: 400, body: { code: 400, error: 'not an offline role' } },
+    apiStub.giveResponses(
       { status: 400, body: { code: 400, error: 'not an offline role' } },
       { body: { total_docs: 12000, warn: true, limit: 10000 } },
       { body: { total_docs: 10200, warn: true, limit: 10000 } },
@@ -339,12 +305,7 @@ describe('create-users', function () {
       })
       .catch(() => {
         assert.equal(readLine.keyInYN.callCount, 1);
-        assert.deepEqual(api.requestLog(), [
-          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
-          { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
+        assert.deepEqual(apiStub.requestLog(), [
           { method: 'GET', url: '/api/v1/users-info?' + qs(todd), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jack), body: {} },
           { method: 'GET', url: '/api/v1/users-info?' + qs(jill), body: {} },
@@ -356,7 +317,7 @@ describe('create-users', function () {
   it('should create one user for each row in a CSV file', function() {
     // given
     mockTestDir(`data/create-users/new-place`);
-    api.giveResponses({ body: {} }, { body: {} });
+    apiStub.giveResponses({ body: {} }, { body: {} });
 
     // and
     const alice = {
@@ -396,7 +357,7 @@ describe('create-users', function () {
       .then(() => /* when */ createUsers.execute())
 
       .then(() =>
-        assert.deepEqual(api.requestLog(), [
+        assert.deepEqual(apiStub.requestLog(), [
           { method: 'POST', url: '/api/v1/users', body: alice },
           { method: 'POST', url: '/api/v1/users', body: bob }
         ])
@@ -405,5 +366,5 @@ describe('create-users', function () {
 });
 
 function assertDbEmpty() {
-  return api.db.allDocs().then(res => assert.equal(res.rows.length, 0));
+  return apiStub.db.allDocs().then(res => assert.equal(res.rows.length, 0));
 }
