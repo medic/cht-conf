@@ -55,7 +55,7 @@ describe('api', () => {
     it('should not call API when --archive mode and response still ok', async () => {
       mockRequest = sinon.spy();
       api.__set__('request', mockRequest);
-      api.__set__('environment', sinon.stub({ isArchiveMode: true }));
+      api.__set__('environment', { isArchiveMode: true });
       let result = await api().formsValidate('<xml></xml>');
       expect(result).to.deep.eq({ok: true});
       expect(mockRequest.callCount).to.eq(0);
@@ -68,7 +68,7 @@ describe('api', () => {
 
   describe('archive mode', async () => {
     beforeEach(() => sinon.stub(environment, 'isArchiveMode').get(() => true));
-    
+
     it('does not initiate requests to api', async () => {
       await api().version();
       expect(mockRequest.callCount).to.eq(0);
