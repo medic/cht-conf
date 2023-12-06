@@ -1,3 +1,10 @@
+# [3.21.0](https://github.com/medic/cht-conf/compare/v3.20.0...v3.21.0) (2023-12-06)
+
+
+### Features
+
+* **#575:** retry failed HTTP requests ([#583](https://github.com/medic/cht-conf/issues/583)) ([bc5b0bc](https://github.com/medic/cht-conf/commit/bc5b0bc702e43faf93c495b7fb1197b495c5f66d)), closes [#575](https://github.com/medic/cht-conf/issues/575)
+
 # [3.20.0](https://github.com/medic/cht-conf/compare/v3.19.0...v3.20.0) (2023-10-25)
 
 
