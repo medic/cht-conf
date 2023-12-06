@@ -1,16 +1,26 @@
 const { assert } = require('chai');
 const sinon = require('sinon');
 const readline = require('readline-sync');
-const api = require('../api-stub');
+const rpn = require('request-promise-native');
+const rewire = require('rewire');
+const apiStub = require('../api-stub');
+const api = rewire('../../src/lib/api');
 const environment = require('../../src/lib/environment');
 const log = require('../../src/lib/log');
-const uploadCustomTranslations = require('../../src/fn/upload-custom-translations').execute;
+const warnUploadOverwrite = rewire('../../src/lib/warn-upload-overwrite');
+const getApiVersion = rewire('../../src/lib/get-api-version');
+const uploadCustomTranslations = rewire('../../src/fn/upload-custom-translations');
 const { getTranslationDoc,  expectTranslationDocs } = require('./utils');
 
 describe('upload-custom-translations', () => {
-
   const testProjectDir = './data/upload-custom-translations/';
   let mockTestDir;
+
+  api.__set__('request', rpn);
+  warnUploadOverwrite.__set__('api', api);
+  getApiVersion.__set__('api', api);
+  uploadCustomTranslations.__set__('warnUploadOverwrite', warnUploadOverwrite);
+  uploadCustomTranslations.__set__('getValidApiVersion', getApiVersion.getValidApiVersion);
 
   beforeEach(() => {
     mockTestDir = testDir => sinon.stub(environment, 'pathToProject').get(() => `${testProjectDir}${testDir}`);
@@ -18,27 +28,36 @@ describe('upload-custom-translations', () => {
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'skipTranslationCheck').get(() => false);
     sinon.stub(environment, 'force').get(() => false);
-    return api.start();
+    return apiStub.start();
   });
 
   afterEach(async () => {
     sinon.restore();
-    await api.stop();
+    await apiStub.stop();
   });
 
-  describe('medic-2.x', () => {
+  describe('medic-2.x', function () {
+    this.timeout(60000);
+
     beforeEach(() => {
-      // api/deploy-info endpoint doesn't exist
-      api.giveResponses({ status: 404, body: { error: 'not_found' } });
       // medic-client does not have deploy_info property
-      return api.db.put({ _id: '_design/medic-client' });
+      return apiStub.db.put({ _id: '_design/medic-client' });
     });
 
     it('should upload simple translations', () => {
+      // api/deploy-info endpoint doesn't exist
+      apiStub.giveResponses(
+        { status: 404, body: { error: 'not_found' } },
+        {
+          status: 200,
+          body: { compressible_types: 'text/*, application/javascript, application/json, application/xml' },
+        },
+      );
+
       mockTestDir(`simple`);
-      return uploadCustomTranslations()
-        .then(() => expectTranslationDocs(api, 'en'))
-        .then(() => getTranslationDoc(api, 'en'))
+      return uploadCustomTranslations.execute()
+        .then(() => expectTranslationDocs(apiStub, 'en'))
+        .then(() => getTranslationDoc(apiStub, 'en'))
         .then(messagesEn => {
           assert.deepEqual(messagesEn.values, { a:'first', b:'second', c:'third' });
           assert(!messagesEn.generic);
@@ -47,17 +66,26 @@ describe('upload-custom-translations', () => {
     });
 
     it('should upload translations for multiple languages', () => {
+      // api/deploy-info endpoint doesn't exist
+      apiStub.giveResponses(
+        { status: 404, body: { error: 'not_found' } },
+        {
+          status: 200,
+          body: { compressible_types: 'text/*, application/javascript, application/json, application/xml' },
+        },
+      );
+
       mockTestDir(`multi-lang`);
-      return uploadCustomTranslations()
-        .then(() => expectTranslationDocs(api, 'en', 'fr'))
-        .then(() => getTranslationDoc(api, 'en'))
+      return uploadCustomTranslations.execute()
+        .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
+        .then(() => getTranslationDoc(apiStub, 'en'))
         .then(messagesEn => {
           assert(messagesEn.name === 'English');
           assert.deepEqual(messagesEn.values, { one: 'one' });
           assert(!messagesEn.generic);
           assert(!messagesEn.custom);
         })
-        .then(() => getTranslationDoc(api, 'fr'))
+        .then(() => getTranslationDoc(apiStub, 'fr'))
         .then(messagesFr => {
           assert(messagesFr.name === 'Français (French)');
           assert.deepEqual(messagesFr.values, { one: 'un(e)' });
@@ -67,10 +95,15 @@ describe('upload-custom-translations', () => {
     });
 
     it('should upload translations containing equals signs', () => {
+      // api/deploy-info endpoint doesn't exist
+      apiStub.giveResponses(
+        { status: 404, body: { error: 'not_found' } },
+      );
+
       mockTestDir(`contains-equals`);
-      return uploadCustomTranslations()
-        .then(() => expectTranslationDocs(api, 'en'))
-        .then(() => getTranslationDoc(api, 'en'))
+      return uploadCustomTranslations.execute()
+        .then(() => expectTranslationDocs(apiStub, 'en'))
+        .then(() => getTranslationDoc(apiStub, 'en'))
         .then(messagesEn => {
           assert.deepEqual(messagesEn.values, {
             'some.words':'one equals one',
@@ -82,8 +115,13 @@ describe('upload-custom-translations', () => {
     });
 
     it('should work correctly when falling back to testing messages-en', () => {
+      // api/deploy-info endpoint doesn't exist
+      apiStub.giveResponses(
+        { status: 404, body: { error: 'not_found' } },
+      );
+
       mockTestDir(`custom-lang`);
-      return api.db
+      return apiStub.db
         .put({
           _id: 'messages-en',
           code: 'en',
@@ -91,15 +129,15 @@ describe('upload-custom-translations', () => {
           type: 'translations',
           values: { a: 'first' }
         })
-        .then(() => uploadCustomTranslations())
-        .then(() => expectTranslationDocs(api, 'en', 'fr'))
-        .then(() => getTranslationDoc(api, 'en'))
+        .then(() => uploadCustomTranslations.execute())
+        .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
+        .then(() => getTranslationDoc(apiStub, 'en'))
         .then(messagesEn => {
           assert.deepEqual(messagesEn.values, { a:'first' });
           assert(!messagesEn.generic);
           assert(!messagesEn.custom);
         })
-        .then(() => getTranslationDoc(api, 'fr'))
+        .then(() => getTranslationDoc(apiStub, 'fr'))
         .then(messagesFr => {
           assert.deepEqual(messagesFr.values, { one: 'un(e)' });
           assert(!messagesFr.generic);
@@ -108,11 +146,16 @@ describe('upload-custom-translations', () => {
     });
 
     it('should set default name for unknown language', () => {
+      // api/deploy-info endpoint doesn't exist
+      apiStub.giveResponses(
+        { status: 404, body: { error: 'not_found' } },
+      );
+
       mockTestDir(`unknown-lang`);
       sinon.replace(log, 'warn', sinon.fake());
-      return uploadCustomTranslations()
-        .then(() => expectTranslationDocs(api, 'qp'))
-        .then(() => getTranslationDoc(api, 'qp'))
+      return uploadCustomTranslations.execute()
+        .then(() => expectTranslationDocs(apiStub, 'qp'))
+        .then(() => getTranslationDoc(apiStub, 'qp'))
         .then(messagesQp => {
           assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
           assert(log.warn.lastCall.calledWithMatch('\'qp\' is not a recognized ISO 639 language code, please ask admin to set the name'));
@@ -121,20 +164,24 @@ describe('upload-custom-translations', () => {
   });
 
   describe('medic-3.x', () => {
-    describe('3.0.0', () => {
+    describe('3.0.0', function () {
+      this.timeout(60000);
+
       beforeEach(() => {
         readline.keyInYN = () => true;
         readline.keyInSelect = () => 0;
-        return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.0.0' } });
+        return apiStub.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.0.0' } });
       });
-      
+
       it('should upload simple translations', () => {
         // api/deploy-info endpoint doesn't exist
-        api.giveResponses({ status: 404, body: { error: 'not_found' } });
+        apiStub.giveResponses(
+          { status: 404, body: { error: 'not_found' } },
+        );
         mockTestDir(`simple`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'en'))
-          .then(() => getTranslationDoc(api, 'en'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'en'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.values, { a:'first', b:'second', c:'third' });
             assert(!messagesEn.generic);
@@ -144,18 +191,20 @@ describe('upload-custom-translations', () => {
 
       it('should upload translations for multiple languages', () => {
         // api/deploy-info endpoint doesn't exist
-        api.giveResponses({ status: 404, body: { error: 'not_found' } });
+        apiStub.giveResponses(
+          { status: 404, body: { error: 'not_found' } },
+        );
         mockTestDir(`multi-lang`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'en', 'fr'))
-          .then(() => getTranslationDoc(api, 'en'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert(messagesEn.name === 'English');
             assert.deepEqual(messagesEn.values, { one: 'one' });
             assert(!messagesEn.generic);
             assert(!messagesEn.custom);
           })
-          .then(() => getTranslationDoc(api, 'fr'))
+          .then(() => getTranslationDoc(apiStub, 'fr'))
           .then(messagesFr => {
             assert(messagesFr.name === 'Français (French)');
             assert.deepEqual(messagesFr.values, { one: 'un(e)' });
@@ -166,11 +215,13 @@ describe('upload-custom-translations', () => {
 
       it('should upload translations containing equals signs', () => {
         // api/deploy-info endpoint doesn't exist
-        api.giveResponses({ status: 404, body: { error: 'not_found' } });
+        apiStub.giveResponses(
+          { status: 404, body: { error: 'not_found' } },
+        );
         mockTestDir(`contains-equals`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'en'))
-          .then(() => getTranslationDoc(api, 'en'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'en'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.values, {
               'some.words':'one equals one',
@@ -183,7 +234,7 @@ describe('upload-custom-translations', () => {
 
       it('should merge with existent translations', () => {
         mockTestDir(`with-customs`);
-        return api.db
+        return apiStub.db
           .put({
             _id: 'messages-en',
             code: 'en',
@@ -191,9 +242,9 @@ describe('upload-custom-translations', () => {
             type: 'translations',
             values: { a:'first', from_custom:'third' }
           })
-          .then(() => uploadCustomTranslations())
-          .then(() => expectTranslationDocs(api, 'en'))
-          .then(() => getTranslationDoc(api, 'en'))
+          .then(() => uploadCustomTranslations.execute())
+          .then(() => expectTranslationDocs(apiStub, 'en'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.values, { a:'first', from_custom: 'overwritten', from_custom_new: 'new' });
             assert(!messagesEn.generic);
@@ -203,14 +254,14 @@ describe('upload-custom-translations', () => {
 
       it('should error for malformed translation files', () => {
         mockTestDir(`with-customs`);
-        return api.db
+        return apiStub.db
           .put({
             _id: 'messages-en',
             code: 'en',
             name: 'English',
             type: 'translations'
           })
-          .then(() => uploadCustomTranslations())
+          .then(() => uploadCustomTranslations.execute())
           .catch(err => {
             assert.equal(err.message, 'Existent translation doc messages-en is malformed');
           });
@@ -218,25 +269,31 @@ describe('upload-custom-translations', () => {
 
       it('should set default name for unknown language', () => {
         mockTestDir(`unknown-lang`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'qp'))
-          .then(() => getTranslationDoc(api, 'qp'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'qp'))
+          .then(() => getTranslationDoc(apiStub, 'qp'))
           .then(messagesQp => {
             assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
           });
       });
     });
 
-    describe('3.4.0', () => {
-      beforeEach(() => api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.4.0' } }));
+    describe('3.4.0', function () {
+      this.timeout(60000);
+
+      beforeEach(() => {
+        apiStub.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.4.0' } });
+      });
 
       it('should upload simple translations', () => {
         // api/deploy-info endpoint doesn't exist
-        api.giveResponses({ status: 404, body: { error: 'not_found' } });
+        apiStub.giveResponses(
+          { status: 404, body: { error: 'not_found' } },
+        );
         mockTestDir(`simple`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'en'))
-          .then(() => getTranslationDoc(api, 'en'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'en'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, { a:'first', b:'second', c:'third' });
             assert.deepEqual(messagesEn.generic, {});
@@ -246,18 +303,20 @@ describe('upload-custom-translations', () => {
 
       it('should upload translations for multiple languages', () => {
         // api/deploy-info endpoint doesn't exist
-        api.giveResponses({ status: 404, body: { error: 'not_found' } });
+        apiStub.giveResponses(
+          { status: 404, body: { error: 'not_found' } },
+        );
         mockTestDir(`multi-lang`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'en', 'fr'))
-          .then(() => getTranslationDoc(api, 'en'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert(messagesEn.name === 'English');
             assert.deepEqual(messagesEn.custom, { one: 'one' });
             assert.deepEqual(messagesEn.generic, {});
             assert(!messagesEn.values);
           })
-          .then(() => getTranslationDoc(api, 'fr'))
+          .then(() => getTranslationDoc(apiStub, 'fr'))
           .then(messagesFr => {
             assert(messagesFr.name === 'Français (French)');
             assert.deepEqual(messagesFr.custom, { one: 'un(e)' });
@@ -268,11 +327,13 @@ describe('upload-custom-translations', () => {
 
       it('should upload translations containing equals signs', () => {
         // api/deploy-info endpoint doesn't exist
-        api.giveResponses({ status: 404, body: { error: 'not_found' } });
+        apiStub.giveResponses(
+          { status: 404, body: { error: 'not_found' } },
+        );
         mockTestDir(`contains-equals`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'en'))
-          .then(() => getTranslationDoc(api, 'en'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'en'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, {
               'some.words':'one equals one',
@@ -285,7 +346,7 @@ describe('upload-custom-translations', () => {
 
       it('should replace existent custom values', () => {
         mockTestDir(`with-customs`);
-        return api.db
+        return apiStub.db
           .put({
             _id: 'messages-en',
             code: 'en',
@@ -294,9 +355,9 @@ describe('upload-custom-translations', () => {
             generic: { a: 'first' },
             custom: { c: 'third' }
           })
-          .then(() => uploadCustomTranslations())
-          .then(() => expectTranslationDocs(api, 'en'))
-          .then(() => getTranslationDoc(api, 'en'))
+          .then(() => uploadCustomTranslations.execute())
+          .then(() => expectTranslationDocs(apiStub, 'en'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.generic, { a: 'first' });
             assert.deepEqual(messagesEn.custom, { from_custom: 'overwritten', from_custom_new: 'new' });
@@ -306,7 +367,7 @@ describe('upload-custom-translations', () => {
 
       it('should replace delete custom values', () => {
         mockTestDir(`no-customs`);
-        return api.db
+        return apiStub.db
           .put({
             _id: 'messages-en',
             code: 'en',
@@ -315,9 +376,9 @@ describe('upload-custom-translations', () => {
             generic: { a: 'first' },
             custom: { c: 'third' }
           })
-          .then(() => uploadCustomTranslations())
-          .then(() => expectTranslationDocs(api, 'en'))
-          .then(() => getTranslationDoc(api, 'en'))
+          .then(() => uploadCustomTranslations.execute())
+          .then(() => expectTranslationDocs(apiStub, 'en'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.generic, { a: 'first' });
             assert.deepEqual(messagesEn.custom, { });
@@ -327,31 +388,33 @@ describe('upload-custom-translations', () => {
 
       it('should work correctly when falling back to testing messages-en', () => {
         // api/deploy-info endpoint doesn't exist
-        api.giveResponses({ status: 404, body: { error: 'not_found' } });
+        apiStub.giveResponses(
+          { status: 404, body: { error: 'not_found' } },
+        );
         mockTestDir(`custom-lang`);
         // for *some* reason, medic-client doesn't have deploy-info
-        return api.db
+        return apiStub.db
           .get('_design/medic-client')
           .then(ddoc => {
             delete ddoc.deploy_info;
-            return api.db.put(ddoc);
+            return apiStub.db.put(ddoc);
           })
-          .then(() => api.db.put({
+          .then(() => apiStub.db.put({
             _id: 'messages-en',
             code: 'en',
             name: 'English',
             type: 'translations',
             generic: { a: 'first' }
           }))
-          .then(() => uploadCustomTranslations())
-          .then(() => expectTranslationDocs(api, 'en', 'fr'))
-          .then(() => getTranslationDoc(api, 'en'))
+          .then(() => uploadCustomTranslations.execute())
+          .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.generic, { a:'first' });
             assert(!messagesEn.custom);
             assert(!messagesEn.values);
           })
-          .then(() => getTranslationDoc(api, 'fr'))
+          .then(() => getTranslationDoc(apiStub, 'fr'))
           .then(messagesFr => {
             assert.deepEqual(messagesFr.custom, { one: 'un(e)' });
             assert.deepEqual(messagesFr.generic, {});
@@ -361,27 +424,30 @@ describe('upload-custom-translations', () => {
 
       it('should set default name for unknown language', () => {
         mockTestDir(`unknown-lang`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'qp'))
-          .then(() => getTranslationDoc(api, 'qp'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'qp'))
+          .then(() => getTranslationDoc(apiStub, 'qp'))
           .then(messagesQp => {
             assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
           });
       });
     });
 
-    describe('3.5.0', () => {
+    describe('3.5.0', function () {
+      this.timeout(60000);
       beforeEach(() => {
-        // api/deploy-info endpoint exists
-        api.giveResponses({ body: { version: '3.5.0' } });
-        return api.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } });
+        return apiStub.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } });
       });
 
       it('should upload simple translations', () => {
+        // api/deploy-info endpoint exists
+        apiStub.giveResponses(
+          { status: 200, body: { version: '3.5.0' } },
+        );
         mockTestDir(`simple`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'en'))
-          .then(() => getTranslationDoc(api, 'en'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'en'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, { a:'first', b:'second', c:'third' });
             assert.deepEqual(messagesEn.generic, {});
@@ -390,17 +456,21 @@ describe('upload-custom-translations', () => {
       });
 
       it('should upload translations for multiple languages', () => {
+        // api/deploy-info endpoint exists
+        apiStub.giveResponses(
+          { status: 200, body: { version: '3.5.0' } },
+        );
         mockTestDir(`multi-lang`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'en', 'fr'))
-          .then(() => getTranslationDoc(api, 'en'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert(messagesEn.name === 'English');
             assert.deepEqual(messagesEn.custom, { one: 'one' });
             assert.deepEqual(messagesEn.generic, {});
             assert(!messagesEn.values);
           })
-          .then(() => getTranslationDoc(api, 'fr'))
+          .then(() => getTranslationDoc(apiStub, 'fr'))
           .then(messagesFr => {
             assert(messagesFr.name === 'Français (French)');
             assert.deepEqual(messagesFr.custom, { one: 'un(e)' });
@@ -410,10 +480,12 @@ describe('upload-custom-translations', () => {
       });
 
       it('should upload translations containing equals signs', () => {
+        // api/deploy-info endpoint exists
+        apiStub.giveResponses({ status: 200, body: { version: '3.5.0' } });
         mockTestDir(`contains-equals`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'en'))
-          .then(() => getTranslationDoc(api, 'en'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'en'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, {
               'some.words':'one equals one',
@@ -425,20 +497,24 @@ describe('upload-custom-translations', () => {
       });
 
       it('should set default name for unknown language', () => {
+        // api/deploy-info endpoint exists
+        apiStub.giveResponses({ status: 200, body: { version: '3.5.0' } });
         mockTestDir(`unknown-lang`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'qp'))
-          .then(() => getTranslationDoc(api, 'qp'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'qp'))
+          .then(() => getTranslationDoc(apiStub, 'qp'))
           .then(messagesQp => {
             assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
           });
       });
 
       it('should properly upload translations containing escaped exclamation marks', () => {
+        // api/deploy-info endpoint exists
+        apiStub.giveResponses({ status: 200, body: { version: '3.5.0' } });
         mockTestDir(`escaped-exclamation`);
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'en'))
-          .then(() => getTranslationDoc(api, 'en'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'en'))
+          .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, {
               'one.escaped.exclamation':'one equals one!',
@@ -450,10 +526,12 @@ describe('upload-custom-translations', () => {
       });
 
       it('upload translations containing empty messages raises warn logs but works', () => {
+        // api/deploy-info endpoint exists
+        apiStub.giveResponses({ status: 200, body: { version: '3.5.0' } });
         mockTestDir('contains-empty-messages');
         sinon.replace(log, 'warn', sinon.fake());
-        return uploadCustomTranslations()
-          .then(() => expectTranslationDocs(api, 'en'))
+        return uploadCustomTranslations.execute()
+          .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => {
             assert(log.warn.lastCall.calledWithMatch(
               '1 empty messages trying to compile translations'));
@@ -462,7 +540,6 @@ describe('upload-custom-translations', () => {
 
     });
 
-
   });
 
   describe('invalid language code', () => {
@@ -470,7 +547,7 @@ describe('upload-custom-translations', () => {
     const invalidLanguageCodesTest = (skipTranslationCheck) => {
       mockTestDir(`invalid-lang`);
       sinon.stub(environment, 'skipTranslationCheck').get(() => skipTranslationCheck);
-      return uploadCustomTranslations()
+      return uploadCustomTranslations.execute()
         .then(() => {
           assert.fail('Expected error to be thrown');
         })
@@ -478,11 +555,11 @@ describe('upload-custom-translations', () => {
           assert.equal(err.message, 'The language code \'bad(code\' is not valid. It must begin with a letter(a-z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.');
         });
     };
-  
+
     it('should error for invalid language code', () => {
       return invalidLanguageCodesTest(false);
     });
-  
+
     it('should crash for invalid language code even with --skip-translation-check passed', () => {
       // Flag `--skip-translation-check` aborts translation content checks, not filename checks
       return invalidLanguageCodesTest(true);
@@ -492,7 +569,7 @@ describe('upload-custom-translations', () => {
 
   it('invalid placeholders throws error', () => {
     mockTestDir('contains-placeholder-wrong');
-    return uploadCustomTranslations()
+    return uploadCustomTranslations.execute()
       .then(() => {
         assert.fail('Expected error to be thrown');
       })
@@ -507,7 +584,7 @@ describe('upload-custom-translations', () => {
 
   it('invalid messageformat throws error', () => {
     mockTestDir('contains-messageformat-wrong');
-    return uploadCustomTranslations()
+    return uploadCustomTranslations.execute()
       .then(() => {
         assert.fail('Expected error to be thrown');
       })

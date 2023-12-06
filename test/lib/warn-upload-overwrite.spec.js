@@ -4,17 +4,20 @@ const { assert, expect } = require('chai');
 const request = require('request-promise-native');
 
 const environment = require('../../src/lib/environment');
-const api = require('../api-stub');
+const apiStub = require('../api-stub');
 const fs = require('../../src/lib/sync-fs');
 const readline = require('readline-sync');
-const warnUploadOverwrite = rewire('../../src/lib/warn-upload-overwrite');
 const log = require('../../src/lib/log');
+let api = rewire('../../src/lib/api');
+let warnUploadOverwrite = rewire('../../src/lib/warn-upload-overwrite');
 
 let calls;
 
 describe('warn-upload-overwrite', () => {
 
   beforeEach(() => {
+    api.__set__('request', request);
+    warnUploadOverwrite.__set__('api', api);
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'force').get(() => false);
     sinon.stub(environment, 'pathToProject').get(() => '.');
@@ -23,12 +26,14 @@ describe('warn-upload-overwrite', () => {
       calls.push(args);
     };
     sinon.stub(fs, 'exists').returns(true);
-    api.start();
+    apiStub.start();
   });
 
   afterEach(() => {
     sinon.restore();
-    return api.stop();
+    api = rewire('../../src/lib/api');
+    warnUploadOverwrite = rewire('../../src/lib/warn-upload-overwrite');
+    return apiStub.stop();
   });
 
   describe('getStoredHash', () => {
@@ -119,12 +124,13 @@ describe('warn-upload-overwrite', () => {
     it('shows diff when local is different from remote and the user requests a diff', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(readline, 'keyInSelect').returns(2);
-      sinon.stub(api.db, 'get').resolves({ _id: 'a', _rev: 'x', value: 1 });
+      sinon.stub(apiStub.db, 'get').resolves({ _id: 'a', _rev: 'x', value: 1 });
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'localhost/medic': 'y' }}));
       sinon.stub(environment, 'apiUrl').get(() => 'http://admin:pass@localhost:35423/medic');
       sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
+      api.__set__('cache', new Map());
       const localDoc = { _id: 'a', value: 2 };
-      return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
+      return warnUploadOverwrite.preUploadDoc(apiStub.db, localDoc).then(() => {
         assert.equal(calls.length, 1);
         assert.equal(request.get.args[0][0].url, 'http://admin:pass@localhost:35423/api/couch-config-attachments');
         assert.equal(request.get.callCount, 1);
@@ -135,10 +141,10 @@ describe('warn-upload-overwrite', () => {
     it('aborts when local is different from remote and the user requests an abort', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(readline, 'keyInSelect').returns(3);
-      sinon.stub(api.db, 'get').resolves({ _rev: 'x' });
+      sinon.stub(apiStub.db, 'get').resolves({ _rev: 'x' });
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'localhost/medic': 'y' }}));
       const localDoc = { _id: 'a', _rev: 'y' };
-      return warnUploadOverwrite.preUploadDoc(api.db, localDoc).catch(e => {
+      return warnUploadOverwrite.preUploadDoc(apiStub.db, localDoc).catch(e => {
         assert.equal('configuration modified', e.message);
       });
     });
@@ -147,9 +153,8 @@ describe('warn-upload-overwrite', () => {
       const write = sinon.stub(fs, 'write').returns();
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'y/m': 'a-12' }}));
       sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
-      warnUploadOverwrite.__set__('cache', new Map());
       const localDoc = { _id: 'a' };
-      await warnUploadOverwrite.postUploadDoc(api.db, localDoc);
+      await warnUploadOverwrite.postUploadDoc(apiStub.db, localDoc);
       assert.equal(write.callCount, 1);
       assert.deepEqual(
         JSON.parse(write.args[0][1]),
@@ -161,9 +166,9 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(environment, 'force').get(() => true);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(readline, 'keyInSelect').returns(-1);
-      sinon.stub(api.db, 'get').resolves({ _rev: 'x' });
+      sinon.stub(apiStub.db, 'get').resolves({ _rev: 'x' });
       const localDoc = { _id: 'x' };
-      return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
+      return warnUploadOverwrite.preUploadDoc(apiStub.db, localDoc).then(() => {
         assert.equal(0, readline.keyInSelect.callCount);
       });
     });
@@ -174,25 +179,25 @@ describe('warn-upload-overwrite', () => {
       warnUploadOverwrite.__set__('api', ()=> ({
         getCompressibleTypes: () => ['text/*', 'application/*']
       }));
-      sinon.stub(api.db, 'get').resolves({
+      sinon.stub(apiStub.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
         _attachments: {
           'random.txt': { content_type: 'text/plain', digest: 'md5-digest' }
         }
       });
-      sinon.stub(api.db, 'getAttachment').resolves('data');
+      sinon.stub(apiStub.db, 'getAttachment').resolves('data');
       const localDoc = {
         _id: 'x',
         _attachments: {
           'random.txt': { content_type: 'text/plain', data: 'data changed' }
         }
       };
-      return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
+      return warnUploadOverwrite.preUploadDoc(apiStub.db, localDoc).then(() => {
         assert.equal(1, readline.keyInSelect.callCount);
-        assert.equal(api.db.getAttachment.args[0][0], 'x');
-        assert.equal(api.db.getAttachment.args[0][1], 'random.txt');
-        assert.equal(api.db.getAttachment.callCount, 1);
+        assert.equal(apiStub.db.getAttachment.args[0][0], 'x');
+        assert.equal(apiStub.db.getAttachment.args[0][1], 'random.txt');
+        assert.equal(apiStub.db.getAttachment.callCount, 1);
       });
     });
 
@@ -201,21 +206,21 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
       warnUploadOverwrite.__set__('cache', new Map());
-      sinon.stub(api.db, 'get').resolves({
+      sinon.stub(apiStub.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
         _attachments: {
           'random.txt': { content_type: 'text/plain', digest: 'md5-digest' }
         }
       });
-      sinon.stub(api.db, 'getAttachment').resolves('data');
+      sinon.stub(apiStub.db, 'getAttachment').resolves('data');
       const localDoc = {
         _id: 'x',
         _attachments: {
           'random.txt': { content_type: 'text/plain', data: 'data' }
         }
       };
-      return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
+      return warnUploadOverwrite.preUploadDoc(apiStub.db, localDoc).then(() => {
         assert.equal(0, readline.keyInSelect.callCount);
       });
     });
@@ -227,7 +232,7 @@ describe('warn-upload-overwrite', () => {
       warnUploadOverwrite.__set__('api', ()=> ({
         getCompressibleTypes: () => ['text/*', 'application/*']
       }));
-      sinon.stub(api.db, 'get').resolves({
+      sinon.stub(apiStub.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
         _attachments: {
@@ -236,20 +241,20 @@ describe('warn-upload-overwrite', () => {
           'anotherRandom.txt': { content_type: 'text/plain', digest: 'md5-digest' },
         }
       });
-      sinon.stub(api.db, 'getAttachment').resolves('data');
+      sinon.stub(apiStub.db, 'getAttachment').resolves('data');
       const localDoc = {
         _id: 'x',
         _attachments: {
           'random.txt': { content_type: 'text/plain', data: 'data changed' }
         }
       };
-      return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
+      return warnUploadOverwrite.preUploadDoc(apiStub.db, localDoc).then(() => {
         assert.equal(1, readline.keyInSelect.callCount);
-        assert.equal(api.db.getAttachment.callCount, 2);
-        assert.equal(api.db.getAttachment.args[0][0], 'x');
-        assert.equal(api.db.getAttachment.args[0][1], 'random.txt');
-        assert.equal(api.db.getAttachment.args[1][0], 'x');
-        assert.equal(api.db.getAttachment.args[1][1], 'anotherRandom.txt');
+        assert.equal(apiStub.db.getAttachment.callCount, 2);
+        assert.equal(apiStub.db.getAttachment.args[0][0], 'x');
+        assert.equal(apiStub.db.getAttachment.args[0][1], 'random.txt');
+        assert.equal(apiStub.db.getAttachment.args[1][0], 'x');
+        assert.equal(apiStub.db.getAttachment.args[1][1], 'anotherRandom.txt');
       });
     });
 
@@ -257,21 +262,21 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(request, 'get').rejects({ error: 'not_found', reason: 'Database does not exist.' });
-      sinon.stub(api.db, 'get').resolves({
+      sinon.stub(apiStub.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
         _attachments: {
           'random.txt': { content_type: 'text/plain', digest: 'md5-digest' }
         }
       });
-      sinon.stub(api.db, 'getAttachment').resolves('data');
+      sinon.stub(apiStub.db, 'getAttachment').resolves('data');
       const localDoc = {
         _id: 'x',
         _attachments: {
           'random.txt': { content_type: 'text/plain', data: 'data' }
         }
       };
-      return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
+      return warnUploadOverwrite.preUploadDoc(apiStub.db, localDoc).then(() => {
         assert.equal(0, readline.keyInSelect.callCount);
       });
     });
@@ -280,21 +285,21 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(request, 'get').resolves({ error: 'not_found', reason: 'Database does not exist.' });
-      sinon.stub(api.db, 'get').resolves({
+      sinon.stub(apiStub.db, 'get').resolves({
         _rev: 'x',
         _id: 'x',
         _attachments: {
           'random.txt': { content_type: 'text/plain', digest: 'md5-digest' }
         }
       });
-      sinon.stub(api.db, 'getAttachment').resolves('data');
+      sinon.stub(apiStub.db, 'getAttachment').resolves('data');
       const localDoc = {
         _id: 'x',
         _attachments: {
           'random.txt': { content_type: 'text/plain', data: 'data changed' }
         }
       };
-      return warnUploadOverwrite.preUploadDoc(api.db, localDoc).then(() => {
+      return warnUploadOverwrite.preUploadDoc(apiStub.db, localDoc).then(() => {
         assert.equal(1, readline.keyInSelect.callCount);
       });
     });
@@ -305,12 +310,12 @@ describe('warn-upload-overwrite', () => {
     it('shows diff when local xml is different from remote xml and the user requests a diff', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(readline, 'keyInSelect').returns(2);
-      sinon.stub(api.db, 'get').resolves({ _rev: 'x', _attachments: { xml: { digest: 'abc' } } });
-      sinon.stub(api.db, 'getAttachment').resolves(Buffer.from('<?xml version="1.0"?><y />', 'utf8'));
+      sinon.stub(apiStub.db, 'get').resolves({ _rev: 'x', _attachments: { xml: { digest: 'abc' } } });
+      sinon.stub(apiStub.db, 'getAttachment').resolves(Buffer.from('<?xml version="1.0"?><y />', 'utf8'));
       sinon.stub(fs, 'read').returns('{"x":{"localhost/medic":"y"}}');
       const localXml = '<?xml version="1.0"?><x />';
       const localDoc = { _id: 'x' };
-      return warnUploadOverwrite.preUploadForm(api.db, localDoc, localXml, []).then(() => {
+      return warnUploadOverwrite.preUploadForm(apiStub.db, localDoc, localXml, []).then(() => {
         assert.equal(calls.length, 1);
         assert.equal(calls[0][0], '/\n\tExpected element \'x\' instead of \'y\'');
       });
@@ -319,12 +324,12 @@ describe('warn-upload-overwrite', () => {
     it('aborts when local xml is different from remote xml and the user requests an abort', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(readline, 'keyInSelect').returns(3);
-      sinon.stub(api.db, 'get').resolves({ _rev: 'x', _attachments: { xml: { digest: 'abc' } } });
-      sinon.stub(api.db, 'getAttachment').resolves(Buffer.from('<?xml version="1.0"?><y />', 'utf8'));
+      sinon.stub(apiStub.db, 'get').resolves({ _rev: 'x', _attachments: { xml: { digest: 'abc' } } });
+      sinon.stub(apiStub.db, 'getAttachment').resolves(Buffer.from('<?xml version="1.0"?><y />', 'utf8'));
       sinon.stub(fs, 'read').returns('{"localhost/medic":"y"}');
       const localXml = '<?xml version="1.0"?><x />';
       const localDoc = { _id: 'x' };
-      return warnUploadOverwrite.preUploadForm(api.db, localDoc, localXml, []).catch(e => {
+      return warnUploadOverwrite.preUploadForm(apiStub.db, localDoc, localXml, []).catch(e => {
         assert.equal('configuration modified', e.message);
       });
     });
@@ -332,11 +337,11 @@ describe('warn-upload-overwrite', () => {
     it('uploads the local xml if remote xml does not exist', () => {
       let error = new Error('No attachment');
       error.status = 404;
-      const getAttachment = sinon.stub(api.db, 'get').rejects(error);
+      const getAttachment = sinon.stub(apiStub.db, 'get').rejects(error);
       sinon.stub(fs, 'read').returns('{"localhost/medic":"y"}');
       const localXml = '<?xml version="1.0"?><x />';
       const localDoc = { _id: 'x' };
-      return warnUploadOverwrite.preUploadForm(api.db, localDoc, localXml, []).then(() => {
+      return warnUploadOverwrite.preUploadForm(apiStub.db, localDoc, localXml, []).then(() => {
         assert(getAttachment.calledOnce);
       });
     });
@@ -344,13 +349,13 @@ describe('warn-upload-overwrite', () => {
     it('overwrites config when force is set', () => {
       sinon.stub(environment, 'force').get(() => true);
       sinon.stub(readline, 'keyInSelect').returns(2);
-      sinon.stub(api.db, 'get').resolves({ _rev: 'x', _attachments: { xml: { digest: 'abc' } } });
-      sinon.stub(api.db, 'getAttachment').resolves(Buffer.from('<?xml version="1.0"?><y />', 'utf8'));
+      sinon.stub(apiStub.db, 'get').resolves({ _rev: 'x', _attachments: { xml: { digest: 'abc' } } });
+      sinon.stub(apiStub.db, 'getAttachment').resolves(Buffer.from('<?xml version="1.0"?><y />', 'utf8'));
       sinon.stub(fs, 'read').returns('{"localhost/medic":"y"}');
       const localXml = '<?xml version="1.0"?><x />';
       const localDoc = { _id: 'x' };
-      return warnUploadOverwrite.preUploadForm(api.db, localDoc, localXml, []).then(() => {
-        assert(1, api.db.get.callCount);
+      return warnUploadOverwrite.preUploadForm(apiStub.db, localDoc, localXml, []).then(() => {
+        assert(1, apiStub.db.get.callCount);
         assert.equal(0, readline.keyInSelect.callCount);
       });
     });
