@@ -1,3 +1,10 @@
+## [3.21.1](https://github.com/medic/cht-conf/compare/v3.21.0...v3.21.1) (2023-12-14)
+
+
+### Bug Fixes
+
+* **#593:** properly resolve the path to webpack loaders ([0c015f9](https://github.com/medic/cht-conf/commit/0c015f93afbb2042b9e137156173a24085f488c1))
+
 # [3.21.0](https://github.com/medic/cht-conf/compare/v3.20.0...v3.21.0) (2023-12-06)
 
 
