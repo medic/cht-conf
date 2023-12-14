@@ -9,7 +9,7 @@ const { info, warn, error } = require('../log');
 
 module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
   const baseEslintConfig = fsUtils.readJson(baseEslintPath);
-  
+
   const directoryContainingEntry = path.dirname(entry);
   const libName = path.basename(directoryContainingEntry);
   info(`Packaging ${libName}`);
@@ -59,7 +59,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         {
           enforce: 'pre',
           test: /\.js$/,
-          loader: 'eslint-loader',
+          loader: require.resolve('eslint-loader'),
           exclude: /node_modules/,
           options: {
             baseConfig: baseEslintConfig,
@@ -85,7 +85,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         if (err.details) {
           error(err.details);
         }
-        
+
         return reject(err);
       }
 
