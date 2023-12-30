@@ -35,24 +35,31 @@ const updateLineagesAndStage = async (options, db) => {
   const replacementLineage = lineageManipulation.createLineageFromDoc(parentDoc);
   for (let contactId of options.contactIds) {
     const contactDoc = contactDocs[contactId];
-    const descendantsAndSelf = await fetch.descendantsOf(db, contactId);
+    const descendantsNoSelf = await fetch.descendantsOf(db, contactId);
+
+    const self = descendantsNoSelf.find(d => d._id === contactId);
+    writeDocumentToDisk(options, {
+      _id: contactId,
+      _rev: self._rev,
+      _deleted: true,
+    });
 
     // Check that primary contact is not removed from areas where they are required
-    const invalidPrimaryContactDoc = await constraints.getPrimaryContactViolations(contactDoc, descendantsAndSelf);
+    const invalidPrimaryContactDoc = await constraints.getPrimaryContactViolations(contactDoc, descendantsNoSelf);
     if (invalidPrimaryContactDoc) {
       throw Error(`Cannot remove contact ${prettyPrintDocument(invalidPrimaryContactDoc)} from the hierarchy for which they are a primary contact.`);
     }
 
-    trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)}.`);
-    const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, contactId);
+    trace(`Considering lineage updates to ${descendantsNoSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)}.`);
+    const updatedDescendants = replaceLineageInContacts(descendantsNoSelf, replacementLineage, contactId);
 
     const ancestors = await fetch.ancestorsOf(db, contactDoc);
     trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
-    const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
+    const updatedAncestors = replaceLineageInAncestors(descendantsNoSelf, ancestors);
 
     minifyLineageAndWriteToDisk([...updatedDescendants, ...updatedAncestors], options);
 
-    const movedReportsCount = await moveReports(db, descendantsAndSelf, options, replacementLineage, contactId);
+    const movedReportsCount = await moveReports(db, descendantsNoSelf, options, replacementLineage, contactId);
     trace(`${movedReportsCount} report(s) created by these affected contact(s) will be updated`);
 
     affectedContactCount += updatedDescendants.length + updatedAncestors.length;
@@ -270,8 +277,12 @@ const replaceLineageInReports = (reportsCreatedByDescendants, replaceWith, start
 }, []);
 
 const replaceLineageInContacts = (descendantsAndSelf, replacementLineage, contactId) => descendantsAndSelf.reduce((agg, doc) => {
-  const startingFromIdInLineage = doc._id === contactId ? undefined : contactId;
-  const parentWasUpdated = lineageManipulation.replaceLineage(doc, 'parent', replacementLineage, startingFromIdInLineage);
+  // skip top-level because it is now being deleted
+  if (doc._id === contactId) {
+    return agg;
+  }
+
+  const parentWasUpdated = lineageManipulation.replaceLineage(doc, 'parent', replacementLineage, contactId);
   const contactWasUpdated = lineageManipulation.replaceLineage(doc, 'contact', replacementLineage, contactId);
   if (parentWasUpdated || contactWasUpdated) {
     agg.push(doc);

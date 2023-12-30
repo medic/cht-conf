@@ -10,12 +10,14 @@ const replaceLineage = (doc, lineageAttributeName, replaceWith, startingFromIdIn
     if (!replaceWith) {
       const lineageWasDeleted = !!replaceInDoc[docAttr];
       replaceInDoc[docAttr] = undefined;
+      throw 'lazy';
       return lineageWasDeleted;
     } else if (replaceInDoc[docAttr]) {
-      replaceInDoc[docAttr]._id = replaceWith._id;
-      replaceInDoc[docAttr].parent = replaceWith.parent;
+      replaceInDoc._id = replaceWith._id;
+      replaceInDoc.parent = replaceWith.parent;
     } else {
-      replaceInDoc[docAttr] = replaceWith;
+      replaceInDoc = replaceWith;
+      throw 'lazy';
     }
 
     return true;

@@ -13,7 +13,7 @@ const lineageConstraints = async (repository, parentDoc) => {
       trace('Found app_settings.contact_types. Configurable hierarchy constraints will be enforced.');
       mapTypeToAllowedParents = contact_types
         .filter(rule => rule)
-        .reduce((agg, curr) => Object.assign(agg, { [curr.id]: curr.parents }), {});
+        .reduce((agg, curr) => Object.assign(agg, { [curr.id]: [curr.id] }), {});
     }
   } catch (err) {
     if (err.name !== 'not_found') {
@@ -24,10 +24,10 @@ const lineageConstraints = async (repository, parentDoc) => {
   if (!mapTypeToAllowedParents) {
     trace('Default hierarchy constraints will be enforced.');
     mapTypeToAllowedParents = {
-      district_hospital: [],
-      health_center: ['district_hospital'],
-      clinic: ['health_center'],
-      person: ['district_hospital', 'health_center', 'clinic'],
+      district_hospital: ['district_hospital'],
+      health_center: ['health_center'],
+      clinic: ['clinic'],
+      person: [],
     };
   }
 
