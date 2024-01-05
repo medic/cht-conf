@@ -18,7 +18,7 @@ const getApiVersion = async () => {
 };
 
 const getValidApiVersion = async () => {
-  return semver.valid(await getApiVersion());
+  return semver.valid(semver.coerce(await getApiVersion()));
 };
 
 module.exports = { getValidApiVersion };
