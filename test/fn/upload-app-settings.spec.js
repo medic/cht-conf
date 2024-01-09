@@ -23,7 +23,11 @@ describe('upload-app-settings', () => {
     // https://github.com/medic/cht-conf/issues/596
     { coreVersion: '4.5.0.6922454971', isDeclarative: false, expectNools: false},
     // non-declarative < 4.2
-    { coreVersion: '4.1.0.6922454971', isDeclarative: undefined, expectNools: false}
+    { coreVersion: '4.1.0.6922454971', isDeclarative: undefined, expectNools: false},
+    // could not parse correct version
+    {coreVersion: null, isDeclarative: undefined, expectNools: false },
+    {coreVersion: null, isDeclarative: true, expectNools: false },
+    {coreVersion: null, isDeclarative: false, expectNools: false }
   ];
 
   for (const scenario of scenarios) {
