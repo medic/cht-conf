@@ -1,3 +1,10 @@
+## [3.21.2](https://github.com/medic/cht-conf/compare/v3.21.1...v3.21.2) (2024-01-10)
+
+
+### Bug Fixes
+
+* **#596:** fix issue with semver in latest cht versions ([86a9954](https://github.com/medic/cht-conf/commit/86a9954c861dd4ea57bcd37361c85d8dfe7edad6))
+
 ## [3.21.1](https://github.com/medic/cht-conf/compare/v3.21.0...v3.21.1) (2023-12-14)
 
 
