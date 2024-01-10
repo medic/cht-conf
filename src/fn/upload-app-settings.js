@@ -38,8 +38,8 @@ async function augmentDeclarativeWithNoolsBoilerplate(appSettings) {
     return;
   }
 
-  const actualCoreVersion = await getValidApiVersion(appSettings);
-  const addNoolsBoilerplate = semver.lt(actualCoreVersion, '4.2.0-dev');
+  const actualCoreVersion = await getValidApiVersion();
+  const addNoolsBoilerplate = actualCoreVersion && semver.lt(actualCoreVersion, '4.2.0-dev');
   if (addNoolsBoilerplate) {
     appSettings.tasks.rules = nools.addBoilerplateToCode(appSettings.tasks.rules);
 
