@@ -17,6 +17,13 @@ describe('environment', () => {
     });
   });
 
+  describe('apiUrl initialize empty', ()=>{
+    it('undefined apiUrl remains undefined', ()=>{
+      environment.initialize('','','','',undefined,'force','true','true');
+      expect(environment.apiUrl).to.be.undefined;
+    });
+  });
+
   describe('isProduction', () => {
 
     it('localhost and port environment return false', () => {
