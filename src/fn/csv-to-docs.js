@@ -29,6 +29,10 @@ const execute = () => {
   const jsonDir = `${environment.pathToProject}/json_docs`;
   fs.mkdir(jsonDir);
 
+  const warningMsg = `There are already docs in ${jsonDir}.
+     New json files will be created along side these existing docs.`;
+  fs.warnIfDirectoryIsNotEmpty(jsonDir, warningMsg);
+
   const saveJsonDoc = doc => fs.write(`${jsonDir}/${doc._id}.doc.json`, safeStringify(doc) + '\n');
 
   const model = {
@@ -262,5 +266,5 @@ module.exports = {
   int,
   setCol,
   parseColumn,
-  removeExcludedField
+  removeExcludedField,
 };
