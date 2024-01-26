@@ -1,3 +1,10 @@
+## [3.21.3](https://github.com/medic/cht-conf/compare/v3.21.2...v3.21.3) (2024-01-26)
+
+
+### Bug Fixes
+
+* **#599:** support node 20 ([ddd3064](https://github.com/medic/cht-conf/commit/ddd3064c9fba4f0f21f4e65fb1ed14dffc96f33f)), closes [#599](https://github.com/medic/cht-conf/issues/599)
+
 ## [3.21.2](https://github.com/medic/cht-conf/compare/v3.21.1...v3.21.2) (2024-01-10)
 
 
