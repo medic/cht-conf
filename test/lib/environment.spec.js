@@ -18,9 +18,9 @@ describe('environment', () => {
   });
 
   describe('apiUrl initialize empty', ()=>{
-    it('undefined apiUrl remains undefined', ()=>{
-      environment.initialize('','','','',undefined,'force','true','true');
-      expect(environment.apiUrl).to.be.undefined;
+    it('false apiUrl remains false', ()=>{
+      environment.initialize('','','','',false,'force','true','true');
+      expect(environment.apiUrl).to.be.false;
     });
   });
 
