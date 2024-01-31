@@ -1,3 +1,10 @@
+## [3.21.4](https://github.com/medic/cht-conf/compare/v3.21.3...v3.21.4) (2024-01-31)
+
+
+### Bug Fixes
+
+* **#602:**  fix errors with validate function ([24f66bf](https://github.com/medic/cht-conf/commit/24f66bf1d67564406c9710bb627e959abd9a651c))
+
 ## [3.21.3](https://github.com/medic/cht-conf/compare/v3.21.2...v3.21.3) (2024-01-26)
 
 
