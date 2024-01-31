@@ -59,7 +59,7 @@ const updateLineagesAndStage = async (options, db) => {
 
     minifyLineageAndWriteToDisk([...updatedDescendants, ...updatedAncestors], options);
 
-    const movedReportsCount = await moveReports(db, descendantsNoSelf, options, replacementLineage, contactId);
+    const movedReportsCount = await moveReports(db, descendantsNoSelf, options, options.parentId, contactId);
     trace(`${movedReportsCount} report(s) created by these affected contact(s) will be updated`);
 
     affectedContactCount += updatedDescendants.length + updatedAncestors.length;
@@ -158,17 +158,24 @@ ${bold('OPTIONS')}
 `);
 };
 
-const moveReports = async (db, descendantsAndSelf, writeOptions, replacementLineage, contactId) => {
-  const contactIds = descendantsAndSelf.map(contact => contact._id);
-
+const moveReports = async (db, descendantsAndSelf, writeOptions, mergeIntoId, contactId) => {
   let skip = 0;
   let reportDocsBatch;
   do {
     info(`Processing ${skip} to ${skip + BATCH_SIZE} report docs`);
-    reportDocsBatch = await fetch.reportsCreatedBy(db, contactIds, skip);
+    reportDocsBatch = await fetch.reportsCreatedFor(db, contactId, skip);
 
-    const updatedReports = replaceLineageInReports(reportDocsBatch, replacementLineage, contactId);
-    minifyLineageAndWriteToDisk(updatedReports, writeOptions);
+    reportDocsBatch.forEach(report => {
+      if (report.fields.patient_id) {
+        report.fields.patient_id = mergeIntoId;
+      }
+
+      if (report.fields.patient_uuid) {
+        report.fields.patient_uuid = mergeIntoId;
+      }
+
+      writeDocumentToDisk(writeOptions, report);
+    });
 
     skip += reportDocsBatch.length;
   } while (reportDocsBatch.length >= BATCH_SIZE);
@@ -240,6 +247,20 @@ const fetch = {
       .map(row => row.doc)
       /* We should not move or update tombstone documents */
       .filter(doc => doc && doc.type !== 'tombstone');
+  },
+
+  reportsCreatedFor: async (db, contactId, skip) => {
+    const reports = await db.query('medic-client/reports_by_freetext', {
+      keys: [
+        [`patient_id:${contactId}`],
+        [`patient_uuid:${contactId}`],
+      ],
+      include_docs: true,
+      limit: BATCH_SIZE,
+      skip,
+    });
+
+    return reports.rows.map(row => row.doc);
   },
 
   reportsCreatedBy: async (db, contactIds, skip) => {
