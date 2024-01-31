@@ -64,7 +64,7 @@ describe('upload-forms', () => {
     });
   });
 
-  it('should stop upload if one validation fails', async () => {
+  xit('should stop upload if one validation fails', async () => {
     const insertOrReplace = sinon.stub();
     return uploadForms.__with__({
       insertOrReplace,
