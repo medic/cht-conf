@@ -174,7 +174,15 @@ const moveReports = async (db, descendantsAndSelf, writeOptions, mergeIntoId, co
         report.fields.patient_uuid = mergeIntoId;
       }
 
-      writeDocumentToDisk(writeOptions, report);
+      if (report.form === 'integration') {
+        writeDocumentToDisk(writeOptions, {
+          _id: report._id,
+          _rev: report._rev,
+          _deleted: true,
+        });
+      } else {
+        writeDocumentToDisk(writeOptions, report);
+      }
     });
 
     skip += reportDocsBatch.length;
