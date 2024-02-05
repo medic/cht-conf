@@ -4,6 +4,7 @@ const mkdirp = require('mkdirp').sync;
 const os = require('os');
 const path = require('path');
 const trace = require('../lib/log').trace;
+const userPrompt = require('../lib/user-prompt');
 const warn = require('../lib/log').warn;
 
 function read(path) {
@@ -80,12 +81,27 @@ function copy(from, to, { overwrite=true }={}) {
   }
 }
 
+function isDirectoryEmpty(dir) {
+  return !fs.readdirSync(dir).length;
+}
+
+function warnIfDirectoryIsNotEmpty(dir, warningMsg) {
+  if (!isDirectoryEmpty(dir)) {
+    warn(warningMsg);
+
+    if (!userPrompt.keyInYN('Are you sure you want to continue?')) {
+      throw new Error('User aborted execution.');
+    }
+  }
+}
+
 module.exports = {
   copy,
   dirs,
   exists: fs.existsSync,
   extension,
   fs,
+  isDirectoryEmpty,
   mkdir: path => { try { mkdirp(path); } catch(e) { warn(e); } },
   mkdtemp: () => fs.mkdtempSync(`${os.tmpdir()}/cht-conf`),
   path,
@@ -98,6 +114,7 @@ module.exports = {
   deleteFilesInFolder: folderPath => recurseFiles(folderPath).forEach(filePath => fs.unlinkSync(filePath)),
   readdir: fs.readdirSync,
   statSync: fs.statSync,
+  warnIfDirectoryIsNotEmpty,
   withoutExtension,
   write: (path, data, options = 'utf8') => fs.writeFileSync(path, data, options),
   writeBinary: (path, content) => fs.writeFileSync(path, content),
