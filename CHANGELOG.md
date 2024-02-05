@@ -1,3 +1,10 @@
+## [3.21.5](https://github.com/medic/cht-conf/compare/v3.21.4...v3.21.5) (2024-02-05)
+
+
+### Bug Fixes
+
+* **#26:** add warning if jsonDir contains file when running csv-to-doc command ([#603](https://github.com/medic/cht-conf/issues/603)) ([e445c9b](https://github.com/medic/cht-conf/commit/e445c9b44be94b3a7492a471c5c709857509076e)), closes [#26](https://github.com/medic/cht-conf/issues/26)
+
 ## [3.21.4](https://github.com/medic/cht-conf/compare/v3.21.3...v3.21.4) (2024-01-31)
 
 
