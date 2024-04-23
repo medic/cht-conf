@@ -95,6 +95,12 @@ const compileAppSettingsForProject = async (projectDir, options) => {
       }
       appSettings.schedules = scheduleSettings;
     }
+
+    const assetlinks = readOptionalJson(path.join(projectDir, 'app_settings/assetlinks.json'));
+    if (assetlinks) {
+      // TODO: validate
+      appSettings.assetlinks = assetlinks;
+    }
   } else {
     warn(`app_settings.json file should not be edited directly.
     Please create a base_settings.json file in app_settings folder and move any manually defined configurations there.`);
