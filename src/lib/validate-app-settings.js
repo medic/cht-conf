@@ -64,6 +64,19 @@ const ScheduleSchema = joi.array().items(
   })
 );
 
+const AssetlinksSchema = joi.array().items(
+  joi.object({
+    relation: joi.array().items(
+      joi.string().valid('delegate_permission/common.handle_all_urls').required()
+    ).length(1).required(),
+    target: joi.object({
+      namespace: joi.string().valid('android_app').required(),
+      package_name: joi.string().required(),
+      sha256_cert_fingerprints: joi.array().items(joi.string().required()).min(1).required(),
+    }).required(),
+  }),
+).min(1);
+
 module.exports = {
   validateFormsSchema: (formsObject) => {
     const { error } = FormsSchema.validate(formsObject);
@@ -71,6 +84,10 @@ module.exports = {
   },
   validateScheduleSchema: (scheduleObject) => {
     const { error } = ScheduleSchema.validate(scheduleObject);
+    return error ? { valid: false, error } : { valid: true };
+  },
+  validateAssetlinks: (assetlinksObject) => {
+    const { error } = AssetlinksSchema.validate(assetlinksObject);
     return error ? { valid: false, error } : { valid: true };
   }
 };

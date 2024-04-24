@@ -98,7 +98,10 @@ const compileAppSettingsForProject = async (projectDir, options) => {
 
     const assetlinks = readOptionalJson(path.join(projectDir, 'app_settings/assetlinks.json'));
     if (assetlinks) {
-      // TODO: validate
+      const validate = validateAppSettings.validateAssetlinks(assetlinks);
+      if (!validate.valid) {
+        throw new Error(`Invalid assetlinks: ${validate.error}`);
+      }
       appSettings.assetlinks = assetlinks;
     }
   } else {
