@@ -1,3 +1,10 @@
+# [3.22.0](https://github.com/medic/cht-conf/compare/v3.21.5...v3.22.0) (2024-04-29)
+
+
+### Features
+
+* **#615:** add support for `assetlinks.json` when compiling app settings ([#616](https://github.com/medic/cht-conf/issues/616)) ([f39d22a](https://github.com/medic/cht-conf/commit/f39d22a59816a18e9b2777067330193ce336b7a0)), closes [#615](https://github.com/medic/cht-conf/issues/615)
+
 ## [3.21.5](https://github.com/medic/cht-conf/compare/v3.21.4...v3.21.5) (2024-02-05)
 
 
