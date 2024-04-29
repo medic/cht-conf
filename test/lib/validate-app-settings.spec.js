@@ -208,19 +208,17 @@ describe('validate-app-settings', () => {
     });
 
     it('returns true for assetlinks with multiple apk fingerprints', () => {
-      isValid([
-        {
-          relation: ['delegate_permission/common.handle_all_urls'],
-          target: {
-            namespace: 'android_app',
-            package_name: 'org.medicmobile.webapp.mobile',
-            sha256_cert_fingerprints: [
-              'long sha256 fingerprint 62:BF:C1:78...',
-              'long other sha256 fingerprint 26:FB:1C:87...',
-            ],
-          }
+      isValid([{
+        relation: ['delegate_permission/common.handle_all_urls'],
+        target: {
+          namespace: 'android_app',
+          package_name: 'org.medicmobile.webapp.mobile',
+          sha256_cert_fingerprints: [
+            'long sha256 fingerprint 62:BF:C1:78...',
+            'long other sha256 fingerprint 26:FB:1C:87...',
+          ],
         }
-      ]);
+      }]);
     });
 
     it('returns false for an empty assetlinks', () => {
@@ -229,45 +227,39 @@ describe('validate-app-settings', () => {
 
     it('returns false for assetlinks with constant properties that were changed', () => {
       isNotValid(
-        [
-          {
-            relation: ['something wrong'],
-            target: {
-              namespace: 'android_app',
-              package_name: 'org.medicmobile.webapp.mobile',
-              sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
-            }
+        [{
+          relation: ['something wrong'],
+          target: {
+            namespace: 'android_app',
+            package_name: 'org.medicmobile.webapp.mobile',
+            sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
           }
-        ],
+        }],
         '"[0].relation[0]" must be [delegate_permission/common.handle_all_urls]',
       );
 
       isNotValid(
-        [
-          {
-            relation: ['delegate_permission/common.handle_all_urls'],
-            target: {
-              namespace: 'something else',
-              package_name: 'org.medicmobile.webapp.mobile',
-              sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
-            }
+        [{
+          relation: ['delegate_permission/common.handle_all_urls'],
+          target: {
+            namespace: 'something else',
+            package_name: 'org.medicmobile.webapp.mobile',
+            sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
           }
-        ],
+        }],
         '"[0].target.namespace" must be [android_app]',
       );
     });
 
     it('returns false for assetlinks with missing properties', () => {
       isNotValid(
-        [
-          {
-            target: {
-              namespace: 'android_app',
-              package_name: 'org.medicmobile.webapp.mobile',
-              sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
-            }
+        [{
+          target: {
+            namespace: 'android_app',
+            package_name: 'org.medicmobile.webapp.mobile',
+            sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
           }
-        ],
+        }],
         '"[0].relation" is required',
       );
 
@@ -277,41 +269,35 @@ describe('validate-app-settings', () => {
       );
 
       isNotValid(
-        [
-          {
-            relation: ['delegate_permission/common.handle_all_urls'],
-            target: {
-              package_name: 'org.medicmobile.webapp.mobile',
-              sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
-            }
+        [{
+          relation: ['delegate_permission/common.handle_all_urls'],
+          target: {
+            package_name: 'org.medicmobile.webapp.mobile',
+            sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
           }
-        ],
+        }],
         '"[0].target.namespace" is required',
       );
 
       isNotValid(
-        [
-          {
-            relation: ['delegate_permission/common.handle_all_urls'],
-            target: {
-              namespace: 'android_app',
-              sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
-            }
+        [{
+          relation: ['delegate_permission/common.handle_all_urls'],
+          target: {
+            namespace: 'android_app',
+            sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
           }
-        ],
+        }],
         '"[0].target.package_name" is required',
       );
 
       isNotValid(
-        [
-          {
-            relation: ['delegate_permission/common.handle_all_urls'],
-            target: {
-              namespace: 'android_app',
-              package_name: 'org.medicmobile.webapp.mobile',
-            }
+        [{
+          relation: ['delegate_permission/common.handle_all_urls'],
+          target: {
+            namespace: 'android_app',
+            package_name: 'org.medicmobile.webapp.mobile',
           }
-        ],
+        }],
         '"[0].target.sha256_cert_fingerprints" is required',
       );
     });
