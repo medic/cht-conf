@@ -171,16 +171,14 @@ describe('validate-app-settings', () => {
     };
 
     it('returns true for assetlinks with one entry', () => {
-      isValid([
-        {
-          relation: ['delegate_permission/common.handle_all_urls'],
-          target: {
-            namespace: 'android_app',
-            package_name: 'org.medicmobile.webapp.mobile',
-            sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
-          }
+      isValid([{
+        relation: ['delegate_permission/common.handle_all_urls'],
+        target: {
+          namespace: 'android_app',
+          package_name: 'org.medicmobile.webapp.mobile',
+          sha256_cert_fingerprints: ['long sha256 fingerprint 62:BF:C1:78...']
         }
-      ]);
+      }]);
     });
 
     it('returns true for assetlinks with multiple entries', () => {
