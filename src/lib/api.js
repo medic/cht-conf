@@ -5,10 +5,26 @@ const archivingApi = require('./archiving-api');
 const environment = require('./environment');
 const log = require('./log');
 const url = require('url');
+const { sessionTokenHeader } = require('./nools-utils');
 
 const cache = new Map();
 
-const _request = (method) => (...args) => retry(() => rpn[method](...args), { retries: 5, randomize: false, factor: 1.5 });
+// const _request = (method) => (...args) => retry(() => rpn[method](...args), { retries: 5, randomize: false, factor: 1.5 });
+
+// Helper function to create request headers with session token (if available)
+const withCookieSession = (options) => {
+  return Object.assign({}, options, {
+    headers: Object.assign({}, options.headers || {}, {
+      Cookie: sessionTokenHeader(environment) || undefined
+    })
+  });
+};
+
+const _request = (method) => (...args) => {
+  const requestOptions = withCookieSession(args[0]);
+  return retry(() => rpn[method](requestOptions), { retries: 5, randomize: false, factor: 1.5 });
+};
+
 const request = {
   get: _request('get'),
   post: _request('post'),
@@ -44,7 +60,7 @@ const logDeprecatedTransitions = (settings) => {
 const updateAppSettings = (settings) => {
   return request.put({
     url: `${environment.apiUrl}/_design/medic/_rewrite/update_settings/medic?replace=1`,
-    headers: {'Content-Type': 'application/json'},
+    headers: { 'Content-Type': 'application/json' },
     body: settings,
   });
 };
@@ -54,9 +70,9 @@ const api = {
     const url = `${environment.apiUrl}/_design/medic/_rewrite/app_settings/medic`;
     return request.get({ url, json: true })
       .catch(err => {
-        if(err.statusCode === 404) {
+        if (err.statusCode === 404) {
           throw new Error(`Failed to fetch existing app_settings from ${url}.\n` +
-              `      Check that CHT API is running and that you're connecting on the correct port!`);
+            `      Check that CHT API is running and that you're connecting on the correct port!`);
         } else {
           throw err;
         }
@@ -153,38 +169,38 @@ const api = {
     if (!this._formsValidateEndpointFound) {
       // The endpoint to validate forms doesn't exist in the API,
       // (old version), so we assume form is valid but return special result
-      return Promise.resolve({ok: true, formsValidateEndpointFound: false});
+      return Promise.resolve({ ok: true, formsValidateEndpointFound: false });
     }
     return request.post({
       uri: `${environment.instanceUrl}/api/v1/forms/validate`,
       headers: { 'Content-Type': 'application/xml' },
       body: formXml,
     })
-    .then(resp => {
-      try {
-        return JSON.parse(resp);
-      } catch (e) {
-        throw new Error('Invalid JSON response validating XForm against the API: ' + resp);
-      }
-    })
-    .catch(err => {
-      if (err.statusCode === 404) {
-        // The endpoint doesn't exist in the API (old CHT version), so
-        // we assume the form is valid but return special JSON
-        // highlighting the situation, and remembering the lack
-        // of the endpoint so next call there is no need
-        // to call the missed endpoint again
-        this._formsValidateEndpointFound = false;
-        return {ok: true, formsValidateEndpointFound: false};
-      }
-      if (err.statusCode === 400 && err.error) {
-        throw new Error(JSON.parse(err.error).error);
-      }
-      throw err;
-    });
+      .then(resp => {
+        try {
+          return JSON.parse(resp);
+        } catch (e) {
+          throw new Error('Invalid JSON response validating XForm against the API: ' + resp);
+        }
+      })
+      .catch(err => {
+        if (err.statusCode === 404) {
+          // The endpoint doesn't exist in the API (old CHT version), so
+          // we assume the form is valid but return special JSON
+          // highlighting the situation, and remembering the lack
+          // of the endpoint so next call there is no need
+          // to call the missed endpoint again
+          this._formsValidateEndpointFound = false;
+          return { ok: true, formsValidateEndpointFound: false };
+        }
+        if (err.statusCode === 400 && err.error) {
+          throw new Error(JSON.parse(err.error).error);
+        }
+        throw err;
+      });
   },
 
-  async getCompressibleTypes () {
+  async getCompressibleTypes() {
     const parsedUrl = new url.URL(environment.apiUrl);
     const baseUrl = `${parsedUrl.protocol}//${parsedUrl.username}:${parsedUrl.password}@${parsedUrl.host}`;
     const configUrl = `${baseUrl}/api/couch-config-attachments`;
@@ -193,7 +209,7 @@ const api = {
         return cache.get('compressibleTypes');
       }
       const resp = await request.get({ url: configUrl, json: true });
-      const compressibleTypes = resp.compressible_types.split(',').map(s=>s.trim());
+      const compressibleTypes = resp.compressible_types.split(',').map(s => s.trim());
       cache.set('compressibleTypes', compressibleTypes);
       return compressibleTypes;
     } catch (e) {
@@ -209,7 +225,7 @@ const api = {
 
 Object.entries(api)
   .filter(([key, value]) => typeof value === 'function' && !archivingApi[key])
-  .forEach(([key, ]) => {
+  .forEach(([key,]) => {
     archivingApi[key] = () => {
       // if this error is raised, somebody forgot to add a mock
       // implementation to ./archiving-api.js or the action isn't
