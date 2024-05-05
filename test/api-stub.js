@@ -39,6 +39,7 @@ module.exports = {
     const port = server.address().port;
     const couchUrl = `http://admin:pass@localhost:${port}/medic`;
     sinon.stub(environment, 'apiUrl').get(() => couchUrl);
+    sinon.stub(environment, 'sessionToken').get(() => undefined);
     module.exports.couchUrl = couchUrl;
     module.exports.gatewayRequests = [];
   },

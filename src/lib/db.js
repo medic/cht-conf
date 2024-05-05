@@ -4,13 +4,13 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const ArchivingDB = require('./archiving-db');
 const environment = require('./environment');
-const { sessionTokenHeader } = require('./nools-utils');
+const nools = require('./nools-utils');
 
 module.exports = () => {
   if (environment.isArchiveMode) {
     return new ArchivingDB(environment.archiveDestination);
   }
-  const headers = sessionTokenHeader(environment);
+  const headers = nools.sessionTokenHeader(environment);
   return new PouchDB(environment.apiUrl, { ajax: { timeout: 60000, headers } });
 };
 

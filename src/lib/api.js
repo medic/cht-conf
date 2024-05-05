@@ -5,17 +5,15 @@ const archivingApi = require('./archiving-api');
 const environment = require('./environment');
 const log = require('./log');
 const url = require('url');
-const { sessionTokenHeader } = require('./nools-utils');
+const nools = require('./nools-utils');
 
 const cache = new Map();
-
-// const _request = (method) => (...args) => retry(() => rpn[method](...args), { retries: 5, randomize: false, factor: 1.5 });
 
 // Helper function to create request headers with session token (if available)
 const withCookieSession = (options) => {
   return Object.assign({}, options, {
     headers: Object.assign({}, options.headers || {}, {
-      Cookie: sessionTokenHeader(environment) || undefined
+      Cookie: nools.sessionTokenHeader(environment) || undefined
     })
   });
 };
