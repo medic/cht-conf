@@ -172,7 +172,7 @@ module.exports = async (argv, env) => {
   const expectedOptions = ['alpha', projectName];
   if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
     warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
-      `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
+        `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
     if (!userPrompt.keyInYN()) {
       throw new Error('User aborted execution.');
     }
@@ -182,7 +182,7 @@ module.exports = async (argv, env) => {
   // GO GO GO
   //
   info(`Processing config in ${projectName}.`);
-  info('Actions:\n     -', actions.map(({ name }) => name).join('\n     - '));
+  info('Actions:\n     -', actions.map(({name}) => name).join('\n     - '));
 
   const skipCheckForUpdates = cmdArgs.check === false;
   if (actions.some(action => action.name === 'check-for-updates') && !skipCheckForUpdates) {
@@ -216,7 +216,7 @@ function buildActions(cmdArgs, skipValidate) {
     actions = actions.filter(a => a !== 'check-git');
   }
 
-  if (skipValidate) {
+  if(skipValidate) {
     warn('Skipping all form validation.');
     const validateActions = [
       'validate-app-forms',
