@@ -19,7 +19,7 @@ const withCookieSession = (options) => {
 };
 
 const _request = (method) => (...args) => {
-  const requestOptions = withCookieSession(args[0]);
+  const requestOptions = withCookieSession(...args);
   return retry(() => rpn[method](requestOptions), { retries: 5, randomize: false, factor: 1.5 });
 };
 
