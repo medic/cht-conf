@@ -10,12 +10,20 @@ const nools = require('./nools-utils');
 const cache = new Map();
 
 // Helper function to create request headers with session token (if available)
-const withCookieSession = (options) => {
-  return Object.assign({}, options, {
-    headers: Object.assign({}, options.headers || {}, {
-      Cookie: nools.sessionTokenHeader(environment) || undefined
-    })
-  });
+const withCookieSession = (...args) => {
+  const options = typeof args[0] === 'object' ? Object.assign({}, args[0]) : { url: args[0] };
+
+  if (args.length > 1) {
+    // Merge remaining arguments
+    Object.assign(options, ...args.slice(1));
+  }
+
+  const sessionTokenHeader = nools.sessionTokenHeader(environment);
+  if (sessionTokenHeader || options.headers) {
+    options.headers = Object.assign({}, options.headers || {}, sessionTokenHeader);
+  }
+
+  return options;
 };
 
 const _request = (method) => (...args) => {
