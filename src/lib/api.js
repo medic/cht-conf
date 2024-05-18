@@ -9,7 +9,7 @@ const url = require('url');
 const cache = new Map();
 
 // Helper function to create request headers with session token (if available)
-const withCookieSession = (...args) => {
+const withSessionCookie = (...args) => {
   const options = typeof args[0] === 'object' ? Object.assign({}, args[0]) : { url: args[0] };
 
   if (args.length > 1) {
@@ -26,7 +26,7 @@ const withCookieSession = (...args) => {
 };
 
 const _request = (method) => (...args) => {
-  const requestOptions = withCookieSession(...args);
+  const requestOptions = withSessionCookie(...args);
   return retry(() => rpn[method](requestOptions), { retries: 5, randomize: false, factor: 1.5 });
 };
 

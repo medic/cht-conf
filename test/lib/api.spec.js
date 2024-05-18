@@ -316,4 +316,55 @@ describe('api', () => {
       }
     });
   });
+
+  describe('with session cookie', function () {
+    let retrySub, rpnStub;
+    const sessionToken = 'sessionTokenValue';
+
+    beforeEach(() => {
+      sinon.stub(environment, 'isArchiveMode').get(() => false);
+      sinon.stub(environment, 'sessionToken').get(() => sessionToken);
+      sinon.stub(environment, 'apiUrl').get(() => 'http://example.com/db-name');
+
+      retrySub = sinon.stub().callsFake(async (fn) => fn());
+      rpnStub = {
+        get: sinon.stub().resolves(),
+        post: sinon.stub().resolves(),
+        put: sinon.stub().resolves(),
+      };
+      api.__set__('retry', retrySub);
+      api.__set__('rpn', rpnStub);
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('should call request with available session token in headers as cookie', async () => {
+      await api().version();
+      expect(rpnStub.get.callCount).to.eq(1);
+      const requestOptions = rpnStub.get.getCall(0).args[0];
+      expect(requestOptions.headers.Cookie).to.eq(sessionToken);
+    });
+
+    it('should not include cookie in request headers if session token not available', async () => {
+      sinon.stub(environment, 'sessionToken').get(() => undefined);
+
+      await api().updateAppSettings(JSON.stringify({
+        transitions: [ 'test' ]
+      }));
+
+      // 1- logDeprecatedTransitions
+      // some request does not have (headers) => it should then be present final request options
+      expect(rpnStub.get.callCount).to.eq(1);
+      const requestOptions1 = rpnStub.get.getCall(0).args[0];
+      expect(requestOptions1.headers).to.be.undefined;
+
+      // 2- updateAppSettings
+      // those that have (headers) => should have it present but missing Cookie in the final request options
+      expect(rpnStub.put.callCount).to.eq(1);
+      const requestOptions2 = rpnStub.put.getCall(0).args[0];
+      expect(requestOptions2.headers.Cookie).to.be.undefined;
+    });
+  });
 });
