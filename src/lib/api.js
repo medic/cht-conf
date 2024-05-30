@@ -7,6 +7,7 @@ const log = require('./log');
 const url = require('url');
 
 const cache = new Map();
+const sessionCookieName = 'AuthSession';
 
 // Helper function to create request headers with session token (if available)
 const withSessionCookie = (...args) => {
@@ -19,7 +20,11 @@ const withSessionCookie = (...args) => {
 
   const sessionToken = environment.sessionToken;
   if (sessionToken || options.headers) {
-    options.headers = Object.assign({}, options.headers || {}, { Cookie: sessionToken });
+    options.headers = Object.assign(
+      {}, 
+      options.headers || {}, 
+      { Cookie: `${sessionCookieName}=${sessionToken}` }
+    );
   }
 
   return options;
