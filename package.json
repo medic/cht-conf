@@ -59,7 +59,7 @@
     "pouchdb-adapter-http": "^7.2.2",
     "pouchdb-core": "^7.2.2",
     "pouchdb-mapreduce": "^7.2.2",
-    "pouchdb-session-authentication": "^1.2.0",
+    "pouchdb-session-authentication": "github:medic/pouchdb-session-authentication#7-node8-support",
     "properties": "^1.2.1",
     "queue-promise": "^2.2.1",
     "readline-sync": "^1.4.10",
