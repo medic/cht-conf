@@ -319,6 +319,7 @@ describe('api', () => {
 
   describe('with session cookie', function () {
     let retrySub, rpnStub;
+    const sessionCookieName = 'AuthSession';
     const sessionToken = 'sessionTokenValue';
 
     beforeEach(() => {
@@ -344,7 +345,7 @@ describe('api', () => {
       await api().version();
       expect(rpnStub.get.callCount).to.eq(1);
       const requestOptions = rpnStub.get.getCall(0).args[0];
-      expect(requestOptions.headers.Cookie).to.eq(sessionToken);
+      expect(requestOptions.headers.Cookie).to.eq(`${sessionCookieName}=${sessionToken}`);
     });
 
     it('should not include cookie in request headers if session token not available', async () => {

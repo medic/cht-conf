@@ -23,7 +23,7 @@ const withSessionCookie = (...args) => {
     options.headers = Object.assign(
       {}, 
       options.headers || {}, 
-      { Cookie: `${sessionCookieName}=${sessionToken}` }
+      sessionToken ? { Cookie: `${sessionCookieName}=${sessionToken}` } : {}
     );
   }
 
