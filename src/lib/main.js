@@ -160,7 +160,8 @@ module.exports = async (argv, env) => {
     apiUrl,
     cmdArgs.force,
     cmdArgs['skip-translation-check'],
-    skipValidate
+    skipValidate,
+    cmdArgs['session-token'],
   );
 
   if (requiresInstance && apiUrl) {

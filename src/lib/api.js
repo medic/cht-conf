@@ -7,8 +7,34 @@ const log = require('./log');
 const url = require('url');
 
 const cache = new Map();
+const sessionCookieName = 'AuthSession';
 
-const _request = (method) => (...args) => retry(() => rpn[method](...args), { retries: 5, randomize: false, factor: 1.5 });
+// Helper function to create request headers with session token (if available)
+const withSessionCookie = (...args) => {
+  const options = typeof args[0] === 'object' ? Object.assign({}, args[0]) : { url: args[0] };
+
+  if (args.length > 1) {
+    // Merge remaining arguments
+    Object.assign(options, ...args.slice(1));
+  }
+
+  const sessionToken = environment.sessionToken;
+  if (sessionToken || options.headers) {
+    options.headers = Object.assign(
+      {}, 
+      options.headers || {}, 
+      sessionToken ? { Cookie: `${sessionCookieName}=${sessionToken}` } : {}
+    );
+  }
+
+  return options;
+};
+
+const _request = (method) => (...args) => {
+  const requestOptions = withSessionCookie(...args);
+  return retry(() => rpn[method](requestOptions), { retries: 5, randomize: false, factor: 1.5 });
+};
+
 const request = {
   get: _request('get'),
   post: _request('post'),
