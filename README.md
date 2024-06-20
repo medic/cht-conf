@@ -106,6 +106,12 @@ If a different username is required, add the `--user` switch:
 
 **NB** - When specifying the URL with `--url`, be sure not to specify the CouchDB database name in the URL. The CHT API will find the correct database.
 
+### Using a session token for authentication
+
+CHT Conf supports authentication using a session token by adding `--session-token` parameter:
+
+	cht --url=https://example.com:12345 --session-token=*my_token* 
+
 ### Into an archive to be uploaded later
 
     cht --archive
