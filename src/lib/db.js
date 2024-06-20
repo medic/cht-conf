@@ -12,7 +12,6 @@ module.exports = () => {
   }
 
   return new PouchDB(environment.apiUrl, {
-    ajax: { timeout: 60000 },
     session: environment.sessionToken,
   });
 };

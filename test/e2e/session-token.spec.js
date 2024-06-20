@@ -1,10 +1,13 @@
 /* eslint-disable no-console */
-const { expect } = require('chai');
+const chai = require('chai');
 const { exec } = require('child_process');
 const rpn = require('request-promise-native');
 const fs = require('fs-extra');
 const path = require('path');
 const PouchDB = require('pouchdb-core');
+
+const { expect } = chai;
+chai.use(require('chai-as-promised'));
 
 const COUCHDB_USERNAME = 'admin';
 const COUCHDB_PASSWORD = 'password';
@@ -45,7 +48,7 @@ const runCliCommand = (command) => {
     exec(`node ${cliPath} ${command}`, { cwd: projectPath }, (error, stdout, stderr) => {
       if (error) {
         console.error(stderr);
-        reject(stdout);
+        reject(new Error(stdout));
       } else {
         resolve(stdout);
       }
@@ -57,7 +60,7 @@ describe('e2e/session-token', function() {
   this.timeout(15000);
   
   let sessionToken;
-  let action = 'upload-docs --force';
+  const action = 'upload-docs --force';
 
   const initializeProject = async () => {
     await runCliCommand('initialise-project-layout');
@@ -137,11 +140,13 @@ describe('e2e/session-token', function() {
 
   it('should fail with incorrect session token', async () => {
     const incorrectToken = 'incorrect-token';
-    try {
-      await runCliCommand(`--url=${COUCHDB_URL} --session-token=${incorrectToken} ${action}`);
-    } catch (error) {
+    const promiseToExecute = runCliCommand(
+      `--url=${COUCHDB_URL} --session-token=${incorrectToken} ${action}`
+    );
+    await expect(promiseToExecute)
+      .to.be.rejected
+      .and.eventually.have.property('message')
       // Bad Request: Malformed AuthSession cookie
-      expect(error).to.contain('INFO Error: Received error code 400');
-    }
+      .that.contains('INFO Error: Received error code 400');
   });
 });
