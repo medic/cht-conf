@@ -1,3 +1,10 @@
+# [3.23.0](https://github.com/medic/cht-conf/compare/v3.22.0...v3.23.0) (2024-06-20)
+
+
+### Features
+
+*  session token authentication ([efbc9cf](https://github.com/medic/cht-conf/commit/efbc9cfc5dc972f355fa07b3a394c63d84b352de))
+
 # [3.22.0](https://github.com/medic/cht-conf/compare/v3.21.5...v3.22.0) (2024-04-29)
 
 
