@@ -4,7 +4,7 @@
   "description": "Configure CHT deployments",
   "main": "./src/lib/main.js",
   "engines": {
-    "node": ">=8.10.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "clean": "rm -rf ./build/",
