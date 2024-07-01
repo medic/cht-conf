@@ -1,3 +1,15 @@
+# [4.0.0](https://github.com/medic/cht-conf/compare/v3.23.0...v4.0.0) (2024-07-01)
+
+
+### Performance Improvements
+
+* **#600:** drop support for Node versions < 18 ([#619](https://github.com/medic/cht-conf/issues/619)) ([496d074](https://github.com/medic/cht-conf/commit/496d0742890f1347557caecc1241bdd590c774c0)), closes [#600](https://github.com/medic/cht-conf/issues/600)
+
+
+### BREAKING CHANGES
+
+* **#600:** Dropping support for NodeJS versions < 18
+
 # [3.23.0](https://github.com/medic/cht-conf/compare/v3.22.0...v3.23.0) (2024-06-20)
 
 
