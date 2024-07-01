@@ -5,8 +5,8 @@ CHT Conf is a command-line interface tool to manage and configure your apps buil
 
 # Requirements
 
-* nodejs 8 or later
-* python 2.7
+* nodejs 18 or later
+* python 3
 * or Docker
 
 # Installation
@@ -349,7 +349,7 @@ Builds brought to you courtesy of GitHub actions.
 
 # Copyright
 
-Copyright 2013-2023 Medic Mobile, Inc. <hello@medic.org>
+Copyright 2013-2024 Medic Mobile, Inc. <hello@medic.org>
 
 # License
 
