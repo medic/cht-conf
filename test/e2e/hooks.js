@@ -38,7 +38,7 @@ const spinUpCHT = () => new Promise((resolve, reject) => {
 });
 
 const takeDownCHT = () => new Promise((resolve, reject) => {
-    const childProcess = spawn(dockerHelperScript, [`${projectName}.env`, 'stop'], { cwd: dockerHelperDirectory });
+    const childProcess = spawn(dockerHelperScript, [`${projectName}.env`, 'destroy'], { cwd: dockerHelperDirectory });
     childProcess.on('error', reject);
     childProcess.on('close', resolve);
 });
