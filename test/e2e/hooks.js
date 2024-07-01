@@ -43,6 +43,14 @@ const takeDownCHT = () => new Promise((resolve, reject) => {
     childProcess.on('close', resolve);
 });
 
+const time = async (fn, label) => {
+  const before = Date.now();
+  const res = await fn();
+  const took = Date.now() - before;
+  console.log(`${label} took ${took}ms`);
+  return res;
+};
+
 before(async () => {
     console.log('before');
 
@@ -51,10 +59,10 @@ before(async () => {
     }
 
     if (!fs.existsSync(dockerHelperScript)) {
-        await downloadDockerHelperScript();
+        await time(downloadDockerHelperScript, 'download docker helper script');
     }
 
-    await spinUpCHT();
+    await time(spinUpCHT, 'spin up cht');
 
     console.log('cht up');
 });
@@ -62,7 +70,7 @@ before(async () => {
 after(async () => {
     console.log('after');
 
-    await takeDownCHT();
+    await time(takeDownCHT, 'take down cht');
 
     console.log('cht down');
 });
