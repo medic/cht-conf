@@ -22,15 +22,15 @@ const downloadDockerHelperScript = () => new Promise((resolve, reject) => {
 });
 
 const spinUpCHT = () => new Promise((resolve, reject) => {
-    const childProcess = spawn(dockerHelperScript, { stdio: 'pipe', cwd: dockerHelperDirectory });
-    childProcess.on('error', reject);
-    childProcess.on('close', resolve);
-
     const configFile = path.resolve(dockerHelperDirectory, `${projectName}.env`);
     if (fs.existsSync(configFile)) {
-        childProcess.stdin.write('n\n');
-        childProcess.stdin.write('1\n');
+        const childProcess = spawn(dockerHelperScript, [`${projectName}.env`, 'up'], { cwd: dockerHelperDirectory });
+        childProcess.on('error', reject);
+        childProcess.on('close', resolve);
     } else {
+        const childProcess = spawn(dockerHelperScript, { stdio: 'pipe', cwd: dockerHelperDirectory });
+        childProcess.on('error', reject);
+        childProcess.on('close', resolve);
         childProcess.stdin.write('y\n');
         childProcess.stdin.write('y\n');
         childProcess.stdin.write(`${projectName}\n`);
