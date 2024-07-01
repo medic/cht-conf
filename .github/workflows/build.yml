@@ -46,11 +46,3 @@ jobs:
         npm ci
     - name: Run E2E tests
       run: npm run test-e2e
-#    - name: Archive Results
-#      uses: actions/upload-artifact@v2
-#      with:
-#        name: Coverage Report
-#        path: |
-#          coverage
-#          .nyc_output
-#      if: ${{ failure() }}
