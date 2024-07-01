@@ -10,3 +10,4 @@ coverage
 .nyc_output
 .DS_Store
 test/.DS_Store
+test/e2e/.cht-docker-helper

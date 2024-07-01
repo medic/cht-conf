@@ -56,7 +56,7 @@ const runCliCommand = (command) => {
   });
 };
 
-describe('e2e/session-token', function() {
+describe('integration/session-token', function() {
   this.timeout(15000);
   
   let sessionToken;
