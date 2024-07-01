@@ -55,12 +55,16 @@ before(async () => {
     }
 
     await spinUpCHT();
+
+    console.log('cht up');
 });
 
 after(async () => {
     console.log('after');
 
     await takeDownCHT();
+
+    console.log('cht down');
 });
 
 beforeEach(() => {
