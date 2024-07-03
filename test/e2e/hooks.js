@@ -1,9 +1,9 @@
-const { spinUpCHT, tearDownCHT } = require('./cht-docker-utils');
+const { spinUpCht, tearDownCht } = require('./cht-docker-utils');
 
 before(async () => {
-    await spinUpCHT();
+    await spinUpCht();
 });
 
 after(async () => {
-    await tearDownCHT();
+    await tearDownCht();
 });

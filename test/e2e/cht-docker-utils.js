@@ -21,21 +21,15 @@ const downloadDockerHelperScript = () => new Promise((resolve, reject) => {
         });
 });
 
-const spinUpCHT = () => new Promise(async (resolve, reject) => {
-    if (!fs.existsSync(dockerHelperDirectory)) {
-        await fs.promises.mkdir(dockerHelperDirectory);
-    }
-
-    if (!fs.existsSync(dockerHelperScript)) {
-        await downloadDockerHelperScript();
-    }
-
+const startProject = () => new Promise((resolve, reject) => {
     const configFile = path.resolve(dockerHelperDirectory, `${projectName}.env`);
     if (fs.existsSync(configFile)) {
+        // project config already exists, reuse it
         const childProcess = spawn(dockerHelperScript, [`${projectName}.env`, 'up'], { cwd: dockerHelperDirectory });
         childProcess.on('error', reject);
         childProcess.on('close', resolve);
     } else {
+        // initialize a new project, config will be saved to `${projectName}.env`
         const childProcess = spawn(dockerHelperScript, { stdio: 'pipe', cwd: dockerHelperDirectory });
         childProcess.on('error', reject);
         childProcess.on('close', resolve);
@@ -45,13 +39,25 @@ const spinUpCHT = () => new Promise(async (resolve, reject) => {
     }
 });
 
-const tearDownCHT = () => new Promise((resolve, reject) => {
+const spinUpCht = async () => {
+    if (!fs.existsSync(dockerHelperDirectory)) {
+        await fs.promises.mkdir(dockerHelperDirectory);
+    }
+
+    if (!fs.existsSync(dockerHelperScript)) {
+        await downloadDockerHelperScript();
+    }
+
+    await startProject();
+};
+
+const tearDownCht = () => new Promise((resolve, reject) => {
     const childProcess = spawn(dockerHelperScript, [`${projectName}.env`, 'destroy'], { cwd: dockerHelperDirectory });
     childProcess.on('error', reject);
     childProcess.on('close', resolve);
 });
 
 module.exports = {
-    spinUpCHT,
-    tearDownCHT,
+    spinUpCht,
+    tearDownCht,
 };
