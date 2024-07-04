@@ -41,6 +41,7 @@ const isProjectReady = async (attempt = 1) => {
     const url = `https://${COUCHDB_USER}:${COUCHDB_PASSWORD}@127-0-0-1.local-ip.medicmobile.org:10443`;
     await request({ uri: `${url}/api/v2/monitoring`, json: true })
       .catch(async (error) => {
+          console.error(error);
           if (error.error.code === 'DEPTH_ZERO_SELF_SIGNED_CERT') {
               await sleep(1000);
               return isProjectReady(attempt + 1);
