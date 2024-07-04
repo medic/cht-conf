@@ -1,58 +1,25 @@
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
 const { expect } = require('chai');
-const fse = require('fs-extra');
 const request = require('request-promise-native');
 
-// TODO: read these 3 settings from the project.env file instead of hardcoding them
-const COUCHDB_USER = 'medic';
-const COUCHDB_PASSWORD = 'password';
-const url = `https://${COUCHDB_USER}:${COUCHDB_PASSWORD}@127-0-0-1.local-ip.medicmobile.org:10443`;
-const projectDirectory = path.resolve(__dirname, '../../build/e2e-edit-app-settings');
-
-// TODO: extract this to utils
-const runChtConf = (command) => new Promise((resolve, reject) => {
-  const cliPath = path.join(__dirname, '../../src/bin/index.js');
-  exec(`node ${cliPath} --url=${url} ${command}`, { cwd: projectDirectory }, (error, stdout) => {
-    if (!error) {
-      return resolve(stdout);
-    }
-
-    // TODO: these should use the logger, should be trace/error logs
-    // console.error('error', error);
-    // console.error('stdout', stdout);
-    // console.error('stderr', stderr);
-    reject(new Error(stdout.toString()));
-  });
-});
+const { cleanupProject, getProjectDirectory, initProject, runChtConf } = require('./cht-conf-utils');
+const { getProjectUrl } = require('./cht-docker-utils');
 
 describe('edit-app-settings', () => {
+  const projectName = 'e2e-edit-app-settings';
+  const projectDirectory = getProjectDirectory(projectName);
+
   before(async () => {
-    if (fs.existsSync(projectDirectory)) {
-      fse.removeSync(projectDirectory);
-    }
-
-    fse.mkdirpSync(projectDirectory);
-    fs.writeFileSync(
-      path.join(projectDirectory, 'package.json'),
-      JSON.stringify({
-        name: 'e2e-edit-app-settings',
-        version: '1.0.0',
-        dependencies: {
-          'cht-conf': 'file:../..',
-        },
-      }, null, 4),
-    );
-
-    await runChtConf('initialise-project-layout');
+    await initProject(projectName);
   });
 
   after(async () => {
-    fse.removeSync(projectDirectory);
+    await cleanupProject(projectName);
   });
 
   it('checks if the mocha test setup works', async () => {
+    const url = getProjectUrl();
     const initialSettings = await request.get({ url: `${url}/api/v1/settings`, json: true });
 
     // eslint-disable-next-line no-undef
