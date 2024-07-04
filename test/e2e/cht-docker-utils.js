@@ -28,8 +28,10 @@ const ensureScriptExists = async () => {
   }
 
   if (!fs.existsSync(dockerHelperScript)) {
+    console.log('downloading script');
     await downloadDockerHelperScript();
   }
+  console.log(fs.readFileSync(dockerHelperScript).toString());
 };
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
