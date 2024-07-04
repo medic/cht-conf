@@ -29,7 +29,6 @@ const ensureScriptExists = async () => {
 
   if (!fs.existsSync(dockerHelperScript)) {
     await downloadDockerHelperScript();
-    console.log(fs.readFileSync(dockerHelperScript).toString());
   }
 };
 
@@ -37,12 +36,12 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const isProjectReady = async (attempt = 1) => {
     console.log(`Checking if CHT is ready, attempt ${attempt}.`);
+    // TODO: read these 3 settings from the project.env file instead of hardcoding them
     const COUCHDB_USER = 'medic';
     const COUCHDB_PASSWORD = 'password';
     const url = `https://${COUCHDB_USER}:${COUCHDB_PASSWORD}@127-0-0-1.local-ip.medicmobile.org:10443`;
     await request({ uri: `${url}/api/v2/monitoring`, json: true })
       .catch(async (error) => {
-          console.error(error);
           if (error.error.code === 'DEPTH_ZERO_SELF_SIGNED_CERT') {
               await sleep(1000);
               return isProjectReady(attempt + 1);
@@ -72,9 +71,6 @@ const startProject = () => new Promise((resolve, reject) => {
             await isProjectReady();
             resolve();
         });
-
-        childProcess.stdout.on('data', data => console.log('out', data.toString()));
-        childProcess.stderr.on('data', data => console.log('err', data.toString()));
 
         childProcess.stdin.write('y\n');
         childProcess.stdin.write('y\n');

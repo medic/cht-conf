@@ -5,11 +5,13 @@ const { expect } = require('chai');
 const fse = require('fs-extra');
 const request = require('request-promise-native');
 
+// TODO: read these 3 settings from the project.env file instead of hardcoding them
 const COUCHDB_USER = 'medic';
 const COUCHDB_PASSWORD = 'password';
 const url = `https://${COUCHDB_USER}:${COUCHDB_PASSWORD}@127-0-0-1.local-ip.medicmobile.org:10443`;
 const projectDirectory = path.resolve(__dirname, '../../build/e2e-edit-app-settings');
 
+// TODO: extract this to utils
 const runChtConf = (command) => new Promise((resolve, reject) => {
     const cliPath = path.join(__dirname, '../../src/bin/index.js');
     exec(`node ${cliPath} --url=${url} ${command}`, { cwd: projectDirectory }, (error, stdout, stderr) => {
@@ -17,9 +19,10 @@ const runChtConf = (command) => new Promise((resolve, reject) => {
             return resolve(stdout);
         }
 
-        console.error('error', error);
-        console.error('stdout', stdout);
-        console.error('stderr', stderr);
+        // TODO: these should use the logger, should be trace/error logs
+        // console.error('error', error);
+        // console.error('stdout', stdout);
+        // console.error('stderr', stderr);
         reject(new Error(stdout.toString()));
     });
 });
@@ -46,7 +49,7 @@ describe('edit-app-settings', () => {
     });
 
     after(async () => {
-        // fse.removeSync(projectDirectory);
+        fse.removeSync(projectDirectory);
     });
 
     it('checks if the mocha test setup works', async () => {
