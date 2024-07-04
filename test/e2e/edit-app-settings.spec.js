@@ -14,7 +14,7 @@ const projectDirectory = path.resolve(__dirname, '../../build/e2e-edit-app-setti
 // TODO: extract this to utils
 const runChtConf = (command) => new Promise((resolve, reject) => {
   const cliPath = path.join(__dirname, '../../src/bin/index.js');
-  exec(`node ${cliPath} --url=${url} ${command}`, { cwd: projectDirectory }, (error, stdout, stderr) => {
+  exec(`node ${cliPath} --url=${url} ${command}`, { cwd: projectDirectory }, (error, stdout) => {
     if (!error) {
       return resolve(stdout);
     }
