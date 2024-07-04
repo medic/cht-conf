@@ -45,6 +45,7 @@ const getProjectConfig = async (projectName) => {
         .filter(entry => entry.length === 2),
     );
   } catch (error) {
+    console.error(error);
     return {
       COUCHDB_USER: 'medic',
       COUCHDB_PASSWORD: 'password',
