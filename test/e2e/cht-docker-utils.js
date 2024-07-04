@@ -71,6 +71,10 @@ const startProject = () => new Promise((resolve, reject) => {
             await isProjectReady();
             resolve();
         });
+
+        childProcess.stdout.on('data', data => console.log('out', data.toString()));
+        childProcess.stderr.on('data', data => console.log('err', data.toString()));
+
         childProcess.stdin.write('y\n');
         childProcess.stdin.write('y\n');
         childProcess.stdin.write(`${projectName}\n`);
