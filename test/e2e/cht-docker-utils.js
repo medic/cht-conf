@@ -92,6 +92,10 @@ const spinUpCht = async () => {
 };
 
 const tearDownCht = async () => {
+    if (!fs.existsSync(path.resolve(dockerHelperDirectory, `${projectName}.env`))) {
+        return;
+    }
+
     await ensureScriptExists();
     await destroyProject();
 };
