@@ -11,7 +11,7 @@ const dockerHelperScript = path.resolve(dockerHelperDirectory, './cht-docker-com
 const downloadDockerHelperScript = () => new Promise((resolve, reject) => {
     const file = fs.createWriteStream(dockerHelperScript, { mode: 0o755 });
     https
-        .get('https://raw.githubusercontent.com/medic/cht-core/master/scripts/docker-helper-4.x/cht-docker-compose.sh', (response) => {
+        .get('https://raw.githubusercontent.com/medic/cht-core/dnm-docker-helper-experiments/scripts/docker-helper-4.x/cht-docker-compose.sh', (response) => {
             response.pipe(file);
             file.on('finish', () => file.close(resolve));
             file.on('error', () => file.close(reject));
@@ -28,10 +28,9 @@ const ensureScriptExists = async () => {
   }
 
   if (!fs.existsSync(dockerHelperScript)) {
-    console.log('downloading script');
     await downloadDockerHelperScript();
+    console.log(fs.readFileSync(dockerHelperScript).toString());
   }
-  console.log(fs.readFileSync(dockerHelperScript).toString());
 };
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
