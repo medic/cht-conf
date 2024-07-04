@@ -19,7 +19,7 @@ describe('edit-app-settings', () => {
   });
 
   it('checks if the mocha test setup works', async () => {
-    const url = getProjectUrl();
+    const url = await getProjectUrl();
     const initialSettings = await request.get({ url: `${url}/api/v1/settings`, json: true });
 
     // eslint-disable-next-line no-undef
