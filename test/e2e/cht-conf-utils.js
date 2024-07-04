@@ -48,7 +48,7 @@ const initProject = async (projectName) => {
     }, null, 4),
   );
 
-  await runChtConf('initialise-project-layout');
+  await runChtConf(projectName, 'initialise-project-layout');
 };
 
 module.exports = {

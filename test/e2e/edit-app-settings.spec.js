@@ -38,7 +38,7 @@ describe('edit-app-settings', () => {
       JSON.stringify(baseSettings, null, 2),
     );
 
-    await runChtConf('compile-app-settings');
+    await runChtConf(projectName, 'compile-app-settings');
     const compiledSettings = JSON.parse(
       await fs.promises.readFile(path.join(projectDirectory, 'app_settings.json'))
     );
@@ -49,7 +49,7 @@ describe('edit-app-settings', () => {
     expect(compiledSettings.locale).to.equal('fr');
     expect(compiledSettings.locale_outgoing).to.equal('fr');
 
-    await runChtConf('upload-app-settings');
+    await runChtConf(projectName, 'upload-app-settings');
     const newSettings = await request.get({ url: `${url}/api/v1/settings`, json: true });
     expect(newSettings.languages.find(language => language.locale === 'en')).to.deep.equal({
       locale: 'en',
