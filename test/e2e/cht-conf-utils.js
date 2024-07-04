@@ -11,15 +11,15 @@ const runChtConf = (projectName, command) => new Promise((resolve, reject) => {
   getProjectUrl(projectName).then(url => {
     const projectDirectory = getProjectDirectory(projectName);
     const cliPath = path.join(__dirname, '../../src/bin/index.js');
-    exec(`node ${cliPath} --url=${url} ${command}`, { cwd: projectDirectory }, (error, stdout) => {
+    exec(`node ${cliPath} --url=${url} ${command}`, { cwd: projectDirectory }, (error, stdout, stderr) => {
       if (!error) {
         return resolve(stdout);
       }
 
       // TODO: these should use the logger, should be trace/error logs
-      // console.error('error', error);
-      // console.error('stdout', stdout);
-      // console.error('stderr', stderr);
+      console.error('error', error);
+      console.error('stdout', stdout);
+      console.error('stderr', stderr);
       reject(new Error(stdout.toString()));
     });
   });
