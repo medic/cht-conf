@@ -30,7 +30,7 @@ describe('edit-app-settings', () => {
             fse.removeSync(projectDirectory);
         }
 
-        fs.mkdirSync(projectDirectory);
+        fse.mkdirpSync(projectDirectory);
         fs.writeFileSync(
             path.join(projectDirectory, 'package.json'),
             JSON.stringify({
