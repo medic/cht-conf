@@ -4,6 +4,8 @@ const https = require('https');
 const { spawn } = require('child_process');
 const request = require('request-promise-native');
 
+const log = require('../../src/lib/log');
+
 const DEFAULT_PROJECT_NAME = 'cht_conf_e2e_tests';
 const dockerHelperDirectory = path.resolve(__dirname, '.cht-docker-helper');
 const dockerHelperScript = path.resolve(dockerHelperDirectory, './cht-docker-compose.sh');
@@ -45,7 +47,7 @@ const getProjectConfig = async (projectName) => {
         .filter(entry => entry.length === 2),
     );
   } catch (error) {
-    console.error(error);
+    log.error(error);
     return {
       COUCHDB_USER: 'medic',
       COUCHDB_PASSWORD: 'password',
@@ -61,7 +63,7 @@ const getProjectUrl = async (projectName = DEFAULT_PROJECT_NAME) => {
 };
 
 const isProjectReady = async (projectName, attempt = 1) => {
-  console.log(`Checking if CHT is ready, attempt ${attempt}.`);
+  log.info(`Checking if CHT is ready, attempt ${attempt}.`);
   const url = await getProjectUrl(projectName);
   await request({ uri: `${url}/api/v2/monitoring`, json: true })
     .catch(async (error) => {
@@ -125,6 +127,7 @@ const tearDownCht = async (projectName = DEFAULT_PROJECT_NAME) => {
 };
 
 module.exports = {
+  DEFAULT_PROJECT_NAME,
   getProjectUrl,
   spinUpCht,
   tearDownCht,

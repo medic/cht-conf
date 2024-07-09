@@ -3,11 +3,17 @@ const path = require('path');
 const { expect } = require('chai');
 const request = require('request-promise-native');
 
-const { cleanupProject, getProjectDirectory, initProject, runChtConf } = require('./cht-conf-utils');
 const { getProjectUrl } = require('./cht-docker-utils');
+const {
+  DEFAULT_PROJECT_NAME,
+  cleanupProject,
+  getProjectDirectory,
+  initProject,
+  runChtConf,
+} = require('./cht-conf-utils');
 
 describe('edit-app-settings', () => {
-  const projectName = 'e2e-edit-app-settings';
+  const projectName = DEFAULT_PROJECT_NAME;
   const projectDirectory = getProjectDirectory(projectName);
 
   before(async () => {
