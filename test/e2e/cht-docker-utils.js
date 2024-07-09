@@ -37,7 +37,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const getProjectConfig = async (projectName) => {
   try {
-    const configFile = await fs.promises.readFile(path.resolve(dockerHelperDirectory, `${projectName}.env`));
+    const configFile = await fs.promises.readFile(path.resolve(dockerHelperDirectory, `${projectName}.env`), 'utf8');
     return Object.fromEntries(
       configFile.toString()
         .split('\n')

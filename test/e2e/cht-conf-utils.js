@@ -3,6 +3,7 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const fse = require('fs-extra');
 
+const log = require('../../src/lib/log');
 const { getProjectUrl } = require('./cht-docker-utils');
 
 const getProjectDirectory = (projectName) => path.resolve(__dirname, `../../build/${projectName}`);
@@ -16,11 +17,8 @@ const runChtConf = (projectName, command) => new Promise((resolve, reject) => {
         return resolve(stdout);
       }
 
-      // TODO: these should use the logger, should be trace/error logs
-      console.error('error', error);
-      console.error('stdout', stdout);
-      console.error('stderr', stderr);
-      reject(new Error(stdout.toString()));
+      log.error(stderr);
+      reject(new Error(stdout.toString('utf8')));
     });
   });
 });

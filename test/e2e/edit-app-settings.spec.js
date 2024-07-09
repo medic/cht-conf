@@ -22,8 +22,9 @@ describe('edit-app-settings', () => {
     const url = await getProjectUrl();
     const initialSettings = await request.get({ url: `${url}/api/v1/settings`, json: true });
 
+    // TODO: remove next line when we upgrade eslint and its `parserOptions.ecmaVersion` setting to parse syntax supported by node 18+
     // eslint-disable-next-line no-undef
-    const baseSettings = structuredClone(initialSettings); // TODO: upgrade eslint to accept syntax supported by node 18+
+    const baseSettings = structuredClone(initialSettings);
     baseSettings.languages = baseSettings.languages.map(language => {
       if (language.locale === 'en') {
         language.enabled = false;
@@ -40,7 +41,7 @@ describe('edit-app-settings', () => {
 
     await runChtConf(projectName, 'compile-app-settings');
     const compiledSettings = JSON.parse(
-      await fs.promises.readFile(path.join(projectDirectory, 'app_settings.json'))
+      await fs.promises.readFile(path.join(projectDirectory, 'app_settings.json'), 'utf8')
     );
     expect(compiledSettings.languages.find(language => language.locale === 'en')).to.deep.equal({
       locale: 'en',
