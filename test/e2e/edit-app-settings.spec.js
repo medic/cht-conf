@@ -24,8 +24,8 @@ describe('edit-app-settings', () => {
     await cleanupProject(projectName);
   });
 
-  it('checks if the mocha test setup works', async () => {
-    const url = await getProjectUrl();
+  it('disables a language, recompile, and push app settings', async () => {
+    const url = await getProjectUrl(projectName);
     const initialSettings = await request.get({ url: `${url}/api/v1/settings`, json: true });
 
     // TODO: remove next line when we upgrade eslint and its `parserOptions.ecmaVersion` setting to parse syntax supported by node 18+
