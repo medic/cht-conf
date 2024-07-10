@@ -89,6 +89,7 @@ const startProject = (projectName) => new Promise((resolve, reject) => {
     childProcess.on('close', resolve);
   } else {
     // initialize a new project, config will be saved to `${projectName}.env`
+    // stdio: 'pipe' to answer the prompts to initialize a project by writing to stdin
     const childProcess = spawn(dockerHelperScript, { stdio: 'pipe', cwd: dockerHelperDirectory });
     childProcess.on('error', reject);
     childProcess.on('close', async () => {
@@ -103,6 +104,7 @@ const startProject = (projectName) => new Promise((resolve, reject) => {
 });
 
 const destroyProject = (projectName) => new Promise((resolve, reject) => {
+  // stdio: 'inherit' to see the script's logs and understand why it requests elevated permissions when cleaning up project files
   const childProcess = spawn(dockerHelperScript, [`${projectName}.env`, 'destroy'], {
     stdio: 'inherit',
     cwd: dockerHelperDirectory
