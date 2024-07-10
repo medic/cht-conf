@@ -38,7 +38,7 @@ const initProject = async (projectName) => {
   fs.writeFileSync(
     path.join(projectDirectory, 'package.json'),
     JSON.stringify({
-      name: 'e2e-edit-app-settings',
+      name: projectName,
       version: '1.0.0',
       dependencies: {
         'cht-conf': 'file:../..',
