@@ -13,8 +13,7 @@ const dockerHelperScript = path.resolve(dockerHelperDirectory, './cht-docker-com
 const downloadDockerHelperScript = () => new Promise((resolve, reject) => {
   const file = fs.createWriteStream(dockerHelperScript, { mode: 0o755 });
   https
-    // TODO: switch back to using `master` branch of cht-core once DNS issue is resolved - https://github.com/medic/medic-infrastructure/issues/571#issuecomment-2209120441
-    .get('https://raw.githubusercontent.com/medic/cht-core/dnm-docker-helper-experiments/scripts/docker-helper-4.x/cht-docker-compose.sh', (response) => {
+    .get('https://raw.githubusercontent.com/medic/cht-core/master/scripts/docker-helper-4.x/cht-docker-compose.sh', (response) => {
       response.pipe(file);
       file.on('finish', () => file.close(resolve));
       file.on('error', () => file.close(reject));
