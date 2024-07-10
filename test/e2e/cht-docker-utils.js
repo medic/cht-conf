@@ -66,6 +66,7 @@ const isProjectReady = async (projectName, attempt = 1) => {
   const url = await getProjectUrl(projectName);
   await request({ uri: `${url}/api/v2/monitoring`, json: true })
     .catch(async (error) => {
+      log.error(error);
       if (error.error.code === 'DEPTH_ZERO_SELF_SIGNED_CERT') {
         await sleep(1000);
         return isProjectReady(projectName, attempt + 1);
