@@ -66,18 +66,17 @@ const isProjectReady = async (projectName, attempt = 1) => {
   const url = await getProjectUrl(projectName);
   await request({ uri: `${url}/api/v2/monitoring`, json: true })
     .catch(async (error) => {
-      log.error(error);
-      if (error.error.code === 'DEPTH_ZERO_SELF_SIGNED_CERT') {
-        await sleep(1000);
-        return isProjectReady(projectName, attempt + 1);
+      if (
+        error.error.code !== 'DEPTH_ZERO_SELF_SIGNED_CERT' ||
+        ![502, 503].includes(error.statusCode)
+      ) {
+        // unexpected error, log it to keep a trace,
+        // but we'll keep retrying until the instance is up, or we hit the timeout limit
+        log.trace(error);
       }
 
-      if ([502, 503].includes(error.statusCode)) {
-        await sleep(1000);
-        return isProjectReady(projectName, attempt + 1);
-      }
-
-      throw error;
+      await sleep(1000);
+      return isProjectReady(projectName, attempt + 1);
     });
 };
 
