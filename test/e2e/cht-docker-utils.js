@@ -38,22 +38,18 @@ const ensureScriptExists = async () => {
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const getProjectConfig = async (projectName) => {
-  try {
-    const configFile = await fs.promises.readFile(path.resolve(dockerHelperDirectory, `${projectName}.env`), 'utf8');
-    return Object.fromEntries(
-      configFile.toString()
-        .split('\n')
-        .map(line => line.split('='))
-        .filter(entry => entry.length === 2),
-    );
-  } catch (error) {
-    log.error(error);
-    return {
-      COUCHDB_USER: 'medic',
-      COUCHDB_PASSWORD: 'password',
-      NGINX_HTTPS_PORT: '10443',
-    };
+  const configFilePath = path.resolve(dockerHelperDirectory, `${projectName}.env`);
+  if (!fs.existsSync(configFilePath)) {
+    throw new Error(`Unexpected error: config file not found at ${configFilePath}`);
   }
+
+  const configFile = await fs.promises.readFile(configFilePath, 'utf8');
+  return Object.fromEntries(
+    configFile.toString()
+      .split('\n')
+      .map(line => line.split('='))
+      .filter(entry => entry.length === 2),
+  );
 };
 
 const getProjectUrl = async (projectName = DEFAULT_PROJECT_NAME) => {
