@@ -3,9 +3,8 @@ const path = require('path');
 const { expect } = require('chai');
 const request = require('request-promise-native');
 
-const { getProjectUrl } = require('./cht-docker-utils');
+const { DEFAULT_PROJECT_NAME, getProjectUrl } = require('./cht-docker-utils');
 const {
-  DEFAULT_PROJECT_NAME,
   cleanupProject,
   getProjectDirectory,
   initProject,
