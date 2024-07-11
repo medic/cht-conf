@@ -309,7 +309,7 @@ Execute `npm test` to run static analysis checks and the test suite. Requires Do
 
 ### End-to-end tests
 
-Run `npm run e2e-test` to run the end-to-end test suite against an actual CHT instance locally.
+Run `npm run test-e2e` to run the end-to-end test suite against an actual CHT instance locally.
 These tests rely on [CHT Docker Helper](https://docs.communityhealthtoolkit.org/hosting/4.x/app-developer/#cht-docker-helper-for-4x)
 to spin up and tear down an instance locally.
 
