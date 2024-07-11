@@ -25,14 +25,14 @@ const runChtConf = (projectName, command) => new Promise((resolve, reject) => {
 
 const cleanupProject = (projectName) => {
   const projectDirectory = getProjectDirectory(projectName);
-  fse.removeSync(projectDirectory);
+  if (fs.existsSync(projectDirectory)) {
+    fse.removeSync(projectDirectory);
+  }
 };
 
 const initProject = async (projectName) => {
   const projectDirectory = getProjectDirectory(projectName);
-  if (fs.existsSync(projectDirectory)) {
-    fse.removeSync(projectDirectory);
-  }
+  cleanupProject(projectName);
 
   fse.mkdirpSync(projectDirectory);
   fs.writeFileSync(
