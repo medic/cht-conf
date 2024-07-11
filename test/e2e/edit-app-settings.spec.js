@@ -25,11 +25,7 @@ describe('edit-app-settings', () => {
 
   it('disables a language, recompile, and push app settings', async () => {
     const url = await getProjectUrl(projectName);
-    const initialSettings = await request.get({ url: `${url}/api/v1/settings`, json: true });
-
-    // TODO: remove next line when we upgrade eslint and its `parserOptions.ecmaVersion` setting to parse syntax supported by node 18+
-    // eslint-disable-next-line no-undef
-    const baseSettings = structuredClone(initialSettings);
+    const baseSettings = await request.get({ url: `${url}/api/v1/settings`, json: true });
     baseSettings.languages = baseSettings.languages.map(language => {
       if (language.locale === 'en') {
         language.enabled = false;
@@ -63,6 +59,5 @@ describe('edit-app-settings', () => {
     });
     expect(newSettings.locale).to.equal('fr');
     expect(newSettings.locale_outgoing).to.equal('fr');
-
   });
 });
