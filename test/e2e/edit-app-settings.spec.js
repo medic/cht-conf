@@ -1,19 +1,17 @@
-const fs = require('fs');
-const path = require('path');
 const { expect } = require('chai');
 const request = require('request-promise-native');
 
 const { DEFAULT_PROJECT_NAME, getProjectUrl } = require('./cht-docker-utils');
 const {
   cleanupProject,
-  getProjectDirectory,
   initProject,
   runChtConf,
+  readCompiledAppSettings,
+  writeBaseAppSettings,
 } = require('./cht-conf-utils');
 
 describe('edit-app-settings', () => {
   const projectName = DEFAULT_PROJECT_NAME;
-  const projectDirectory = getProjectDirectory(projectName);
 
   before(async () => {
     await initProject(projectName);
@@ -39,15 +37,10 @@ describe('edit-app-settings', () => {
     });
     baseSettings.locale = 'fr';
     baseSettings.locale_outgoing = 'fr';
-    await fs.promises.writeFile(
-      path.join(projectDirectory, 'app_settings/base_settings.json'),
-      JSON.stringify(baseSettings, null, 2),
-    );
+    await writeBaseAppSettings(projectName, baseSettings);
 
     await runChtConf(projectName, 'compile-app-settings');
-    const compiledSettings = JSON.parse(
-      await fs.promises.readFile(path.join(projectDirectory, 'app_settings.json'), 'utf8')
-    );
+    const compiledSettings = await readCompiledAppSettings(projectName);
     expect(compiledSettings.languages.find(language => language.locale === 'en')).to.deep.equal({
       locale: 'en',
       enabled: false,

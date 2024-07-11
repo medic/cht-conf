@@ -49,9 +49,28 @@ const initProject = async (projectName) => {
   await runChtConf(projectName, 'initialise-project-layout');
 };
 
+const writeBaseAppSettings = async (projectName, baseSettings) => {
+  const projectDirectory = getProjectDirectory(projectName);
+
+  return await fs.promises.writeFile(
+    path.join(projectDirectory, 'app_settings/base_settings.json'),
+    JSON.stringify(baseSettings, null, 2),
+  );
+};
+
+const readCompiledAppSettings = async (projectName) => {
+  const projectDirectory = getProjectDirectory(projectName);
+
+  return JSON.parse(
+    await fs.promises.readFile(path.join(projectDirectory, 'app_settings.json'), 'utf8')
+  );
+};
+
 module.exports = {
   cleanupProject,
   getProjectDirectory,
   initProject,
   runChtConf,
+  readCompiledAppSettings,
+  writeBaseAppSettings,
 };
