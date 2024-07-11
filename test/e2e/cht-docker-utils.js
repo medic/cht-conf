@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const { spawn } = require('child_process');
+const fse = require('fs-extra');
 const request = require('request-promise-native');
 
 const log = require('../../src/lib/log');
@@ -81,33 +82,26 @@ const isProjectReady = async (projectName, attempt = 1) => {
 };
 
 const startProject = (projectName) => new Promise((resolve, reject) => {
-  const configFile = path.resolve(dockerHelperDirectory, `${projectName}.env`);
-  if (fs.existsSync(configFile)) {
-    // project config already exists, reuse it
-    const childProcess = spawn(dockerHelperScript, [`${projectName}.env`, 'up'], { cwd: dockerHelperDirectory });
-    childProcess.on('error', reject);
-    childProcess.on('close', resolve);
-  } else {
-    // initialize a new project, config will be saved to `${projectName}.env`
-    // stdio: 'pipe' to answer the prompts to initialize a project by writing to stdin
-    const childProcess = spawn(dockerHelperScript, { stdio: 'pipe', cwd: dockerHelperDirectory });
-    childProcess.on('error', reject);
-    childProcess.on('close', async () => {
-      await isProjectReady(projectName);
-      resolve();
-    });
+  log.info(`Starting CHT instance "${projectName}"`);
 
-    childProcess.stdin.write('y\n');
-    childProcess.stdin.write('y\n');
-    childProcess.stdin.write(`${projectName}\n`);
-  }
+  // stdio: 'pipe' to answer the prompts to initialize a project by writing to stdin
+  const childProcess = spawn(dockerHelperScript, { stdio: 'pipe', cwd: dockerHelperDirectory });
+  childProcess.on('error', reject);
+  childProcess.on('close', async () => {
+    await isProjectReady(projectName);
+    resolve();
+  });
+
+  childProcess.stdin.write('y\n');
+  childProcess.stdin.write('y\n');
+  childProcess.stdin.write(`${projectName}\n`);
 });
 
 const destroyProject = (projectName) => new Promise((resolve, reject) => {
   // stdio: 'inherit' to see the script's logs and understand why it requests elevated permissions when cleaning up project files
   const childProcess = spawn(dockerHelperScript, [`${projectName}.env`, 'destroy'], {
     stdio: 'inherit',
-    cwd: dockerHelperDirectory
+    cwd: dockerHelperDirectory,
   });
   childProcess.on('error', reject);
   childProcess.on('close', resolve);
@@ -119,12 +113,16 @@ const spinUpCht = async (projectName = DEFAULT_PROJECT_NAME) => {
 };
 
 const tearDownCht = async (projectName = DEFAULT_PROJECT_NAME) => {
-  if (!fs.existsSync(path.resolve(dockerHelperDirectory, `${projectName}.env`))) {
+  if (!fs.existsSync(dockerHelperDirectory)) {
     return;
   }
 
-  await ensureScriptExists();
-  await destroyProject(projectName);
+  if (fs.existsSync(path.resolve(dockerHelperDirectory, `${projectName}.env`))) {
+    await ensureScriptExists();
+    await destroyProject(projectName);
+  }
+
+  fse.removeSync(dockerHelperDirectory);
 };
 
 module.exports = {
