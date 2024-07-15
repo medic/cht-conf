@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/medic/cht-conf/compare/v4.0.0...v4.1.0) (2024-07-15)
+
+
+### Features
+
+* **#425:** E2E test actions ([#620](https://github.com/medic/cht-conf/issues/620)) ([ba54d49](https://github.com/medic/cht-conf/commit/ba54d49730b73c6d77b219a45b8ba3d98b909227)), closes [#425](https://github.com/medic/cht-conf/issues/425) [#425](https://github.com/medic/cht-conf/issues/425)
+
 # [4.0.0](https://github.com/medic/cht-conf/compare/v3.23.0...v4.0.0) (2024-07-01)
 
 
