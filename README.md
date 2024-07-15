@@ -303,7 +303,15 @@ To develop a new action or improve an existing one, check the ["Actions" doc](sr
 
 ## Testing
 
+### Unit tests
+
 Execute `npm test` to run static analysis checks and the test suite. Requires Docker to run integration tests against a CouchDB instance. 
+
+### End-to-end tests
+
+Run `npm run test-e2e` to run the end-to-end test suite against an actual CHT instance locally. These tests rely on [CHT Docker Helper](https://docs.communityhealthtoolkit.org/hosting/4.x/app-developer/#cht-docker-helper-for-4x) to spin up and tear down an instance locally.
+
+The code interfacing with CHT Docker Helper lives in [`test/e2e/cht-docker-utils.js`](./test/e2e/cht-docker-utils.js). You should rely on the API exposed by this file to orchestrate CHT instances for testing purposes. It is preferable to keep the number of CHT instances orchestrated in E2E tests low as it takes a non-negligible amount of time to spin up an instance and can quickly lead to timeouts.
 
 ## Executing your local branch
 

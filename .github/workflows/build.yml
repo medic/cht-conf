@@ -30,3 +30,22 @@ jobs:
           coverage
           .nyc_output
       if: ${{ failure() }}
+
+  e2e:
+    name: E2E tests
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18.x
+    - name: Install dependencies
+      run: |
+        pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+        npm ci
+    - name: Hard code local-ip IP in /etc/hosts per https://github.com/medic/medic-infrastructure/issues/571#issuecomment-2209120441
+      run: |
+        echo "15.188.129.97 local-ip.medicmobile.org" | sudo tee -a /etc/hosts
+    - name: Run E2E tests
+      run: npm run test-e2e
