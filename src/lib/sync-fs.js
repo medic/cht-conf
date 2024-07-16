@@ -1,3 +1,4 @@
+// eslint-disable-next-line node/no-missing-require
 const { parse: csvParse } = require('csv-parse/sync');
 const fs = require('fs');
 const mkdirp = require('mkdirp').sync;
