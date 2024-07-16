@@ -4,7 +4,7 @@ const sinon = require('sinon');
 
 const api = require('../api-stub');
 const environment = require('../../src/lib/environment');
-const uploadDocs = rewire('../../src/fn/upload-docs');
+let uploadDocs = rewire('../../src/fn/upload-docs');
 const userPrompt = rewire('../../src/lib/user-prompt');
 let readLine = { keyInYN: () => true };
 userPrompt.__set__('readline', readLine);
@@ -67,12 +67,14 @@ describe('upload-docs', function() {
     });
   });
 
-  it('should retry in batches', async () => {
+  it.only('should retry in batches', async () => {
     const bulkDocs = sinon.stub()
       .onCall(0).throws({ error: 'timeout' })
       .returns(Promise.resolve([{}]));
     fs.recurseFiles = () => new Array(10).fill('').map((x, i) => `${i}.doc.json`);
-    sinon.useFakeTimers(0);
+    const clock = sinon.useFakeTimers(0);
+    uploadDocs = rewire('../../src/fn/upload-docs');
+    uploadDocs.__set__('userPrompt', userPrompt);
 
     const imported_date = new Date(0).toISOString();
     return uploadDocs.__with__({
@@ -102,6 +104,10 @@ describe('upload-docs', function() {
         { _id: '2', imported_date },
         { _id: '3', imported_date  },
       ]);
+
+      clock.restore();
+      uploadDocs = rewire('../../src/fn/upload-docs');
+      uploadDocs.__set__('userPrompt', userPrompt);
     });
   });
 
