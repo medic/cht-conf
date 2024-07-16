@@ -1,4 +1,4 @@
-const csvParse = require('csv-parse/lib/sync');
+const { parse: csvParse } = require('csv-parse/sync');
 const userPrompt = require('../../src/lib/user-prompt');
 
 const api = require('../lib/api');

@@ -1,4 +1,4 @@
-const csvParse = require('csv-parse/lib/sync');
+const { parse: csvParse } = require('csv-parse/sync');
 const fs = require('fs');
 const mkdirp = require('mkdirp').sync;
 const os = require('os');
