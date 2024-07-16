@@ -67,7 +67,7 @@ describe('upload-docs', function() {
     });
   });
 
-  it.only('should retry in batches', async () => {
+  it('should retry in batches', async () => {
     const bulkDocs = sinon.stub()
       .onCall(0).throws({ error: 'timeout' })
       .returns(Promise.resolve([{}]));
