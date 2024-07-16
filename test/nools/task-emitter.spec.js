@@ -370,7 +370,7 @@ describe('task-emitter', () => {
       });
 
       it('given contact without reported_date, dueDate defaults to now', () => {
-        sinon.useFakeTimers();
+        const clock = sinon.useFakeTimers();
 
         // given
         const config = {
@@ -387,6 +387,8 @@ describe('task-emitter', () => {
         const expected = new Date();
         expected.setHours(0, 0, 0, 0);
         expect(emitted[0].date.getTime()).to.eq(expected.getTime());
+
+        clock.restore();
       });
 
       it('dueDate function is invoked with expected data', () => {
@@ -672,7 +674,7 @@ describe('task-emitter', () => {
 
     describe('defaultResolvedIf', () => {
       it('given task definition without resolvedIf, it defaults to defaultResolvedIf', () => {
-        sinon.useFakeTimers();
+        const clock = sinon.useFakeTimers();
 
         // given
         const config = {
@@ -689,6 +691,8 @@ describe('task-emitter', () => {
         // then
         expect(utilsMock.isFormSubmittedInWindow.callCount).to.equal(1);
         expect(emitted[0].resolved).to.be.true;
+
+        clock.restore();
       });
 
       it('this.definition.defaultResolvedIf can be used inside resolvedIf', () => {

@@ -74,8 +74,8 @@
     "xpath": "0.0.33"
   },
   "devDependencies": {
-    "@commitlint/cli": "^13.2.0",
-    "@commitlint/config-conventional": "^13.2.0",
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "body-parser": "^1.20.2",
@@ -85,15 +85,15 @@
     "chai-shallow-deep-equal": "^1.4.6",
     "chai-xml": "^0.4.1",
     "eslint-plugin-node": "^11.1.0",
-    "express": "^4.18.2",
+    "express": "^4.19.2",
     "express-pouchdb": "^4.2.0",
-    "fs-extra": "8.1.0",
-    "husky": "^7.0.2",
-    "mocha": "^6.2.3",
-    "nyc": "^15.1.0",
+    "fs-extra": "11.2.0",
+    "husky": "^9.0.11",
+    "mocha": "^10.6.0",
+    "nyc": "^17.0.0",
     "pouchdb-adapter-memory": "^7.2.2",
-    "rewire": "^5.0.0",
-    "semantic-release": "^18.0.0",
-    "sinon": "^8.1.1"
+    "rewire": "^7.0.0",
+    "semantic-release": "^22.0.0",
+    "sinon": "^18.0.0"
   }
 }
