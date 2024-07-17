@@ -1,3 +1,4 @@
+// TODO: remove next line after upgrading eslint
 // eslint-disable-next-line node/no-missing-require
 const { parse: csvParse } = require('csv-parse/sync');
 const fs = require('fs');
