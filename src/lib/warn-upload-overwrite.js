@@ -153,18 +153,6 @@ const preUploadDoc = async (db, localDoc) => {
 
   const diff = jsonDiff.diffString(remoteDoc, localDoc, { color: true });
 
-  // eslint-disable-next-line
-  const colors = require('json-diff/node_modules/colors/safe');
-  // eslint-disable-next-line
-  console.log("supports color", colors.supportsColor(), colors.enabled);
-  // eslint-disable-next-line
-  console.log(colors.green);
-  // eslint-disable-next-line
-  console.log(colors.red);
-  // eslint-disable-next-line
-  console.log("diff", JSON.stringify(diff));
-  // eslint-disable-next-line
-  console.log("diff2", diff);
   if (diff) {
     let index = userPrompt.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
     if (index === 2) { // diff
