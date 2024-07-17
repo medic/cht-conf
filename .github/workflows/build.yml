@@ -6,6 +6,8 @@ jobs:
   build:
     name: Build for Node version ${{ matrix.node-version }}
     runs-on: ubuntu-22.04
+    env:
+      FORCE_COLOR: 1
 
     strategy:
       matrix:
