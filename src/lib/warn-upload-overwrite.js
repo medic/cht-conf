@@ -153,6 +153,10 @@ const preUploadDoc = async (db, localDoc) => {
 
   const diff = jsonDiff.diffString(remoteDoc, localDoc);
 
+  // eslint-disable-next-line
+  console.log("diff", JSON.stringify(diff));
+  // eslint-disable-next-line
+  console.log("diff2", diff);
   if (diff) {
     let index = userPrompt.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
     if (index === 2) { // diff
