@@ -2,6 +2,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 const webpack = require('webpack');
 
 const fsUtils = require('../sync-fs');
@@ -54,26 +55,53 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         'node_modules',
       ],
     },
-    module: {
-      rules: [
-        {
-          enforce: 'pre',
-          test: /\.js$/,
-          loader: require.resolve('eslint-loader'),
-          exclude: /node_modules/,
-          options: {
-            baseConfig: baseEslintConfig,
-            useEslintrc: true,
-            ignore: !options.skipEslintIgnore,
-
-            // pack the library regardless of the eslint result
-            failOnError: false,
-            failOnWarning: false,
-          },
-        },
-      ],
-    },
+    // module: {
+    //   rules: [
+    //     {
+    //       enforce: 'pre',
+    //       test: /\.js$/,
+    //       loader: require.resolve('eslint-webpack-plugin'),
+    //       exclude: /node_modules/,
+    //       options: {
+    //         baseConfig: baseEslintConfig,
+    //         useEslintrc: true,
+    //         ignore: !options.skipEslintIgnore,
+    //
+    //         // pack the library regardless of the eslint result
+    //         failOnError: false,
+    //         failOnWarning: false,
+    //       },
+    //     },
+    //   ],
+    // },
     plugins: [
+      new ESLintPlugin({
+        extensions: 'js',
+        exclude: 'node_modules',
+
+        // overrideConfig: {
+        //   env: { es6: true, node: true },
+        //   root: true,
+        //   parserOptions: { ecmaVersion: 5 },
+        //   extends: 'eslint:recommended',
+        //   rules: {
+        //     eqeqeq: 'error',
+        //     'no-bitwise': 'error',
+        //     'no-buffer-constructor': 'error',
+        //     'no-caller': 'error',
+        //     'no-console': 'off',
+        //     'no-debugger': 'off',
+        //     semi: [ 'error', 'always' ],
+        //     quotes: [ 'error', 'single', [Object] ]
+        //   },
+        //   globals: { user: true, Utils: true, cht: true }
+        // },
+        useEslintrc: true,
+        ignore: !options.skipEslintIgnore,
+        // pack the library regardless of the eslint result
+        failOnError: false,
+        failOnWarning: false,
+      }),
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/), // Ignore all optional deps of moment.js
     ]
   }]);
