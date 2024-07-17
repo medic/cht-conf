@@ -121,7 +121,7 @@ describe('warn-upload-overwrite', () => {
 
   describe('prompts when attempting to overwrite docs', () => {
 
-    it.only('shows diff when local is different from remote and the user requests a diff', () => {
+    it('shows diff when local is different from remote and the user requests a diff', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(readline, 'keyInSelect').returns(2);
       sinon.stub(apiStub.db, 'get').resolves({ _id: 'a', _rev: 'x', value: 1 });
