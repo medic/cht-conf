@@ -151,7 +151,7 @@ const preUploadDoc = async (db, localDoc) => {
     return Promise.resolve(true);
   }
 
-  const diff = jsonDiff.diffString(remoteDoc, localDoc, { color: true });
+  const diff = jsonDiff.diffString(remoteDoc, localDoc);
 
   if (diff) {
     let index = userPrompt.keyInSelect(responseChoicesWithDiff, question, {cancel: false});
