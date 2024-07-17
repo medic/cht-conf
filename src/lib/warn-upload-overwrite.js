@@ -151,7 +151,7 @@ const preUploadDoc = async (db, localDoc) => {
     return Promise.resolve(true);
   }
 
-  const diff = jsonDiff.diffString(remoteDoc, localDoc);
+  const diff = jsonDiff.diffString(remoteDoc, localDoc, { color: true });
 
   // eslint-disable-next-line
   console.log("diff", JSON.stringify(diff));
