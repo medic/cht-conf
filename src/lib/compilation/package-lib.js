@@ -55,47 +55,12 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         'node_modules',
       ],
     },
-    // module: {
-    //   rules: [
-    //     {
-    //       enforce: 'pre',
-    //       test: /\.js$/,
-    //       loader: require.resolve('eslint-webpack-plugin'),
-    //       exclude: /node_modules/,
-    //       options: {
-    //         baseConfig: baseEslintConfig,
-    //         useEslintrc: true,
-    //         ignore: !options.skipEslintIgnore,
-    //
-    //         // pack the library regardless of the eslint result
-    //         failOnError: false,
-    //         failOnWarning: false,
-    //       },
-    //     },
-    //   ],
-    // },
     plugins: [
       new ESLintPlugin({
+        context: pathToProject,
         extensions: 'js',
         exclude: 'node_modules',
-
-        // overrideConfig: {
-        //   env: { es6: true, node: true },
-        //   root: true,
-        //   parserOptions: { ecmaVersion: 5 },
-        //   extends: 'eslint:recommended',
-        //   rules: {
-        //     eqeqeq: 'error',
-        //     'no-bitwise': 'error',
-        //     'no-buffer-constructor': 'error',
-        //     'no-caller': 'error',
-        //     'no-console': 'off',
-        //     'no-debugger': 'off',
-        //     semi: [ 'error', 'always' ],
-        //     quotes: [ 'error', 'single', [Object] ]
-        //   },
-        //   globals: { user: true, Utils: true, cht: true }
-        // },
+        baseConfig: baseEslintConfig,
         useEslintrc: true,
         ignore: !options.skipEslintIgnore,
         // pack the library regardless of the eslint result
@@ -120,17 +85,21 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
       info(stats.toString());
 
       if (stats.hasErrors()) {
-        const hasErrorsNotRelatedToLinting = stats.toJson().errors.some(err => !err.includes('node_modules/eslint-loader'));
-        const shouldHalt = options.haltOnLintMessage || hasErrorsNotRelatedToLinting;
-        if (shouldHalt) {
-          return reject(Error(`Webpack errors when building ${libName}`));
-        } else {
-          warn('Ignoring linting errors');
-        }
+        return reject(Error(`Webpack errors when building ${libName}`));
       }
 
-      if (stats.hasWarnings() && options.haltOnWebpackWarning) {
-        return reject(Error(`Webpack warnings when building ${libName}`));
+      if (stats.hasWarnings()) {
+        const hasWarningsRelatedToLinting = stats.toJson().warnings.some(warning => warning.includes('warnings potentially fixable'));
+        const shouldHalt = options.haltOnWebpackWarning ||
+          options.haltOnLintMessage && hasWarningsRelatedToLinting;
+
+        if (shouldHalt) {
+          return reject(Error(`Webpack warnings when building ${libName}`));
+        }
+
+        if (hasWarningsRelatedToLinting) {
+          warn('Ignoring linting errors');
+        }
       }
 
       const outputPath = path.join(outputDirectoryPath, outputFilename);
