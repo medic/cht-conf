@@ -1,6 +1,6 @@
 {
   "env": {
-    "es6": true,
+    "es2022": true,
     "node": true
   },
   "extends": [
@@ -8,7 +8,7 @@
     "plugin:n/recommended"
   ],
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 2022
   },
   "rules": {
     "eqeqeq": "error",

@@ -1,7 +1,3 @@
-// NOSONAR_BEGIN
-// TODO: remove next line after upgrading eslint
-// NOSONAR_END
-// eslint-disable-next-line n/no-missing-require
 const { parse: csvParse } = require('csv-parse/sync');
 const fs = require('fs');
 const mkdirp = require('mkdirp').sync;
