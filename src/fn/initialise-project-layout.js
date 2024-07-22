@@ -20,10 +20,10 @@ const LAYOUT = {
   '.eslintrc': `{
   "env": {
     "node": true,
-    "es6": true
+    "es2022": true,
   },
   "parserOptions": {
-    "ecmaVersion": 6
+    "ecmaVersion": 2022
   }
 }`,
   forms: {
