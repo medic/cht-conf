@@ -2,6 +2,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 const webpack = require('webpack');
 
 const fsUtils = require('../sync-fs');
@@ -54,26 +55,18 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         'node_modules',
       ],
     },
-    module: {
-      rules: [
-        {
-          enforce: 'pre',
-          test: /\.js$/,
-          loader: require.resolve('eslint-loader'),
-          exclude: /node_modules/,
-          options: {
-            baseConfig: baseEslintConfig,
-            useEslintrc: true,
-            ignore: !options.skipEslintIgnore,
-
-            // pack the library regardless of the eslint result
-            failOnError: false,
-            failOnWarning: false,
-          },
-        },
-      ],
-    },
     plugins: [
+      new ESLintPlugin({
+        context: pathToProject,
+        extensions: 'js',
+        exclude: 'node_modules',
+        baseConfig: baseEslintConfig,
+        useEslintrc: true,
+        ignore: !options.skipEslintIgnore,
+        // pack the library regardless of the eslint result
+        failOnError: false,
+        failOnWarning: false,
+      }),
       new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/), // Ignore all optional deps of moment.js
     ]
   }]);
@@ -92,17 +85,21 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
       info(stats.toString());
 
       if (stats.hasErrors()) {
-        const hasErrorsNotRelatedToLinting = stats.toJson().errors.some(err => !err.includes('node_modules/eslint-loader'));
-        const shouldHalt = options.haltOnLintMessage || hasErrorsNotRelatedToLinting;
-        if (shouldHalt) {
-          return reject(Error(`Webpack errors when building ${libName}`));
-        } else {
-          warn('Ignoring linting errors');
-        }
+        return reject(Error(`Webpack errors when building ${libName}`));
       }
 
-      if (stats.hasWarnings() && options.haltOnWebpackWarning) {
-        return reject(Error(`Webpack warnings when building ${libName}`));
+      if (stats.hasWarnings()) {
+        const hasWarningsRelatedToLinting = stats.toJson().warnings.some(warning => warning.includes('warnings potentially fixable'));
+        const shouldHalt = options.haltOnWebpackWarning ||
+          options.haltOnLintMessage && hasWarningsRelatedToLinting;
+
+        if (shouldHalt) {
+          return reject(Error(`Webpack warnings when building ${libName}`));
+        }
+
+        if (hasWarningsRelatedToLinting) {
+          warn('Ignoring linting errors');
+        }
       }
 
       const outputPath = path.join(outputDirectoryPath, outputFilename);

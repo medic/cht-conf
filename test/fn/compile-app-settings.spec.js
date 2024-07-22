@@ -107,7 +107,7 @@ const scenarios = [
   {
     description: 'should reject a project with eslint error',
     folder: 'eslint-error/project',
-    error: 'Webpack errors when building',
+    error: 'Webpack warnings when building',
   },
   {
     description: 'should reject a configuration using invalid forms.json or schedules.json files',
