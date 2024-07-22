@@ -1,4 +1,5 @@
-const csvParse = require('csv-parse/lib/sync');
+// eslint-disable-next-line node/no-missing-require
+const { parse: csvParse } = require('csv-parse/sync');
 const userPrompt = require('../../src/lib/user-prompt');
 
 const api = require('../lib/api');

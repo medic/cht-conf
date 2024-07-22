@@ -2,8 +2,7 @@ const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { info, trace, warn } = require('../lib/log');
 
-const SVGO = require('svgo');
-const svgo = new SVGO();
+const svgo = require('svgo');
 
 module.exports = {
   requiresInstance: false,

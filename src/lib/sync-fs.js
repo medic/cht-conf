@@ -1,4 +1,5 @@
-const csvParse = require('csv-parse/lib/sync');
+// eslint-disable-next-line node/no-missing-require
+const { parse: csvParse } = require('csv-parse/sync');
 const fs = require('fs');
 const mkdirp = require('mkdirp').sync;
 const os = require('os');
