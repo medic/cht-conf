@@ -89,7 +89,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
       }
 
       if (stats.hasWarnings()) {
-        const hasWarningsRelatedToLinting = stats.toJson().warnings.some(warning => warning.includes('warnings potentially fixable'));
+        const hasWarningsRelatedToLinting = stats.toJson().warnings.some(warning => warning.message.includes('warnings potentially fixable'));
         const shouldHalt = options.haltOnWebpackWarning ||
           options.haltOnLintMessage && hasWarningsRelatedToLinting;
 
