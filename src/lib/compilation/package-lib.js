@@ -67,7 +67,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         failOnError: false,
         failOnWarning: false,
       }),
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/), // Ignore all optional deps of moment.js
+      new webpack.IgnorePlugin({ resourceRegExp: /^\.\/locale$/, contextRegExp: /moment$/ }), // Ignore all optional deps of moment.js
     ]
   }]);
 
