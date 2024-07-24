@@ -18,7 +18,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
   const outputDirectoryPath = os.tmpdir();
   const outputFilename = `./${libName}.js`;
 
-  const compiler = webpack([{
+  const compiler = webpack({
     mode: 'production',
     entry,
     output: {
@@ -68,8 +68,8 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         failOnWarning: false,
       }),
       new webpack.IgnorePlugin({ resourceRegExp: /^\.\/locale$/, contextRegExp: /moment$/ }), // Ignore all optional deps of moment.js
-    ]
-  }]);
+    ],
+  });
 
   return new Promise((resolve, reject) => {
     compiler.run((err, stats) => {
