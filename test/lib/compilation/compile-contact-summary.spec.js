@@ -17,9 +17,6 @@ const genMocks = () => ({
 });
 
 describe('compile-contact-summary', () => {
-  beforeEach(() => sinon.useFakeTimers(1));
-  afterEach(() => sinon.restore());
-
   describe('mocked scenarios', () => {
     it('no contact-summary files yields exception', () =>
       compileContactSummary(`${BASE_DIR}/empty`)

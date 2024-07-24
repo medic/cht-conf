@@ -18,7 +18,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
   const outputDirectoryPath = os.tmpdir();
   const outputFilename = `./${libName}.js`;
 
-  const compiler = webpack([{
+  const compiler = webpack({
     mode: 'production',
     entry,
     output: {
@@ -26,7 +26,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
       filename: outputFilename,
       libraryTarget: options.libraryTarget ? 'umd' : undefined,
       globalObject: options.libraryTarget,
-      hashFunction: 'sha512' // remove when we upgrade to webpack 5
+      hashFunction: 'xxhash64'
     },
     optimization: {
       minimize: !!options.minifyScripts,
@@ -67,9 +67,9 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         failOnError: false,
         failOnWarning: false,
       }),
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/), // Ignore all optional deps of moment.js
-    ]
-  }]);
+      new webpack.IgnorePlugin({ resourceRegExp: /^\.\/locale$/, contextRegExp: /moment$/ }), // Ignore all optional deps of moment.js
+    ],
+  });
 
   return new Promise((resolve, reject) => {
     compiler.run((err, stats) => {
@@ -89,7 +89,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
       }
 
       if (stats.hasWarnings()) {
-        const hasWarningsRelatedToLinting = stats.toJson().warnings.some(warning => warning.includes('warnings potentially fixable'));
+        const hasWarningsRelatedToLinting = stats.toJson().warnings.some(warning => warning.message.includes('warnings potentially fixable'));
         const shouldHalt = options.haltOnWebpackWarning ||
           options.haltOnLintMessage && hasWarningsRelatedToLinting;
 
