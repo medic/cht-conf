@@ -1,4 +1,4 @@
-FROM node:16-slim
+FROM node:20-slim
 
 RUN apt update \
     && apt install --no-install-recommends -y \
@@ -9,12 +9,17 @@ RUN apt update \
       openssh-client \
       python3-pip \
       python3-setuptools \
+      python3-venv \
       python3-wheel \
       xsltproc \
     # Remove chromium to save space. We only installed it to get the transitive dependencies that are needed
     # when running tests with puppeteer. (puppeteer-chromium-resolver will always download its own version of chromium)
     && apt remove -y chromium \
     && rm -rf /var/lib/apt/lists/*
+
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv "$VIRTUAL_ENV"
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN python3 -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
