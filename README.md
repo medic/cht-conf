@@ -42,7 +42,7 @@ Install [Docker](https://www.docker.com/). If you are using Windows, you also ne
 
 ##### VS Code Development Container
 
-If you want to develop CHT apps with VS Code, you can use the Docker image as a Development Container. This will allow you to use the `cht-conf` utility and its associated tech stack from within VS Code (without needing to install dependencies like NodeJS on your host system).
+If you want to develop CHT apps with VS Code, you can use the Docker image as a Development Container. This will allow you to use the `cht` utility and its associated tech stack from within VS Code (without needing to install dependencies like NodeJS on your host system).
 
 See the [CHT Documentation](https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/#developing-with-vs-code-dev-container) for more information on building CHT apps with VS Code Development Containers.
 
@@ -58,7 +58,7 @@ docker run -it --rm -v "$PWD":/workdir medicmobile/cht-app-ide initialise-projec
 
 #### Note on connecting to a local CHT instance
 
-When using `cht-conf` within a Docker container to connect to a CHT instance that is running on your local machine (e.g. a development instance), you cannot use the `--local` flag or `localhost` in your `--url` parameter (since these will be interpreted as "local to the container"). 
+When using `cht` within a Docker container to connect to a CHT instance that is running on your local machine (e.g. a development instance), you cannot use the `--local` flag or `localhost` in your `--url` parameter (since these will be interpreted as "local to the container"). 
 
 It is recommended to run a local CHT instance using the [CHT Docker Helper script](https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/). You can connect to the resulting `...my.local-ip.co` URL from the Docker container (or the VS Code terminal). (Just make sure the port your CHT instance is hosted on is not blocked by your firewall). 
 
@@ -66,7 +66,7 @@ It is recommended to run a local CHT instance using the [CHT Docker Helper scrip
 
 To enable tab completion in bash, add the following to your `.bashrc`/`.bash_profile`:
 
-	eval "$(cht-conf --shell-completion=bash)"
+	eval "$(cht --shell-completion=bash)"
 
 ## Upgrading
 
