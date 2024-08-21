@@ -1,3 +1,10 @@
+## [4.1.1](https://github.com/medic/cht-conf/compare/v4.1.0...v4.1.1) (2024-08-21)
+
+
+### Bug Fixes
+
+* **#632:** replace cht-conf with cht in readme.md ([fc5b7f3](https://github.com/medic/cht-conf/commit/fc5b7f3ee5e1b8ae381b3182efbeedd4b6631418)), closes [#632](https://github.com/medic/cht-conf/issues/632)
+
 # [4.1.0](https://github.com/medic/cht-conf/compare/v4.0.0...v4.1.0) (2024-07-15)
 
 
