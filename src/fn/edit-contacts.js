@@ -105,14 +105,27 @@ function getIDs(csv, docType) {
   return rows.map((item) => idPrefix + item[index]);
 }
 
+const filterColumnsByName = (columnNames) => (column) => columnNames.includes(column.split(':')[0]);
+const filterColumnsByName = (columnNames, column) => columnNames.includes(column.split(':')[0]);
+
+const getColumnsToInclude = (columnNamesToInclude, allColumns) => {
+  if (columnNamesToInclude.length === 0 ) {
+    return allColumns;
+  }
+  return allColumns.filter((column) => filterColumnsByName(columnNamesToInclude, column));
+
+  const includedColumnFilter = filterColumnsByName(columnNamesToInclude);
+  return allColumns.filter(includedColumnFilter);
+}
+
 function processDocs(docType, csv, documentDocs, args) {
   const { rows, cols } = fs.readCsv(csv);
   const uuidIndex = cols.indexOf(DOCUMENT_ID);
   const colNames = args.colNames;
-  let toIncludeColumns, toIncludeIndex;
+  const toIncludeColumns = getColumnsToInclude(colNames, cols);
+  let toIncludeIndex;
   if (!colNames.length) {
     warn(' No columns specified, the script will add all the columns in the CSV!');
-    toIncludeColumns = cols;
     toIncludeIndex = [];
 
   } else {
@@ -120,7 +133,6 @@ function processDocs(docType, csv, documentDocs, args) {
       throw Error('The column name(s) specified do not exist.');
     }
 
-    toIncludeColumns = cols.filter(column => colNames.includes(column.split(':')[0]));
     toIncludeIndex = toIncludeColumns.map(column => cols.indexOf(column));
 
     if (toIncludeColumns.includes(DOCUMENT_ID)) {
