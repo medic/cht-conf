@@ -106,50 +106,62 @@ function getIDs(csv, docType) {
 }
 
 const filterColumnsByName = (columnNames) => (column) => columnNames.includes(column.split(':')[0]);
-const filterColumnsByName = (columnNames, column) => columnNames.includes(column.split(':')[0]);
 
 const getColumnsToInclude = (columnNamesToInclude, allColumns) => {
+  const columnsWithoutId = allColumns.filter((value) => value !== DOCUMENT_ID);
   if (columnNamesToInclude.length === 0 ) {
-    return allColumns;
+    return columnsWithoutId;
   }
-  return allColumns.filter((column) => filterColumnsByName(columnNamesToInclude, column));
 
   const includedColumnFilter = filterColumnsByName(columnNamesToInclude);
-  return allColumns.filter(includedColumnFilter);
-}
+  return columnsWithoutId.filter(includedColumnFilter);
+};
+
+/*docType: "contact"
+
+csv: "data/edit-contacts/csv/contact.csv"
+
+documentDocs: {
+  "09efb53f-9cd8-524c-9dfd-f62c242f1817": {
+    "type": "person",
+    "name": "carla",
+    "_id": "09efb53f-9cd8-524c-9dfd-f62c242f1817",
+    "_rev": "1-b35dd3584f8bb37bcfe55016b1efe53b"
+  },
+  "0ebca32d-c1b7-5522-94a3-97dd8b3df146": {
+    "type": "person",
+    "name": "janie",
+    "_id": "0ebca32d-c1b7-5522-94a3-97dd8b3df146",
+    "_rev": "1-ccec0024d98011c6d33c223ba389b1da"
+  },
+  "7ac33d1f-10d8-5198-b39d-9d61595292*/
+
+const getIndexToInclude = (colNames, cols, toIncludeColumns) => {
+  if (!colNames.length) {
+    warn(' No columns specified, the script will add all the columns in the CSV!');
+    return [];
+  }
+  return toIncludeColumns.map(column => cols.indexOf(column));
+};
 
 function processDocs(docType, csv, documentDocs, args) {
   const { rows, cols } = fs.readCsv(csv);
   const uuidIndex = cols.indexOf(DOCUMENT_ID);
   const colNames = args.colNames;
+  columnsAreValid(cols,colNames);
   const toIncludeColumns = getColumnsToInclude(colNames, cols);
-  let toIncludeIndex;
-  if (!colNames.length) {
-    warn(' No columns specified, the script will add all the columns in the CSV!');
-    toIncludeIndex = [];
+  let toIncludeIndex = getIndexToInclude(colNames, cols, toIncludeColumns);
 
-  } else {
-    if (!columnsAreValid(cols,colNames)) {
-      throw Error('The column name(s) specified do not exist.');
-    }
-
-    toIncludeIndex = toIncludeColumns.map(column => cols.indexOf(column));
-
-    if (toIncludeColumns.includes(DOCUMENT_ID)) {
-      toIncludeIndex.splice(toIncludeColumns.indexOf(DOCUMENT_ID),1);
-    }
-  }
-
-  if (toIncludeColumns.includes(DOCUMENT_ID)) {
-    toIncludeColumns.splice(toIncludeColumns.indexOf(DOCUMENT_ID),1);
-  }
   return rows
     .map(r => processCsv(docType, toIncludeColumns, r, uuidIndex, toIncludeIndex, documentDocs));
 }
 
-function columnsAreValid(csvColumns, toIncludeColumns) {
+function columnsAreValid(csvColumns = [], toIncludeColumns) {
   const splitCsvColumns = csvColumns.map(column => column && column.split(':')[0]);
-  return toIncludeColumns.every(column => splitCsvColumns.includes(column));    
+  const columnsValid = toIncludeColumns.every(column => splitCsvColumns.includes(column));
+  if(!columnsValid) {
+    throw Error('The column name(s) specified do not exist.');
+  }
 }
 
 function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs) {
