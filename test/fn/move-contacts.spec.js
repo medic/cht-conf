@@ -5,7 +5,7 @@ const fs = require('../../src/lib/sync-fs');
 const environment = require('../../src/lib/environment');
 
 const PouchDB = require('pouchdb-core');
-PouchDB.plugin(require('pouchdb-adapter-http'));
+PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const moveContactsModule = rewire('../../src/fn/move-contacts');
@@ -50,8 +50,7 @@ describe('move-contacts', () => {
   const updateHierarchyRules = contact_types => upsert('settings', { settings: { contact_types } });
 
   beforeEach(async () => {
-    // using remote couchdb because of https://github.com/pouchdb/pouchdb/issues/8370
-    pouchDb = new PouchDB(`http://localhost:6984/scenario${scenarioCount++}`);
+    pouchDb = new PouchDB(`move-contacts-${scenarioCount++}`);
 
     await mockHierarchy(pouchDb, {
       district_1: {

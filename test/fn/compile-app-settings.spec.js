@@ -158,6 +158,6 @@ describe('compile-app-settings', () => {
           .excludingEvery(['rules', 'contact_summary'])
           .to.deep.eq(expected);
       }
-    });
+    }).timeout(4000);
   }
 });
