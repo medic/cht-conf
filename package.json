@@ -9,9 +9,7 @@
   "scripts": {
     "clean": "rm -rf ./build/",
     "eslint": "eslint 'src/**/*.js' test/*.js 'test/**/*.js'",
-    "docker-start-couchdb": "npm run docker-stop-couchdb && docker run -d -p 6984:5984 --rm --name cht-conf-couchdb couchdb:2.3.1 && sh test/scripts/wait_for_response_code.sh 6984 200 CouchDB",
-    "docker-stop-couchdb": "docker stop cht-conf-couchdb || true",
-    "test": "npm run eslint && npm run docker-start-couchdb && npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha --forbid-only \"../../test/**/*.spec.js\" --exclude \"../../test/e2e/**/*.spec.js\" && cd ../.. && npm run docker-stop-couchdb",
+    "test": "npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha \"../../test/**/*.spec.js\" --exclude \"../../test/e2e/**/*.spec.js\"",
     "test-e2e": "mocha --config test/e2e/.mocharc.js",
     "semantic-release": "semantic-release"
   },

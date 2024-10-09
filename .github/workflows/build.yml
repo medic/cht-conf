@@ -22,8 +22,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install pyxform
       run: pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-    - name: npm ci and test
-      run: npm ci && npm test
+    - run: npm ci
+    - run: npm run eslint
+    - run: npm test
     - name: Archive Results
       uses: actions/upload-artifact@v4
       with:
