@@ -1,3 +1,10 @@
+## [4.1.2](https://github.com/medic/cht-conf/compare/v4.1.1...v4.1.2) (2024-10-09)
+
+
+### Bug Fixes
+
+* **#635:** update upload-artifact GH action to version 4 ([#636](https://github.com/medic/cht-conf/issues/636)) ([bafd6e3](https://github.com/medic/cht-conf/commit/bafd6e35607a481daaa911b16af4899bb1a00f7a)), closes [#635](https://github.com/medic/cht-conf/issues/635) [#635](https://github.com/medic/cht-conf/issues/635)
+
 ## [4.1.1](https://github.com/medic/cht-conf/compare/v4.1.0...v4.1.1) (2024-08-21)
 
 
