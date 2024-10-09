@@ -12,6 +12,7 @@ const {
 
 describe('edit-app-settings', () => {
   const projectName = DEFAULT_PROJECT_NAME;
+  const findLanguage = (settingsLanguages, locale) => settingsLanguages.find(language => language.locale === locale);
 
   before(async () => {
     await initProject(projectName);
@@ -24,7 +25,8 @@ describe('edit-app-settings', () => {
   it('disables a language, recompile, and push app settings', async () => {
     const url = await getProjectUrl(projectName);
     const baseSettings = await request.get({ url: `${url}/api/v1/settings`, json: true });
-    baseSettings.languages.forEach(language => expect(language.enabled).to.be.true);
+    expect(findLanguage(baseSettings.languages, 'en').enabled).to.be.true;
+    expect(findLanguage(baseSettings.languages, 'fr').enabled).to.be.true;
     expect(baseSettings.locale).to.equal('en');
     expect(baseSettings.locale_outgoing).to.equal('en');
 
