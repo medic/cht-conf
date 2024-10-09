@@ -30,7 +30,7 @@ const createProjectPath = async () => {
   });
 };
 
-describe('integration/session-token', () => {
+describe('session-token', () => {
   let authenticatedUrl;
   let unauthenticatedUrl;
   let sessionToken;
