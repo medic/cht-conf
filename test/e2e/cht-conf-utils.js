@@ -10,8 +10,7 @@ const getProjectDirectory = (projectName = DEFAULT_PROJECT_NAME) => path.resolve
 
 const runChtConf = async (
   command,
-  { url, sessionToken } = {},
-  projectName = DEFAULT_PROJECT_NAME
+  { url, sessionToken, projectName = DEFAULT_PROJECT_NAME } = {},
 ) => {
   const instanceUrl = url || await getProjectUrl(projectName);
   const sessionParam = sessionToken ? `--session-token=${sessionToken}` : '';
@@ -56,7 +55,7 @@ const initProject = async (projectName = DEFAULT_PROJECT_NAME) => {
     }, null, 4),
   );
 
-  await runChtConf('initialise-project-layout', projectName);
+  await runChtConf('initialise-project-layout', { projectName });
 };
 
 const writeBaseAppSettings = async (baseSettings, projectName = DEFAULT_PROJECT_NAME) => {

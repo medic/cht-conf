@@ -152,7 +152,7 @@ describe('watch-project', () => {
       .then(mockApi.getAppSettings)
       .then((settings) => JSON.parse(settings.content))
       .then((settings) => expect(settings.locale).equal('es'));
-  }).timeout(16000);
+  });
 
   it('watch-project: convert app settings', () => {
     const appSettingsPath = path.join(testDir, 'app_settings.json');
@@ -178,7 +178,7 @@ describe('watch-project', () => {
       .then(messages => {
         assert.deepEqual(messages.custom, { a: 'first', test: 'new' });
       });
-  }).timeout(16000);
+  });
 
   it('watch-project: upload resources', () => {
     return watchWrapper(editResources, 'resources.json')

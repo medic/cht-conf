@@ -10,7 +10,7 @@ const {
   getProjectDirectory, runChtConf,
 } = require('./cht-conf-utils');
 
-const COUCH_URL_PATTERN = /^(https?:\/\/)([^:]+):([^@]+)@(.*)$/;
+const COUCH_URL_PATTERN = /^(?<prefix>https?:\/\/)(?<user>[^:]+):(?<password>[^@]+)@(?<rootUrl>.*)$/;
 
 const projectPath = getProjectDirectory();
 
@@ -68,7 +68,7 @@ describe('session-token', () => {
     await createProjectPath();
     initializeDatabase();
     authenticatedUrl = await getProjectUrl();
-    const [, prefix, user, password, rootUrl] = authenticatedUrl.match(COUCH_URL_PATTERN);
+    const { prefix, user, password, rootUrl } = authenticatedUrl.match(COUCH_URL_PATTERN).groups;
     unauthenticatedUrl = `${prefix}${rootUrl}`;
     sessionToken = await getSessionToken(user, password);
   });
