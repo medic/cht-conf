@@ -4,33 +4,42 @@ const fs = require('fs');
 const fse = require('fs-extra');
 
 const log = require('../../src/lib/log');
-const { getProjectUrl } = require('./cht-docker-utils');
+const { getProjectUrl, DEFAULT_PROJECT_NAME } = require('./cht-docker-utils');
 
-const getProjectDirectory = (projectName) => path.resolve(__dirname, `../../build/${projectName}`);
+const getProjectDirectory = (projectName = DEFAULT_PROJECT_NAME) => path.resolve(__dirname, `../../build/${projectName}`);
 
-const runChtConf = (projectName, command) => new Promise((resolve, reject) => {
-  getProjectUrl(projectName).then(url => {
-    const projectDirectory = getProjectDirectory(projectName);
-    const cliPath = path.join(__dirname, '../../src/bin/index.js');
-    exec(`node ${cliPath} --url=${url} ${command}`, { cwd: projectDirectory }, (error, stdout, stderr) => {
-      if (!error) {
-        return resolve(stdout);
+const runChtConf = async (
+  command,
+  { url, sessionToken, projectName = DEFAULT_PROJECT_NAME } = {},
+) => {
+  const instanceUrl = url || await getProjectUrl(projectName);
+  const sessionParam = sessionToken ? `--session-token=${sessionToken}` : '';
+  const projectDirectory = getProjectDirectory(projectName);
+  const cliPath = path.join(__dirname, '../../src/bin/index.js');
+  return new Promise((resolve, reject) => {
+    exec(
+      `node ${cliPath} --url=${instanceUrl} ${sessionParam} ${command}`,
+      { cwd: projectDirectory },
+      (error, stdout, stderr) => {
+        if (!error) {
+          return resolve(stdout);
+        }
+
+        log.error(stderr);
+        reject(new Error(stdout.toString('utf8')));
       }
-
-      log.error(stderr);
-      reject(new Error(stdout.toString('utf8')));
-    });
+    );
   });
-});
+};
 
-const cleanupProject = (projectName) => {
+const cleanupProject = (projectName = DEFAULT_PROJECT_NAME) => {
   const projectDirectory = getProjectDirectory(projectName);
   if (fs.existsSync(projectDirectory)) {
     fse.removeSync(projectDirectory);
   }
 };
 
-const initProject = async (projectName) => {
+const initProject = async (projectName = DEFAULT_PROJECT_NAME) => {
   const projectDirectory = getProjectDirectory(projectName);
   cleanupProject(projectName);
 
@@ -46,10 +55,10 @@ const initProject = async (projectName) => {
     }, null, 4),
   );
 
-  await runChtConf(projectName, 'initialise-project-layout');
+  await runChtConf('initialise-project-layout', { projectName });
 };
 
-const writeBaseAppSettings = async (projectName, baseSettings) => {
+const writeBaseAppSettings = async (baseSettings, projectName = DEFAULT_PROJECT_NAME) => {
   const projectDirectory = getProjectDirectory(projectName);
 
   return await fs.promises.writeFile(
@@ -58,7 +67,7 @@ const writeBaseAppSettings = async (projectName, baseSettings) => {
   );
 };
 
-const readCompiledAppSettings = async (projectName) => {
+const readCompiledAppSettings = async (projectName = DEFAULT_PROJECT_NAME) => {
   const projectDirectory = getProjectDirectory(projectName);
 
   return JSON.parse(

@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const request = require('request-promise-native');
 
-const { DEFAULT_PROJECT_NAME, getProjectUrl } = require('./cht-docker-utils');
+const { getProjectUrl } = require('./cht-docker-utils');
 const {
   cleanupProject,
   initProject,
@@ -11,19 +11,13 @@ const {
 } = require('./cht-conf-utils');
 
 describe('edit-app-settings', () => {
-  const projectName = DEFAULT_PROJECT_NAME;
   const findLanguage = (settingsLanguages, locale) => settingsLanguages.find(language => language.locale === locale);
 
-  before(async () => {
-    await initProject(projectName);
-  });
-
-  after(async () => {
-    await cleanupProject(projectName);
-  });
+  before(initProject);
+  after(cleanupProject);
 
   it('disables a language, recompile, and push app settings', async () => {
-    const url = await getProjectUrl(projectName);
+    const url = await getProjectUrl();
     const baseSettings = await request.get({ url: `${url}/api/v1/settings`, json: true });
     expect(findLanguage(baseSettings.languages, 'en').enabled).to.be.true;
     expect(findLanguage(baseSettings.languages, 'fr').enabled).to.be.true;
@@ -39,10 +33,10 @@ describe('edit-app-settings', () => {
     });
     baseSettings.locale = 'fr';
     baseSettings.locale_outgoing = 'fr';
-    await writeBaseAppSettings(projectName, baseSettings);
+    await writeBaseAppSettings(baseSettings);
 
-    await runChtConf(projectName, 'compile-app-settings');
-    const compiledSettings = await readCompiledAppSettings(projectName);
+    await runChtConf('compile-app-settings');
+    const compiledSettings = await readCompiledAppSettings();
     expect(compiledSettings.languages.find(language => language.locale === 'en')).to.deep.equal({
       locale: 'en',
       enabled: false,
@@ -50,7 +44,7 @@ describe('edit-app-settings', () => {
     expect(compiledSettings.locale).to.equal('fr');
     expect(compiledSettings.locale_outgoing).to.equal('fr');
 
-    await runChtConf(projectName, 'upload-app-settings');
+    await runChtConf('upload-app-settings');
     const newSettings = await request.get({ url: `${url}/api/v1/settings`, json: true });
     expect(newSettings.languages.find(language => language.locale === 'en')).to.deep.equal({
       locale: 'en',
