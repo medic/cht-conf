@@ -139,7 +139,11 @@ const getCsvRowFilterFn = (uuidIndex, toIncludeIndex) => {
     return row => toIncludeIndex.map(index => row[index]);
   }
 
-  return row => [...row].splice(uuidIndex,1);
+  return row => {
+    const updatedRow = [...row];
+    updatedRow.splice(uuidIndex, 1);
+    return updatedRow;
+  };
 };
 
 const isColNameProtected = col => EDIT_RESERVED_COL_NAMES.includes(col.split('.')[0]);
