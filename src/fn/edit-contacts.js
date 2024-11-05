@@ -134,12 +134,12 @@ const getDocIdForCsvRow = (docType, uuidIndex) => row => {
   return `${idPrefix}${documentId}`;
 };
 
-const getCsvRowToProcess = (uuidIndex, toIncludeIndex) => {
+const getCsvRowFilterFn = (uuidIndex, toIncludeIndex) => {
   if (toIncludeIndex.length > 0) {
     return row => toIncludeIndex.map(index => row[index]);
   }
 
-  return row => row.toSpliced(uuidIndex,1);
+  return row => [...row].splice(uuidIndex,1);
 };
 
 const isColNameProtected = col => EDIT_RESERVED_COL_NAMES.includes(col.split('.')[0]);
@@ -179,7 +179,7 @@ const processDocs = (docType, csv, documentDocs, args) => {
   const uuidIndex = cols.indexOf(DOCUMENT_ID);
   const colNamesToInclude = getColNamesToInclude(cols, args.colNames);
   const colIndexesToInclude = getColIndexesToInclude(args.colNames, cols, colNamesToInclude);
-  const getFilteredCsvRow = getCsvRowToProcess(uuidIndex, colIndexesToInclude);
+  const getFilteredCsvRow = getCsvRowFilterFn(uuidIndex, colIndexesToInclude);
 
   const rowDocs = rows
     .map(getDocIdForCsvRow(docType, uuidIndex))
