@@ -170,14 +170,7 @@ const getColIndexesToInclude = (colNames, cols, toIncludeColumns) => {
   } 
   return [];
 };
-/**
- * 
- * @param {string | 'contact'} docType 
- * @param {string} csv path to the csv file
- * @param {object} documentDocs dictionary of contact docs keyed by their _id value
- * @param {{ colNames:string[], csvFiles: string[], docDirectoryPath: string, updatedOfflineDocs: ? }} args 
- * @returns 
- */
+
 const processDocs = (docType, csv, documentDocs, args) => {
   const { rows, cols } = fs.readCsv(csv);
   const uuidIndex = cols.indexOf(DOCUMENT_ID);
