@@ -1,3 +1,19 @@
+/**
+ * @param contactSummary {{
+ *   fields: {
+ *     appliesToType: string[] | undefined,
+ *     appliesIf: () => boolean | undefined,
+ *   }[] | undefined,
+ *   context: object | undefined,
+ *   cards: {
+ *     appliesToType: string[] | undefined,
+ *     appliesIf: (report: object) => boolean | boolean | undefined,
+ *   }[] | undefined,
+ * }}
+ * @param contact {object}
+ * @param reports {object[]}
+ * @returns {{cards: object[], fields: object[]}}
+ */
 function emitter(contactSummary, contact, reports) {
   var fields = contactSummary.fields || [];
   var context = contactSummary.context || {};
