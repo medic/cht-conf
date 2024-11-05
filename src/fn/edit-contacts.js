@@ -110,8 +110,7 @@ function columnsAreValid(csvColumns, toIncludeColumns) {
   return toIncludeColumns.every(column => splitCsvColumns.includes(column));    
 }
 const parseColName = colName => colName.split(':')[0];
-const keepTargetColNames = targetColNames => column => targetColNames.includes(parseColName(column));
-const getToIncludeColumns = (csvColNames, targetColNames) => {
+const getColNamesToInclude = (csvColNames, targetColNames) => {
   const filteredCsvColNames = csvColNames.filter(colName => colName !== DOCUMENT_ID);
   if (!targetColNames.length) {
     warn(' No columns specified, the script will add all the columns in the CSV!');
@@ -122,7 +121,7 @@ const getToIncludeColumns = (csvColNames, targetColNames) => {
     throw Error('The column name(s) specified do not exist.');
   }
 
-  return filteredCsvColNames.filter(keepTargetColNames(targetColNames));
+  return filteredCsvColNames.filter(column => targetColNames.includes(parseColName(column)));
 };
 
 const getCsvColNameIndex = csvColNames => colName => csvColNames.indexOf(colName);
@@ -135,12 +134,12 @@ const getDocIdForCsvRow = (docType, uuidIndex) => row => {
   return `${idPrefix}${documentId}`;
 };
 
-const getCsvRowToProcess = (uuidIndex, toIncludeIndex) => row => {
+const getCsvRowToProcess = (uuidIndex, toIncludeIndex) => {
   if (toIncludeIndex.length > 0) {
-    return toIncludeIndex.map(index => row[index]);
+    return row => toIncludeIndex.map(index => row[index]);
   }
 
-  return row.toSpliced(uuidIndex,1);
+  return row => row.toSpliced(uuidIndex,1);
 };
 
 const isColNameProtected = col => EDIT_RESERVED_COL_NAMES.includes(col.split('.')[0]);
@@ -161,6 +160,12 @@ const processCsvColumn = (doc, row) => (colName, index) => {
 };
 const processCsvRow = colNames => ([doc, row]) => colNames.forEach(processCsvColumn(doc, row));
 
+const getColIndexesToInclude = (colNames, cols, toIncludeColumns) => {
+  if(colNames.length) {
+    return mapColNamesToCsvIndex(cols, toIncludeColumns);
+  } 
+  return [];
+};
 /**
  * 
  * @param {string | 'contact'} docType 
@@ -172,17 +177,18 @@ const processCsvRow = colNames => ([doc, row]) => colNames.forEach(processCsvCol
 const processDocs = (docType, csv, documentDocs, args) => {
   const { rows, cols } = fs.readCsv(csv);
   const uuidIndex = cols.indexOf(DOCUMENT_ID);
-  const toIncludeColumns = getToIncludeColumns(cols, args.colNames);
-  const toIncludeIndexes = args.colNames.length ? mapColNamesToCsvIndex(cols, toIncludeColumns) : [];
+  const colNamesToInclude = getColNamesToInclude(cols, args.colNames);
+  const colIndexesToInclude = getColIndexesToInclude(args.colNames, cols, colNamesToInclude);
+  const getFilteredCsvRow = getCsvRowToProcess(uuidIndex, colIndexesToInclude);
 
   const rowDocs = rows
     .map(getDocIdForCsvRow(docType, uuidIndex))
     .map(id => documentDocs[id]);
 
   rows
-    .map(getCsvRowToProcess(uuidIndex, toIncludeIndexes))
+    .map(getFilteredCsvRow)
     .map((row, index) => [rowDocs[index], row])
-    .map(processCsvRow(toIncludeColumns));
+    .map(processCsvRow(colNamesToInclude));
   return rowDocs;
 };
 
