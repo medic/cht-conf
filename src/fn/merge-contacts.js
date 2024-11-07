@@ -8,12 +8,12 @@ const pouch = require('../lib/db');
 const { trace, info } = require('../lib/log');
 
 const {
-  HIERARCHY_ROOT,
   BATCH_SIZE,
   prepareDocumentDirectory,
-  prettyPrintDocument, 
+  prettyPrintDocument,
   replaceLineageInAncestors,
   bold,
+  writeDocumentToDisk,
   fetch,
 } = require('../lib/mm-shared');
 
@@ -28,18 +28,25 @@ module.exports = {
 };
 
 const updateLineagesAndStage = async (options, db) => {
-  trace(`Fetching contact details for parent: ${options.parentId}`);
-  const parentDoc = await fetch.contact(db, options.parentId);
+  trace(`Fetching contact details: ${options.winnerId}`);
+  const winnerDoc = await fetch.contact(db, options.winnerId);
 
-  const constraints = await lineageConstraints(db, parentDoc);
-  const contactDocs = await fetch.contactList(db, options.contactIds);
-  await validateContacts(contactDocs, constraints);
+  const constraints = await lineageConstraints(db, winnerDoc);
+  const loserDocs = await fetch.contactList(db, options.loserIds);
+  await validateContacts(loserDocs, constraints);
 
   let affectedContactCount = 0, affectedReportCount = 0;
-  const replacementLineage = lineageManipulation.createLineageFromDoc(parentDoc);
-  for (let contactId of options.contactIds) {
-    const contactDoc = contactDocs[contactId];
-    const descendantsAndSelf = await fetch.descendantsOf(db, contactId);
+  const replacementLineage = lineageManipulation.createLineageFromDoc(winnerDoc);
+  for (let loserId of options.loserIds) {
+    const contactDoc = loserDocs[loserId];
+    const descendantsAndSelf = await fetch.descendantsOf(db, loserId);
+
+    const self = descendantsAndSelf.find(d => d._id === loserId);
+    writeDocumentToDisk(options, {
+      _id: self._id,
+      _rev: self._rev,
+      _deleted: true,
+    });
 
     // Check that primary contact is not removed from areas where they are required
     const invalidPrimaryContactDoc = await constraints.getPrimaryContactViolations(contactDoc, descendantsAndSelf);
@@ -48,7 +55,7 @@ const updateLineagesAndStage = async (options, db) => {
     }
 
     trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)}.`);
-    const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, contactId);
+    const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, loserId);
 
     const ancestors = await fetch.ancestorsOf(db, contactDoc);
     trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
@@ -56,7 +63,7 @@ const updateLineagesAndStage = async (options, db) => {
 
     minifyLineageAndWriteToDisk([...updatedDescendants, ...updatedAncestors], options);
 
-    const movedReportsCount = await moveReports(db, descendantsAndSelf, options, replacementLineage, contactId);
+    const movedReportsCount = await moveReports(db, descendantsAndSelf, options, options.winnerId, loserId);
     trace(`${movedReportsCount} report(s) created by these affected contact(s) will be updated`);
 
     affectedContactCount += updatedDescendants.length + updatedAncestors.length;
@@ -81,14 +88,14 @@ const validateContacts = async (contactDocs, constraints) => {
   });
 
   /*
-  It is nice that the tool can move lists of contacts as one operation, but strange things happen when two contactIds are in the same lineage.
+  It is nice that the tool can move lists of contacts as one operation, but strange things happen when two loserIds are in the same lineage.
   For example, moving a district_hospital and moving a contact under that district_hospital to a new clinic causes multiple colliding writes to the same json file.
   */
-  const contactIds = Object.keys(contactDocs);
+  const loserIds = Object.keys(contactDocs);
   Object.values(contactDocs)
     .forEach(doc => {
       const parentIdsOfDoc = (doc.parent && lineageManipulation.pluckIdsFromLineage(doc.parent)) || [];
-      const violatingParentId = parentIdsOfDoc.find(parentId => contactIds.includes(parentId));
+      const violatingParentId = parentIdsOfDoc.find(winnerId => loserIds.includes(winnerId));
       if (violatingParentId) {
         throw Error(`Unable to move two documents from the same lineage: '${doc._id}' and '${violatingParentId}'`);
       }
@@ -99,23 +106,23 @@ const validateContacts = async (contactDocs, constraints) => {
 const parseExtraArgs = (projectDir, extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
 
-  const contactIds = (args.contacts || args.contact || '')
+  const loserIds = (args.losers || args.loser || '')
     .split(',')
-    .filter(id => id);
+    .filter(Boolean);
 
-  if (contactIds.length === 0) {
+  if (loserIds.length === 0) {
     usage();
-    throw Error('Action "move-contacts" is missing required list of contacts to be moved');
+    throw Error(`Action "merge-contacts" is missing required list of contacts ${bold('--losers')} to be merged into the winner`);
   }
 
-  if (!args.parent) {
+  if (!args.winner) {
     usage();
-    throw Error('Action "move-contacts" is missing required parameter parent');
+    throw Error(`Action "merge-contacts" is missing required parameter ${bold('--winner')}`);
   }
 
   return {
-    parentId: args.parent,
-    contactIds,
+    winnerId: args.winner,
+    loserIds,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
   };
@@ -123,35 +130,45 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
 
 const usage = () => {
   info(`
-${bold('cht-conf\'s move-contacts action')}
-When combined with 'upload-docs' this action effectively moves a contact from one place in the hierarchy to another.
+${bold('cht-conf\'s merge-contacts action')}
+When combined with 'upload-docs' this action merges multiple contacts and all their associated data into one.
 
 ${bold('USAGE')}
-cht --local move-contacts -- --contacts=<id1>,<id2> --parent=<parent_id>
+cht --local merge-contacts -- --winner=<winner_id> --losers=<loser_id1>,<loser_id2>
 
 ${bold('OPTIONS')}
---contacts=<id1>,<id2>
-  A comma delimited list of ids of contacts to be moved.
+--winner=<winner_id>
+  Specifies the ID of the contact that should have all other contact data merged into it.
 
---parent=<parent_id>
-  Specifies the ID of the new parent. Use '${HIERARCHY_ROOT}' to identify the top of the hierarchy (no parent).
+--losers=<loser_id1>,<loser_id2>
+  A comma delimited list of IDs of contacts which will be deleted and all of their data will be merged into the winner contact.
 
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
 `);
 };
 
-const moveReports = async (db, descendantsAndSelf, writeOptions, replacementLineage, contactId) => {
-  const contactIds = descendantsAndSelf.map(contact => contact._id);
-
+const moveReports = async (db, descendantsAndSelf, writeOptions, winnerId, loserId) => {
   let skip = 0;
   let reportDocsBatch;
   do {
     info(`Processing ${skip} to ${skip + BATCH_SIZE} report docs`);
-    reportDocsBatch = await fetch.reportsCreatedBy(db, contactIds, skip);
+    reportDocsBatch = await fetch.reportsCreatedFor(db, loserId, skip);
 
-    const updatedReports = replaceLineageInReports(reportDocsBatch, replacementLineage, contactId);
-    minifyLineageAndWriteToDisk(updatedReports, writeOptions);
+    reportDocsBatch.forEach(report => {
+      const subjectIds = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
+      for (const subjectId of subjectIds) {
+        if (report[subjectId]) {
+          report[subjectId] = winnerId;
+        } 
+
+        if (report.fields[subjectId]) {
+          report.fields[subjectId] = winnerId;
+        }
+      }
+
+      writeDocumentToDisk(writeOptions, report);
+    });
 
     skip += reportDocsBatch.length;
   } while (reportDocsBatch.length >= BATCH_SIZE);
@@ -166,16 +183,15 @@ const minifyLineageAndWriteToDisk = (docs, parsedArgs) => {
   });
 };
 
-const replaceLineageInReports = (reportsCreatedByDescendants, replaceWith, startingFromIdInLineage) => reportsCreatedByDescendants.reduce((agg, doc) => {
-  if (lineageManipulation.replaceLineage(doc, 'contact', replaceWith, startingFromIdInLineage)) {
-    agg.push(doc);
-  }
-  return agg;
-}, []);
-
 const replaceLineageInContacts = (descendantsAndSelf, replacementLineage, contactId) => descendantsAndSelf.reduce((agg, doc) => {
-  const startingFromIdInLineage = doc._id === contactId ? undefined : contactId;
-  const parentWasUpdated = lineageManipulation.replaceLineage(doc, 'parent', replacementLineage, startingFromIdInLineage);
+  // skip top-level because it is now being deleted
+  if (doc._id === contactId) {
+    return agg;
+  }
+
+  const parentWasUpdated = lineageManipulation.replaceLineage(doc, 'parent', replacementLineage, contactId);
+
+  // TODO: seems wrong
   const contactWasUpdated = lineageManipulation.replaceLineage(doc, 'contact', replacementLineage, contactId);
   if (parentWasUpdated || contactWasUpdated) {
     agg.push(doc);
