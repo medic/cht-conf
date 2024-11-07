@@ -4,12 +4,15 @@ const sinon = require('sinon');
 const fs = require('../../src/lib/sync-fs');
 const environment = require('../../src/lib/environment');
 
+const Shared = rewire('../../src/lib/mm-shared');
+
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const moveContactsModule = rewire('../../src/fn/move-contacts');
-moveContactsModule.__set__('prepareDocumentDirectory', () => {});
+moveContactsModule.__set__('Shared', Shared);
+
 const updateLineagesAndStage = moveContactsModule.__get__('updateLineagesAndStage');
 const { mockReport, mockHierarchy, parentsToLineage } = require('../mock-hierarchies');
 
@@ -80,7 +83,8 @@ describe('move-contacts', () => {
       views: { contacts_by_depth },
     });
 
-    moveContactsModule.__set__('writeDocumentToDisk', (docDirectoryPath, doc) => writtenDocs.push(doc));
+    Shared.writeDocumentToDisk = (docDirectoryPath, doc) => writtenDocs.push(doc);
+    Shared.prepareDocumentDirectory = () => {};
     writtenDocs.length = 0;
   });
 
@@ -549,53 +553,9 @@ describe('move-contacts', () => {
     });
   });
 
-  let readline;
-  describe('prepareDocumentDirectory', () => {
-    const moveContacts = rewire('../../src/fn/move-contacts');
-    const userPrompt = rewire('../../src/lib/user-prompt');
-    const prepareDocDir = moveContacts.__get__('prepareDocumentDirectory');
-    let docOnj = { docDirectoryPath: '/test/path/for/testing ', force: false };
-    beforeEach(() => {
-      readline = { keyInYN: sinon.stub() };
-      userPrompt.__set__('readline', readline);
-      moveContacts.__set__('userPrompt', userPrompt);
-      sinon.stub(fs, 'exists').returns(true);
-      sinon.stub(fs, 'recurseFiles').returns(Array(20));
-      sinon.stub(fs, 'deleteFilesInFolder').returns(true);
-    });
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it('does not delete files in directory when user presses n', () => {
-      readline.keyInYN.returns(false);
-      sinon.stub(environment, 'force').get(() => false);
-      try {
-        prepareDocDir(docOnj);
-        assert.fail('Expected error to be thrown');
-      } catch(e) {
-        assert.equal(fs.deleteFilesInFolder.callCount, 0);
-      }
-    });
-
-    it('deletes files in directory when user presses y', () => {
-      readline.keyInYN.returns(true);
-      sinon.stub(environment, 'force').get(() => false);
-      prepareDocDir(docOnj);
-      assert.equal(fs.deleteFilesInFolder.callCount, 1);
-    });
-
-    it('deletes files in directory when force is set', () => {
-      sinon.stub(environment, 'force').get(() => true);
-      prepareDocDir(docOnj);
-      assert.equal(fs.deleteFilesInFolder.callCount, 1);
-    });
-  });
-
   describe('batching works as expected', () => {
-    let defaultBatchSize;
+    const initialBatchSize = Shared.BATCH_SIZE;
     beforeEach(async () => {
-      defaultBatchSize = moveContactsModule.__get__('BATCH_SIZE');
       await mockReport(pouchDb, {
         id: 'report_2',
         creatorId: 'health_center_1_contact',
@@ -613,11 +573,13 @@ describe('move-contacts', () => {
     });
 
     afterEach(() => {
-      moveContactsModule.__set__('BATCH_SIZE', defaultBatchSize);
+      Shared.BATCH_SIZE = initialBatchSize;
+      Shared.__set__('BATCH_SIZE', initialBatchSize);
     });
 
     it('move health_center_1 to district_2 in batches of 1', async () => {
-      moveContactsModule.__set__('BATCH_SIZE', 1);
+      Shared.__set__('BATCH_SIZE', 1);
+      Shared.BATCH_SIZE = 1;
       sinon.spy(pouchDb, 'query');
 
       await updateLineagesAndStage({
@@ -692,7 +654,8 @@ describe('move-contacts', () => {
     });
 
     it('should health_center_1 to district_1 in batches of 2', async () => {
-      moveContactsModule.__set__('BATCH_SIZE', 2);
+      Shared.__set__('BATCH_SIZE', 2);
+      Shared.BATCH_SIZE = 2;
       sinon.spy(pouchDb, 'query');
 
       await updateLineagesAndStage({

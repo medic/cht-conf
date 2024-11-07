@@ -146,7 +146,6 @@ module.exports = {
   bold,
   prepareDocumentDirectory,
   prettyPrintDocument,
-  minifyLineageAndWriteToDisk, 
   replaceLineageInAncestors,
   writeDocumentToDisk,
   fetch,
