@@ -66,7 +66,7 @@ Confirms the list of contacts are possible to move
 */
 const validateContacts = async (contactDocs, constraints) => {
   Object.values(contactDocs).forEach(doc => {
-    const hierarchyError = constraints.getHierarchyErrors(doc);
+    const hierarchyError = constraints.getMoveContactHierarchyViolations(doc);
     if (hierarchyError) {
       throw Error(`Hierarchy Constraints: ${hierarchyError}`);
     }
@@ -142,8 +142,8 @@ const moveReports = async (db, descendantsAndSelf, writeOptions, replacementLine
     info(`Processing ${skip} to ${skip + Shared.BATCH_SIZE} report docs`);
     reportDocsBatch = await Shared.fetch.reportsCreatedBy(db, contactIds, skip);
 
-    const updatedReports = replaceLineageInReports(reportDocsBatch, replacementLineage, contactId);
-    minifyLineageAndWriteToDisk(updatedReports, writeOptions);
+      const updatedReports = replaceLineageInReports(reportDocsBatch, replacementLineage, contactId);
+      minifyLineageAndWriteToDisk(updatedReports, writeOptions);
 
     skip += reportDocsBatch.length;
   } while (reportDocsBatch.length >= Shared.BATCH_SIZE);
@@ -159,7 +159,7 @@ const minifyLineageAndWriteToDisk = (docs, parsedArgs) => {
 };
 
 const replaceLineageInReports = (reportsCreatedByDescendants, replaceWith, startingFromIdInLineage) => reportsCreatedByDescendants.reduce((agg, doc) => {
-  if (lineageManipulation.replaceLineage(doc, 'contact', replaceWith, startingFromIdInLineage)) {
+  if (lineageManipulation.replaceLineageAfter(doc, 'contact', replaceWith, startingFromIdInLineage)) {
     agg.push(doc);
   }
   return agg;
@@ -167,8 +167,8 @@ const replaceLineageInReports = (reportsCreatedByDescendants, replaceWith, start
 
 const replaceLineageInContacts = (descendantsAndSelf, replacementLineage, contactId) => descendantsAndSelf.reduce((agg, doc) => {
   const startingFromIdInLineage = doc._id === contactId ? undefined : contactId;
-  const parentWasUpdated = lineageManipulation.replaceLineage(doc, 'parent', replacementLineage, startingFromIdInLineage);
-  const contactWasUpdated = lineageManipulation.replaceLineage(doc, 'contact', replacementLineage, contactId);
+  const parentWasUpdated = lineageManipulation.replaceLineageAfter(doc, 'parent', replacementLineage, startingFromIdInLineage);
+  const contactWasUpdated = lineageManipulation.replaceLineageAfter(doc, 'contact', replacementLineage, contactId);
   if (parentWasUpdated || contactWasUpdated) {
     agg.push(doc);
   }

@@ -32,8 +32,9 @@ const lineageConstraints = async (repository, parentDoc) => {
   }
 
   return {
-    getHierarchyErrors: contactDoc => getHierarchyViolations(mapTypeToAllowedParents, contactDoc, parentDoc),
     getPrimaryContactViolations: (contactDoc, descendantDocs) => getPrimaryContactViolations(repository, contactDoc, parentDoc, descendantDocs),
+    getMoveContactHierarchyViolations: contactDoc => getMoveContactHierarchyViolations(mapTypeToAllowedParents, contactDoc, parentDoc),
+    getMergeContactHierarchyViolations: contactDoc => getMergeContactHierarchyViolations(contactDoc, parentDoc),
   };
 };
 
@@ -41,7 +42,8 @@ const lineageConstraints = async (repository, parentDoc) => {
 Enforce the list of allowed parents for each contact type
 Ensure we are not creating a circular hierarchy
 */
-const getHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) => {
+const getMoveContactHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) => {
+  // TODO reuse this code
   const getContactType = doc => doc && (doc.type === 'contact' ? doc.contact_type : doc.type);
   const contactType = getContactType(contactDoc);
   const parentType = getContactType(parentDoc);
@@ -60,6 +62,31 @@ const getHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) 
     if (parentAncestry.includes(contactDoc._id)) {
       return `Circular hierarchy: Cannot set parent of contact '${contactDoc._id}' as it would create a circular hierarchy.`;
     }
+  }
+};
+
+/*
+Enforce the list of allowed parents for each contact type
+Ensure we are not creating a circular hierarchy
+*/
+const getMergeContactHierarchyViolations = (loserDoc, winnerDoc) => {
+  const getContactType = doc => doc && (doc.type === 'contact' ? doc.contact_type : doc.type);
+  const loserContactType = getContactType(loserDoc);
+  const winnerContactType = getContactType(winnerDoc);
+  if (!loserContactType) {
+    return 'contact required attribute "type" is undefined';
+  }
+
+  if (winnerDoc && !winnerContactType) {
+    return `winner contact "${winnerDoc._id}" required attribute "type" is undefined`;
+  }
+
+  if (loserContactType !== winnerContactType) {
+    return `contact "${loserDoc._id}" must have same contact type as "${winnerContactType}". Former is "${loserContactType}" while later is "${winnerContactType}".`;
+  }
+
+  if (loserDoc._id === winnerDoc._id) {
+    return `Cannot merge contact with self`;
   }
 };
 

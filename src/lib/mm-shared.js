@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const path = require('path');
 
 const userPrompt = require('./user-prompt');
@@ -105,21 +106,22 @@ const fetch = {
     return reports.rows.map(row => row.doc);
   },
 
-  reportsCreatedFor: async (db, contactId, skip) => {
+  reportsCreatedByOrFor: async (db, descendantIds, loserId, skip) => {
     // TODO is this the right way?
     const reports = await db.query('medic-client/reports_by_freetext', {
       keys: [
-        [`patient_id:${contactId}`],
-        [`patient_uuid:${contactId}`],
-        [`place_id:${contactId}`],
-        [`place_uuid:${contactId}`],
+        ...descendantIds.map(descendantId => [`contact:${descendantId}`]),
+        [`patient_id:${loserId}`],
+        [`patient_uuid:${loserId}`],
+        [`place_id:${loserId}`],
+        [`place_uuid:${loserId}`],
       ],
       include_docs: true,
       limit: BATCH_SIZE,
       skip,
     });
 
-    return reports.rows.map(row => row.doc);
+    return _.uniqBy(reports.rows.map(row => row.doc), '_id');
   },
 
   ancestorsOf: async (db, contactDoc) => {

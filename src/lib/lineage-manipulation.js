@@ -5,37 +5,57 @@ Given a doc, replace the lineage information therein with "replaceWith"
 startingFromIdInLineage (optional) - Will result in a partial replacement of the lineage. Only the part of the lineage "after" the parent
 with _id=startingFromIdInLineage will be replaced by "replaceWith"
 */
-const replaceLineage = (doc, lineageAttributeName, replaceWith, startingFromIdInLineage) => {
-  const handleReplacement = (replaceInDoc, docAttr, replaceWith) => {
-    if (!replaceWith) {
-      const lineageWasDeleted = !!replaceInDoc[docAttr];
-      replaceInDoc[docAttr] = undefined;
-      return lineageWasDeleted;
-    } else if (replaceInDoc[docAttr]) {
-      replaceInDoc[docAttr]._id = replaceWith._id;
-      replaceInDoc[docAttr].parent = replaceWith.parent;
-    } else {
-      replaceInDoc[docAttr] = replaceWith;
-    }
-
-    return true;
-  };
-
+const replaceLineageAfter = (doc, lineageAttributeName, replaceWith, startingFromIdInLineage) => {
   // Replace the full lineage
   if (!startingFromIdInLineage) {
-    return handleReplacement(doc, lineageAttributeName, replaceWith);
+    return _doReplaceInLineage(doc, lineageAttributeName, replaceWith);
   }
 
   // Replace part of a lineage
   let currentParent = doc[lineageAttributeName];
   while (currentParent) {
     if (currentParent._id === startingFromIdInLineage) {
-      return handleReplacement(currentParent, 'parent', replaceWith);
+      return _doReplaceInLineage(currentParent, 'parent', replaceWith);
     }
     currentParent = currentParent.parent;
   }
 
   return false;
+};
+
+const replaceLineageAt = (doc, lineageAttributeName, replaceWith, startingFromIdInLineage) => {
+  if (!replaceWith || !startingFromIdInLineage) {
+    throw Error('replaceWith and startingFromIdInLineage must be defined');
+  }
+
+  // Replace part of a lineage
+  let currentElement = doc;
+  let currentAttributeName = lineageAttributeName;
+  while (currentElement) {
+    if (currentElement[currentAttributeName]?._id === startingFromIdInLineage) {
+      return _doReplaceInLineage(currentElement, currentAttributeName, replaceWith);
+    }
+
+    currentElement = currentElement[currentAttributeName];
+    currentAttributeName = 'parent';
+  }
+
+  return false;
+};
+
+const _doReplaceInLineage = (replaceInDoc, lineageAttributeName, replaceWith) => {
+  if (!replaceWith) {
+    const lineageWasDeleted = !!replaceInDoc[lineageAttributeName];
+    replaceInDoc[lineageAttributeName] = undefined;
+    return lineageWasDeleted;
+  } else if (replaceInDoc[lineageAttributeName]) {
+    replaceInDoc[lineageAttributeName]._id = replaceWith._id;
+    replaceInDoc[lineageAttributeName].parent = replaceWith.parent;
+  } else {
+    replaceInDoc[lineageAttributeName] = replaceWith;
+  }
+
+  return true;
 };
 
 /*
@@ -103,5 +123,6 @@ module.exports = {
   createLineageFromDoc,
   minifyLineagesInDoc,
   pluckIdsFromLineage,
-  replaceLineage,
+  replaceLineageAfter,
+  replaceLineageAt,
 };
