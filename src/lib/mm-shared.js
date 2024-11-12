@@ -9,8 +9,6 @@ const lineageManipulation = require('./lineage-manipulation');
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
 
-const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
-
 const prepareDocumentDirectory = ({ docDirectoryPath, force }) => {
   if (!fs.exists(docDirectoryPath)) {
     fs.mkdir(docDirectoryPath);
@@ -147,7 +145,6 @@ module.exports = {
   BATCH_SIZE,
   bold,
   prepareDocumentDirectory,
-  prettyPrintDocument,
   replaceLineageInAncestors,
   writeDocumentToDisk,
   fetch,

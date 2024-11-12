@@ -40,7 +40,7 @@ const mergeContacts = async (options, db) => {
       _deleted: true,
     });
 
-    const { prettyPrintDocument } = Shared;
+    const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
     // Check that primary contact is not removed from areas where they are required
     const invalidPrimaryContactDoc = await constraints.getPrimaryContactViolations(contactDoc, descendantsAndSelf);
     if (invalidPrimaryContactDoc) {
@@ -56,7 +56,7 @@ const mergeContacts = async (options, db) => {
 
     minifyLineageAndWriteToDisk([...updatedDescendants, ...updatedAncestors], options);
 
-    const movedReportsCount = await reassignReportSubjects(db, descendantsAndSelf, options, replacementLineage, loserId);
+    const movedReportsCount = await moveReportsAndReassign(db, descendantsAndSelf, options, replacementLineage, loserId);
     trace(`${movedReportsCount} report(s) created by these affected contact(s) will be updated`);
 
     affectedContactCount += updatedDescendants.length + updatedAncestors.length;
@@ -89,14 +89,14 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
     .split(',')
     .filter(Boolean);
 
-  if (loserIds.length === 0) {
-    usage();
-    throw Error(`Action "merge-contacts" is missing required list of contacts ${Shared.bold('--losers')} to be merged into the winner`);
-  }
-
   if (!args.winner) {
     usage();
-    throw Error(`Action "merge-contacts" is missing required parameter ${Shared.bold('--winner')}`);
+    throw Error(`Action "merge-contacts" is missing required contact ID ${Shared.bold('--winner')}. Other contacts will be merged into this contact.`);
+  }
+
+  if (loserIds.length === 0) {
+    usage();
+    throw Error(`Action "merge-contacts" is missing required contact ID(s) ${Shared.bold('--losers')}. These contacts will be merged into the contact specified by ${Shared.bold('--winner')}`);
   }
 
   return {
@@ -127,7 +127,7 @@ ${Shared.bold('OPTIONS')}
 `);
 };
 
-const reassignReportSubjects = async (db, descendantsAndSelf, writeOptions, replacementLineage, loserId) => {
+const moveReportsAndReassign = async (db, descendantsAndSelf, writeOptions, replacementLineage, loserId) => {
   const descendantIds = descendantsAndSelf.map(contact => contact._id);
   const winnerId = writeOptions.winnerId;
 

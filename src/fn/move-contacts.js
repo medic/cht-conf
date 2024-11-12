@@ -29,6 +29,7 @@ const updateLineagesAndStage = async (options, db) => {
 
   let affectedContactCount = 0, affectedReportCount = 0;
   const replacementLineage = lineageManipulation.createLineageFromDoc(parentDoc);
+  const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
   for (let contactId of options.contactIds) {
     const contactDoc = contactDocs[contactId];
     const descendantsAndSelf = await Shared.fetch.descendantsOf(db, contactId);
@@ -36,14 +37,14 @@ const updateLineagesAndStage = async (options, db) => {
     // Check that primary contact is not removed from areas where they are required
     const invalidPrimaryContactDoc = await constraints.getPrimaryContactViolations(contactDoc, descendantsAndSelf);
     if (invalidPrimaryContactDoc) {
-      throw Error(`Cannot remove contact ${Shared.prettyPrintDocument(invalidPrimaryContactDoc)} from the hierarchy for which they are a primary contact.`);
+      throw Error(`Cannot remove contact ${prettyPrintDocument(invalidPrimaryContactDoc)} from the hierarchy for which they are a primary contact.`);
     }
 
-    trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${Shared.prettyPrintDocument(contactDoc)}.`);
+    trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)}.`);
     const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, contactId);
 
     const ancestors = await Shared.fetch.ancestorsOf(db, contactDoc);
-    trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${Shared.prettyPrintDocument(contactDoc)}.`);
+    trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
     const updatedAncestors = Shared.replaceLineageInAncestors(descendantsAndSelf, ancestors);
 
     minifyLineageAndWriteToDisk([...updatedDescendants, ...updatedAncestors], options);
@@ -54,7 +55,7 @@ const updateLineagesAndStage = async (options, db) => {
     affectedContactCount += updatedDescendants.length + updatedAncestors.length;
     affectedReportCount += movedReportsCount;
 
-    info(`Staged updates to ${Shared.prettyPrintDocument(contactDoc)}. ${updatedDescendants.length} contact(s) and ${movedReportsCount} report(s).`);
+    info(`Staged updates to ${prettyPrintDocument(contactDoc)}. ${updatedDescendants.length} contact(s) and ${movedReportsCount} report(s).`);
   }
 
   info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);

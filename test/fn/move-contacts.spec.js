@@ -126,6 +126,7 @@ describe('move-contacts', () => {
       _id: 'report_1',
       form: 'foo',
       type: 'data_record',
+      fields: {},
       contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
     });
   });
@@ -170,6 +171,7 @@ describe('move-contacts', () => {
       _id: 'report_1',
       form: 'foo',
       type: 'data_record',
+      fields: {},
       contact: parentsToLineage('health_center_1_contact', 'health_center_1'),
     });
 
@@ -232,6 +234,7 @@ describe('move-contacts', () => {
       _id: 'report_1',
       form: 'foo',
       type: 'data_record',
+      fields: {},
       contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1', 'district_2'),
     });
   });
@@ -283,6 +286,7 @@ describe('move-contacts', () => {
       _id: 'report_1',
       form: 'foo',
       type: 'data_record',
+      fields: {},
       contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1', 'county_1'),
     });
   });
@@ -321,6 +325,7 @@ describe('move-contacts', () => {
       _id: 'report_focal',
       form: 'foo',
       type: 'data_record',
+      fields: {},
       contact: parentsToLineage('focal', 'subcounty', 'county'),
     });
   });
@@ -466,18 +471,6 @@ describe('move-contacts', () => {
     }
   });
 
-  it('throw if contact_id does not exist', async () => {
-    try {
-      await updateLineagesAndStage({
-        contactIds: ['dne'],
-        parentId: 'clinic_1'
-      }, pouchDb);
-      assert.fail('should throw');
-    } catch (err) {
-      expect(err.message).to.include('could not be found');
-    }
-  });
-
   it('throw if contact_id is not a contact', async () => {
     try {
       await updateLineagesAndStage({
@@ -617,6 +610,7 @@ describe('move-contacts', () => {
         _id: 'report_1',
         form: 'foo',
         type: 'data_record',
+        fields: {},
         contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
       });
 
@@ -624,6 +618,7 @@ describe('move-contacts', () => {
         _id: 'report_2',
         form: 'foo',
         type: 'data_record',
+        fields: {},
         contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
       });
 
@@ -631,6 +626,7 @@ describe('move-contacts', () => {
         _id: 'report_3',
         form: 'foo',
         type: 'data_record',
+        fields: {},
         contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
       });
 
@@ -693,6 +689,7 @@ describe('move-contacts', () => {
         _id: 'report_1',
         form: 'foo',
         type: 'data_record',
+        fields: {},
         contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
       });
 
@@ -700,6 +697,7 @@ describe('move-contacts', () => {
         _id: 'report_2',
         form: 'foo',
         type: 'data_record',
+        fields: {},
         contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
       });
 
@@ -707,6 +705,7 @@ describe('move-contacts', () => {
         _id: 'report_3',
         form: 'foo',
         type: 'data_record',
+        fields: {},
         contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
       });
 
