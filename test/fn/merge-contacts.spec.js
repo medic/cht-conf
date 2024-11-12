@@ -1,8 +1,12 @@
-const { assert, expect } = require('chai');
+
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
 const rewire = require('rewire');
-const sinon = require('sinon');
 
 const Shared = rewire('../../src/lib/mm-shared');
+
+chai.use(chaiAsPromised);
+const { expect } = chai;
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -154,5 +158,29 @@ describe('merge-contacts', () => {
         patient_uuid: 'district_1'
       }
     });
+  });
+
+  it('throw if loser does not exist', async () => {
+    const actual = mergeContacts({
+      loserIds: ['dne'],
+      winnerId: 'district_1',
+    }, pouchDb);
+    await expect(actual).to.eventually.rejectedWith('could not be found');
+  });
+
+  it('throw if winner does not exist', async () => {
+    const actual = mergeContacts({
+      loserIds: ['district_1'],
+      winnerId: 'dne',
+    }, pouchDb);
+    await expect(actual).to.eventually.rejectedWith('could not be found');
+  });
+
+  it('throw if loser is winner', async () => {
+    const actual = mergeContacts({
+      loserIds: ['district_1', 'district_2'],
+      winnerId: 'district_2',
+    }, pouchDb);
+    await expect(actual).to.eventually.rejectedWith('merge contact with self');
   });
 });
