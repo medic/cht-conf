@@ -4,7 +4,7 @@ const rewire = require('rewire');
 
 const emitter = rewire('../../src/contact-summary/contact-summary-emitter');
 
-describe('contact-summary-emitter', function() {
+describe.only('contact-summary-emitter', function() {
   describe('test-setup', function() {
     it('should provide the lib', function() {
       // given

@@ -1,3 +1,28 @@
+
+const contactTypeIncluded = (contactType, includedTypes) => {
+  return includedTypes.length === 0 || includedTypes.includes(contactType);
+};
+
+const contactTypeExcluded = (contactType, excludedTypes) => {
+  return !(excludedTypes.length > 0) || excludedTypes.includes('!' + contactType); // TODO
+};
+
+const fieldFilter = (contactType, f) => {
+  const includedTypes = convertToArray(f.appliesToType);  
+  const excludedTypes = includedTypes.filter(function(type) {
+    return type && type.charAt(0) === '!';
+  });
+
+
+  if (contactTypeIncluded(contactType, includedTypes) || !contactTypeExcluded(contactType, excludedTypes)) {
+    if (!f.appliesIf || f.appliesIf()) {
+      delete f.appliesToType;
+      delete f.appliesIf;
+      return true;
+    }
+  }
+};
+
 /**
  * @param contactSummary {{
  *   fields: {
@@ -23,20 +48,22 @@ function emitter(contactSummary, contact, reports) {
 
   var result = {
     cards: [],
-    fields: fields.filter(function(f) {
-      var appliesToType = convertToArray(f.appliesToType);
-      var appliesToNotType = appliesToType.filter(function(type) {
-        return type && type.charAt(0) === '!';
-      });
-      if (appliesToType.length === 0 || appliesToType.includes(contactType) ||
-          (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
-        if (!f.appliesIf || f.appliesIf()) {
-          delete f.appliesToType;
-          delete f.appliesIf;
-          return true;
-        }
-      }
-    }),
+
+    fields: fields.filter(field => fieldFilter(contactType, field)),
+    // fields: fields.filter(function(f) {
+    //   var appliesToType = convertToArray(f.appliesToType);
+    //   var appliesToNotType = appliesToType.filter(function(type) {
+    //     return type && type.charAt(0) === '!';
+    //   });
+    //   if (appliesToType.length === 0 || appliesToType.includes(contactType) ||
+    //       (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
+    //     if (!f.appliesIf || f.appliesIf()) {
+    //       delete f.appliesToType;
+    //       delete f.appliesIf;
+    //       return true;
+    //     }
+    //   }
+    // }),
   };
 
   cards.forEach(function(card) {
