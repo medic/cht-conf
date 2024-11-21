@@ -12,10 +12,11 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const mergeContactsModule = rewire('../../src/fn/merge-contacts');
-mergeContactsModule.__set__('Shared', Shared);
+const MoveContactsLib = rewire('../../src/lib/move-contacts-lib');
+MoveContactsLib.__set__('Shared', Shared);
 
-const mergeContacts = mergeContactsModule.__get__('mergeContacts');
+const move = MoveContactsLib({ merge: true }).move;
+
 const { mockReport, mockHierarchy, parentsToLineage } = require('../mock-hierarchies');
 
 const contacts_by_depth = {
@@ -102,11 +103,8 @@ describe('merge-contacts', () => {
       patientId: 'district_2'
     });
 
-    // action
-    await mergeContacts({
-      removedIds: ['district_2'],
-      keptId: 'district_1',
-    }, pouchDb);
+    // action 
+    await move(['district_2'], 'district_1', pouchDb);
 
     // assert
     expectWrittenDocs([
@@ -190,10 +188,7 @@ describe('merge-contacts', () => {
     });
 
     // action
-    await mergeContacts({
-      removedIds: ['patient_2'],
-      keptId: 'patient_1',
-    }, pouchDb);
+    await move(['patient_2'], 'patient_1', pouchDb);
 
     await expectWrittenDocs(['patient_2', 'pat2']);
 
@@ -217,26 +212,17 @@ describe('merge-contacts', () => {
   xit('write to ancestors', () => {});
 
   it('throw if removed does not exist', async () => {
-    const actual = mergeContacts({
-      removedIds: ['dne'],
-      keptId: 'district_1',
-    }, pouchDb);
+    const actual = move(['dne'], 'district_1', pouchDb);
     await expect(actual).to.eventually.rejectedWith('could not be found');
   });
 
   it('throw if kept does not exist', async () => {
-    const actual = mergeContacts({
-      removedIds: ['district_1'],
-      keptId: 'dne',
-    }, pouchDb);
+    const actual = move(['district_1'], 'dne', pouchDb);
     await expect(actual).to.eventually.rejectedWith('could not be found');
   });
 
   it('throw if removed is kept', async () => {
-    const actual = mergeContacts({
-      removedIds: ['district_1', 'district_2'],
-      keptId: 'district_2',
-    }, pouchDb);
+    const actual = move(['district_1', 'district_2'], 'district_2', pouchDb);
     await expect(actual).to.eventually.rejectedWith('merge contact with self');
   });
 });

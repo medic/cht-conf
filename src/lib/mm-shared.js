@@ -93,26 +93,19 @@ const fetch = {
       .filter(doc => doc && doc.type !== 'tombstone');
   },
 
-  reportsCreatedBy: async (db, contactIds, skip) => {
-    const reports = await db.query('medic-client/reports_by_freetext', {
-      keys: contactIds.map(id => [`contact:${id}`]),
-      include_docs: true,
-      limit: BATCH_SIZE,
-      skip,
-    });
+  reportsCreatedByOrAt: async (db, createdByIds, createdAtId, skip) => {
+    const createdByKeys = createdByIds.map(descendantId => [`contact:${descendantId}`]);
+    const createdAtKeys = createdAtId ? [
+      [`patient_id:${createdAtId}`],
+      [`patient_uuid:${createdAtId}`],
+      [`place_id:${createdAtId}`],
+      [`place_uuid:${createdAtId}`]
+    ] : [];
 
-    return reports.rows.map(row => row.doc);
-  },
-
-  reportsCreatedByOrFor: async (db, descendantIds, removedId, skip) => {
-    // TODO is this the right way?
     const reports = await db.query('medic-client/reports_by_freetext', {
       keys: [
-        ...descendantIds.map(descendantId => [`contact:${descendantId}`]),
-        [`patient_id:${removedId}`],
-        [`patient_uuid:${removedId}`],
-        [`place_id:${removedId}`],
-        [`place_uuid:${removedId}`],
+        ...createdByKeys,
+        ...createdAtKeys,
       ],
       include_docs: true,
       limit: BATCH_SIZE,
@@ -138,12 +131,9 @@ const fetch = {
   },
 };
 
-const bold = text => `\x1b[1m${text}\x1b[0m`;
-
 module.exports = {
   HIERARCHY_ROOT,
   BATCH_SIZE,
-  bold,
   prepareDocumentDirectory,
   replaceLineageInAncestors,
   writeDocumentToDisk,

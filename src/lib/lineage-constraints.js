@@ -3,7 +3,7 @@ const { trace } = log;
 
 const { pluckIdsFromLineage } = require('./lineage-manipulation');
 
-const lineageConstraints = async (repository, parentDoc) => {
+const lineageConstraints = async (repository, parentDoc, options) => {
   let mapTypeToAllowedParents;
   try {
     const { settings } = await repository.get('settings');
@@ -33,8 +33,13 @@ const lineageConstraints = async (repository, parentDoc) => {
 
   return {
     getPrimaryContactViolations: (contactDoc, descendantDocs) => getPrimaryContactViolations(repository, contactDoc, parentDoc, descendantDocs),
-    getMoveContactHierarchyViolations: contactDoc => getMoveContactHierarchyViolations(mapTypeToAllowedParents, contactDoc, parentDoc),
-    getMergeContactHierarchyViolations: contactDoc => getMergeContactHierarchyViolations(contactDoc, parentDoc),
+    validate: (contactDoc) => {
+      if (options.merge) {
+        return getMergeContactHierarchyViolations(contactDoc, parentDoc);
+      }
+
+      return getMoveContactHierarchyViolations(mapTypeToAllowedParents, contactDoc, parentDoc);
+    },
   };
 };
 
