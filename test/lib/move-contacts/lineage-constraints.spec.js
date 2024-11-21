@@ -4,10 +4,10 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const { mockHierarchy } = require('../mock-hierarchies');
+const { mockHierarchy } = require('../../mock-hierarchies');
 
-const lineageConstraints = rewire('../../src/lib/lineage-constraints');
-const log = require('../../src/lib/log');
+const lineageConstraints = rewire('../../../src/lib/move-contacts/lineage-constraints');
+const log = require('../../../src/lib/log');
 log.level = log.LEVEL_INFO;
 
 describe('lineage constriants', () => {

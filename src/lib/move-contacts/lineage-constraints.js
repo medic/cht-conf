@@ -1,4 +1,4 @@
-const log = require('./log');
+const log = require('../log');
 const { trace } = log;
 
 const { pluckIdsFromLineage } = require('./lineage-manipulation');

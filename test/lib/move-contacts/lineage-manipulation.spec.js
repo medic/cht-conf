@@ -1,9 +1,9 @@
 const { expect } = require('chai');
-const { replaceLineageAfter, pluckIdsFromLineage, minifyLineagesInDoc } = require('../../src/lib/lineage-manipulation');
-const log = require('../../src/lib/log');
+const { replaceLineageAfter, pluckIdsFromLineage, minifyLineagesInDoc } = require('../../../src/lib/move-contacts/lineage-manipulation');
+const log = require('../../../src/lib/log');
 log.level = log.LEVEL_TRACE;
 
-const { parentsToLineage } = require('../mock-hierarchies');
+const { parentsToLineage } = require('../../mock-hierarchies');
 
 describe('lineage manipulation', () => {
   describe('replaceLineageAfter', () => {

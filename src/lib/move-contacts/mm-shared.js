@@ -1,9 +1,9 @@
 const _ = require('lodash');
 const path = require('path');
 
-const userPrompt = require('./user-prompt');
-const fs = require('./sync-fs');
-const { warn, trace } = require('./log');
+const userPrompt = require('../user-prompt');
+const fs = require('../sync-fs');
+const { warn, trace } = require('../log');
 const lineageManipulation = require('./lineage-manipulation');
 
 const HIERARCHY_ROOT = 'root';

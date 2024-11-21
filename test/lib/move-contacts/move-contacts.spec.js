@@ -2,14 +2,14 @@ const { assert, expect } = require('chai');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
-const { mockReport, mockHierarchy, parentsToLineage } = require('../mock-hierarchies');
-const Shared = rewire('../../src/lib/mm-shared');
+const { mockReport, mockHierarchy, parentsToLineage } = require('../../mock-hierarchies');
+const Shared = rewire('../../../src/lib/move-contacts/mm-shared');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const MoveContactsLib = rewire('../../src/lib/move-contacts-lib');
+const MoveContactsLib = rewire('../../../src/lib/move-contacts/move-contacts-lib');
 MoveContactsLib.__set__('Shared', Shared);
 
 const move = MoveContactsLib({ merge: false }).move;

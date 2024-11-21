@@ -5,7 +5,7 @@ const environment = require('../lib/environment');
 const pouch = require('../lib/db');
 const { info } = require('../lib/log');
 
-const moveContactsLib = require('../lib/move-contacts-lib');
+const MoveContactsLib = require('../lib/move-contacts/move-contacts-lib');
 
 module.exports = {
   requiresInstance: true,
@@ -13,13 +13,11 @@ module.exports = {
     const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
     const db = pouch();
     const options = {
-      sourceIds: args.removeIds,
-      destinationId: args.keepId,
       merge: true,
       docDirectoryPath: args.docDirectoryPath,
       force: args.force,
-    }
-    return moveContactsLib.move(db, options);
+    };
+    return MoveContactsLib(options).move(args.removeIds, args.keepId, db);
   }
 };
 

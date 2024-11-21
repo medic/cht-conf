@@ -3,7 +3,7 @@ const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const rewire = require('rewire');
 
-const Shared = rewire('../../src/lib/mm-shared');
+const Shared = rewire('../../../src/lib/move-contacts/mm-shared');
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -12,12 +12,12 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const MoveContactsLib = rewire('../../src/lib/move-contacts-lib');
+const MoveContactsLib = rewire('../../../src/lib/move-contacts/move-contacts-lib');
 MoveContactsLib.__set__('Shared', Shared);
 
 const move = MoveContactsLib({ merge: true }).move;
 
-const { mockReport, mockHierarchy, parentsToLineage } = require('../mock-hierarchies');
+const { mockReport, mockHierarchy, parentsToLineage } = require('../../mock-hierarchies');
 
 const contacts_by_depth = {
   // eslint-disable-next-line quotes

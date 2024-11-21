@@ -2,10 +2,10 @@ const { assert } = require('chai');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
-const environment = require('../../src/lib/environment');
-const fs = require('../../src/lib/sync-fs');
-const Shared = rewire('../../src/lib/mm-shared');
-const userPrompt = rewire('../../src/lib/user-prompt');
+const environment = require('../../../src/lib/environment');
+const fs = require('../../../src/lib/sync-fs');
+const Shared = rewire('../../../src/lib/move-contacts/mm-shared');
+const userPrompt = rewire('../../../src/lib/user-prompt');
 
 
 describe('mm-shared', () => {

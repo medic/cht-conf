@@ -1,8 +1,8 @@
-const lineageManipulation = require('../lib/lineage-manipulation');
-const lineageConstraints = require('../lib/lineage-constraints');
-const { trace, info } = require('../lib/log');
+const lineageManipulation = require('./lineage-manipulation');
+const lineageConstraints = require('./lineage-constraints');
+const { trace, info } = require('../log');
 
-const Shared = require('../lib/mm-shared');
+const Shared = require('./mm-shared');
 
 module.exports = (options) => {
   const move = async (sourceIds, destinationId, db) => {
