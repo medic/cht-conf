@@ -104,15 +104,15 @@ const fetch = {
     return reports.rows.map(row => row.doc);
   },
 
-  reportsCreatedByOrFor: async (db, descendantIds, loserId, skip) => {
+  reportsCreatedByOrFor: async (db, descendantIds, removedId, skip) => {
     // TODO is this the right way?
     const reports = await db.query('medic-client/reports_by_freetext', {
       keys: [
         ...descendantIds.map(descendantId => [`contact:${descendantId}`]),
-        [`patient_id:${loserId}`],
-        [`patient_uuid:${loserId}`],
-        [`place_id:${loserId}`],
-        [`place_uuid:${loserId}`],
+        [`patient_id:${removedId}`],
+        [`patient_uuid:${removedId}`],
+        [`place_id:${removedId}`],
+        [`place_uuid:${removedId}`],
       ],
       include_docs: true,
       limit: BATCH_SIZE,

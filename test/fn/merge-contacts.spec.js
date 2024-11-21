@@ -42,12 +42,19 @@ describe('merge-contacts', () => {
     delete result._rev;
     return result;
   };
+  const expectWrittenDocs = expected => expect(writtenDocs.map(doc => doc._id)).to.have.members(expected);
 
   beforeEach(async () => {
     pouchDb = new PouchDB(`merge-contacts-${scenarioCount++}`);
 
     await mockHierarchy(pouchDb, {
-      district_1: {},
+      district_1: {
+        health_center_1: {
+          clinic_1: {
+            patient_1: {},
+          },
+        }
+      },
       district_2: {
         health_center_2: {
           clinic_2: {
@@ -97,11 +104,19 @@ describe('merge-contacts', () => {
 
     // action
     await mergeContacts({
-      loserIds: ['district_2'],
-      winnerId: 'district_1',
+      removedIds: ['district_2'],
+      keptId: 'district_1',
     }, pouchDb);
 
     // assert
+    expectWrittenDocs([
+      'district_2', 'district_2_contact', 
+      'health_center_2', 'health_center_2_contact', 
+      'clinic_2', 'clinic_2_contact',
+      'patient_2',
+      'changing_subject_and_contact', 'changing_contact', 'changing_subject'
+    ]);
+
     expect(getWrittenDoc('district_2')).to.deep.eq({
       _id: 'district_2',
       _deleted: true,
@@ -160,26 +175,67 @@ describe('merge-contacts', () => {
     });
   });
 
-  it('throw if loser does not exist', async () => {
+  it('merge two patients', async () => {
+    // setup
+    await mockReport(pouchDb, {
+      id: 'pat1',
+      creatorId: 'clinic_1_contact',
+      patientId: 'patient_1'
+    });
+
+    await mockReport(pouchDb, {
+      id: 'pat2',
+      creatorId: 'clinic_2_contact',
+      patientId: 'patient_2'
+    });
+
+    // action
+    await mergeContacts({
+      removedIds: ['patient_2'],
+      keptId: 'patient_1',
+    }, pouchDb);
+
+    await expectWrittenDocs(['patient_2', 'pat2']);
+
+    expect(getWrittenDoc('patient_2')).to.deep.eq({
+      _id: 'patient_2',
+      _deleted: true,
+    });
+
+    expect(getWrittenDoc('pat2')).to.deep.eq({
+      _id: 'pat2',
+      form: 'foo',
+      type: 'data_record',
+      // still created by the user in district-2
+      contact: parentsToLineage('clinic_2_contact', 'clinic_2', 'health_center_2', 'district_2'),
+      fields: {
+        patient_uuid: 'patient_1'
+      }
+    });
+  });
+
+  xit('write to ancestors', () => {});
+
+  it('throw if removed does not exist', async () => {
     const actual = mergeContacts({
-      loserIds: ['dne'],
-      winnerId: 'district_1',
+      removedIds: ['dne'],
+      keptId: 'district_1',
     }, pouchDb);
     await expect(actual).to.eventually.rejectedWith('could not be found');
   });
 
-  it('throw if winner does not exist', async () => {
+  it('throw if kept does not exist', async () => {
     const actual = mergeContacts({
-      loserIds: ['district_1'],
-      winnerId: 'dne',
+      removedIds: ['district_1'],
+      keptId: 'dne',
     }, pouchDb);
     await expect(actual).to.eventually.rejectedWith('could not be found');
   });
 
-  it('throw if loser is winner', async () => {
+  it('throw if removed is kept', async () => {
     const actual = mergeContacts({
-      loserIds: ['district_1', 'district_2'],
-      winnerId: 'district_2',
+      removedIds: ['district_1', 'district_2'],
+      keptId: 'district_2',
     }, pouchDb);
     await expect(actual).to.eventually.rejectedWith('merge contact with self');
   });

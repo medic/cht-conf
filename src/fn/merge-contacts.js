@@ -20,20 +20,20 @@ module.exports = {
 };
 
 const mergeContacts = async (options, db) => {
-  trace(`Fetching contact details: ${options.winnerId}`);
-  const winnerDoc = await Shared.fetch.contact(db, options.winnerId);
+  trace(`Fetching contact details: ${options.keptId}`);
+  const keptDoc = await Shared.fetch.contact(db, options.keptId);
 
-  const constraints = await lineageConstraints(db, winnerDoc);
-  const loserDocs = await Shared.fetch.contactList(db, options.loserIds);
-  await validateContacts(loserDocs, constraints);
+  const constraints = await lineageConstraints(db, keptDoc);
+  const removedDocs = await Shared.fetch.contactList(db, options.removedIds);
+  await validateContacts(removedDocs, constraints);
 
   let affectedContactCount = 0, affectedReportCount = 0;
-  const replacementLineage = lineageManipulation.createLineageFromDoc(winnerDoc);
-  for (let loserId of options.loserIds) {
-    const contactDoc = loserDocs[loserId];
-    const descendantsAndSelf = await Shared.fetch.descendantsOf(db, loserId);
+  const replacementLineage = lineageManipulation.createLineageFromDoc(keptDoc);
+  for (let removedId of options.removedIds) {
+    const contactDoc = removedDocs[removedId];
+    const descendantsAndSelf = await Shared.fetch.descendantsOf(db, removedId);
 
-    const self = descendantsAndSelf.find(d => d._id === loserId);
+    const self = descendantsAndSelf.find(d => d._id === removedId);
     Shared.writeDocumentToDisk(options, {
       _id: self._id,
       _rev: self._rev,
@@ -48,7 +48,7 @@ const mergeContacts = async (options, db) => {
     }
 
     trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(contactDoc)}.`);
-    const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, loserId);
+    const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, removedId);
 
     const ancestors = await Shared.fetch.ancestorsOf(db, contactDoc);
     trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(contactDoc)}.`);
@@ -56,7 +56,7 @@ const mergeContacts = async (options, db) => {
 
     minifyLineageAndWriteToDisk([...updatedDescendants, ...updatedAncestors], options);
 
-    const movedReportsCount = await moveReportsAndReassign(db, descendantsAndSelf, options, replacementLineage, loserId);
+    const movedReportsCount = await moveReportsAndReassign(db, descendantsAndSelf, options, replacementLineage, removedId);
     trace(`${movedReportsCount} report(s) created by these affected contact(s) will be updated`);
 
     affectedContactCount += updatedDescendants.length + updatedAncestors.length;
@@ -72,8 +72,8 @@ const mergeContacts = async (options, db) => {
 Checks for any errors which this will create in the hierarchy (hierarchy schema, circular hierarchies)
 Confirms the list of contacts are possible to move
 */
-const validateContacts = async (loserDocs, constraints) => {
-  Object.values(loserDocs).forEach(doc => {
+const validateContacts = async (removedDocs, constraints) => {
+  Object.values(removedDocs).forEach(doc => {
     const hierarchyError = constraints.getMergeContactHierarchyViolations(doc);
     if (hierarchyError) {
       throw Error(`Hierarchy Constraints: ${hierarchyError}`);
@@ -85,23 +85,23 @@ const validateContacts = async (loserDocs, constraints) => {
 const parseExtraArgs = (projectDir, extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
 
-  const loserIds = (args.losers || args.loser || '')
+  const removedIds = (args.removed || '')
     .split(',')
     .filter(Boolean);
 
-  if (!args.winner) {
+  if (!args.kept) {
     usage();
-    throw Error(`Action "merge-contacts" is missing required contact ID ${Shared.bold('--winner')}. Other contacts will be merged into this contact.`);
+    throw Error(`Action "merge-contacts" is missing required contact ID ${Shared.bold('--kept')}. Other contacts will be merged into this contact.`);
   }
 
-  if (loserIds.length === 0) {
+  if (removedIds.length === 0) {
     usage();
-    throw Error(`Action "merge-contacts" is missing required contact ID(s) ${Shared.bold('--losers')}. These contacts will be merged into the contact specified by ${Shared.bold('--winner')}`);
+    throw Error(`Action "merge-contacts" is missing required contact ID(s) ${Shared.bold('--removed')}. These contacts will be merged into the contact specified by ${Shared.bold('--kept')}`);
   }
 
   return {
-    winnerId: args.winner,
-    loserIds,
+    keptId: args.kept,
+    removedIds,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
   };
@@ -113,43 +113,43 @@ ${Shared.bold('cht-conf\'s merge-contacts action')}
 When combined with 'upload-docs' this action merges multiple contacts and all their associated data into one.
 
 ${Shared.bold('USAGE')}
-cht --local merge-contacts -- --winner=<winner_id> --losers=<loser_id1>,<loser_id2>
+cht --local merge-contacts -- --kept=<kept_id> --removed=<removed_id1>,<removed_id2>
 
 ${Shared.bold('OPTIONS')}
---winner=<winner_id>
+--kept=<kept_id>
   Specifies the ID of the contact that should have all other contact data merged into it.
 
---losers=<loser_id1>,<loser_id2>
-  A comma delimited list of IDs of contacts which will be deleted and all of their data will be merged into the winner contact.
+--removed=<removed_id1>,<removed_id2>
+  A comma delimited list of IDs of contacts which will be deleted and all of their data will be merged into the kept contact.
 
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
 `);
 };
 
-const moveReportsAndReassign = async (db, descendantsAndSelf, writeOptions, replacementLineage, loserId) => {
+const moveReportsAndReassign = async (db, descendantsAndSelf, writeOptions, replacementLineage, removedId) => {
   const descendantIds = descendantsAndSelf.map(contact => contact._id);
-  const winnerId = writeOptions.winnerId;
+  const keptId = writeOptions.keptId;
 
   let skip = 0;
   let reportDocsBatch;
   do {
     info(`Processing ${skip} to ${skip + Shared.BATCH_SIZE} report docs`);
-    reportDocsBatch = await Shared.fetch.reportsCreatedByOrFor(db, descendantIds, loserId, skip);
+    reportDocsBatch = await Shared.fetch.reportsCreatedByOrFor(db, descendantIds, removedId, skip);
 
-    const updatedReports = replaceLineageInReports(reportDocsBatch, replacementLineage, loserId);
+    const updatedReports = replaceLineageInReports(reportDocsBatch, replacementLineage, removedId);
 
     reportDocsBatch.forEach(report => {
       let updated = false;
       const subjectIds = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
       for (const subjectId of subjectIds) {
-        if (report[subjectId] === loserId) {
-          report[subjectId] = winnerId;
+        if (report[subjectId] === removedId) {
+          report[subjectId] = keptId;
           updated = true;
         } 
 
-        if (report.fields[subjectId] === loserId) {
-          report.fields[subjectId] = winnerId;
+        if (report.fields[subjectId] === removedId) {
+          report.fields[subjectId] = keptId;
           updated = true;
         }
 

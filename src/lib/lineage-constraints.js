@@ -69,23 +69,23 @@ const getMoveContactHierarchyViolations = (mapTypeToAllowedParents, contactDoc, 
 Enforce the list of allowed parents for each contact type
 Ensure we are not creating a circular hierarchy
 */
-const getMergeContactHierarchyViolations = (loserDoc, winnerDoc) => {
+const getMergeContactHierarchyViolations = (removedDoc, keptDoc) => {
   const getContactType = doc => doc && (doc.type === 'contact' ? doc.contact_type : doc.type);
-  const loserContactType = getContactType(loserDoc);
-  const winnerContactType = getContactType(winnerDoc);
-  if (!loserContactType) {
+  const removedContactType = getContactType(removedDoc);
+  const keptContactType = getContactType(keptDoc);
+  if (!removedContactType) {
     return 'contact required attribute "type" is undefined';
   }
 
-  if (winnerDoc && !winnerContactType) {
-    return `winner contact "${winnerDoc._id}" required attribute "type" is undefined`;
+  if (keptDoc && !keptContactType) {
+    return `kept contact "${keptDoc._id}" required attribute "type" is undefined`;
   }
 
-  if (loserContactType !== winnerContactType) {
-    return `contact "${loserDoc._id}" must have same contact type as "${winnerContactType}". Former is "${loserContactType}" while later is "${winnerContactType}".`;
+  if (removedContactType !== keptContactType) {
+    return `contact "${removedDoc._id}" must have same contact type as "${keptContactType}". Former is "${removedContactType}" while later is "${keptContactType}".`;
   }
 
-  if (loserDoc._id === winnerDoc._id) {
+  if (removedDoc._id === keptDoc._id) {
     return `Cannot merge contact with self`;
   }
 };
