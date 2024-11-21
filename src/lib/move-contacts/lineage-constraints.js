@@ -1,45 +1,44 @@
 const log = require('../log');
 const { trace } = log;
 
-const { pluckIdsFromLineage } = require('./lineage-manipulation');
+const lineageManipulation = require('./lineage-manipulation');
 
-const lineageConstraints = async (repository, parentDoc, options) => {
-  let mapTypeToAllowedParents;
-  try {
-    const { settings } = await repository.get('settings');
-    const { contact_types } = settings;
+module.exports = async (db, options = {}) => {
+  const mapTypeToAllowedParents = await fetchAllowedParents(db);
 
-    if (Array.isArray(contact_types)) {
-      trace('Found app_settings.contact_types. Configurable hierarchy constraints will be enforced.');
-      mapTypeToAllowedParents = contact_types
-        .filter(rule => rule)
-        .reduce((agg, curr) => Object.assign(agg, { [curr.id]: curr.parents }), {});
+  const getHierarchyErrors = (sourceDoc, destinationDoc) => {
+    if (options.merge) {
+      return getMergeViolations(sourceDoc, destinationDoc);
     }
-  } catch (err) {
-    if (err.name !== 'not_found') {
-      throw err;
-    }
-  }
 
-  if (!mapTypeToAllowedParents) {
-    trace('Default hierarchy constraints will be enforced.');
-    mapTypeToAllowedParents = {
-      district_hospital: [],
-      health_center: ['district_hospital'],
-      clinic: ['health_center'],
-      person: ['district_hospital', 'health_center', 'clinic'],
-    };
-  }
+    return getMovingViolations(mapTypeToAllowedParents, sourceDoc, destinationDoc);
+  };
 
   return {
-    getPrimaryContactViolations: (contactDoc, descendantDocs) => getPrimaryContactViolations(repository, contactDoc, parentDoc, descendantDocs),
-    validate: (contactDoc) => {
-      if (options.merge) {
-        return getMergeContactHierarchyViolations(contactDoc, parentDoc);
-      }
-
-      return getMoveContactHierarchyViolations(mapTypeToAllowedParents, contactDoc, parentDoc);
-    },
+    getPrimaryContactViolations: (sourceDoc, destinationDoc, descendantDocs) => getPrimaryContactViolations(db, sourceDoc, destinationDoc, descendantDocs),
+    getHierarchyErrors,
+    assertHierarchyErrors: (sourceDocs, destinationDoc) => {
+      sourceDocs.forEach(sourceDoc => {
+        const hierarchyError = getHierarchyErrors(sourceDoc, destinationDoc);
+        if (hierarchyError) {
+          throw Error(`Hierarchy Constraints: ${hierarchyError}`);
+        }
+      });
+  
+      /*
+      It is nice that the tool can move lists of contacts as one operation, but strange things happen when two contactIds are in the same lineage.
+      For example, moving a district_hospital and moving a contact under that district_hospital to a new clinic causes multiple colliding writes to the same json file.
+      */
+      const contactIds = sourceDocs.map(doc => doc._id);
+      sourceDocs
+        .forEach(doc => {
+          const parentIdsOfDoc = (doc.parent && lineageManipulation.pluckIdsFromLineage(doc.parent)) || [];
+          const violatingParentId = parentIdsOfDoc.find(parentId => contactIds.includes(parentId));
+          if (violatingParentId) {
+            throw Error(`Unable to move two documents from the same lineage: '${doc._id}' and '${violatingParentId}'`);
+          }
+        });
+    }    
   };
 };
 
@@ -47,51 +46,62 @@ const lineageConstraints = async (repository, parentDoc, options) => {
 Enforce the list of allowed parents for each contact type
 Ensure we are not creating a circular hierarchy
 */
-const getMoveContactHierarchyViolations = (mapTypeToAllowedParents, contactDoc, parentDoc) => {
-  // TODO reuse this code
-  const getContactType = doc => doc && (doc.type === 'contact' ? doc.contact_type : doc.type);
-  const contactType = getContactType(contactDoc);
-  const parentType = getContactType(parentDoc);
-  if (!contactType) return 'contact required attribute "type" is undefined';
-  if (parentDoc && !parentType) return `parent contact "${parentDoc._id}" required attribute "type" is undefined`;
-  if (!mapTypeToAllowedParents) return 'hierarchy constraints are undefined';
+const getMovingViolations = (mapTypeToAllowedParents, sourceDoc, destinationDoc) => {
+  const commonViolations = getCommonViolations(sourceDoc, destinationDoc);
+  if (commonViolations) {
+    return commonViolations;
+  }
 
-  const rulesForContact = mapTypeToAllowedParents[contactType];
-  if (!rulesForContact) return `cannot move contact with unknown type '${contactType}'`;
+  if (!mapTypeToAllowedParents) {
+    return 'hierarchy constraints are undefined';
+  }
+  
+  const sourceContactType = getContactType(sourceDoc);
+  const destinationType = getContactType(destinationDoc);
+  const rulesForContact = mapTypeToAllowedParents[sourceContactType];
+  if (!rulesForContact) {
+    return `cannot move contact with unknown type '${sourceContactType}'`;
+  }
 
-  const isPermittedMoveToRoot = !parentDoc && rulesForContact.length === 0;
-  if (!isPermittedMoveToRoot && !rulesForContact.includes(parentType)) return `contacts of type '${contactType}' cannot have parent of type '${parentType}'`;
+  const isPermittedMoveToRoot = !destinationDoc && rulesForContact.length === 0;
+  if (!isPermittedMoveToRoot && !rulesForContact.includes(destinationType)) {
+    return `contacts of type '${sourceContactType}' cannot have parent of type '${destinationType}'`;
+  }
 
-  if (parentDoc && contactDoc._id) {
-    const parentAncestry = [parentDoc._id, ...pluckIdsFromLineage(parentDoc.parent)];
-    if (parentAncestry.includes(contactDoc._id)) {
-      return `Circular hierarchy: Cannot set parent of contact '${contactDoc._id}' as it would create a circular hierarchy.`;
+  if (destinationDoc && sourceDoc._id) {
+    const parentAncestry = [destinationDoc._id, ...lineageManipulation.pluckIdsFromLineage(destinationDoc.parent)];
+    if (parentAncestry.includes(sourceDoc._id)) {
+      return `Circular hierarchy: Cannot set parent of contact '${sourceDoc._id}' as it would create a circular hierarchy.`;
     }
   }
 };
 
-/*
-Enforce the list of allowed parents for each contact type
-Ensure we are not creating a circular hierarchy
-*/
-const getMergeContactHierarchyViolations = (removedDoc, keptDoc) => {
-  const getContactType = doc => doc && (doc.type === 'contact' ? doc.contact_type : doc.type);
-  const removedContactType = getContactType(removedDoc);
-  const keptContactType = getContactType(keptDoc);
-  if (!removedContactType) {
-    return 'contact required attribute "type" is undefined';
+const getCommonViolations = (sourceDoc, destinationDoc) => {
+  const sourceContactType = getContactType(sourceDoc);
+  const destinationContactType = getContactType(destinationDoc);
+  if (!sourceContactType) {
+    return `source contact "${sourceDoc._id}" required attribute "type" is undefined`;
   }
 
-  if (keptDoc && !keptContactType) {
-    return `kept contact "${keptDoc._id}" required attribute "type" is undefined`;
+  if (destinationDoc && !destinationContactType) {
+    return `destination contact "${destinationDoc._id}" required attribute "type" is undefined`;
+  }
+};
+
+const getMergeViolations = (sourceDoc, destinationDoc) => {
+  const commonViolations = getCommonViolations(sourceDoc, destinationDoc);
+  if (commonViolations) {
+    return commonViolations;
   }
 
-  if (removedContactType !== keptContactType) {
-    return `contact "${removedDoc._id}" must have same contact type as "${keptContactType}". Former is "${removedContactType}" while later is "${keptContactType}".`;
+  const sourceContactType = getContactType(sourceDoc);
+  const destinationContactType = getContactType(destinationDoc);
+  if (sourceContactType !== destinationContactType) {
+    return `source and destinations must have the same type. Source is "${sourceContactType}" while destination is "${destinationContactType}".`;
   }
 
-  if (removedDoc._id === keptDoc._id) {
-    return `Cannot merge contact with self`;
+  if (sourceDoc._id === destinationDoc._id) {
+    return `cannot move contact to destination that is itself`;
   }
 };
 
@@ -101,8 +111,8 @@ A place's primary contact must be a descendant of that place.
 1. Check to see which part of the contact's lineage will be removed
 2. For each removed part of the contact's lineage, confirm that place's primary contact isn't being removed.
 */
-const getPrimaryContactViolations = async (repository, contactDoc, parentDoc, descendantDocs) => {
-  const safeGetLineageFromDoc = doc => doc ? pluckIdsFromLineage(doc.parent) : [];
+const getPrimaryContactViolations = async (db, contactDoc, parentDoc, descendantDocs) => {
+  const safeGetLineageFromDoc = doc => doc ? lineageManipulation.pluckIdsFromLineage(doc.parent) : [];
   const contactsLineageIds = safeGetLineageFromDoc(contactDoc);
   const parentsLineageIds = safeGetLineageFromDoc(parentDoc);
 
@@ -111,7 +121,7 @@ const getPrimaryContactViolations = async (repository, contactDoc, parentDoc, de
   }
 
   const docIdsRemovedFromContactLineage = contactsLineageIds.filter(value => !parentsLineageIds.includes(value));
-  const docsRemovedFromContactLineage = await repository.allDocs({
+  const docsRemovedFromContactLineage = await db.allDocs({
     keys: docIdsRemovedFromContactLineage,
     include_docs: true,
   });
@@ -123,4 +133,31 @@ const getPrimaryContactViolations = async (repository, contactDoc, parentDoc, de
   return descendantDocs.find(descendant => primaryContactIds.some(primaryId => descendant._id === primaryId));
 };
 
-module.exports = lineageConstraints;
+const getContactType = doc => doc && (doc.type === 'contact' ? doc.contact_type : doc.type);
+
+async function fetchAllowedParents(db) {
+  try {
+    const { settings } = await db.get('settings');
+    const { contact_types } = settings;
+
+    if (Array.isArray(contact_types)) {
+      trace('Found app_settings.contact_types. Configurable hierarchy constraints will be enforced.');
+      return contact_types
+        .filter(rule => rule)
+        .reduce((agg, curr) => Object.assign(agg, { [curr.id]: curr.parents }), {});
+    }
+  } catch (err) {
+    if (err.name !== 'not_found') {
+      throw err;
+    }
+  }
+
+  trace('Default hierarchy constraints will be enforced.');
+  return {
+    district_hospital: [],
+    health_center: ['district_hospital'],
+    clinic: ['health_center'],
+    person: ['district_hospital', 'health_center', 'clinic'],
+  };
+}
+

@@ -223,6 +223,6 @@ describe('merge-contacts', () => {
 
   it('throw if removed is kept', async () => {
     const actual = move(['district_1', 'district_2'], 'district_2', pouchDb);
-    await expect(actual).to.eventually.rejectedWith('merge contact with self');
+    await expect(actual).to.eventually.rejectedWith('that is itself');
   });
 });
