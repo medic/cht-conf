@@ -3,7 +3,7 @@ const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const rewire = require('rewire');
 
-const Shared = rewire('../../../src/lib/move-contacts/mm-shared');
+const Shared = rewire('../../../src/lib/hierarchy-operations/mm-shared');
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -12,10 +12,10 @@ const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const MoveContactsLib = rewire('../../../src/lib/move-contacts/move-contacts-lib');
-MoveContactsLib.__set__('Shared', Shared);
+const HierarchyOperations = rewire('../../../src/lib/hierarchy-operations/index.js');
+HierarchyOperations.__set__('Shared', Shared);
 
-const move = MoveContactsLib({ merge: true }).move;
+const move = HierarchyOperations({ merge: true }).move;
 
 const { mockReport, mockHierarchy, parentsToLineage } = require('../../mock-hierarchies');
 

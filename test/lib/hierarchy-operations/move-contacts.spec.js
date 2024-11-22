@@ -3,16 +3,16 @@ const rewire = require('rewire');
 const sinon = require('sinon');
 
 const { mockReport, mockHierarchy, parentsToLineage } = require('../../mock-hierarchies');
-const Shared = rewire('../../../src/lib/move-contacts/mm-shared');
+const Shared = rewire('../../../src/lib/hierarchy-operations/mm-shared');
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const MoveContactsLib = rewire('../../../src/lib/move-contacts/move-contacts-lib');
-MoveContactsLib.__set__('Shared', Shared);
+const HierarchyOperations = rewire('../../../src/lib/hierarchy-operations/index.js');
+HierarchyOperations.__set__('Shared', Shared);
 
-const move = MoveContactsLib({ merge: false }).move;
+const move = HierarchyOperations({ merge: false }).move;
 
 const contacts_by_depth = {
   // eslint-disable-next-line quotes

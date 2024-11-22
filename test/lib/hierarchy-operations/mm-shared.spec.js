@@ -4,7 +4,7 @@ const sinon = require('sinon');
 
 const environment = require('../../../src/lib/environment');
 const fs = require('../../../src/lib/sync-fs');
-const Shared = rewire('../../../src/lib/move-contacts/mm-shared');
+const Shared = rewire('../../../src/lib/hierarchy-operations/mm-shared');
 const userPrompt = rewire('../../../src/lib/user-prompt');
 
 

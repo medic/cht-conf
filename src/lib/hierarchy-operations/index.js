@@ -40,7 +40,7 @@ module.exports = (options) => {
       
       const ancestors = await Shared.fetch.ancestorsOf(db, sourceDoc);
       trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
-      const updatedAncestors = Shared.replaceLineageInAncestors(descendantsAndSelf, ancestors);
+      const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
       
       minifyLineageAndWriteToDisk([...updatedDescendants, ...updatedAncestors]);
       
@@ -115,6 +115,17 @@ module.exports = (options) => {
       agg.push(doc);
     }
     return agg;
+  }, []);
+
+  const replaceLineageInAncestors = (descendantsAndSelf, ancestors) => ancestors.reduce((agg, ancestor) => {
+    let result = agg;
+    const primaryContact = descendantsAndSelf.find(descendant => ancestor.contact && descendant._id === ancestor.contact._id);
+    if (primaryContact) {
+      ancestor.contact = lineageManipulation.createLineageFromDoc(primaryContact);
+      result = [ancestor, ...result];
+    }
+  
+    return result;
   }, []);
 
   const replaceLineageInContacts = (descendantsAndSelf, replacementLineage, destinationId) => descendantsAndSelf.reduce((agg, doc) => {

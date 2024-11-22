@@ -6,7 +6,7 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 
 const { mockHierarchy } = require('../../mock-hierarchies');
 
-const lineageConstraints = rewire('../../../src/lib/move-contacts/lineage-constraints');
+const lineageConstraints = rewire('../../../src/lib/hierarchy-operations/lineage-constraints');
 const log = require('../../../src/lib/log');
 log.level = log.LEVEL_INFO;
 

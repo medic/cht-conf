@@ -32,17 +32,6 @@ const writeDocumentToDisk = ({ docDirectoryPath }, doc) => {
   fs.writeJson(destinationPath, doc);
 };
 
-const replaceLineageInAncestors = (descendantsAndSelf, ancestors) => ancestors.reduce((agg, ancestor) => {
-  let result = agg;
-  const primaryContact = descendantsAndSelf.find(descendant => ancestor.contact && descendant._id === ancestor.contact._id);
-  if (primaryContact) {
-    ancestor.contact = lineageManipulation.createLineageFromDoc(primaryContact);
-    result = [ancestor, ...result];
-  }
-
-  return result;
-}, []);
-
 
 const fetch = {
   /*
@@ -135,7 +124,6 @@ module.exports = {
   HIERARCHY_ROOT,
   BATCH_SIZE,
   prepareDocumentDirectory,
-  replaceLineageInAncestors,
   writeDocumentToDisk,
   fetch,
 };

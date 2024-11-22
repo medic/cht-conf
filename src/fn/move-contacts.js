@@ -5,7 +5,7 @@ const environment = require('../lib/environment');
 const pouch = require('../lib/db');
 const { info } = require('../lib/log');
 
-const MoveContactsLib = require('../lib/move-contacts/move-contacts-lib');
+const HierarchyOperations = require('../lib/hierarchy-operations');
 
 module.exports = {
   requiresInstance: true,
@@ -17,7 +17,7 @@ module.exports = {
       docDirectoryPath: args.docDirectoryPath,
       force: args.force,
     };
-    return MoveContactsLib(options).move(args.contactIds, args.parentId, db);
+    return HierarchyOperations(options).move(args.contactIds, args.parentId, db);
   }
 };
 

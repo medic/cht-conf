@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { replaceLineageAfter, pluckIdsFromLineage, minifyLineagesInDoc } = require('../../../src/lib/move-contacts/lineage-manipulation');
+const { replaceLineageAfter, pluckIdsFromLineage, minifyLineagesInDoc } = require('../../../src/lib/hierarchy-operations/lineage-manipulation');
 const log = require('../../../src/lib/log');
 log.level = log.LEVEL_TRACE;
 
