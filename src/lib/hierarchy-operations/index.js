@@ -10,15 +10,15 @@ const HierarchyOperations = (options) => {
     JsDocs.prepareFolder(options);
     trace(`Fetching contact details: ${destinationId}`);
     const constraints = await LineageConstraints(db, options);
-    const destinationDoc = await Backend.fetch.contact(db, destinationId);
-    const sourceDocs = await Backend.fetch.contactList(db, sourceIds);
+    const destinationDoc = await Backend.contact(db, destinationId);
+    const sourceDocs = await Backend.contactList(db, sourceIds);
     await constraints.assertHierarchyErrors(Object.values(sourceDocs), destinationDoc);
 
     let affectedContactCount = 0, affectedReportCount = 0;
     const replacementLineage = lineageManipulation.createLineageFromDoc(destinationDoc);
     for (let sourceId of sourceIds) {
       const sourceDoc = sourceDocs[sourceId];
-      const descendantsAndSelf = await Backend.fetch.descendantsOf(db, sourceId);
+      const descendantsAndSelf = await Backend.descendantsOf(db, sourceId);
 
       if (options.merge) {
         const self = descendantsAndSelf.find(d => d._id === sourceId);
@@ -39,7 +39,7 @@ const HierarchyOperations = (options) => {
       trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
       const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, sourceId);
       
-      const ancestors = await Backend.fetch.ancestorsOf(db, sourceDoc);
+      const ancestors = await Backend.ancestorsOf(db, sourceDoc);
       trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
       const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
       
@@ -66,7 +66,7 @@ const HierarchyOperations = (options) => {
     do {
       info(`Processing ${skip} to ${skip + Backend.BATCH_SIZE} report docs`);
       const createdAtId = options.merge && sourceId;
-      reportDocsBatch = await Backend.fetch.reportsCreatedByOrAt(db, descendantIds, createdAtId, skip);
+      reportDocsBatch = await Backend.reportsCreatedByOrAt(db, descendantIds, createdAtId, skip);
 
       const updatedReports = replaceLineageInReports(reportDocsBatch, replacementLineage, sourceId);
 
