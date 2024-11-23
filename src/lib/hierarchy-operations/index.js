@@ -140,22 +140,27 @@ const HierarchyOperations = (db, options) => {
   }
 
   function replaceLineageInContacts(descendantsAndSelf, replacementLineage, destinationId) {
-    const result = [];
-    for (const doc of descendantsAndSelf) {
+    function replaceForSingleContact(doc) {
       const docIsDestination = doc._id === destinationId;
       const startingFromIdInLineage = options.merge || !docIsDestination ? destinationId : undefined;
-      
-      // skip top-level because it will be deleted
-      if (options.merge && docIsDestination) {
-        continue;
-      }
-
       const parentWasUpdated = lineageManipulation.replaceLineage(doc, 'parent', replacementLineage, startingFromIdInLineage, options);
       const contactWasUpdated = lineageManipulation.replaceLineage(doc, 'contact', replacementLineage, destinationId, options);
       const isUpdated = parentWasUpdated || contactWasUpdated;
       if (isUpdated) {
         result.push(doc);
       }
+    }
+    
+    const result = [];
+    for (const doc of descendantsAndSelf) {
+      const docIsDestination = doc._id === destinationId;
+      
+      // skip top-level because it will be deleted
+      if (options.merge && docIsDestination) {
+        continue;
+      }
+
+      replaceForSingleContact(doc);
     }
 
     return result;
