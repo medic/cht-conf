@@ -13,11 +13,10 @@ module.exports = {
     const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
     const db = pouch();
     const options = {
-      merge: false,
       docDirectoryPath: args.docDirectoryPath,
       force: args.force,
     };
-    return HierarchyOperations(options).move(args.contactIds, args.parentId, db);
+    return HierarchyOperations(options).move(args.sourceIds, args.destinationId, db);
   }
 };
 
@@ -25,11 +24,11 @@ module.exports = {
 const parseExtraArgs = (projectDir, extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
 
-  const contactIds = (args.contacts || args.contact || '')
+  const sourceIds = (args.contacts || args.contact || '')
     .split(',')
     .filter(id => id);
 
-  if (contactIds.length === 0) {
+  if (sourceIds.length === 0) {
     usage();
     throw Error('Action "move-contacts" is missing required list of contacts to be moved');
   }
@@ -40,8 +39,8 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
   }
 
   return {
-    parentId: args.parent,
-    contactIds,
+    destinationId: args.parent,
+    sourceIds,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
   };
@@ -61,7 +60,7 @@ ${bold('OPTIONS')}
   A comma delimited list of ids of contacts to be moved.
 
 --parent=<parent_id>
-  Specifies the ID of the new parent. Use '${Shared.HIERARCHY_ROOT}' to identify the top of the hierarchy (no parent).
+  Specifies the ID of the new parent. Use '${HierarchyOperations.HIERARCHY_ROOT}' to identify the top of the hierarchy (no parent).
 
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.

@@ -4,18 +4,17 @@ const sinon = require('sinon');
 
 const environment = require('../../../src/lib/environment');
 const fs = require('../../../src/lib/sync-fs');
-const Shared = rewire('../../../src/lib/hierarchy-operations/mm-shared');
+const JsDocs = rewire('../../../src/lib/hierarchy-operations/jsdocFolder');
 const userPrompt = rewire('../../../src/lib/user-prompt');
 
-
-describe('mm-shared', () => {
+describe('JsDocs', () => {
   let readline;
   
   let docOnj = { docDirectoryPath: '/test/path/for/testing ', force: false };
   beforeEach(() => {
     readline = { keyInYN: sinon.stub() };
     userPrompt.__set__('readline', readline);
-    Shared.__set__('userPrompt', userPrompt);
+    JsDocs.__set__('userPrompt', userPrompt);
     sinon.stub(fs, 'exists').returns(true);
     sinon.stub(fs, 'recurseFiles').returns(Array(20));
     sinon.stub(fs, 'deleteFilesInFolder').returns(true);
@@ -28,7 +27,7 @@ describe('mm-shared', () => {
     readline.keyInYN.returns(false);
     sinon.stub(environment, 'force').get(() => false);
     try {
-      Shared.prepareDocumentDirectory(docOnj);
+      JsDocs.prepareFolder(docOnj);
       assert.fail('Expected error to be thrown');
     } catch(e) {
       assert.equal(fs.deleteFilesInFolder.callCount, 0);
@@ -38,13 +37,13 @@ describe('mm-shared', () => {
   it('deletes files in directory when user presses y', () => {
     readline.keyInYN.returns(true);
     sinon.stub(environment, 'force').get(() => false);
-    Shared.prepareDocumentDirectory(docOnj);
+    JsDocs.prepareFolder(docOnj);
     assert.equal(fs.deleteFilesInFolder.callCount, 1);
   });
 
   it('deletes files in directory when force is set', () => {
     sinon.stub(environment, 'force').get(() => true);
-    Shared.prepareDocumentDirectory(docOnj);
+    JsDocs.prepareFolder(docOnj);
     assert.equal(fs.deleteFilesInFolder.callCount, 1);
   });
 });

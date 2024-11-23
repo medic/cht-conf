@@ -2,26 +2,27 @@ const lineageManipulation = require('./lineage-manipulation');
 const LineageConstraints = require('./lineage-constraints');
 const { trace, info } = require('../log');
 
-const Shared = require('./mm-shared');
+const JsDocs = require('./jsdocFolder');
+const Backend = require('./backend');
 
-module.exports = (options) => {
+const HierarchyOperations = (options) => {
   const move = async (sourceIds, destinationId, db) => {
-    Shared.prepareDocumentDirectory(options);
+    JsDocs.prepareFolder(options);
     trace(`Fetching contact details: ${destinationId}`);
     const constraints = await LineageConstraints(db, options);
-    const destinationDoc = await Shared.fetch.contact(db, destinationId);
-    const sourceDocs = await Shared.fetch.contactList(db, sourceIds);
+    const destinationDoc = await Backend.fetch.contact(db, destinationId);
+    const sourceDocs = await Backend.fetch.contactList(db, sourceIds);
     await constraints.assertHierarchyErrors(Object.values(sourceDocs), destinationDoc);
 
     let affectedContactCount = 0, affectedReportCount = 0;
     const replacementLineage = lineageManipulation.createLineageFromDoc(destinationDoc);
     for (let sourceId of sourceIds) {
       const sourceDoc = sourceDocs[sourceId];
-      const descendantsAndSelf = await Shared.fetch.descendantsOf(db, sourceId);
+      const descendantsAndSelf = await Backend.fetch.descendantsOf(db, sourceId);
 
       if (options.merge) {
         const self = descendantsAndSelf.find(d => d._id === sourceId);
-        Shared.writeDocumentToDisk(options, {
+        JsDocs.writeDoc(options, {
           _id: self._id,
           _rev: self._rev,
           _deleted: true,
@@ -38,7 +39,7 @@ module.exports = (options) => {
       trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
       const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, sourceId);
       
-      const ancestors = await Shared.fetch.ancestorsOf(db, sourceDoc);
+      const ancestors = await Backend.fetch.ancestorsOf(db, sourceDoc);
       trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
       const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
       
@@ -63,9 +64,9 @@ module.exports = (options) => {
     let skip = 0;
     let reportDocsBatch;
     do {
-      info(`Processing ${skip} to ${skip + Shared.BATCH_SIZE} report docs`);
+      info(`Processing ${skip} to ${skip + Backend.BATCH_SIZE} report docs`);
       const createdAtId = options.merge && sourceId;
-      reportDocsBatch = await Shared.fetch.reportsCreatedByOrAt(db, descendantIds, createdAtId, skip);
+      reportDocsBatch = await Backend.fetch.reportsCreatedByOrAt(db, descendantIds, createdAtId, skip);
 
       const updatedReports = replaceLineageInReports(reportDocsBatch, replacementLineage, sourceId);
 
@@ -97,7 +98,7 @@ module.exports = (options) => {
       minifyLineageAndWriteToDisk(updatedReports);
 
       skip += reportDocsBatch.length;
-    } while (reportDocsBatch.length >= Shared.BATCH_SIZE);
+    } while (reportDocsBatch.length >= Backend.BATCH_SIZE);
 
     return skip;
   };
@@ -105,7 +106,7 @@ module.exports = (options) => {
   const minifyLineageAndWriteToDisk = (docs) => {
     docs.forEach(doc => {
       lineageManipulation.minifyLineagesInDoc(doc);
-      Shared.writeDocumentToDisk(options, doc);
+      JsDocs.writeDoc(options, doc);
     });
   };
 
@@ -149,3 +150,8 @@ module.exports = (options) => {
   return { move };
 };
 
+module.exports = options => ({
+  HIERARCHY_ROOT: Backend.HIERARCHY_ROOT,
+  move: HierarchyOperations({ ...options, merge: false }).move,
+  merge: HierarchyOperations({ ...options, merge: true }).move,
+});

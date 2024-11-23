@@ -13,11 +13,10 @@ module.exports = {
     const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
     const db = pouch();
     const options = {
-      merge: true,
       docDirectoryPath: args.docDirectoryPath,
       force: args.force,
     };
-    return HierarchyOperations(options).move(args.removeIds, args.keepId, db);
+    return HierarchyOperations(options).merge(args.sourceIds, args.destinationId, db);
   }
 };
 
@@ -25,7 +24,7 @@ module.exports = {
 const parseExtraArgs = (projectDir, extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
 
-  const removeIds = (args.remove || '')
+  const sourceIds = (args.remove || '')
     .split(',')
     .filter(Boolean);
 
@@ -34,14 +33,14 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
     throw Error(`Action "merge-contacts" is missing required contact ID ${bold('--keep')}. Other contacts will be merged into this contact.`);
   }
 
-  if (removeIds.length === 0) {
+  if (sourceIds.length === 0) {
     usage();
     throw Error(`Action "merge-contacts" is missing required contact ID(s) ${bold('--remove')}. These contacts will be merged into the contact specified by ${bold('--keep')}`);
   }
 
   return {
-    keepId: args.keep,
-    removeIds,
+    destinationId: args.keep,
+    sourceIds,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
   };
