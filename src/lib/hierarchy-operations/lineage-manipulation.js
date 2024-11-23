@@ -3,35 +3,37 @@
  * Given a doc, replace the lineage information therein with "replaceWith"
  * 
  * @param {Object} doc A CouchDB document containing a hierarchy that needs replacing
- * @param {string} lineageAttributeName Name of the attribute which is a lineage in doc (contact or parent)
- * @param {Object} replaceWith The new hierarchy { parent: { _id: 'parent', parent: { _id: 'grandparent' } }
- * @param {string} [startingFromIdInLineage] Only the part of the lineage "after" this id will be replaced
- * @param {Object} options
- * @param {boolean} merge When true, startingFromIdInLineage is replaced and when false, startingFromIdInLineage's parent is replaced 
+ * @param {Object} params SonarQube
+ * @param {string} params.lineageAttribute Name of the attribute which is a lineage in doc (contact or parent)
+ * @param {Object} params.replaceWith The new hierarchy { parent: { _id: 'parent', parent: { _id: 'grandparent' } }
+ * @param {string} params.startingFromId Only the part of the lineage "after" this id will be replaced
+ * @param {boolean} params.merge When true, startingFromId is replaced and when false, startingFromId's parent is replaced 
  */
-function replaceLineage(doc, lineageAttributeName, replaceWith, startingFromIdInLineage, options={}) {
+function replaceLineage(doc, params) {
+  const { lineageAttribute, replaceWith, startingFromId, merge } = params;
+
   // Replace the full lineage
-  if (!startingFromIdInLineage) {
-    return replaceWithinLineage(doc, lineageAttributeName, replaceWith);
+  if (!startingFromId) {
+    return replaceWithinLineage(doc, lineageAttribute, replaceWith);
   }
 
   function getInitialState() {
-    if (options.merge) {
+    if (merge) {
       return {
         element: doc,
-        attributeName: lineageAttributeName,
+        attributeName: lineageAttribute,
       };
     }
 
     return {
-      element: doc[lineageAttributeName],
+      element: doc[lineageAttribute],
       attributeName: 'parent',
     };
   }
 
   function traverseOne() {
-    const compare = options.merge ? state.element[state.attributeName] : state.element;
-    if (compare?._id === startingFromIdInLineage) {
+    const compare = merge ? state.element[state.attributeName] : state.element;
+    if (compare?._id === startingFromId) {
       return replaceWithinLineage(state.element, state.attributeName, replaceWith);
     }
 
