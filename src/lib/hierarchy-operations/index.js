@@ -109,16 +109,8 @@ module.exports = (options) => {
     });
   };
 
-  const replaceRelevantLineage = (doc, lineageAttributeName, replaceWith, startingFromIdInLineage) => {
-    if (options?.merge) {
-      return lineageManipulation.replaceLineageAt(doc, lineageAttributeName, replaceWith, startingFromIdInLineage);
-    }
-
-    return lineageManipulation.replaceLineageAfter(doc, lineageAttributeName, replaceWith, startingFromIdInLineage);
-  };
-
   const replaceLineageInReports = (reportsCreatedByDescendants, replaceWith, startingFromIdInLineage) => reportsCreatedByDescendants.reduce((agg, doc) => {
-    if (replaceRelevantLineage(doc, 'contact', replaceWith, startingFromIdInLineage)) {
+    if (lineageManipulation.replaceLineage(doc, 'contact', replaceWith, startingFromIdInLineage, options)) {
       agg.push(doc);
     }
     return agg;
@@ -146,8 +138,8 @@ module.exports = (options) => {
       }
     }
 
-    const parentWasUpdated = replaceRelevantLineage(doc, 'parent', replacementLineage, startingFromIdInLineage);
-    const contactWasUpdated = replaceRelevantLineage(doc, 'contact', replacementLineage, destinationId);
+    const parentWasUpdated = lineageManipulation.replaceLineage(doc, 'parent', replacementLineage, startingFromIdInLineage, options);
+    const contactWasUpdated = lineageManipulation.replaceLineage(doc, 'contact', replacementLineage, destinationId, options);
     if (parentWasUpdated || contactWasUpdated) {
       agg.push(doc);
     }

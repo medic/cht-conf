@@ -1,49 +1,49 @@
 
-/*
-Given a doc, replace the lineage information therein with "replaceWith"
-
-startingFromIdInLineage (optional) - Will result in a partial replacement of the lineage. Only the part of the lineage "after" the parent
-with _id=startingFromIdInLineage will be replaced by "replaceWith"
-*/
-const replaceLineageAfter = (doc, lineageAttributeName, replaceWith, startingFromIdInLineage) => {
+/**
+ * Given a doc, replace the lineage information therein with "replaceWith"
+ * 
+ * @param {Object} doc A CouchDB document containing a hierarchy that needs replacing
+ * @param {string} lineageAttributeName Name of the attribute which is a lineage in doc (contact or parent)
+ * @param {Object} replaceWith The new hierarchy { parent: { _id: 'parent', parent: { _id: 'grandparent' } }
+ * @param {string} [startingFromIdInLineage] Only the part of the lineage "after" this id will be replaced
+ * @param {Object} options
+ * @param {boolean} merge When true, startingFromIdInLineage is replaced and when false, startingFromIdInLineage's parent is replaced 
+ */
+const replaceLineage = (doc, lineageAttributeName, replaceWith, startingFromIdInLineage, options={}) => {
   // Replace the full lineage
   if (!startingFromIdInLineage) {
-    return _doReplaceInLineage(doc, lineageAttributeName, replaceWith);
+    return replaceWithinLineage(doc, lineageAttributeName, replaceWith);
   }
 
-  // Replace part of a lineage
-  let currentParent = doc[lineageAttributeName];
-  while (currentParent) {
-    if (currentParent._id === startingFromIdInLineage) {
-      return _doReplaceInLineage(currentParent, 'parent', replaceWith);
+  const initialState = () => {
+    if (options.merge) {
+      return {
+        element: doc,
+        attributeName: lineageAttributeName,
+      };
     }
-    currentParent = currentParent.parent;
+
+    return {
+      element: doc[lineageAttributeName],
+      attributeName: 'parent',
+    };
+  }
+
+  const state = initialState();
+  while (state.element) {
+    const compare = options.merge ? state.element[state.attributeName] : state.element;
+    if (compare?._id === startingFromIdInLineage) {
+      return replaceWithinLineage(state.element, state.attributeName, replaceWith);
+    }
+
+    state.element = state.element[state.attributeName];
+    state.attributeName = 'parent';
   }
 
   return false;
 };
 
-const replaceLineageAt = (doc, lineageAttributeName, replaceWith, startingFromIdInLineage) => {
-  if (!replaceWith || !startingFromIdInLineage) {
-    throw Error('replaceWith and startingFromIdInLineage must be defined');
-  }
-
-  // Replace part of a lineage
-  let currentElement = doc;
-  let currentAttributeName = lineageAttributeName;
-  while (currentElement) {
-    if (currentElement[currentAttributeName]?._id === startingFromIdInLineage) {
-      return _doReplaceInLineage(currentElement, currentAttributeName, replaceWith);
-    }
-
-    currentElement = currentElement[currentAttributeName];
-    currentAttributeName = 'parent';
-  }
-
-  return false;
-};
-
-const _doReplaceInLineage = (replaceInDoc, lineageAttributeName, replaceWith) => {
+const replaceWithinLineage = (replaceInDoc, lineageAttributeName, replaceWith) => {
   if (!replaceWith) {
     const lineageWasDeleted = !!replaceInDoc[lineageAttributeName];
     replaceInDoc[lineageAttributeName] = undefined;
@@ -123,6 +123,5 @@ module.exports = {
   createLineageFromDoc,
   minifyLineagesInDoc,
   pluckIdsFromLineage,
-  replaceLineageAfter,
-  replaceLineageAt,
+  replaceLineage,
 };
