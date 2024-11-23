@@ -82,28 +82,32 @@ const HierarchyOperations = (db, options) => {
   }
 
   function reassignReports(reports, sourceId, destinationId, updatedReports) {
-    reports.forEach(report => {
+    function reassignReportWithSubject(report, subjectId) {
       let updated = false;
-      const subjectIds = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
-      for (const subjectId of subjectIds) {
-        if (report[subjectId] === sourceId) {
-          report[subjectId] = destinationId;
-          updated = true;
-        }
-  
-        if (report.fields[subjectId] === sourceId) {
-          report.fields[subjectId] = destinationId;
-          updated = true;
-        }
-  
-        if (updated) {
-          const isAlreadyUpdated = !!updatedReports.find(updated => updated._id === report._id);
-          if (!isAlreadyUpdated) {
-            updatedReports.push(report);
-          }
+      if (report[subjectId] === sourceId) {
+        report[subjectId] = destinationId;
+        updated = true;
+      }
+
+      if (report.fields[subjectId] === sourceId) {
+        report.fields[subjectId] = destinationId;
+        updated = true;
+      }
+
+      if (updated) {
+        const isAlreadyUpdated = !!updatedReports.find(updated => updated._id === report._id);
+        if (!isAlreadyUpdated) {
+          updatedReports.push(report);
         }
       }
-    });
+    }
+
+    for (const report of reports) {
+      const subjectIds = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
+      for (const subjectId of subjectIds) {
+        reassignReportWithSubject(report, subjectId);
+      }
+    }
   }
 
   function minifyLineageAndWriteToDisk(docs) {
@@ -136,23 +140,25 @@ const HierarchyOperations = (db, options) => {
   }
 
   function replaceLineageInContacts(descendantsAndSelf, replacementLineage, destinationId) {
-    return descendantsAndSelf.reduce((agg, doc) => {
+    const result = [];
+    for (const doc of descendantsAndSelf) {
       const docIsDestination = doc._id === destinationId;
       const startingFromIdInLineage = options.merge || !docIsDestination ? destinationId : undefined;
       
       // skip top-level because it will be deleted
       if (options.merge && docIsDestination) {
-        return agg;
+        continue;
       }
 
       const parentWasUpdated = lineageManipulation.replaceLineage(doc, 'parent', replacementLineage, startingFromIdInLineage, options);
       const contactWasUpdated = lineageManipulation.replaceLineage(doc, 'contact', replacementLineage, destinationId, options);
       const isUpdated = parentWasUpdated || contactWasUpdated;
       if (isUpdated) {
-        agg.push(doc);
+        result.push(doc);
       }
-      return agg;
-    }, []);
+    }
+
+    return result;
   }
 
   return { move };

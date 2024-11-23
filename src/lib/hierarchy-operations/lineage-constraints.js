@@ -47,33 +47,37 @@ Enforce the list of allowed parents for each contact type
 Ensure we are not creating a circular hierarchy
 */
 const getMovingViolations = (mapTypeToAllowedParents, sourceDoc, destinationDoc) => {
-  const commonViolations = getCommonViolations(sourceDoc, destinationDoc);
-  if (commonViolations) {
-    return commonViolations;
+  function getContactTypeError() {
+    const sourceContactType = getContactType(sourceDoc);
+    const destinationType = getContactType(destinationDoc);
+    const rulesForContact = mapTypeToAllowedParents[sourceContactType];
+    if (!rulesForContact) {
+      return `cannot move contact with unknown type '${sourceContactType}'`;
+    }
+
+    const isPermittedMoveToRoot = !destinationDoc && rulesForContact.length === 0;
+    if (!isPermittedMoveToRoot && !rulesForContact.includes(destinationType)) {
+      return `contacts of type '${sourceContactType}' cannot have parent of type '${destinationType}'`;
+    }
+  }
+
+  function findCircularHierarchyErrors() {
+    if (destinationDoc && sourceDoc._id) {
+      const parentAncestry = [destinationDoc._id, ...lineageManipulation.pluckIdsFromLineage(destinationDoc.parent)];
+      if (parentAncestry.includes(sourceDoc._id)) {
+        return `Circular hierarchy: Cannot set parent of contact '${sourceDoc._id}' as it would create a circular hierarchy.`;
+      }
+    }
   }
 
   if (!mapTypeToAllowedParents) {
     return 'hierarchy constraints are undefined';
   }
-  
-  const sourceContactType = getContactType(sourceDoc);
-  const destinationType = getContactType(destinationDoc);
-  const rulesForContact = mapTypeToAllowedParents[sourceContactType];
-  if (!rulesForContact) {
-    return `cannot move contact with unknown type '${sourceContactType}'`;
-  }
 
-  const isPermittedMoveToRoot = !destinationDoc && rulesForContact.length === 0;
-  if (!isPermittedMoveToRoot && !rulesForContact.includes(destinationType)) {
-    return `contacts of type '${sourceContactType}' cannot have parent of type '${destinationType}'`;
-  }
-
-  if (destinationDoc && sourceDoc._id) {
-    const parentAncestry = [destinationDoc._id, ...lineageManipulation.pluckIdsFromLineage(destinationDoc.parent)];
-    if (parentAncestry.includes(sourceDoc._id)) {
-      return `Circular hierarchy: Cannot set parent of contact '${sourceDoc._id}' as it would create a circular hierarchy.`;
-    }
-  }
+  const commonViolations = getCommonViolations(sourceDoc, destinationDoc);
+  const contactTypeError = getContactTypeError();
+  const circularHierarchyError = findCircularHierarchyErrors();
+  return commonViolations || contactTypeError || circularHierarchyError;
 };
 
 const getCommonViolations = (sourceDoc, destinationDoc) => {

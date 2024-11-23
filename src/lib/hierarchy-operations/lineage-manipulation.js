@@ -15,7 +15,7 @@ function replaceLineage(doc, lineageAttributeName, replaceWith, startingFromIdIn
     return replaceWithinLineage(doc, lineageAttributeName, replaceWith);
   }
 
-  const getInitialState = () => {
+  function getInitialState() {
     if (options.merge) {
       return {
         element: doc,
@@ -27,10 +27,9 @@ function replaceLineage(doc, lineageAttributeName, replaceWith, startingFromIdIn
       element: doc[lineageAttributeName],
       attributeName: 'parent',
     };
-  };
+  }
 
-  const state = getInitialState();
-  while (state.element) {
+  function traverseOne() {
     const compare = options.merge ? state.element[state.attributeName] : state.element;
     if (compare?._id === startingFromIdInLineage) {
       return replaceWithinLineage(state.element, state.attributeName, replaceWith);
@@ -38,6 +37,14 @@ function replaceLineage(doc, lineageAttributeName, replaceWith, startingFromIdIn
 
     state.element = state.element[state.attributeName];
     state.attributeName = 'parent';
+  }
+
+  const state = getInitialState();
+  while (state.element) {
+    const result = traverseOne();
+    if (result) {
+      return result;
+    }
   }
 
   return false;
