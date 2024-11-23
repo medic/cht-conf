@@ -53,7 +53,7 @@ async function descendantsOf(db, contactId) {
 }
 
 async function reportsCreatedByOrAt(db, createdByIds, createdAtId, skip) {
-  const createdByKeys = createdByIds.map(descendantId => [`contact:${descendantId}`]);
+  const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
   const createdAtKeys = createdAtId ? [
     [`patient_id:${createdAtId}`],
     [`patient_uuid:${createdAtId}`],
