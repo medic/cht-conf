@@ -84,7 +84,7 @@ const fetch = {
 
     const ancestorIdsNotFound = ancestors.rows.filter(ancestor => !ancestor.doc).map(ancestor => ancestor.key);
     if (ancestorIdsNotFound.length > 0) {
-      throw Error(`Contact '${prettyPrintDocument(contactDoc)} has parent id(s) '${ancestorIdsNotFound.join(',')}' which could not be found.`);
+      throw Error(`Contact '${contactDoc?.name}' (${contactDoc?._id}) has parent id(s) '${ancestorIdsNotFound.join(',')}' which could not be found.`);
     }
 
     return ancestors.rows.map(ancestor => ancestor.doc);

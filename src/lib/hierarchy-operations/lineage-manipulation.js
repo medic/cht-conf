@@ -27,7 +27,7 @@ const replaceLineage = (doc, lineageAttributeName, replaceWith, startingFromIdIn
       element: doc[lineageAttributeName],
       attributeName: 'parent',
     };
-  }
+  };
 
   const state = initialState();
   while (state.element) {
