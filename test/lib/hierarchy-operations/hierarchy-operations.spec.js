@@ -99,7 +99,7 @@ describe('move-contacts', () => {
   afterEach(async () => pouchDb.destroy());
   
   it('move health_center_1 to district_2', async () => {
-    await HierarchyOperations().move(['health_center_1'], 'district_2', pouchDb);
+    await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
 
     expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
       _id: 'health_center_1_contact',
@@ -141,7 +141,7 @@ describe('move-contacts', () => {
 
     await updateHierarchyRules([{ id: 'health_center', parents: [] }]);
 
-    await HierarchyOperations().move(['health_center_1'], 'root', pouchDb);
+    await HierarchyOperations(pouchDb).move(['health_center_1'], 'root');
 
     expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
       _id: 'health_center_1_contact',
@@ -194,7 +194,7 @@ describe('move-contacts', () => {
   it('move district_1 from root', async () => {
     await updateHierarchyRules([{ id: 'district_hospital', parents: ['district_hospital'] }]);
 
-    await HierarchyOperations().move(['district_1'], 'district_2', pouchDb);
+    await HierarchyOperations(pouchDb).move(['district_1'], 'district_2');
 
     expect(getWrittenDoc('district_1')).to.deep.eq({
       _id: 'district_1',
@@ -250,7 +250,7 @@ describe('move-contacts', () => {
       { id: 'district_hospital', parents: ['county'] },
     ]);
 
-    await HierarchyOperations().move(['district_1'], 'county_1', pouchDb);
+    await HierarchyOperations(pouchDb).move(['district_1'], 'county_1');
 
     expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
       _id: 'health_center_1_contact',
@@ -305,7 +305,7 @@ describe('move-contacts', () => {
       creatorId: 'focal',
     });
 
-    await HierarchyOperations().move(['focal'], 'subcounty', pouchDb);
+    await HierarchyOperations(pouchDb).move(['focal'], 'subcounty');
 
     expect(getWrittenDoc('focal')).to.deep.eq({
       _id: 'focal',
@@ -350,7 +350,7 @@ describe('move-contacts', () => {
       parent: parentsToLineage(),
     });
 
-    await HierarchyOperations().move(['t_patient_1'], 't_clinic_2', pouchDb);
+    await HierarchyOperations(pouchDb).move(['t_patient_1'], 't_clinic_2');
 
     expect(getWrittenDoc('t_health_center_1')).to.deep.eq({
       _id: 't_health_center_1',
@@ -371,7 +371,7 @@ describe('move-contacts', () => {
   // We don't want lineage { id, parent: '' } to result from district_hospitals which have parent: ''
   it('district_hospital with empty string parent is not preserved', async () => {
     await upsert('district_2', { parent: '', type: 'district_hospital' });
-    await HierarchyOperations().move(['health_center_1'], 'district_2', pouchDb);
+    await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
 
     expect(getWrittenDoc('health_center_1')).to.deep.eq({
       _id: 'health_center_1',
@@ -402,7 +402,7 @@ describe('move-contacts', () => {
       });
   
       // action 
-      await HierarchyOperations().merge(['district_2'], 'district_1', pouchDb);
+      await HierarchyOperations(pouchDb).merge(['district_2'], 'district_1');
   
       // assert
       expectWrittenDocs([
@@ -464,6 +464,7 @@ describe('move-contacts', () => {
         type: 'data_record',
         contact: { 
           _id: 'dne',
+          parent: undefined,
         },
         fields: {
           patient_uuid: 'district_1'
@@ -486,7 +487,7 @@ describe('move-contacts', () => {
       });
   
       // action
-      await HierarchyOperations().merge(['patient_2'], 'patient_1', pouchDb);
+      await HierarchyOperations(pouchDb).merge(['patient_2'], 'patient_1');
   
       await expectWrittenDocs(['patient_2', 'pat2']);
   
@@ -526,7 +527,7 @@ describe('move-contacts', () => {
     await upsert('clinic_1', clinic);
     await upsert('patient_1', patient);
 
-    await HierarchyOperations().move(['clinic_1'], 'district_2', pouchDb);
+    await HierarchyOperations(pouchDb).move(['clinic_1'], 'district_2');
 
     expect(getWrittenDoc('clinic_1')).to.deep.eq({
       _id: 'clinic_1',
@@ -547,7 +548,7 @@ describe('move-contacts', () => {
     await updateHierarchyRules([{ id: 'health_center', parents: ['clinic'] }]);
 
     try {
-      await HierarchyOperations().move(['health_center_1'], 'clinic_1', pouchDb);
+      await HierarchyOperations(pouchDb).move(['health_center_1'], 'clinic_1');
       assert.fail('should throw');
     } catch (err) {
       expect(err.message).to.include('circular');
@@ -555,34 +556,34 @@ describe('move-contacts', () => {
   });
 
   it('throw if parent does not exist', async () => {
-    const actual = HierarchyOperations().move(['clinic_1'], 'dne_parent_id', pouchDb);
+    const actual = HierarchyOperations(pouchDb).move(['clinic_1'], 'dne_parent_id');
     await expect(actual).to.eventually.rejectedWith('could not be found');
   });
 
   it('throw when altering same lineage', async () => {
-    const actual = HierarchyOperations().move(['patient_1', 'health_center_1'], 'district_2', pouchDb);
+    const actual = HierarchyOperations(pouchDb).move(['patient_1', 'health_center_1'], 'district_2');
     await expect(actual).to.eventually.rejectedWith('same lineage');
   });
 
   it('throw if contact_id is not a contact', async () => {
-    const actual = HierarchyOperations().move(['report_1'], 'clinic_1', pouchDb);
+    const actual = HierarchyOperations(pouchDb).move(['report_1'], 'clinic_1');
     await expect(actual).to.eventually.rejectedWith('unknown type');
   });
 
   it('throw if moving primary contact of parent', async () => {
-    const actual = HierarchyOperations().move(['clinic_1_contact'], 'district_1', pouchDb);
+    const actual = HierarchyOperations(pouchDb).move(['clinic_1_contact'], 'district_1');
     await expect(actual).to.eventually.rejectedWith('primary contact');
   });
 
   it('throw if setting parent to self', async () => {
     await updateHierarchyRules([{ id: 'clinic', parents: ['clinic'] }]);
-    const actual = HierarchyOperations().move(['clinic_1'], 'clinic_1', pouchDb);
+    const actual = HierarchyOperations(pouchDb).move(['clinic_1'], 'clinic_1');
     await expect(actual).to.eventually.rejectedWith('circular');
   });
 
   it('throw when moving place to unconfigured parent', async () => {
     await updateHierarchyRules([{ id: 'district_hospital', parents: [] }]);
-    const actual = HierarchyOperations().move(['district_1'], 'district_2', pouchDb);
+    const actual = HierarchyOperations(pouchDb).move(['district_1'], 'district_2');
     await expect(actual).to.eventually.rejectedWith('parent of type');
   });
 
@@ -615,7 +616,7 @@ describe('move-contacts', () => {
       Backend.BATCH_SIZE = 1;
       sinon.spy(pouchDb, 'query');
 
-      await HierarchyOperations().move(['health_center_1'], 'district_2', pouchDb);
+      await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
       
       expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
         _id: 'health_center_1_contact',
@@ -691,7 +692,7 @@ describe('move-contacts', () => {
       Backend.BATCH_SIZE = 2;
       sinon.spy(pouchDb, 'query');
 
-      await HierarchyOperations().move(['health_center_1'], 'district_1', pouchDb);
+      await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_1');
 
       expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
         _id: 'health_center_1_contact',

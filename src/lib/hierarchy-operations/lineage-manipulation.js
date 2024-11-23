@@ -9,13 +9,13 @@
  * @param {Object} options
  * @param {boolean} merge When true, startingFromIdInLineage is replaced and when false, startingFromIdInLineage's parent is replaced 
  */
-const replaceLineage = (doc, lineageAttributeName, replaceWith, startingFromIdInLineage, options={}) => {
+function replaceLineage(doc, lineageAttributeName, replaceWith, startingFromIdInLineage, options={}) {
   // Replace the full lineage
   if (!startingFromIdInLineage) {
     return replaceWithinLineage(doc, lineageAttributeName, replaceWith);
   }
 
-  const initialState = () => {
+  const getInitialState = () => {
     if (options.merge) {
       return {
         element: doc,
@@ -29,7 +29,7 @@ const replaceLineage = (doc, lineageAttributeName, replaceWith, startingFromIdIn
     };
   };
 
-  const state = initialState();
+  const state = getInitialState();
   while (state.element) {
     const compare = options.merge ? state.element[state.attributeName] : state.element;
     if (compare?._id === startingFromIdInLineage) {
@@ -41,7 +41,7 @@ const replaceLineage = (doc, lineageAttributeName, replaceWith, startingFromIdIn
   }
 
   return false;
-};
+}
 
 const replaceWithinLineage = (replaceInDoc, lineageAttributeName, replaceWith) => {
   if (!replaceWith) {
@@ -63,7 +63,7 @@ Function borrowed from shared-lib/lineage
 */
 const minifyLineagesInDoc = doc => {
   const minifyLineage = lineage => {
-    if (!lineage || !lineage._id) {
+    if (!lineage?._id) {
       return undefined;
     }
 
@@ -85,7 +85,6 @@ const minifyLineagesInDoc = doc => {
   
   if ('contact' in doc) {
     doc.contact = minifyLineage(doc.contact);
-    if (doc.contact && !doc.contact.parent) delete doc.contact.parent; // for unit test clarity
   }
 
   if (doc.type === 'data_record') {

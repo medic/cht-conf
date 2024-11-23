@@ -1,4 +1,4 @@
-const { assert } = require('chai');
+const { assert, expect } = require('chai');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
@@ -26,12 +26,9 @@ describe('JsDocs', () => {
   it('does not delete files in directory when user presses n', () => {
     readline.keyInYN.returns(false);
     sinon.stub(environment, 'force').get(() => false);
-    try {
-      JsDocs.prepareFolder(docOnj);
-      assert.fail('Expected error to be thrown');
-    } catch(e) {
-      assert.equal(fs.deleteFilesInFolder.callCount, 0);
-    }
+    const actual = () => JsDocs.prepareFolder(docOnj);
+    expect(actual).to.throw('aborted execution');
+    assert.equal(fs.deleteFilesInFolder.callCount, 0);
   });
 
   it('deletes files in directory when user presses y', () => {

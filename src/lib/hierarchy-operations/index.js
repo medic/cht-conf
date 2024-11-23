@@ -5,14 +5,14 @@ const { trace, info } = require('../log');
 const JsDocs = require('./jsdocFolder');
 const Backend = require('./backend');
 
-const HierarchyOperations = (options) => {
-  async function move(sourceIds, destinationId, db) {
+const HierarchyOperations = (db, options) => {
+  async function move(sourceIds, destinationId) {
     JsDocs.prepareFolder(options);
     trace(`Fetching contact details: ${destinationId}`);
     const constraints = await LineageConstraints(db, options);
     const destinationDoc = await Backend.contact(db, destinationId);
     const sourceDocs = await Backend.contactList(db, sourceIds);
-    await constraints.assertHierarchyErrors(Object.values(sourceDocs), destinationDoc);
+    constraints.assertHierarchyErrors(Object.values(sourceDocs), destinationDoc);
 
     let affectedContactCount = 0, affectedReportCount = 0;
     const replacementLineage = lineageManipulation.createLineageFromDoc(destinationDoc);
@@ -45,7 +45,7 @@ const HierarchyOperations = (options) => {
       
       minifyLineageAndWriteToDisk([...updatedDescendants, ...updatedAncestors]);
       
-      const movedReportsCount = await moveReports(db, descendantsAndSelf, replacementLineage, sourceId, destinationId);
+      const movedReportsCount = await moveReports(descendantsAndSelf, replacementLineage, sourceId, destinationId);
       trace(`${movedReportsCount} report(s) created by these affected contact(s) will be updated`);
 
       affectedContactCount += updatedDescendants.length + updatedAncestors.length;
@@ -57,7 +57,7 @@ const HierarchyOperations = (options) => {
     info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);
   }
 
-  async function moveReports(db, descendantsAndSelf, replacementLineage, sourceId, destinationId) {
+  async function moveReports(descendantsAndSelf, replacementLineage, sourceId, destinationId) {
     const descendantIds = descendantsAndSelf.map(contact => contact._id);
 
     let skip = 0;
@@ -137,19 +137,18 @@ const HierarchyOperations = (options) => {
 
   function replaceLineageInContacts(descendantsAndSelf, replacementLineage, destinationId) {
     return descendantsAndSelf.reduce((agg, doc) => {
-      const startingFromIdInLineage = options.merge ? destinationId : 
-        doc._id === destinationId ? undefined : destinationId;
+      const docIsDestination = doc._id === destinationId;
+      const startingFromIdInLineage = options.merge || !docIsDestination ? destinationId : undefined;
       
       // skip top-level because it will be deleted
-      if (options.merge) {
-        if (doc._id === destinationId) {
-          return agg;
-        }
+      if (options.merge && docIsDestination) {
+        return agg;
       }
 
       const parentWasUpdated = lineageManipulation.replaceLineage(doc, 'parent', replacementLineage, startingFromIdInLineage, options);
       const contactWasUpdated = lineageManipulation.replaceLineage(doc, 'contact', replacementLineage, destinationId, options);
-      if (parentWasUpdated || contactWasUpdated) {
+      const isUpdated = parentWasUpdated || contactWasUpdated;
+      if (isUpdated) {
         agg.push(doc);
       }
       return agg;
@@ -159,9 +158,9 @@ const HierarchyOperations = (options) => {
   return { move };
 };
 
-module.exports = options => ({
+module.exports = (db, options) => ({
   HIERARCHY_ROOT: Backend.HIERARCHY_ROOT,
-  move: HierarchyOperations({ ...options, merge: false }).move,
-  merge: HierarchyOperations({ ...options, merge: true }).move,
+  move: HierarchyOperations(db, { ...options, merge: false }).move,
+  merge: HierarchyOperations(db, { ...options, merge: true }).move,
 });
 

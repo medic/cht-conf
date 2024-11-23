@@ -16,7 +16,7 @@ module.exports = {
       docDirectoryPath: args.docDirectoryPath,
       force: args.force,
     };
-    return HierarchyOperations(options).move(args.sourceIds, args.destinationId, db);
+    return HierarchyOperations(options, db).move(args.sourceIds, args.destinationId);
   }
 };
 

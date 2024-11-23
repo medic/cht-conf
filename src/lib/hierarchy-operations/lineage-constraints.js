@@ -127,8 +127,8 @@ const getPrimaryContactViolations = async (db, contactDoc, parentDoc, descendant
   });
 
   const primaryContactIds = docsRemovedFromContactLineage.rows
-    .map(row => row.doc && row.doc.contact && row.doc.contact._id)
-    .filter(id => id);
+    .map(row => row?.doc?.contact?._id)
+    .filter(Boolean);
   
   return descendantDocs.find(descendant => primaryContactIds.some(primaryId => descendant._id === primaryId));
 };
