@@ -22,21 +22,26 @@ const execute = async () => {
     return Promise.resolve();
   }
 
-  const filesToUpload = fs.recurseFiles(docDir).filter(name => name.endsWith(FILE_EXTENSION));
-  const docIdErrors = getErrorsWhereDocIdDiffersFromFilename(filesToUpload);
-  if (docIdErrors.length > 0) {
-    throw new Error(`upload-docs: ${docIdErrors.join('\n')}`);
-  }
-
-  const totalCount = filesToUpload.length;
+  const filenamesToUpload = fs.recurseFiles(docDir).filter(name => name.endsWith(FILE_EXTENSION));
+  const totalCount = filenamesToUpload.length;
   if (totalCount === 0) {
     return; // nothing to upload
+  }
+
+  const analysis = preuploadAnalysis(filenamesToUpload);
+  const errors = analysis.map(result => result.error).filter(Boolean);
+  if (errors.length > 0) {
+    throw new Error(`upload-docs: ${errors.join('\n')}`);
   }
 
   warn(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
   if (!userPrompt.keyInYN()) {
     throw new Error('User aborted execution.');
   }
+
+  // if feature flag is on
+  const deletedDocIds = analysis.map(result => result.delete).filter(Boolean);
+  await disableUsersAtDeletedFacilities(deletedDocIds);
 
   const results = { ok:[], failed:{} };
   const progress = log.level > log.LEVEL_ERROR ? progressBar.init(totalCount, '{{n}}/{{N}} docs ', ' {{%}} {{m}}:{{s}}') : null;
@@ -93,20 +98,40 @@ const execute = async () => {
     }
   };
 
-  return processNextBatch(filesToUpload, INITIAL_BATCH_SIZE);
+  return processNextBatch(filenamesToUpload, INITIAL_BATCH_SIZE);
 };
 
-const getErrorsWhereDocIdDiffersFromFilename = filePaths =>
+const preuploadAnalysis = filePaths =>
   filePaths
     .map(filePath => {
       const json = fs.readJson(filePath);
       const idFromFilename = path.basename(filePath, FILE_EXTENSION);
 
       if (json._id !== idFromFilename) {
-        return `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.`;
+        return { error: `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.` };
+      }
+
+      if (json._delete) {
+        return { delete: json._id };
       }
     })
-    .filter(err => err);
+    .filter(Boolean);
+
+const updateUsersAtDeletedFacilities = deletedDocIds => {
+  // const urls = deletedDocIds.map(id => `/api/v2/users?facility_id=${id}`);
+  // make api request per deleted document
+  // how can we know which ids are worth querying? what about when we have delete-contacts and delete 10000 places?
+  // store map of id -> userdoc and id -> [facility_ids] because multiple docs per facility and multiple facilities being deleted affecting same user
+
+  // prompt to disable the list of usernames?
+
+  // remove all facility_ids 
+    // if it is an array, remove the facility_id
+  
+  // update each userdoc
+    // if the array is not empty, update the user via POST /username
+    // if the array is empty or it was not an array, disable the use via DELETE /username
+};
 
 module.exports = {
   requiresInstance: true,
