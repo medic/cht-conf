@@ -3,7 +3,7 @@ const fs = require('./sync-fs');
 const info = require('./log').info;
 
 module.exports = (data, csvPath) => {
-  const fields = ['username', 'password', 'roles', 'contact', 'phone', 'place'];
+  const fields = ['username', 'password', 'roles', 'contact', 'phone', 'place', 'fullname', 'email'];
   const json2csvParser = new Json2csvParser({
     fields,
     doubleQuote: '\'',
