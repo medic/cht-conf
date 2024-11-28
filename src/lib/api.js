@@ -39,6 +39,7 @@ const request = {
   get: _request('get'),
   post: _request('post'),
   put: _request('put'),
+  delete: _request('delete'),
 };
 
 const logDeprecatedTransitions = (settings) => {
@@ -96,6 +97,29 @@ const api = {
         log.warn('Failed to check for deprecated transitions. Continuing...', err);
       })
       .then(() => updateAppSettings(content));
+  },
+
+  async getUsersAtPlace(facilityId) {
+    const result = await request.get({
+      uri: `${environment.instanceUrl}/api/v2/users?facility_id=${facilityId}`,
+      json: true,
+    });
+
+    return result?.rows || [];
+  },
+
+  disableUser(username) {
+    return request.delete({
+      uri: `${environment.instanceUrl}/api/v2/users/${username}`,
+    });
+  },
+
+  updateUser(userDoc) {
+    return request.post({
+      uri: `${environment.instanceUrl}/api/v2/users/${userDoc.name}`,
+      json: true,
+      body: userDoc,
+    });
   },
 
   createUser(userData) {

@@ -1,12 +1,13 @@
 const path = require('path');
 const minimist = require('minimist');
-const userPrompt = require('../lib/user-prompt');
 
+const api = require('../lib/api');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const log = require('../lib/log');
 const pouch = require('../lib/db');
 const progressBar = require('../lib/progress-bar');
+const userPrompt = require('../lib/user-prompt');
 
 const { info, trace, warn } = log;
 
@@ -39,9 +40,10 @@ const execute = async () => {
     throw new Error('User aborted execution.');
   }
 
-  // if feature flag is on
-  const deletedDocIds = analysis.map(result => result.delete).filter(Boolean);
-  await disableUsersAtDeletedFacilities(deletedDocIds);
+  if (args['disable-users']) {
+    const deletedDocIds = analysis.map(result => result.delete).filter(Boolean);
+    await handleUsersAtDeletedFacilities(deletedDocIds);
+  }
 
   const results = { ok:[], failed:{} };
   const progress = log.level > log.LEVEL_ERROR ? progressBar.init(totalCount, '{{n}}/{{N}} docs ', ' {{%}} {{m}}:{{s}}') : null;
@@ -111,26 +113,62 @@ const preuploadAnalysis = filePaths =>
         return { error: `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.` };
       }
 
-      if (json._delete) {
+      if (json._deleted) {
         return { delete: json._id };
       }
     })
     .filter(Boolean);
 
-const updateUsersAtDeletedFacilities = deletedDocIds => {
-  // const urls = deletedDocIds.map(id => `/api/v2/users?facility_id=${id}`);
-  // make api request per deleted document
+const handleUsersAtDeletedFacilities = async deletedDocIds => {
   // how can we know which ids are worth querying? what about when we have delete-contacts and delete 10000 places?
-  // store map of id -> userdoc and id -> [facility_ids] because multiple docs per facility and multiple facilities being deleted affecting same user
-
-  // prompt to disable the list of usernames?
-
-  // remove all facility_ids 
-    // if it is an array, remove the facility_id
   
-  // update each userdoc
-    // if the array is not empty, update the user via POST /username
-    // if the array is empty or it was not an array, disable the use via DELETE /username
+  const affectedUsers = await getAffectedUsers();
+  const usernames = affectedUsers.map(userDoc => userDoc.name).join(', ');
+  warn(`This operation will disable ${affectedUsers.length} user accounts: ${usernames} Are you sure you want to continue?`);
+  if (!userPrompt.keyInYN()) {
+    return;
+  }
+
+  await updateAffectedUsers();
+
+  async function getAffectedUsers() {
+    const knownUserDocs = {};
+    for (const facilityId of deletedDocIds) {
+      const fetchedUserDocs = await api().getUsersAtPlace(facilityId);
+      for (const fetchedUserDoc of fetchedUserDocs) {
+        const userDoc = knownUserDocs[fetchedUserDoc.name] || fetchedUserDoc;
+        removeFacility(userDoc, facilityId);
+        knownUserDocs[userDoc.name] = userDoc;
+      }
+    }
+
+    return Object.values(knownUserDocs);
+  }
+
+  function removeFacility(userDoc, facilityId) {
+    if (Array.isArray(userDoc.facility_id)) {
+      userDoc.facility_id = userDoc.facility_id
+        .filter(id => id !== facilityId);
+    } else {
+      delete userDoc.facility_id;
+    }
+  }
+
+  async function updateAffectedUsers() {
+    let disabledUsers = 0, updatedUsers = 0;
+    for (const userDoc of affectedUsers) {
+      const shouldDisable = !userDoc.facility_id || userDoc.facility_id?.length === 0;
+      if (shouldDisable) {
+        await api().disableUser(userDoc.name);
+        disabledUsers++;
+      } else {
+        await api().updateUser(userDoc);
+        updatedUsers++;
+      }
+    }
+
+    info(`${disabledUsers} users disabled. ${updatedUsers} users updated.`);
+  }
 };
 
 module.exports = {
