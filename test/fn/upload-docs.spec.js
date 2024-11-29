@@ -211,7 +211,7 @@ describe('upload-docs', function() {
         _id: 'org.couchdb.user:user2',
         username: 'user2',
         place: ['two'],
-      }
+      };
       assert.deepEqual(apiStub.requestLog(), [
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
         { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
