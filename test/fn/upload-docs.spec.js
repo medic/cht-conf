@@ -142,9 +142,14 @@ describe('upload-docs', function() {
       await assertDbEmpty();
     });
 
-    it('user with single facility_id gets deleted', async () => {
+    const twoPlaces = [
+      { _id: 'one' },
+      { _id: 'two' },
+    ];
+
+    it('user with single place gets deleted', async () => {
       await setupDeletedFacilities('one');
-      setupApiResponses(1, [{ _id: 'org.couchdb.user:user1', name: 'user1', facility_id: 'one' }]);
+      setupApiResponses(1, [{ id: 'org.couchdb.user:user1', username: 'user1', place: [{ _id: 'one' }] }]);
 
       await uploadDocs.execute();
       const res = await apiStub.db.allDocs();
@@ -152,13 +157,13 @@ describe('upload-docs', function() {
 
       assert.deepEqual(apiStub.requestLog(), [
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
-        { method: 'DELETE', url: '/api/v2/users/user1', body: {} },
+        { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
       ]);
     });
 
-    it('user with multiple facility_ids gets updated', async () => {
+    it('user with multiple places gets updated', async () => {
       await setupDeletedFacilities('one');
-      setupApiResponses(1, [{ _id: 'org.couchdb.user:user1', name: 'user1', facility_id: ['one', 'two'] }]);
+      setupApiResponses(1, [{ id: 'org.couchdb.user:user1', username: 'user1', place: twoPlaces }]);
 
       await uploadDocs.execute();
       const res = await apiStub.db.allDocs();
@@ -166,18 +171,18 @@ describe('upload-docs', function() {
 
       const expectedBody = {
         _id: 'org.couchdb.user:user1',
-        name: 'user1',
-        facility_id: [ 'two' ],
+        username: 'user1',
+        place: [ 'two' ],
       };
       assert.deepEqual(apiStub.requestLog(), [
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
-        { method: 'POST', url: '/api/v2/users/user1', body: expectedBody },
+        { method: 'POST', url: '/api/v1/users/user1', body: expectedBody },
       ]);
     });
 
-    it('user with multiple facility_ids gets deleted', async () => {
+    it('user with multiple places gets deleted', async () => {
       await setupDeletedFacilities('one', 'two');
-      const user1Doc = { _id: 'org.couchdb.user:user1', name: 'user1', facility_id: ['one', 'two'] };
+      const user1Doc = { id: 'org.couchdb.user:user1', username: 'user1', place: twoPlaces };
       setupApiResponses(1, [user1Doc], [user1Doc]);
 
       await uploadDocs.execute();
@@ -187,15 +192,15 @@ describe('upload-docs', function() {
       assert.deepEqual(apiStub.requestLog(), [
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
         { method: 'GET', url: '/api/v2/users?facility_id=two', body: {} },
-        { method: 'DELETE', url: '/api/v2/users/user1', body: {} },
+        { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
       ]);
     });
 
-    it('two users disabled when single facility_id has multiple users', async () => {
+    it('two users disabled when single place has multiple users', async () => {
       await setupDeletedFacilities('one');
       setupApiResponses(2, [
-        { _id: 'org.couchdb.user:user1', name: 'user1', facility_id: ['one'] },
-        { _id: 'org.couchdb.user:user2', name: 'user2', facility_id: ['one', 'two'] }
+        { id: 'org.couchdb.user:user1', username: 'user1', place: [{ _id: 'one' }] },
+        { id: 'org.couchdb.user:user2', username: 'user2', place: twoPlaces }
       ]);
 
       await uploadDocs.execute();
@@ -204,20 +209,20 @@ describe('upload-docs', function() {
 
       const expectedUser2 = {
         _id: 'org.couchdb.user:user2',
-        name: 'user2',
-        facility_id: ['two'],
+        username: 'user2',
+        place: ['two'],
       }
       assert.deepEqual(apiStub.requestLog(), [
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
-        { method: 'DELETE', url: '/api/v2/users/user1', body: {} },
-        { method: 'POST', url: '/api/v2/users/user2', body: expectedUser2 },
+        { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
+        { method: 'POST', url: '/api/v1/users/user2', body: expectedUser2 },
       ]);
     });
   });
 });
 
 function setupApiResponses(writeCount, ...userDocResponseRows) {
-  const responseBodies = userDocResponseRows.map(rows => ({ body: { rows } }));
+  const responseBodies = userDocResponseRows.map(body => ({ body }));
   const writeResponses = new Array(writeCount).fill({ status: 200 });
   apiStub.giveResponses(
     ...responseBodies,

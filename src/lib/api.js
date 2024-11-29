@@ -105,18 +105,18 @@ const api = {
       json: true,
     });
 
-    return result?.rows || [];
+    return result || [];
   },
 
   disableUser(username) {
     return request.delete({
-      uri: `${environment.instanceUrl}/api/v2/users/${username}`,
+      uri: `${environment.instanceUrl}/api/v1/users/${username}`,
     });
   },
 
   updateUser(userDoc) {
     return request.post({
-      uri: `${environment.instanceUrl}/api/v2/users/${userDoc.name}`,
+      uri: `${environment.instanceUrl}/api/v1/users/${userDoc.username}`,
       json: true,
       body: userDoc,
     });

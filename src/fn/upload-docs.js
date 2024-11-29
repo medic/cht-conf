@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const path = require('path');
 const minimist = require('minimist');
 
@@ -123,9 +124,9 @@ const handleUsersAtDeletedFacilities = async deletedDocIds => {
   // how can we know which ids are worth querying? what about when we have delete-contacts and delete 10000 places?
   
   const affectedUsers = await getAffectedUsers();
-  const usernames = affectedUsers.map(userDoc => userDoc.name).join(', ');
-  warn(`This operation will disable ${affectedUsers.length} user accounts: ${usernames} Are you sure you want to continue?`);
-  if (!userPrompt.keyInYN()) {
+    const usernames = affectedUsers.map(userDoc => userDoc.username).join(', ');
+  warn(`This operation will update permissions for ${affectedUsers.length} user accounts: ${usernames}. Are you sure you want to continue?`);
+  if (affectedUsers.length === 0 || !userPrompt.keyInYN()) {
     return;
   }
 
@@ -134,34 +135,45 @@ const handleUsersAtDeletedFacilities = async deletedDocIds => {
   async function getAffectedUsers() {
     const knownUserDocs = {};
     for (const facilityId of deletedDocIds) {
-      const fetchedUserDocs = await api().getUsersAtPlace(facilityId);
-      for (const fetchedUserDoc of fetchedUserDocs) {
-        const userDoc = knownUserDocs[fetchedUserDoc.name] || fetchedUserDoc;
-        removeFacility(userDoc, facilityId);
-        knownUserDocs[userDoc.name] = userDoc;
+      const fetchedUserInfos = await api().getUsersAtPlace(facilityId);
+      for (const fetchedUserInfo of fetchedUserInfos) {
+        const userDoc = knownUserDocs[fetchedUserInfo.username] || toPostApiFormat(fetchedUserInfo);
+        removePlace(userDoc, facilityId);
+        knownUserDocs[userDoc.username] = userDoc;
       }
     }
 
     return Object.values(knownUserDocs);
   }
 
-  function removeFacility(userDoc, facilityId) {
-    if (Array.isArray(userDoc.facility_id)) {
-      userDoc.facility_id = userDoc.facility_id
-        .filter(id => id !== facilityId);
+  function toPostApiFormat(apiResponse) {
+    return {
+      _id: apiResponse.id,
+      _rev: apiResponse.rev,
+      username: apiResponse.username,
+      place: apiResponse.place?.filter(Boolean).map(place => place._id),
+    };
+  }
+
+  function removePlace(userDoc, placeId) {
+    if (Array.isArray(userDoc.place)) {
+      userDoc.place = userDoc.place
+        .filter(id => id !== placeId);
     } else {
-      delete userDoc.facility_id;
+      delete userDoc.place;
     }
   }
 
   async function updateAffectedUsers() {
     let disabledUsers = 0, updatedUsers = 0;
     for (const userDoc of affectedUsers) {
-      const shouldDisable = !userDoc.facility_id || userDoc.facility_id?.length === 0;
+      const shouldDisable = !userDoc.place || userDoc.place?.length === 0;
       if (shouldDisable) {
-        await api().disableUser(userDoc.name);
+        trace(`Disabling ${userDoc.username}`);
+        await api().disableUser(userDoc.username);
         disabledUsers++;
       } else {
+        trace(`Updating ${userDoc.username}`);
         await api().updateUser(userDoc);
         updatedUsers++;
       }
