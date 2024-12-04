@@ -4,22 +4,29 @@ const contactTypeIncluded = (contactType, includedTypes) => {
 };
 
 const contactTypeExcluded = (contactType, excludedTypes) => {
-  return !(excludedTypes.length > 0) || excludedTypes.includes('!' + contactType); // TODO
+  return excludedTypes.length === 0 || excludedTypes.includes('!' + contactType); // TODO
 };
 
-const fieldFilter = (contactType, f) => {
-  const includedTypes = convertToArray(f.appliesToType);  
+const fieldFilter = (contactType, field) => {
+  // These two arrays should be disjoint sets but they are not. 
+  const includedTypes = convertToArray(field.appliesToType); 
   const excludedTypes = includedTypes.filter(function(type) {
     return type && type.charAt(0) === '!';
   });
 
+  const noTypesConfigured = includedTypes.length === 0;
+  const configuredTypeIncluded = includedTypes.includes(contactType);
+  const excludedTypesConfigured = excludedTypes.length > 0;
+  const contactTypeExcluded = excludedTypes.includes('!' + contactType);
 
-  if (contactTypeIncluded(contactType, includedTypes) || !contactTypeExcluded(contactType, excludedTypes)) {
-    if (!f.appliesIf || f.appliesIf()) {
-      delete f.appliesToType;
-      delete f.appliesIf;
-      return true;
-    }
+  const typeMatches = noTypesConfigured || configuredTypeIncluded || (excludedTypesConfigured && !contactTypeExcluded);
+
+  const hasAppliesIf = field.appliesIf && typeof field.appliesIf === 'function';
+
+  if (typeMatches && (!hasAppliesIf || field.appliesIf())) {
+    delete field.appliesToType;
+    delete field.appliesIf;
+    return true;
   }
 };
 
