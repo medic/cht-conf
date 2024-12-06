@@ -47,7 +47,7 @@ function moveHierarchy(db, options) {
       
       minifyLineageAndWriteToDisk(options, [...updatedDescendants, ...updatedAncestors]);
       
-      const movedReportsCount = await moveReports(db, options, moveContext, destinationId);
+      const movedReportsCount = await moveReports(db, options, moveContext);
       trace(`${movedReportsCount} report(s) created by these affected contact(s) will be updated`);
 
       affectedContactCount += updatedDescendants.length + updatedAncestors.length;
@@ -166,16 +166,18 @@ function replaceLineageInContacts(options, moveContext) {
     }
   }
 
-  const result = [];
-  for (const doc of moveContext.descendantsAndSelf) {
+  function sonarQubeComplexityFiveIsTooLow(doc) {
     const docIsSource = doc._id === sourceId;
     
     // skip top-level because it will be deleted
-    if (options.merge && docIsSource) {
-      continue;
+    if (!options.merge || !docIsSource) {
+      return replaceForSingleContact(doc);
     }
+  }
 
-    const updatedDoc = replaceForSingleContact(doc);
+  const result = [];
+  for (const doc of moveContext.descendantsAndSelf) {
+    const updatedDoc = sonarQubeComplexityFiveIsTooLow(doc);
     if (updatedDoc) {
       result.push(updatedDoc);
     }
