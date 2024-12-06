@@ -76,10 +76,6 @@ const getMovingViolations = (mapTypeToAllowedParents, sourceDoc, destinationDoc)
     }
   }
 
-  if (!mapTypeToAllowedParents) {
-    return 'hierarchy constraints are undefined';
-  }
-
   const commonViolations = getCommonViolations(sourceDoc, destinationDoc);
   const contactTypeError = getContactTypeError();
   const circularHierarchyError = findCircularHierarchyErrors();
