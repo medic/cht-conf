@@ -3,22 +3,22 @@ const LineageConstraints = require('./lineage-constraints');
 const { trace, info } = require('../log');
 
 const JsDocs = require('./jsdocFolder');
-const Backend = require('./backend');
+const DataSource = require('./hierarchy-data-source');
 
 function moveHierarchy(db, options) {
   return async function (sourceIds, destinationId) {
     JsDocs.prepareFolder(options);
     trace(`Fetching contact details: ${destinationId}`);
     const constraints = await LineageConstraints(db, options);
-    const destinationDoc = await Backend.contact(db, destinationId);
-    const sourceDocs = await Backend.contactList(db, sourceIds);
+    const destinationDoc = await DataSource.getContact(db, destinationId);
+    const sourceDocs = await DataSource.getContactsByIds(db, sourceIds);
     constraints.assertHierarchyErrors(Object.values(sourceDocs), destinationDoc);
 
     let affectedContactCount = 0, affectedReportCount = 0;
     const replacementLineage = lineageManipulation.createLineageFromDoc(destinationDoc);
     for (let sourceId of sourceIds) {
       const sourceDoc = sourceDocs[sourceId];
-      const descendantsAndSelf = await Backend.descendantsOf(db, sourceId);
+      const descendantsAndSelf = await DataSource.descendantsOf(db, sourceId);
       const moveContext = {
         sourceId,
         destinationId,
@@ -45,7 +45,7 @@ function moveHierarchy(db, options) {
       trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
       const updatedDescendants = replaceLineageInContacts(options, moveContext);
       
-      const ancestors = await Backend.ancestorsOf(db, sourceDoc);
+      const ancestors = await DataSource.ancestorsOf(db, sourceDoc);
       trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
       const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
       
@@ -70,9 +70,9 @@ async function moveReports(db, options, moveContext) {
   let skip = 0;
   let reportDocsBatch;
   do {
-    info(`Processing ${skip} to ${skip + Backend.BATCH_SIZE} report docs`);
+    info(`Processing ${skip} to ${skip + DataSource.BATCH_SIZE} report docs`);
     const createdAtId = options.merge && moveContext.sourceId;
-    reportDocsBatch = await Backend.reportsCreatedByOrAt(db, descendantIds, createdAtId, skip);
+    reportDocsBatch = await DataSource.reportsCreatedByOrAt(db, descendantIds, createdAtId, skip);
 
     const updatedReports = replaceLineageInReports(options, reportDocsBatch, moveContext);
 
@@ -83,7 +83,7 @@ async function moveReports(db, options, moveContext) {
     minifyLineageAndWriteToDisk(options, updatedReports);
 
     skip += reportDocsBatch.length;
-  } while (reportDocsBatch.length >= Backend.BATCH_SIZE);
+  } while (reportDocsBatch.length >= DataSource.BATCH_SIZE);
 
   return skip;
 }
@@ -192,7 +192,7 @@ function replaceLineageInContacts(options, moveContext) {
 
 module.exports = (db, options) => {
   return {
-    HIERARCHY_ROOT: Backend.HIERARCHY_ROOT,
+    HIERARCHY_ROOT: DataSource.HIERARCHY_ROOT,
     move: moveHierarchy(db, { ...options, merge: false }),
     merge: moveHierarchy(db, { ...options, merge: true }),
   };

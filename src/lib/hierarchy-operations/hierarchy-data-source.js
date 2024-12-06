@@ -7,7 +7,7 @@ const BATCH_SIZE = 10000;
 /*
 Fetches all of the documents associated with the "contactIds" and confirms they exist.
 */
-async function contactList(db, ids) {
+async function getContactsByIds(db, ids) {
   const contactDocs = await db.allDocs({
     keys: ids,
     include_docs: true,
@@ -18,10 +18,12 @@ async function contactList(db, ids) {
     throw Error(missingContactErrors);
   }
 
-  return contactDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
+  const contactDict = {};
+  contactDocs.rows.forEach(({ doc }) => contactDict[doc._id] = doc);
+  return contactDict;
 }
 
-async function contact(db, id) {
+async function getContact(db, id) {
   try {
     if (id === HIERARCHY_ROOT) {
       return undefined;
@@ -29,7 +31,7 @@ async function contact(db, id) {
 
     return await db.get(id);
   } catch (err) {
-    if (err.name !== 'not_found') {
+    if (err.status !== 404) {
       throw err;
     }
 
@@ -94,7 +96,7 @@ module.exports = {
   BATCH_SIZE,
   ancestorsOf,
   descendantsOf,
-  contact,
-  contactList,
+  getContact,
+  getContactsByIds,
   reportsCreatedByOrAt,
 };

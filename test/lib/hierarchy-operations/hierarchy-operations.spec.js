@@ -5,7 +5,7 @@ const sinon = require('sinon');
 
 const { mockReport, mockHierarchy, parentsToLineage } = require('../../mock-hierarchies');
 const JsDocs = rewire('../../../src/lib/hierarchy-operations/jsdocFolder.js');
-const Backend = rewire('../../../src/lib/hierarchy-operations/backend.js');
+const DataSource = rewire('../../../src/lib/hierarchy-operations/hierarchy-data-source.js');
 
 const PouchDB = require('pouchdb-core');
 
@@ -17,7 +17,7 @@ const { assert, expect } = chai;
 
 const HierarchyOperations = rewire('../../../src/lib/hierarchy-operations/index.js');
 HierarchyOperations.__set__('JsDocs', JsDocs);
-HierarchyOperations.__set__('Backend', Backend);
+HierarchyOperations.__set__('DataSource', DataSource);
 
 const contacts_by_depth = {
   // eslint-disable-next-line quotes
@@ -588,7 +588,7 @@ describe('move-contacts', () => {
   });
 
   describe('batching works as expected', () => {
-    const initialBatchSize = Backend.BATCH_SIZE;
+    const initialBatchSize = DataSource.BATCH_SIZE;
     beforeEach(async () => {
       await mockReport(pouchDb, {
         id: 'report_2',
@@ -607,13 +607,13 @@ describe('move-contacts', () => {
     });
 
     afterEach(() => {
-      Backend.BATCH_SIZE = initialBatchSize;
-      Backend.__set__('BATCH_SIZE', initialBatchSize);
+      DataSource.BATCH_SIZE = initialBatchSize;
+      DataSource.__set__('BATCH_SIZE', initialBatchSize);
     });
 
     it('move health_center_1 to district_2 in batches of 1', async () => {
-      Backend.__set__('BATCH_SIZE', 1);
-      Backend.BATCH_SIZE = 1;
+      DataSource.__set__('BATCH_SIZE', 1);
+      DataSource.BATCH_SIZE = 1;
       sinon.spy(pouchDb, 'query');
 
       await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
@@ -688,8 +688,8 @@ describe('move-contacts', () => {
     });
 
     it('should health_center_1 to district_1 in batches of 2', async () => {
-      Backend.__set__('BATCH_SIZE', 2);
-      Backend.BATCH_SIZE = 2;
+      DataSource.__set__('BATCH_SIZE', 2);
+      DataSource.BATCH_SIZE = 2;
       sinon.spy(pouchDb, 'query');
 
       await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_1');

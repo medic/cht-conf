@@ -6,20 +6,18 @@ const lineageManipulation = require('./lineage-manipulation');
 module.exports = async (db, options) => {
   const mapTypeToAllowedParents = await fetchAllowedParents(db);
 
-  const getHierarchyErrors = (sourceDoc, destinationDoc) => {
-    if (options.merge) {
-      return getMergeViolations(sourceDoc, destinationDoc);
-    }
-
-    return getMovingViolations(mapTypeToAllowedParents, sourceDoc, destinationDoc);
-  };
-
   return {
     getPrimaryContactViolations: (sourceDoc, destinationDoc, descendantDocs) => getPrimaryContactViolations(db, sourceDoc, destinationDoc, descendantDocs),
-    getHierarchyErrors,
     assertHierarchyErrors: (sourceDocs, destinationDoc) => {
+      if (!Array.isArray(sourceDocs)) {
+        sourceDocs = [sourceDocs];
+      }
+      
       sourceDocs.forEach(sourceDoc => {
-        const hierarchyError = getHierarchyErrors(sourceDoc, destinationDoc);
+        const hierarchyError = options.merge ?
+          getMergeViolations(sourceDoc, destinationDoc)
+          : getMovingViolations(mapTypeToAllowedParents, sourceDoc, destinationDoc);
+
         if (hierarchyError) {
           throw Error(`Hierarchy Constraints: ${hierarchyError}`);
         }
@@ -62,11 +60,13 @@ const getMovingViolations = (mapTypeToAllowedParents, sourceDoc, destinationDoc)
   }
 
   function findCircularHierarchyErrors() {
-    if (destinationDoc && sourceDoc._id) {
-      const parentAncestry = [destinationDoc._id, ...lineageManipulation.pluckIdsFromLineage(destinationDoc.parent)];
-      if (parentAncestry.includes(sourceDoc._id)) {
-        return `Circular hierarchy: Cannot set parent of contact '${sourceDoc._id}' as it would create a circular hierarchy.`;
-      }
+    if (!destinationDoc || !sourceDoc._id) {
+      return;
+    }
+
+    const parentAncestry = [destinationDoc._id, ...lineageManipulation.pluckIdsFromLineage(destinationDoc.parent)];
+    if (parentAncestry.includes(sourceDoc._id)) {
+      return `Circular hierarchy: Cannot set parent of contact '${sourceDoc._id}' as it would create a circular hierarchy.`;
     }
   }
 
@@ -141,17 +141,18 @@ const getContactType = doc => doc && (doc.type === 'contact' ? doc.contact_type 
 
 async function fetchAllowedParents(db) {
   try {
-    const { settings } = await db.get('settings');
-    const { contact_types } = settings;
+    const { settings: { contact_types } } = await db.get('settings');
 
     if (Array.isArray(contact_types)) {
       trace('Found app_settings.contact_types. Configurable hierarchy constraints will be enforced.');
-      return contact_types
-        .filter(rule => rule)
-        .reduce((agg, curr) => Object.assign(agg, { [curr.id]: curr.parents }), {});
+      const parentDict = {};
+      contact_types
+        .filter(Boolean)
+        .forEach(({ id, parents }) => parentDict[id] = parents);
+      return parentDict;
     }
   } catch (err) {
-    if (err.name !== 'not_found') {
+    if (err.status !== 404) {
       throw err;
     }
   }
