@@ -7,12 +7,17 @@ module.exports = async (db, options) => {
   const mapTypeToAllowedParents = await fetchAllowedParents(db);
 
   return {
-    getPrimaryContactViolations: (sourceDoc, destinationDoc, descendantDocs) => getPrimaryContactViolations(db, sourceDoc, destinationDoc, descendantDocs),
-    assertHierarchyErrors: (sourceDocs, destinationDoc) => {
+    assertNoPrimaryContactViolations: async (sourceDoc, destinationDoc, descendantDocs) => {
+      const invalidPrimaryContactDoc = await getPrimaryContactViolations(db, sourceDoc, destinationDoc, descendantDocs);
+      if (invalidPrimaryContactDoc) {
+        throw Error(`Cannot remove contact '${invalidPrimaryContactDoc?.name}' (${invalidPrimaryContactDoc?._id}) from the hierarchy for which they are a primary contact.`);
+      }
+    },
+    assertNoHierarchyErrors: (sourceDocs, destinationDoc) => {
       if (!Array.isArray(sourceDocs)) {
         sourceDocs = [sourceDocs];
       }
-      
+
       sourceDocs.forEach(sourceDoc => {
         const hierarchyError = options.merge ?
           getMergeViolations(sourceDoc, destinationDoc)
@@ -30,7 +35,7 @@ module.exports = async (db, options) => {
       const contactIds = sourceDocs.map(doc => doc._id);
       sourceDocs
         .forEach(doc => {
-          const parentIdsOfDoc = (doc.parent && lineageManipulation.pluckIdsFromLineage(doc.parent)) || [];
+          const parentIdsOfDoc = lineageManipulation.pluckIdsFromLineage(doc.parent);
           const violatingParentId = parentIdsOfDoc.find(parentId => contactIds.includes(parentId));
           if (violatingParentId) {
             throw Error(`Unable to move two documents from the same lineage: '${doc._id}' and '${violatingParentId}'`);

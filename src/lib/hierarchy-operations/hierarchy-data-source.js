@@ -42,7 +42,7 @@ async function getContact(db, id) {
 /*
 Given a contact's id, obtain the documents of all descendant contacts
 */
-async function descendantsOf(db, contactId) {
+async function getContactWithDescendants(db, contactId) {
   const descendantDocs = await db.query('medic/contacts_by_depth', {
     key: [contactId],
     include_docs: true,
@@ -95,7 +95,7 @@ module.exports = {
   HIERARCHY_ROOT,
   BATCH_SIZE,
   ancestorsOf,
-  descendantsOf,
+  getContactWithDescendants,
   getContact,
   getContactsByIds,
   reportsCreatedByOrAt,

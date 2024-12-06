@@ -12,13 +12,13 @@ function moveHierarchy(db, options) {
     const constraints = await LineageConstraints(db, options);
     const destinationDoc = await DataSource.getContact(db, destinationId);
     const sourceDocs = await DataSource.getContactsByIds(db, sourceIds);
-    constraints.assertHierarchyErrors(Object.values(sourceDocs), destinationDoc);
+    constraints.assertNoHierarchyErrors(Object.values(sourceDocs), destinationDoc);
 
     let affectedContactCount = 0, affectedReportCount = 0;
     const replacementLineage = lineageManipulation.createLineageFromDoc(destinationDoc);
-    for (let sourceId of sourceIds) {
+    for (const sourceId of sourceIds) {
       const sourceDoc = sourceDocs[sourceId];
-      const descendantsAndSelf = await DataSource.descendantsOf(db, sourceId);
+      const descendantsAndSelf = await DataSource.getContactWithDescendants(db, sourceId);
       const moveContext = {
         sourceId,
         destinationId,
@@ -27,20 +27,15 @@ function moveHierarchy(db, options) {
       };
 
       if (options.merge) {
-        const self = descendantsAndSelf.find(d => d._id === sourceId);
         JsDocs.writeDoc(options, {
-          _id: self._id,
-          _rev: self._rev,
+          _id: sourceDoc._id,
+          _rev: sourceDoc._rev,
           _deleted: true,
         });
       }
 
       const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
-      // Check that primary contact is not removed from areas where they are required
-      const invalidPrimaryContactDoc = await constraints.getPrimaryContactViolations(sourceDoc, destinationDoc, descendantsAndSelf);
-      if (invalidPrimaryContactDoc) {
-        throw Error(`Cannot remove contact ${prettyPrintDocument(invalidPrimaryContactDoc)} from the hierarchy for which they are a primary contact.`);
-      }
+      await constraints.assertNoPrimaryContactViolations(sourceDoc, destinationDoc, descendantsAndSelf);
 
       trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
       const updatedDescendants = replaceLineageInContacts(options, moveContext);
