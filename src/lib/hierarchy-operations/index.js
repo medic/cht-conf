@@ -169,7 +169,7 @@ function replaceLineageInContacts(options, moveContext) {
   function sonarQubeComplexityFiveIsTooLow(doc) {
     const docIsSource = doc._id === sourceId;
     
-    // skip top-level because it will be deleted
+    // skip source because it will be deleted
     if (!options.merge || !docIsSource) {
       return replaceForSingleContact(doc);
     }
