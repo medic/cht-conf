@@ -1,36 +1,21 @@
 const { expect } = require('chai');
-const { replaceLineage, pluckIdsFromLineage, minifyLineagesInDoc } = require('../../../src/lib/hierarchy-operations/lineage-manipulation');
+const { replaceParentLineage, replaceContactLineage, pluckIdsFromLineage, minifyLineagesInDoc } = require('../../../src/lib/hierarchy-operations/lineage-manipulation');
 const log = require('../../../src/lib/log');
 log.level = log.LEVEL_TRACE;
 
 const { parentsToLineage } = require('../../mock-hierarchies');
 
 describe('lineage manipulation', () => {
-  describe('replaceLineage', () => {
-    const mockReport = data => Object.assign({ _id: 'r', type: 'data_record', contact: parentsToLineage('parent', 'grandparent') }, data);
-    const mockContact = data => Object.assign({ _id: 'c', type: 'person', parent: parentsToLineage('parent', 'grandparent') }, data);
+  const mockReport = data => Object.assign({ _id: 'r', type: 'data_record', contact: parentsToLineage('parent', 'grandparent') }, data);
+  const mockContact = data => Object.assign({ _id: 'c', type: 'person', parent: parentsToLineage('parent', 'grandparent') }, data);
 
-    it('replace with empty lineage', () => {
-      const mock = mockReport();
-      const replaceLineageOptions = {
-        lineageAttribute: 'contact',
-        replaceWith: undefined,
-      };
-      expect(replaceLineage(mock, replaceLineageOptions)).to.be.true;
-      expect(mock).to.deep.eq({
-        _id: 'r',
-        type: 'data_record',
-        contact: undefined,
-      });
-    });
-
+  describe('replaceParentLineage', () => {
     it('replace full lineage', () => {
       const mock = mockContact();
       const replaceLineageOptions = {
-        lineageAttribute: 'parent',
         replaceWith: parentsToLineage('new_parent'),
       };
-      expect(replaceLineage(mock, replaceLineageOptions)).to.be.true;
+      expect(replaceParentLineage(mock, replaceLineageOptions)).to.be.true;
       expect(mock).to.deep.eq({
         _id: 'c',
         type: 'person',
@@ -43,10 +28,9 @@ describe('lineage manipulation', () => {
       delete mock.parent;
 
       const replaceLineageOptions = {
-        lineageAttribute: 'parent',
         replaceWith: parentsToLineage('new_parent'),
       };
-      expect(replaceLineage(mock, replaceLineageOptions)).to.be.true;
+      expect(replaceParentLineage(mock, replaceLineageOptions)).to.be.true;
       expect(mock).to.deep.eq({
         _id: 'c',
         type: 'person',
@@ -59,21 +43,19 @@ describe('lineage manipulation', () => {
       delete mock.parent;
 
       const replaceLineageOptions = {
-        lineageAttribute: 'parent',
         replaceWith: undefined,
       };
-      expect(replaceLineage(mock, replaceLineageOptions)).to.be.false;
+      expect(replaceParentLineage(mock, replaceLineageOptions)).to.be.false;
     });
 
     it('replace lineage starting at contact', () => {
       const mock = mockContact();
 
       const replaceLineageOptions = {
-        lineageAttribute: 'parent',
         replaceWith: parentsToLineage('new_grandparent'),
         startingFromId: 'parent',
       };
-      expect(replaceLineage(mock, replaceLineageOptions)).to.be.true;
+      expect(replaceParentLineage(mock, replaceLineageOptions)).to.be.true;
       expect(mock).to.deep.eq({
         _id: 'c',
         type: 'person',
@@ -84,12 +66,11 @@ describe('lineage manipulation', () => {
     it('merge new parent', () => {
       const mock = mockContact();
       const replaceLineageOptions = {
-        lineageAttribute: 'parent',
         replaceWith: parentsToLineage('new_parent', 'new_grandparent'),
         startingFromId: 'parent',
         merge: true,
       };
-      expect(replaceLineage(mock, replaceLineageOptions)).to.be.true;
+      expect(replaceParentLineage(mock, replaceLineageOptions)).to.be.true;
       expect(mock).to.deep.eq({
         _id: 'c',
         type: 'person',
@@ -97,30 +78,13 @@ describe('lineage manipulation', () => {
       });
     });
 
-    it('merge grandparent of contact', () => {
-      const mock = mockReport();
-      const replaceLineageOptions = {
-        lineageAttribute: 'contact',
-        replaceWith: parentsToLineage('new_grandparent'),
-        startingFromId: 'grandparent',
-        merge: true,
-      };
-      expect(replaceLineage(mock, replaceLineageOptions)).to.be.true;
-      expect(mock).to.deep.eq({
-        _id: 'r',
-        type: 'data_record',
-        contact: parentsToLineage('parent', 'new_grandparent'),
-      });
-    });
-
     it('replace empty starting at contact', () => {
       const mock = mockContact();
       const replaceLineageOptions = {
-        lineageAttribute: 'parent',
         replaceWith: undefined,
         startingFromId: 'parent',
       };
-      expect(replaceLineage(mock, replaceLineageOptions)).to.be.true;
+      expect(replaceParentLineage(mock, replaceLineageOptions)).to.be.true;
       expect(mock).to.deep.eq({
         _id: 'c',
         type: 'person',
@@ -131,11 +95,40 @@ describe('lineage manipulation', () => {
     it('replace starting at non-existant contact', () => {
       const mock = mockContact();
       const replaceLineageOptions = {
-        lineageAttribute: 'parent',
         replaceWith: parentsToLineage('irrelevant'),
         startingFromId: 'dne',
       };
-      expect(replaceLineage(mock, replaceLineageOptions)).to.be.false;
+      expect(replaceParentLineage(mock, replaceLineageOptions)).to.be.false;
+    });
+  });
+
+  describe('replaceContactLineage', () => {
+    it('replace with empty lineage', () => {
+      const mock = mockReport();
+      const replaceLineageOptions = {
+        replaceWith: undefined,
+      };
+      expect(replaceContactLineage(mock, replaceLineageOptions)).to.be.true;
+      expect(mock).to.deep.eq({
+        _id: 'r',
+        type: 'data_record',
+        contact: undefined,
+      });
+    });
+
+    it('merge grandparent of contact', () => {
+      const mock = mockReport();
+      const replaceLineageOptions = {
+        replaceWith: parentsToLineage('new_grandparent'),
+        startingFromId: 'grandparent',
+        merge: true,
+      };
+      expect(replaceContactLineage(mock, replaceLineageOptions)).to.be.true;
+      expect(mock).to.deep.eq({
+        _id: 'r',
+        type: 'data_record',
+        contact: parentsToLineage('parent', 'new_grandparent'),
+      });
     });
   });
 

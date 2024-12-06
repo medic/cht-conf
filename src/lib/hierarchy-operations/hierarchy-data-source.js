@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const lineageManipulation = require('./lineage-manipulation');
 
 const HIERARCHY_ROOT = 'root';
@@ -7,7 +6,7 @@ const BATCH_SIZE = 10000;
 /*
 Fetches all of the documents associated with the "contactIds" and confirms they exist.
 */
-async function contactList(db, ids) {
+async function getContactsByIds(db, ids) {
   const contactDocs = await db.allDocs({
     keys: ids,
     include_docs: true,
@@ -18,10 +17,12 @@ async function contactList(db, ids) {
     throw Error(missingContactErrors);
   }
 
-  return contactDocs.rows.reduce((agg, curr) => Object.assign(agg, { [curr.doc._id]: curr.doc }), {});
+  const contactDict = {};
+  contactDocs.rows.forEach(({ doc }) => contactDict[doc._id] = doc);
+  return contactDict;
 }
 
-async function contact(db, id) {
+async function getContact(db, id) {
   try {
     if (id === HIERARCHY_ROOT) {
       return undefined;
@@ -29,7 +30,7 @@ async function contact(db, id) {
 
     return await db.get(id);
   } catch (err) {
-    if (err.name !== 'not_found') {
+    if (err.status !== 404) {
       throw err;
     }
 
@@ -40,7 +41,7 @@ async function contact(db, id) {
 /*
 Given a contact's id, obtain the documents of all descendant contacts
 */
-async function descendantsOf(db, contactId) {
+async function getContactWithDescendants(db, contactId) {
   const descendantDocs = await db.query('medic/contacts_by_depth', {
     key: [contactId],
     include_docs: true,
@@ -52,7 +53,7 @@ async function descendantsOf(db, contactId) {
     .filter(doc => doc && doc.type !== 'tombstone');
 }
 
-async function reportsCreatedByOrAt(db, createdByIds, createdAtId, skip) {
+async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
   const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
   const createdAtKeys = createdAtId ? [
     [`patient_id:${createdAtId}`],
@@ -71,10 +72,11 @@ async function reportsCreatedByOrAt(db, createdByIds, createdAtId, skip) {
     skip,
   });
 
-  return _.uniqBy(reports.rows.map(row => row.doc), '_id');
+  const docsWithId = reports.rows.map(({ doc }) => [doc._id, doc]);
+  return Array.from(new Map(docsWithId).values());
 }
 
-async function ancestorsOf(db, contactDoc) {
+async function getAncestorsOf(db, contactDoc) {
   const ancestorIds = lineageManipulation.pluckIdsFromLineage(contactDoc.parent);
   const ancestors = await db.allDocs({
     keys: ancestorIds,
@@ -92,9 +94,9 @@ async function ancestorsOf(db, contactDoc) {
 module.exports = {
   HIERARCHY_ROOT,
   BATCH_SIZE,
-  ancestorsOf,
-  descendantsOf,
-  contact,
-  contactList,
-  reportsCreatedByOrAt,
+  getAncestorsOf,
+  getContactWithDescendants,
+  getContact,
+  getContactsByIds,
+  getReportsForContacts,
 };

@@ -49,7 +49,6 @@
     "json-diff": "^1.0.6",
     "json-stringify-safe": "^5.0.1",
     "json2csv": "^4.5.4",
-    "lodash": "^4.17.21",
     "mime-types": "^2.1.35",
     "minimist": "^1.2.8",
     "mkdirp": "^3.0.1",

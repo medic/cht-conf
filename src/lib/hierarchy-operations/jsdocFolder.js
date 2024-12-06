@@ -23,11 +23,11 @@ function writeDoc({ docDirectoryPath }, doc) {
 
 function deleteAfterConfirmation(docDirectoryPath) {
   warn(`The document folder '${docDirectoryPath}' already contains files. It is recommended you start with a clean folder. Do you want to delete the contents of this folder and continue?`);
-  if (userPrompt.keyInYN()) {
-    fs.deleteFilesInFolder(docDirectoryPath);
-  } else {
+  if (!userPrompt.keyInYN()) {
     throw new Error('User aborted execution.');
   }
+  
+  fs.deleteFilesInFolder(docDirectoryPath);
 }
 
 module.exports = {

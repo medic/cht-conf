@@ -1,25 +1,29 @@
 const log = require('../log');
+const { HIERARCHY_ROOT } = require('./hierarchy-data-source');
 const { trace } = log;
 
 const lineageManipulation = require('./lineage-manipulation');
 
-module.exports = async (db, options = {}) => {
+module.exports = async (db, options) => {
   const mapTypeToAllowedParents = await fetchAllowedParents(db);
 
-  const getHierarchyErrors = (sourceDoc, destinationDoc) => {
-    if (options.merge) {
-      return getMergeViolations(sourceDoc, destinationDoc);
-    }
-
-    return getMovingViolations(mapTypeToAllowedParents, sourceDoc, destinationDoc);
-  };
-
   return {
-    getPrimaryContactViolations: (sourceDoc, destinationDoc, descendantDocs) => getPrimaryContactViolations(db, sourceDoc, destinationDoc, descendantDocs),
-    getHierarchyErrors,
-    assertHierarchyErrors: (sourceDocs, destinationDoc) => {
+    assertNoPrimaryContactViolations: async (sourceDoc, destinationDoc, descendantDocs) => {
+      const invalidPrimaryContactDoc = await getPrimaryContactViolations(db, sourceDoc, destinationDoc, descendantDocs);
+      if (invalidPrimaryContactDoc) {
+        throw Error(`Cannot remove contact '${invalidPrimaryContactDoc?.name}' (${invalidPrimaryContactDoc?._id}) from the hierarchy for which they are a primary contact.`);
+      }
+    },
+    assertNoHierarchyErrors: (sourceDocs, destinationDoc) => {
+      if (!Array.isArray(sourceDocs)) {
+        sourceDocs = [sourceDocs];
+      }
+
       sourceDocs.forEach(sourceDoc => {
-        const hierarchyError = getHierarchyErrors(sourceDoc, destinationDoc);
+        const hierarchyError = options.merge ?
+          getMergeViolations(sourceDoc, destinationDoc)
+          : getMovingViolations(mapTypeToAllowedParents, sourceDoc, destinationDoc);
+
         if (hierarchyError) {
           throw Error(`Hierarchy Constraints: ${hierarchyError}`);
         }
@@ -32,7 +36,7 @@ module.exports = async (db, options = {}) => {
       const contactIds = sourceDocs.map(doc => doc._id);
       sourceDocs
         .forEach(doc => {
-          const parentIdsOfDoc = (doc.parent && lineageManipulation.pluckIdsFromLineage(doc.parent)) || [];
+          const parentIdsOfDoc = lineageManipulation.pluckIdsFromLineage(doc.parent);
           const violatingParentId = parentIdsOfDoc.find(parentId => contactIds.includes(parentId));
           if (violatingParentId) {
             throw Error(`Unable to move two documents from the same lineage: '${doc._id}' and '${violatingParentId}'`);
@@ -62,16 +66,14 @@ const getMovingViolations = (mapTypeToAllowedParents, sourceDoc, destinationDoc)
   }
 
   function findCircularHierarchyErrors() {
-    if (destinationDoc && sourceDoc._id) {
-      const parentAncestry = [destinationDoc._id, ...lineageManipulation.pluckIdsFromLineage(destinationDoc.parent)];
-      if (parentAncestry.includes(sourceDoc._id)) {
-        return `Circular hierarchy: Cannot set parent of contact '${sourceDoc._id}' as it would create a circular hierarchy.`;
-      }
+    if (!destinationDoc || !sourceDoc._id) {
+      return;
     }
-  }
 
-  if (!mapTypeToAllowedParents) {
-    return 'hierarchy constraints are undefined';
+    const parentAncestry = [destinationDoc._id, ...lineageManipulation.pluckIdsFromLineage(destinationDoc.parent)];
+    if (parentAncestry.includes(sourceDoc._id)) {
+      return `Circular hierarchy: Cannot set parent of contact '${sourceDoc._id}' as it would create a circular hierarchy.`;
+    }
   }
 
   const commonViolations = getCommonViolations(sourceDoc, destinationDoc);
@@ -98,6 +100,10 @@ const getMergeViolations = (sourceDoc, destinationDoc) => {
     return commonViolations;
   }
 
+  if ([sourceDoc._id, destinationDoc._id].includes(HIERARCHY_ROOT)) {
+    return `cannot merge using id: "${HIERARCHY_ROOT}"`;
+  }
+
   const sourceContactType = getContactType(sourceDoc);
   const destinationContactType = getContactType(destinationDoc);
   if (sourceContactType !== destinationContactType) {
@@ -115,14 +121,9 @@ A place's primary contact must be a descendant of that place.
 1. Check to see which part of the contact's lineage will be removed
 2. For each removed part of the contact's lineage, confirm that place's primary contact isn't being removed.
 */
-const getPrimaryContactViolations = async (db, contactDoc, parentDoc, descendantDocs) => {
-  const safeGetLineageFromDoc = doc => doc ? lineageManipulation.pluckIdsFromLineage(doc.parent) : [];
-  const contactsLineageIds = safeGetLineageFromDoc(contactDoc);
-  const parentsLineageIds = safeGetLineageFromDoc(parentDoc);
-
-  if (parentDoc) {
-    parentsLineageIds.push(parentDoc._id);
-  }
+const getPrimaryContactViolations = async (db, contactDoc, destinationDoc, descendantDocs) => {
+  const contactsLineageIds = lineageManipulation.pluckIdsFromLineage(contactDoc?.parent);
+  const parentsLineageIds = lineageManipulation.pluckIdsFromLineage(destinationDoc);
 
   const docIdsRemovedFromContactLineage = contactsLineageIds.filter(value => !parentsLineageIds.includes(value));
   const docsRemovedFromContactLineage = await db.allDocs({
@@ -141,17 +142,18 @@ const getContactType = doc => doc && (doc.type === 'contact' ? doc.contact_type 
 
 async function fetchAllowedParents(db) {
   try {
-    const { settings } = await db.get('settings');
-    const { contact_types } = settings;
+    const { settings: { contact_types } } = await db.get('settings');
 
     if (Array.isArray(contact_types)) {
       trace('Found app_settings.contact_types. Configurable hierarchy constraints will be enforced.');
-      return contact_types
-        .filter(rule => rule)
-        .reduce((agg, curr) => Object.assign(agg, { [curr.id]: curr.parents }), {});
+      const parentDict = {};
+      contact_types
+        .filter(Boolean)
+        .forEach(({ id, parents }) => parentDict[id] = parents);
+      return parentDict;
     }
   } catch (err) {
-    if (err.name !== 'not_found') {
+    if (err.status !== 404) {
       throw err;
     }
   }

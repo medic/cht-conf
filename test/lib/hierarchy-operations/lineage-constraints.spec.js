@@ -1,8 +1,12 @@
-const { expect } = require('chai');
-const rewire = require('rewire');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
+const rewire = require('rewire');
+
+chai.use(chaiAsPromised);
+const { expect } = chai;
 
 const { mockHierarchy } = require('../../mock-hierarchies');
 
@@ -11,70 +15,77 @@ const log = require('../../../src/lib/log');
 log.level = log.LEVEL_INFO;
 
 describe('lineage constriants', () => {
-  describe('getHierarchyErrors', () => {
-    it('empty rules yields error', async () => expect(await runScenario([], 'person', 'health_center')).to.include('unknown type'));
+  describe('assertNoHierarchyErrors', () => {
+    it('empty rules yields error', async () => await expect(runScenario([], 'person', 'health_center')).to.eventually.rejectedWith('unknown type'));
 
-    it('no valid parent yields error', async () => expect(await runScenario([undefined], 'person', 'health_center')).to.include('unknown type'));
+    it('no valid parent yields error', async () => await expect(runScenario([undefined], 'person', 'health_center')).to.eventually.rejectedWith('unknown type'));
 
     it('valid parent yields no error', async () => {
-      const actual = await runScenario([{
+      const actual = runScenario([{
         id: 'person',
         parents: ['health_center'],
       }], 'person', 'health_center');
 
-      expect(actual).to.be.undefined;
+      await expect(actual).to.eventually.equal(undefined);
     });
 
-    it('no contact type yields undefined error', async () => expect(await runScenario([])).to.include('undefined'));
+    it('no contact type yields undefined error', async () => expect(runScenario([])).to.eventually.rejectedWith('undefined'));
 
-    it('no parent type yields undefined error', async () => expect(await runScenario([], 'person')).to.include('undefined'));
+    it('no parent type yields undefined error', async () => expect(runScenario([], 'person')).to.eventually.rejectedWith('undefined'));
 
-    it('no valid parents yields not defined', async () => expect(await runScenario([{
+    it('no valid parents yields not defined', async () => expect(runScenario([{
       id: 'person',
       parents: ['district_hospital'],
-    }], 'person', 'health_center')).to.include('cannot have parent of type'));
+    }], 'person', 'health_center')).to.eventually.rejectedWith('cannot have parent of type'));
 
     it('no settings doc requires valid parent type', async () => {
-      const mockDb = { get: () => { throw { name: 'not_found' }; } };
-      const { getHierarchyErrors } = await lineageConstraints(mockDb);
-      const actual = getHierarchyErrors({ type: 'person' }, { type: 'dne' });
-      expect(actual).to.include('cannot have parent of type');
+      const mockDb = { get: () => { throw { status: 404 }; } };
+      const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
+      const actual = () => assertNoHierarchyErrors([{ type: 'person' }], { type: 'dne' });
+      expect(actual).to.throw('cannot have parent of type');
     });
 
     it('no settings doc requires valid contact type', async () => {
-      const mockDb = { get: () => { throw { name: 'not_found' }; } };
-      const { getHierarchyErrors } = await lineageConstraints(mockDb);
-      const actual = getHierarchyErrors({ type: 'dne' }, { type: 'clinic' });
-      expect(actual).to.include('unknown type');
+      const mockDb = { get: () => { throw { status: 404 }; } };
+      const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
+      const actual = () => assertNoHierarchyErrors({ type: 'dne' }, { type: 'clinic' });
+      expect(actual).to.throw('unknown type');
     });
 
     it('no settings doc yields not defined', async () => {
-      const mockDb = { get: () => { throw { name: 'not_found' }; } };
-      const { getHierarchyErrors } = await lineageConstraints(mockDb);
-      const actual = getHierarchyErrors({ type: 'person' }, { type: 'clinic' });
+      const mockDb = { get: () => { throw { status: 404 }; } };
+      const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
+      const actual = assertNoHierarchyErrors({ type: 'person' }, { type: 'clinic' });
       expect(actual).to.be.undefined;
     });
 
     it('cannot merge with self', async () => {
-      expect(await runScenario([], 'a', 'a', true)).to.include('self');
+      await expect(runScenario([], 'a', 'a', true)).to.eventually.rejectedWith('self');
+    });
+
+    it('cannot merge with id: "root"', async () => {
+      const mockDb = { get: () => ({ settings: { contact_types: [] } }) };
+      const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: true });
+      const actual = () => assertNoHierarchyErrors({ _id: 'root', type: 'dne' }, { _id: 'foo', type: 'clinic' });
+      expect(actual).to.throw('root');
     });
 
     describe('default schema', () => {
-      it('no defined rules enforces defaults schema', async () => expect(await runScenario(undefined, 'district_hospital', 'health_center')).to.include('cannot have parent'));
+      it('no defined rules enforces defaults schema', async () => await expect(runScenario(undefined, 'district_hospital', 'health_center')).to.eventually.rejectedWith('cannot have parent'));
       
       it('nominal case', async () => expect(await runScenario(undefined, 'person', 'health_center')).to.be.undefined);
 
       it('can move district_hospital to root', async () => {
         const mockDb = { get: () => ({ settings: { } }) };
-        const { getHierarchyErrors } = await lineageConstraints(mockDb);
-        const actual = getHierarchyErrors({ type: 'district_hospital' }, undefined);
+        const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
+        const actual = assertNoHierarchyErrors({ type: 'district_hospital' }, undefined);
         expect(actual).to.be.undefined;
       });
     });
   });
 
   describe('getPrimaryContactViolations', () => {
-    const getHierarchyErrors = lineageConstraints.__get__('getPrimaryContactViolations');
+    const assertNoHierarchyErrors = lineageConstraints.__get__('getPrimaryContactViolations');
 
     describe('on memory pouchdb', async () => {
       let pouchDb, scenarioCount = 0;
@@ -104,13 +115,13 @@ describe('lineage constriants', () => {
         const contactDoc = await pouchDb.get('clinic_1_contact');
         const parentDoc = await pouchDb.get('clinic_2');
 
-        const doc = await getHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
+        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
         expect(doc).to.deep.include({ _id: 'clinic_1_contact' });
       });
 
       it('cannot move clinic_1_contact to root', async () => {
         const contactDoc = await pouchDb.get('clinic_1_contact');
-        const doc = await getHierarchyErrors(pouchDb, contactDoc, undefined, [contactDoc]);
+        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, undefined, [contactDoc]);
         expect(doc).to.deep.include({ _id: 'clinic_1_contact' });
       });
 
@@ -118,7 +129,7 @@ describe('lineage constriants', () => {
         const contactDoc = await pouchDb.get('clinic_1_contact');
         const parentDoc = await pouchDb.get('clinic_1');
 
-        const doc = await getHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
+        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
         expect(doc).to.be.undefined;
       });
 
@@ -127,7 +138,7 @@ describe('lineage constriants', () => {
         const parentDoc = await pouchDb.get('district_1');
 
         const descendants = await Promise.all(['health_center_2_contact', 'clinic_2', 'clinic_2_contact', 'patient_2'].map(id => pouchDb.get(id)));
-        const doc = await getHierarchyErrors(pouchDb, contactDoc, parentDoc, descendants);
+        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, descendants);
         expect(doc).to.be.undefined;
       });
 
@@ -140,7 +151,7 @@ describe('lineage constriants', () => {
         const parentDoc = await pouchDb.get('district_2');
 
         const descendants = await Promise.all(['health_center_1_contact', 'clinic_1', 'clinic_1_contact', 'patient_1'].map(id => pouchDb.get(id)));
-        const doc = await getHierarchyErrors(pouchDb, contactDoc, parentDoc, descendants);
+        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, descendants);
         expect(doc).to.deep.include({ _id: 'patient_1' });
       });
 
@@ -151,7 +162,7 @@ describe('lineage constriants', () => {
 
         contactDoc.parent._id = 'dne';
 
-        const doc = await getHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
+        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
         expect(doc).to.be.undefined;
       });
     });
@@ -160,6 +171,6 @@ describe('lineage constriants', () => {
 
 const runScenario = async (contact_types, sourceType, destinationType, merge = false) => {
   const mockDb = { get: () => ({ settings: { contact_types } }) };
-  const { getHierarchyErrors } = await lineageConstraints(mockDb, { merge });
-  return getHierarchyErrors({ type: sourceType }, { type: destinationType });
+  const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge });
+  return assertNoHierarchyErrors({ type: sourceType }, { type: destinationType });
 };
