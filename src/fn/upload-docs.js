@@ -120,8 +120,6 @@ const preuploadAnalysis = filePaths =>
     .filter(Boolean);
 
 const handleUsersAtDeletedFacilities = async deletedDocIds => {
-  // how can we know which ids are worth querying? what about when we have delete-contacts and delete 10000 places?
-  
   const affectedUsers = await getAffectedUsers();
     const usernames = affectedUsers.map(userDoc => userDoc.username).join(', ');
   warn(`This operation will update permissions for ${affectedUsers.length} user accounts: ${usernames}. Are you sure you want to continue?`);
