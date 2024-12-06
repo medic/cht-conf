@@ -5,8 +5,8 @@ const { trace, info } = require('../log');
 const JsDocs = require('./jsdocFolder');
 const Backend = require('./backend');
 
-const HierarchyOperations = (db, options) => {
-  async function move(sourceIds, destinationId) {
+function moveHierarchy(db, options) {
+  return async function (sourceIds, destinationId) {
     JsDocs.prepareFolder(options);
     trace(`Fetching contact details: ${destinationId}`);
     const constraints = await LineageConstraints(db, options);
@@ -19,6 +19,12 @@ const HierarchyOperations = (db, options) => {
     for (let sourceId of sourceIds) {
       const sourceDoc = sourceDocs[sourceId];
       const descendantsAndSelf = await Backend.descendantsOf(db, sourceId);
+      const moveContext = {
+        sourceId,
+        destinationId,
+        descendantsAndSelf,
+        replacementLineage,
+      };
 
       if (options.merge) {
         const self = descendantsAndSelf.find(d => d._id === sourceId);
@@ -37,15 +43,15 @@ const HierarchyOperations = (db, options) => {
       }
 
       trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
-      const updatedDescendants = replaceLineageInContacts(descendantsAndSelf, replacementLineage, sourceId);
+      const updatedDescendants = replaceLineageInContacts(options, moveContext);
       
       const ancestors = await Backend.ancestorsOf(db, sourceDoc);
       trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
       const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
       
-      minifyLineageAndWriteToDisk([...updatedDescendants, ...updatedAncestors]);
+      minifyLineageAndWriteToDisk(options, [...updatedDescendants, ...updatedAncestors]);
       
-      const movedReportsCount = await moveReports(descendantsAndSelf, replacementLineage, sourceId, destinationId);
+      const movedReportsCount = await moveReports(db, options, moveContext, destinationId);
       trace(`${movedReportsCount} report(s) created by these affected contact(s) will be updated`);
 
       affectedContactCount += updatedDescendants.length + updatedAncestors.length;
@@ -56,138 +62,139 @@ const HierarchyOperations = (db, options) => {
 
     info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);
   }
+}
 
-  async function moveReports(descendantsAndSelf, replacementLineage, sourceId, destinationId) {
-    const descendantIds = descendantsAndSelf.map(contact => contact._id);
+async function moveReports(db, options, moveContext) {
+  const descendantIds = moveContext.descendantsAndSelf.map(contact => contact._id);
 
-    let skip = 0;
-    let reportDocsBatch;
-    do {
-      info(`Processing ${skip} to ${skip + Backend.BATCH_SIZE} report docs`);
-      const createdAtId = options.merge && sourceId;
-      reportDocsBatch = await Backend.reportsCreatedByOrAt(db, descendantIds, createdAtId, skip);
+  let skip = 0;
+  let reportDocsBatch;
+  do {
+    info(`Processing ${skip} to ${skip + Backend.BATCH_SIZE} report docs`);
+    const createdAtId = options.merge && moveContext.sourceId;
+    reportDocsBatch = await Backend.reportsCreatedByOrAt(db, descendantIds, createdAtId, skip);
 
-      const updatedReports = replaceLineageInReports(reportDocsBatch, replacementLineage, sourceId);
+    const updatedReports = replaceLineageInReports(options, reportDocsBatch, moveContext);
 
-      if (options.merge) {
-        reassignReports(reportDocsBatch, sourceId, destinationId, updatedReports);
-      }
-
-      minifyLineageAndWriteToDisk(updatedReports);
-
-      skip += reportDocsBatch.length;
-    } while (reportDocsBatch.length >= Backend.BATCH_SIZE);
-
-    return skip;
-  }
-
-  function reassignReports(reports, sourceId, destinationId, updatedReports) {
-    function reassignReportWithSubject(report, subjectId) {
-      let updated = false;
-      if (report[subjectId] === sourceId) {
-        report[subjectId] = destinationId;
-        updated = true;
-      }
-
-      if (report.fields[subjectId] === sourceId) {
-        report.fields[subjectId] = destinationId;
-        updated = true;
-      }
-
-      if (updated) {
-        const isAlreadyUpdated = !!updatedReports.find(updated => updated._id === report._id);
-        if (!isAlreadyUpdated) {
-          updatedReports.push(report);
-        }
-      }
+    if (options.merge) {
+      reassignReports(reportDocsBatch, moveContext, updatedReports);
     }
 
-    for (const report of reports) {
-      const subjectIds = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
-      for (const subjectId of subjectIds) {
-        reassignReportWithSubject(report, subjectId);
+    minifyLineageAndWriteToDisk(options, updatedReports);
+
+    skip += reportDocsBatch.length;
+  } while (reportDocsBatch.length >= Backend.BATCH_SIZE);
+
+  return skip;
+}
+
+function reassignReports(reports, { sourceId, destinationId }, updatedReports) {
+  function reassignReportWithSubject(report, subjectId) {
+    let updated = false;
+    if (report[subjectId] === sourceId) {
+      report[subjectId] = destinationId;
+      updated = true;
+    }
+
+    if (report.fields[subjectId] === sourceId) {
+      report.fields[subjectId] = destinationId;
+      updated = true;
+    }
+
+    if (updated) {
+      const isAlreadyUpdated = !!updatedReports.find(updated => updated._id === report._id);
+      if (!isAlreadyUpdated) {
+        updatedReports.push(report);
       }
     }
   }
 
-  function minifyLineageAndWriteToDisk(docs) {
-    docs.forEach(doc => {
-      lineageManipulation.minifyLineagesInDoc(doc);
-      JsDocs.writeDoc(options, doc);
-    });
-  }
-
-  function replaceLineageInReports(reportsCreatedByDescendants, replaceWith, startingFromId) {
-    return reportsCreatedByDescendants.reduce((agg, doc) => {
-      const replaceLineageOptions = {
-        lineageAttribute: 'contact',
-        replaceWith,
-        startingFromId,
-        merge: options.merge,
-      };
-
-      if (lineageManipulation.replaceLineage(doc, replaceLineageOptions)) {
-        agg.push(doc);
-      }
-      return agg;
-    }, []);
-  }
-
-  function replaceLineageInAncestors(descendantsAndSelf, ancestors) {
-    return ancestors.reduce((agg, ancestor) => {
-      let result = agg;
-      const primaryContact = descendantsAndSelf.find(descendant => ancestor.contact && descendant._id === ancestor.contact._id);
-      if (primaryContact) {
-        ancestor.contact = lineageManipulation.createLineageFromDoc(primaryContact);
-        result = [ancestor, ...result];
-      }
-    
-      return result;
-    }, []);
-  }
-
-  function replaceLineageInContacts(descendantsAndSelf, replaceWith, destinationId) {
-    function replaceForSingleContact(doc) {
-      const docIsDestination = doc._id === destinationId;
-      const startingFromId = options.merge || !docIsDestination ? destinationId : undefined;
-      const replaceLineageOptions = {
-        lineageAttribute: 'parent',
-        replaceWith,
-        startingFromId,
-        merge: options.merge,
-      };
-      const parentWasUpdated = lineageManipulation.replaceLineage(doc, replaceLineageOptions);
-
-      replaceLineageOptions.lineageAttribute = 'contact';
-      replaceLineageOptions.startingFromId = destinationId;
-      const contactWasUpdated = lineageManipulation.replaceLineage(doc, replaceLineageOptions);
-      const isUpdated = parentWasUpdated || contactWasUpdated;
-      if (isUpdated) {
-        result.push(doc);
-      }
+  for (const report of reports) {
+    const subjectIds = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
+    for (const subjectId of subjectIds) {
+      reassignReportWithSubject(report, subjectId);
     }
+  }
+}
 
-    const result = [];
-    for (const doc of descendantsAndSelf) {
-      const docIsDestination = doc._id === destinationId;
-      
-      // skip top-level because it will be deleted
-      if (options.merge && docIsDestination) {
-        continue;
-      }
+function minifyLineageAndWriteToDisk(options, docs) {
+  docs.forEach(doc => {
+    lineageManipulation.minifyLineagesInDoc(doc);
+    JsDocs.writeDoc(options, doc);
+  });
+}
 
-      replaceForSingleContact(doc);
+function replaceLineageInReports(options, reportsCreatedByDescendants, moveContext) {
+  return reportsCreatedByDescendants.reduce((agg, doc) => {
+    const replaceLineageOptions = {
+      lineageAttribute: 'contact',
+      replaceWith: moveContext.replacementLineage,
+      startingFromId: moveContext.sourceId,
+      merge: options.merge,
+    };
+
+    if (lineageManipulation.replaceLineage(doc, replaceLineageOptions)) {
+      agg.push(doc);
     }
+    return agg;
+  }, []);
+}
 
+function replaceLineageInAncestors(descendantsAndSelf, ancestors) {
+  return ancestors.reduce((agg, ancestor) => {
+    let result = agg;
+    const primaryContact = descendantsAndSelf.find(descendant => ancestor.contact && descendant._id === ancestor.contact._id);
+    if (primaryContact) {
+      ancestor.contact = lineageManipulation.createLineageFromDoc(primaryContact);
+      result = [ancestor, ...result];
+    }
+  
     return result;
+  }, []);
+}
+
+function replaceLineageInContacts(options, moveContext) {
+  const { sourceId } = moveContext;
+  function replaceForSingleContact(doc) {
+    const docIsDestination = doc._id === sourceId;
+    const startingFromId = options.merge || !docIsDestination ? sourceId : undefined;
+    const replaceLineageOptions = {
+      lineageAttribute: 'parent',
+      replaceWith: moveContext.replacementLineage,
+      startingFromId,
+      merge: options.merge,
+    };
+    const parentWasUpdated = lineageManipulation.replaceLineage(doc, replaceLineageOptions);
+
+    replaceLineageOptions.lineageAttribute = 'contact';
+    replaceLineageOptions.startingFromId = sourceId;
+    const contactWasUpdated = lineageManipulation.replaceLineage(doc, replaceLineageOptions);
+    const isUpdated = parentWasUpdated || contactWasUpdated;
+    if (isUpdated) {
+      result.push(doc);
+    }
   }
 
-  return { move };
-};
+  const result = [];
+  for (const doc of moveContext.descendantsAndSelf) {
+    const docIsDestination = doc._id === sourceId;
+    
+    // skip top-level because it will be deleted
+    if (options.merge && docIsDestination) {
+      continue;
+    }
 
-module.exports = (db, options) => ({
-  HIERARCHY_ROOT: Backend.HIERARCHY_ROOT,
-  move: HierarchyOperations(db, { ...options, merge: false }).move,
-  merge: HierarchyOperations(db, { ...options, merge: true }).move,
-});
+    replaceForSingleContact(doc);
+  }
+
+  return result;
+}
+
+module.exports = (db, options) => {
+  return {
+    HIERARCHY_ROOT: Backend.HIERARCHY_ROOT,
+    move: moveHierarchy(db, { ...options, merge: false }),
+    merge: moveHierarchy(db, { ...options, merge: true }),
+  };
+};
 
