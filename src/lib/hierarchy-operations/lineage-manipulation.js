@@ -73,19 +73,17 @@ Function borrowed from shared-lib/lineage
 const minifyLineagesInDoc = doc => {
   const minifyLineage = lineage => {
     if (!lineage?._id) {
-      return undefined;
+      return;
     }
 
-    const result = {
+    return {
       _id: lineage._id,
       parent: minifyLineage(lineage.parent),
     };
-
-    return result;
   };
 
   if (!doc) {
-    return undefined;
+    return;
   }
   
   if ('parent' in doc) {

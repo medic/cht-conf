@@ -36,21 +36,21 @@ describe('lineage constriants', () => {
 
     it('no settings doc requires valid parent type', async () => {
       const mockDb = { get: () => { throw { name: 'not_found' }; } };
-      const { getHierarchyErrors } = await lineageConstraints(mockDb);
+      const { getHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
       const actual = getHierarchyErrors({ type: 'person' }, { type: 'dne' });
       expect(actual).to.include('cannot have parent of type');
     });
 
     it('no settings doc requires valid contact type', async () => {
       const mockDb = { get: () => { throw { name: 'not_found' }; } };
-      const { getHierarchyErrors } = await lineageConstraints(mockDb);
+      const { getHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
       const actual = getHierarchyErrors({ type: 'dne' }, { type: 'clinic' });
       expect(actual).to.include('unknown type');
     });
 
     it('no settings doc yields not defined', async () => {
       const mockDb = { get: () => { throw { name: 'not_found' }; } };
-      const { getHierarchyErrors } = await lineageConstraints(mockDb);
+      const { getHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
       const actual = getHierarchyErrors({ type: 'person' }, { type: 'clinic' });
       expect(actual).to.be.undefined;
     });
@@ -66,7 +66,7 @@ describe('lineage constriants', () => {
 
       it('can move district_hospital to root', async () => {
         const mockDb = { get: () => ({ settings: { } }) };
-        const { getHierarchyErrors } = await lineageConstraints(mockDb);
+        const { getHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
         const actual = getHierarchyErrors({ type: 'district_hospital' }, undefined);
         expect(actual).to.be.undefined;
       });

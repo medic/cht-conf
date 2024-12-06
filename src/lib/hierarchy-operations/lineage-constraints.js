@@ -3,7 +3,7 @@ const { trace } = log;
 
 const lineageManipulation = require('./lineage-manipulation');
 
-module.exports = async (db, options = {}) => {
+module.exports = async (db, options) => {
   const mapTypeToAllowedParents = await fetchAllowedParents(db);
 
   const getHierarchyErrors = (sourceDoc, destinationDoc) => {
