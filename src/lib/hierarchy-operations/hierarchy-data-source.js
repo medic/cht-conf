@@ -54,7 +54,7 @@ async function getContactWithDescendants(db, contactId) {
     .filter(doc => doc && doc.type !== 'tombstone');
 }
 
-async function reportsCreatedByOrAt(db, createdByIds, createdAtId, skip) {
+async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
   const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
   const createdAtKeys = createdAtId ? [
     [`patient_id:${createdAtId}`],
@@ -76,7 +76,7 @@ async function reportsCreatedByOrAt(db, createdByIds, createdAtId, skip) {
   return _.uniqBy(reports.rows.map(row => row.doc), '_id');
 }
 
-async function ancestorsOf(db, contactDoc) {
+async function getAncestorsOf(db, contactDoc) {
   const ancestorIds = lineageManipulation.pluckIdsFromLineage(contactDoc.parent);
   const ancestors = await db.allDocs({
     keys: ancestorIds,
@@ -94,9 +94,9 @@ async function ancestorsOf(db, contactDoc) {
 module.exports = {
   HIERARCHY_ROOT,
   BATCH_SIZE,
-  ancestorsOf,
+  getAncestorsOf,
   getContactWithDescendants,
   getContact,
   getContactsByIds,
-  reportsCreatedByOrAt,
+  getReportsForContacts,
 };

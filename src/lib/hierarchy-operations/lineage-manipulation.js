@@ -4,29 +4,28 @@
  * 
  * @param {Object} doc A CouchDB document containing a hierarchy that needs replacing
  * @param {Object} params SonarQube
- * @param {string} params.lineageAttribute Name of the attribute which is a lineage in doc (contact or parent)
  * @param {Object} params.replaceWith The new hierarchy { parent: { _id: 'parent', parent: { _id: 'grandparent' } }
  * @param {string} params.startingFromId Only the part of the lineage "after" this id will be replaced
  * @param {boolean} params.merge When true, startingFromId is replaced and when false, startingFromId's parent is replaced 
  */
-function replaceLineage(doc, params) {
-  const { lineageAttribute, replaceWith, startingFromId, merge } = params;
+function replaceLineage(doc, lineageAttributeName, params) {
+  const { replaceWith, startingFromId, merge } = params;
 
   // Replace the full lineage
   if (!startingFromId) {
-    return replaceWithinLineage(doc, lineageAttribute, replaceWith);
+    return replaceWithinLineage(doc, lineageAttributeName, replaceWith);
   }
 
   function getInitialState() {
     if (merge) {
       return {
         element: doc,
-        attributeName: lineageAttribute,
+        attributeName: lineageAttributeName,
       };
     }
 
     return {
-      element: doc[lineageAttribute],
+      element: doc[lineageAttributeName],
       attributeName: 'parent',
     };
   }
@@ -50,6 +49,14 @@ function replaceLineage(doc, params) {
   }
 
   return false;
+}
+
+function replaceParentLineage(doc, params) {
+  return replaceLineage(doc, 'parent', params);
+}
+
+function replaceContactLineage(doc, params) {
+  return replaceLineage(doc, 'contact', params);
 }
 
 const replaceWithinLineage = (replaceInDoc, lineageAttributeName, replaceWith) => {
@@ -113,21 +120,18 @@ const createLineageFromDoc = doc => {
 /*
 Given a lineage, return the ids therein
 */
-const pluckIdsFromLineage = lineage => {
-  const result = [];
-
-  let current = lineage;
-  while (current) {
-    result.push(current._id);
-    current = current.parent;
+const pluckIdsFromLineage = (lineage, results = []) => {
+  if (!lineage) {
+    return results;
   }
 
-  return result;
+  return pluckIdsFromLineage(lineage.parent, [...results, lineage._id]);
 };
 
 module.exports = {
   createLineageFromDoc,
   minifyLineagesInDoc,
   pluckIdsFromLineage,
-  replaceLineage,
+  replaceParentLineage,
+  replaceContactLineage,
 };

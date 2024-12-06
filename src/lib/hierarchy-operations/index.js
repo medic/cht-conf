@@ -14,7 +14,8 @@ function moveHierarchy(db, options) {
     const sourceDocs = await DataSource.getContactsByIds(db, sourceIds);
     constraints.assertNoHierarchyErrors(Object.values(sourceDocs), destinationDoc);
 
-    let affectedContactCount = 0, affectedReportCount = 0;
+    let affectedContactCount = 0;
+    let affectedReportCount = 0;
     const replacementLineage = lineageManipulation.createLineageFromDoc(destinationDoc);
     for (const sourceId of sourceIds) {
       const sourceDoc = sourceDocs[sourceId];
@@ -40,7 +41,7 @@ function moveHierarchy(db, options) {
       trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
       const updatedDescendants = replaceLineageInContacts(options, moveContext);
       
-      const ancestors = await DataSource.ancestorsOf(db, sourceDoc);
+      const ancestors = await DataSource.getAncestorsOf(db, sourceDoc);
       trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
       const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
       
@@ -67,7 +68,7 @@ async function moveReports(db, options, moveContext) {
   do {
     info(`Processing ${skip} to ${skip + DataSource.BATCH_SIZE} report docs`);
     const createdAtId = options.merge && moveContext.sourceId;
-    reportDocsBatch = await DataSource.reportsCreatedByOrAt(db, descendantIds, createdAtId, skip);
+    reportDocsBatch = await DataSource.getReportsForContacts(db, descendantIds, createdAtId, skip);
 
     const updatedReports = replaceLineageInReports(options, reportDocsBatch, moveContext);
 
@@ -122,13 +123,12 @@ function minifyLineageAndWriteToDisk(options, docs) {
 function replaceLineageInReports(options, reportsCreatedByDescendants, moveContext) {
   return reportsCreatedByDescendants.reduce((agg, doc) => {
     const replaceLineageOptions = {
-      lineageAttribute: 'contact',
       replaceWith: moveContext.replacementLineage,
       startingFromId: moveContext.sourceId,
       merge: options.merge,
     };
 
-    if (lineageManipulation.replaceLineage(doc, replaceLineageOptions)) {
+    if (lineageManipulation.replaceContactLineage(doc, replaceLineageOptions)) {
       agg.push(doc);
     }
     return agg;
@@ -136,16 +136,16 @@ function replaceLineageInReports(options, reportsCreatedByDescendants, moveConte
 }
 
 function replaceLineageInAncestors(descendantsAndSelf, ancestors) {
-  return ancestors.reduce((agg, ancestor) => {
-    let result = agg;
-    const primaryContact = descendantsAndSelf.find(descendant => ancestor.contact && descendant._id === ancestor.contact._id);
+  const updatedAncestors = [];
+  for (const ancestor of ancestors) {
+    const primaryContact = descendantsAndSelf.find(descendant => descendant._id === ancestor.contact?._id);
     if (primaryContact) {
       ancestor.contact = lineageManipulation.createLineageFromDoc(primaryContact);
-      result = [ancestor, ...result];
+      updatedAncestors.unshift(ancestor);
     }
-  
-    return result;
-  }, []);
+  }
+
+  return updatedAncestors;
 }
 
 function replaceLineageInContacts(options, moveContext) {
@@ -154,32 +154,32 @@ function replaceLineageInContacts(options, moveContext) {
     const docIsDestination = doc._id === sourceId;
     const startingFromId = options.merge || !docIsDestination ? sourceId : undefined;
     const replaceLineageOptions = {
-      lineageAttribute: 'parent',
       replaceWith: moveContext.replacementLineage,
       startingFromId,
       merge: options.merge,
     };
-    const parentWasUpdated = lineageManipulation.replaceLineage(doc, replaceLineageOptions);
+    const parentWasUpdated = lineageManipulation.replaceParentLineage(doc, replaceLineageOptions);
 
-    replaceLineageOptions.lineageAttribute = 'contact';
     replaceLineageOptions.startingFromId = sourceId;
-    const contactWasUpdated = lineageManipulation.replaceLineage(doc, replaceLineageOptions);
-    const isUpdated = parentWasUpdated || contactWasUpdated;
-    if (isUpdated) {
-      result.push(doc);
+    const contactWasUpdated = lineageManipulation.replaceContactLineage(doc, replaceLineageOptions);
+    if (parentWasUpdated || contactWasUpdated) {
+      return doc;
     }
   }
 
   const result = [];
   for (const doc of moveContext.descendantsAndSelf) {
-    const docIsDestination = doc._id === sourceId;
+    const docIsSource = doc._id === sourceId;
     
     // skip top-level because it will be deleted
-    if (options.merge && docIsDestination) {
+    if (options.merge && docIsSource) {
       continue;
     }
 
-    replaceForSingleContact(doc);
+    const updatedDoc = replaceForSingleContact(doc);
+    if (updatedDoc) {
+      result.push(updatedDoc);
+    }
   }
 
   return result;

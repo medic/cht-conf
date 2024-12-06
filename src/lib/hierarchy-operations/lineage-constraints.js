@@ -120,14 +120,9 @@ A place's primary contact must be a descendant of that place.
 1. Check to see which part of the contact's lineage will be removed
 2. For each removed part of the contact's lineage, confirm that place's primary contact isn't being removed.
 */
-const getPrimaryContactViolations = async (db, contactDoc, parentDoc, descendantDocs) => {
-  const safeGetLineageFromDoc = doc => doc ? lineageManipulation.pluckIdsFromLineage(doc.parent) : [];
-  const contactsLineageIds = safeGetLineageFromDoc(contactDoc);
-  const parentsLineageIds = safeGetLineageFromDoc(parentDoc);
-
-  if (parentDoc) {
-    parentsLineageIds.push(parentDoc._id);
-  }
+const getPrimaryContactViolations = async (db, contactDoc, destinationDoc, descendantDocs) => {
+  const contactsLineageIds = lineageManipulation.pluckIdsFromLineage(contactDoc?.parent);
+  const parentsLineageIds = lineageManipulation.pluckIdsFromLineage(destinationDoc);
 
   const docIdsRemovedFromContactLineage = contactsLineageIds.filter(value => !parentsLineageIds.includes(value));
   const docsRemovedFromContactLineage = await db.allDocs({
