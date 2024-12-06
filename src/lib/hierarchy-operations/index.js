@@ -57,7 +57,7 @@ function moveHierarchy(db, options) {
     }
 
     info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);
-  }
+  };
 }
 
 async function moveReports(db, options, moveContext) {
