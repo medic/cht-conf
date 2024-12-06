@@ -70,11 +70,9 @@ async function moveReports(db, options, moveContext) {
     const createdAtId = options.merge && moveContext.sourceId;
     reportDocsBatch = await DataSource.getReportsForContacts(db, descendantIds, createdAtId, skip);
 
-    const updatedReports = replaceLineageInReports(options, reportDocsBatch, moveContext);
-
-    if (options.merge) {
-      reassignReports(reportDocsBatch, moveContext, updatedReports);
-    }
+    const lineageUpdates = replaceLineageInReports(options, reportDocsBatch, moveContext);
+    const reassignUpdates = reassignReports(options, reportDocsBatch, moveContext);
+    const updatedReports = reportDocsBatch.filter(doc => lineageUpdates.has(doc._id) || reassignUpdates.has(doc._id));
 
     minifyLineageAndWriteToDisk(options, updatedReports);
 
@@ -84,25 +82,22 @@ async function moveReports(db, options, moveContext) {
   return skip;
 }
 
-function reassignReports(reports, { sourceId, destinationId }, updatedReports) {
+function reassignReports(options, reports, { sourceId, destinationId }) {
   function reassignReportWithSubject(report, subjectId) {
-    let updated = false;
     if (report[subjectId] === sourceId) {
       report[subjectId] = destinationId;
-      updated = true;
+      updated.add(report._id);
     }
 
     if (report.fields[subjectId] === sourceId) {
       report.fields[subjectId] = destinationId;
-      updated = true;
+      updated.add(report._id);
     }
+  }
 
-    if (updated) {
-      const isAlreadyUpdated = !!updatedReports.find(updated => updated._id === report._id);
-      if (!isAlreadyUpdated) {
-        updatedReports.push(report);
-      }
-    }
+  const updated = new Set();
+  if (!options.merge) {
+    return updated;
   }
 
   for (const report of reports) {
@@ -111,6 +106,8 @@ function reassignReports(reports, { sourceId, destinationId }, updatedReports) {
       reassignReportWithSubject(report, subjectId);
     }
   }
+
+  return updated;
 }
 
 function minifyLineageAndWriteToDisk(options, docs) {
@@ -120,19 +117,21 @@ function minifyLineageAndWriteToDisk(options, docs) {
   });
 }
 
-function replaceLineageInReports(options, reportsCreatedByDescendants, moveContext) {
-  return reportsCreatedByDescendants.reduce((agg, doc) => {
-    const replaceLineageOptions = {
-      replaceWith: moveContext.replacementLineage,
-      startingFromId: moveContext.sourceId,
-      merge: options.merge,
+function replaceLineageInReports(options, reports, moveContext) {
+  const replaceLineageOptions = {
+    replaceWith: moveContext.replacementLineage,
+    startingFromId: moveContext.sourceId,
+    merge: options.merge,
     };
-
+    
+  const updates = new Set();
+  reports.forEach(doc => {
     if (lineageManipulation.replaceContactLineage(doc, replaceLineageOptions)) {
-      agg.push(doc);
+      updates.add(doc._id);
     }
-    return agg;
-  }, []);
+  });
+
+  return updates;
 }
 
 function replaceLineageInAncestors(descendantsAndSelf, ancestors) {

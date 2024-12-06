@@ -14,7 +14,7 @@ describe('merge-contacts', () => {
     it('remove only', () => expect(() => parseExtraArgs(__dirname, ['--remove=a'])).to.throw('required contact'));
 
     it('remove and keeps', () => {
-      const args = ['--remove=food,is,tasty', '--keep=bar', '--docDirectoryPath=/', '--force=hi'];
+      const args = ['--sources=food,is,tasty', '--destination=bar', '--docDirectoryPath=/', '--force=hi'];
       expect(parseExtraArgs(__dirname, args)).to.deep.eq({
         sourceIds: ['food', 'is', 'tasty'],
         destinationId: 'bar',

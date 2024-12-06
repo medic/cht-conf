@@ -24,22 +24,22 @@ module.exports = {
 const parseExtraArgs = (projectDir, extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
 
-  const sourceIds = (args.remove || '')
+  const sourceIds = (args.sources || args.source || '')
     .split(',')
     .filter(Boolean);
 
-  if (!args.keep) {
+  if (!args.destination) {
     usage();
-    throw Error(`Action "merge-contacts" is missing required contact ID ${bold('--keep')}. Other contacts will be merged into this contact.`);
+    throw Error(`Action "merge-contacts" is missing required contact ID ${bold('--destination')}. Other contacts will be merged into this contact.`);
   }
 
   if (sourceIds.length === 0) {
     usage();
-    throw Error(`Action "merge-contacts" is missing required contact ID(s) ${bold('--remove')}. These contacts will be merged into the contact specified by ${bold('--keep')}`);
+    throw Error(`Action "merge-contacts" is missing required contact ID(s) ${bold('--sources')}. These contacts will be merged into the contact specified by ${bold('--destination')}`);
   }
 
   return {
-    destinationId: args.keep,
+    destinationId: args.destination,
     sourceIds,
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
@@ -50,17 +50,18 @@ const bold = text => `\x1b[1m${text}\x1b[0m`;
 const usage = () => {
   info(`
 ${bold('cht-conf\'s merge-contacts action')}
-When combined with 'upload-docs' this action merges multiple contacts and all their associated data into one.
+When combined with 'upload-docs' this action moves all of the contacts and reports under ${bold('sources')} to be under ${bold('destination')}.
+The top-level contact(s) ${bold('at source')} are deleted and no data in this document is merged or preserved.
 
 ${bold('USAGE')}
-cht --local merge-contacts -- --keep=<keep_id> --remove=<remove_id1>,<remove_id2>
+cht --local merge-contacts -- --destination=<destination_id> --sources=<source_id1>,<source_id2>
 
 ${bold('OPTIONS')}
---keep=<keep_id>
-  Specifies the ID of the contact that should have all other contact data merged into it.
+--destination=<destination_id>
+  Specifies the ID of the contact that should receive the moving contacts and reports.
 
---remove=<remove_id1>,<remove_id2>
-  A comma delimited list of IDs of contacts which will be deleted and all of their data will be merged into the keep contact.
+--sources=<source_id1>,<source_id2>
+  A comma delimited list of IDs of contacts which will be deleted. The hierarchy of contacts and reports under it will be moved to be under the destination contact.
 
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.

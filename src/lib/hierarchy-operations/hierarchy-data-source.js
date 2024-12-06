@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const lineageManipulation = require('./lineage-manipulation');
 
 const HIERARCHY_ROOT = 'root';
@@ -73,7 +72,8 @@ async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
     skip,
   });
 
-  return _.uniqBy(reports.rows.map(row => row.doc), '_id');
+  const docsWithId = reports.rows.map(({ doc }) => [doc._id, doc]);
+  return Array.from(new Map(docsWithId).values());
 }
 
 async function getAncestorsOf(db, contactDoc) {

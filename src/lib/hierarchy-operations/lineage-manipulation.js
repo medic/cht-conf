@@ -13,7 +13,7 @@ function replaceLineage(doc, lineageAttributeName, params) {
 
   // Replace the full lineage
   if (!startingFromId) {
-    return replaceWithinLineage(doc, lineageAttributeName, replaceWith);
+    return replaceEntireLineage(doc, lineageAttributeName, replaceWith);
   }
 
   function getInitialState() {
@@ -33,7 +33,7 @@ function replaceLineage(doc, lineageAttributeName, params) {
   function traverseOne() {
     const compare = merge ? state.element[state.attributeName] : state.element;
     if (compare?._id === startingFromId) {
-      return replaceWithinLineage(state.element, state.attributeName, replaceWith);
+      return replaceEntireLineage(state.element, state.attributeName, replaceWith);
     }
 
     state.element = state.element[state.attributeName];
@@ -59,14 +59,11 @@ function replaceContactLineage(doc, params) {
   return replaceLineage(doc, 'contact', params);
 }
 
-const replaceWithinLineage = (replaceInDoc, lineageAttributeName, replaceWith) => {
+const replaceEntireLineage = (replaceInDoc, lineageAttributeName, replaceWith) => {
   if (!replaceWith) {
     const lineageWasDeleted = !!replaceInDoc[lineageAttributeName];
     replaceInDoc[lineageAttributeName] = undefined;
     return lineageWasDeleted;
-  } else if (replaceInDoc[lineageAttributeName]) {
-    replaceInDoc[lineageAttributeName]._id = replaceWith._id;
-    replaceInDoc[lineageAttributeName].parent = replaceWith.parent;
   } else {
     replaceInDoc[lineageAttributeName] = replaceWith;
   }

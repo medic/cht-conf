@@ -1,4 +1,5 @@
 const log = require('../log');
+const { HIERARCHY_ROOT } = require('./hierarchy-data-source');
 const { trace } = log;
 
 const lineageManipulation = require('./lineage-manipulation');
@@ -101,6 +102,10 @@ const getMergeViolations = (sourceDoc, destinationDoc) => {
   const commonViolations = getCommonViolations(sourceDoc, destinationDoc);
   if (commonViolations) {
     return commonViolations;
+  }
+
+  if ([sourceDoc._id, destinationDoc._id].includes(HIERARCHY_ROOT)) {
+    return `cannot merge using id: "${HIERARCHY_ROOT}"`;
   }
 
   const sourceContactType = getContactType(sourceDoc);

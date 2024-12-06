@@ -63,6 +63,13 @@ describe('lineage constriants', () => {
       await expect(runScenario([], 'a', 'a', true)).to.eventually.rejectedWith('self');
     });
 
+    it('cannot merge with id: "root"', async () => {
+      const mockDb = { get: () => ({ settings: { contact_types: [] } }) };
+      const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: true });
+      const actual = () => assertNoHierarchyErrors({ _id: 'root', type: 'dne' }, { _id: 'foo', type: 'clinic' });
+      expect(actual).to.throw('root');
+    });
+
     describe('default schema', () => {
       it('no defined rules enforces defaults schema', async () => await expect(runScenario(undefined, 'district_hospital', 'health_center')).to.eventually.rejectedWith('cannot have parent'));
       
