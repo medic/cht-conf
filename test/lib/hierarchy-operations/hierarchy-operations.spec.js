@@ -820,7 +820,7 @@ describe('hierarchy-operations', () => {
       await HierarchyOperations(pouchDb).delete(['district_2']);
 
       const writtenIds = writtenDocs.map(doc => doc._id);
-      expect(writtenIds).to.not.have.members(['other_report']);
+      expect(writtenIds).to.not.include(['other_report']);
     });
   });
 });
