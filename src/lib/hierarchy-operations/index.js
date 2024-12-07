@@ -1,9 +1,9 @@
+const DataSource = require('./hierarchy-data-source');
+const deleteHierarchy = require('./delete-hierarchy');
+const JsDocs = require('./jsdocFolder');
 const lineageManipulation = require('./lineage-manipulation');
 const LineageConstraints = require('./lineage-constraints');
 const { trace, info } = require('../log');
-
-const JsDocs = require('./jsdocFolder');
-const DataSource = require('./hierarchy-data-source');
 
 function moveHierarchy(db, options) {
   return async function (sourceIds, destinationId) {
@@ -28,11 +28,7 @@ function moveHierarchy(db, options) {
       };
 
       if (options.merge) {
-        JsDocs.writeDoc(options, {
-          _id: sourceDoc._id,
-          _rev: sourceDoc._rev,
-          _deleted: true,
-        });
+        JsDocs.deleteDoc(options, sourceDoc);
       }
 
       const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
@@ -186,11 +182,11 @@ function replaceLineageInContacts(options, moveContext) {
   return result;
 }
 
-module.exports = (db, options) => {
+module.exports = (db, options = {}) => {
   return {
     HIERARCHY_ROOT: DataSource.HIERARCHY_ROOT,
     move: moveHierarchy(db, { ...options, merge: false }),
     merge: moveHierarchy(db, { ...options, merge: true }),
+    delete: async (sourceIds) => deleteHierarchy(db, options, sourceIds),
   };
 };
-

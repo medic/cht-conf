@@ -30,7 +30,16 @@ function deleteAfterConfirmation(docDirectoryPath) {
   fs.deleteFilesInFolder(docDirectoryPath);
 }
 
+function deleteDoc(options, doc) {
+  writeDoc(options, {
+    _id: doc._id,
+    _rev: doc._rev,
+    _deleted: true,
+  });
+}
+
 module.exports = {
+  deleteDoc,
   prepareFolder,
   writeDoc,
 };
