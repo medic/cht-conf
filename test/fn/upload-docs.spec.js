@@ -136,7 +136,7 @@ describe('upload-docs', function() {
     expect(res.rows.map(doc => doc.id)).to.deep.eq(['one', 'three', 'two']);
   });
   
-  describe('kenn --disable-users', () => {
+  describe('--disable-users', () => {
     beforeEach(async () => {
       sinon.stub(environment, 'extraArgs').get(() => ['--disable-users']);
       await assertDbEmpty();
