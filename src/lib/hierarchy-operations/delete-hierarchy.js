@@ -35,7 +35,7 @@ async function deleteReportsForContact(db, options, contact) {
     skip += reportBatch.length;
   } while (reportBatch.length >= DataSource.BATCH_SIZE);
   
-  return skip + reportBatch.length;
+  return skip;
 }
 
 module.exports = deleteHierarchy;
