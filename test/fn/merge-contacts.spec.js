@@ -18,6 +18,7 @@ describe('merge-contacts', () => {
       expect(parseExtraArgs(__dirname, args)).to.deep.eq({
         sourceIds: ['food', 'is', 'tasty'],
         destinationId: 'bar',
+        disableUsers: false,
         force: true,
         docDirectoryPath: '/',
       });

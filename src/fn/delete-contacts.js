@@ -13,11 +13,11 @@ module.exports = {
     const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
     const db = pouch();
     const options = {
-      disableUsers: args.disableUsers,
       docDirectoryPath: args.docDirectoryPath,
       force: args.force,
+      disableUsers: args.disableUsers,
     };
-    return HierarchyOperations(db, options).merge(args.sourceIds, args.destinationId);
+    return HierarchyOperations(db, options).delete(args.sourceIds);
   }
 };
 
@@ -25,22 +25,16 @@ module.exports = {
 const parseExtraArgs = (projectDir, extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
 
-  const sourceIds = (args.sources || args.source || '')
+  const sourceIds = (args.ids || args.id || '')
     .split(',')
-    .filter(Boolean);
-
-  if (!args.destination) {
-    usage();
-    throw Error(`Action "merge-contacts" is missing required contact ID ${bold('--destination')}. Other contacts will be merged into this contact.`);
-  }
+    .filter(id => id);
 
   if (sourceIds.length === 0) {
     usage();
-    throw Error(`Action "merge-contacts" is missing required contact ID(s) ${bold('--sources')}. These contacts will be merged into the contact specified by ${bold('--destination')}`);
+    throw Error('Action "delete-contacts" is missing required list of contacts to be deleted');
   }
 
   return {
-    destinationId: args.destination,
     sourceIds,
     disableUsers: !!args['disable-users'],
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
@@ -51,19 +45,15 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
 const bold = text => `\x1b[1m${text}\x1b[0m`;
 const usage = () => {
   info(`
-${bold('cht-conf\'s merge-contacts action')}
-When combined with 'upload-docs' this action moves all of the contacts and reports under ${bold('sources')} to be under ${bold('destination')}.
-The top-level contact(s) ${bold('at source')} are deleted and no data in this document is merged or preserved.
+${bold('cht-conf\'s delete-contacts action')}
+When combined with 'upload-docs' this action recursively deletes a contact and all of their descendant contacts and data. ${bold('This operation is permanent. It cannot be undone.')}
 
 ${bold('USAGE')}
-cht --local merge-contacts -- --destination=<destination_id> --sources=<source_id1>,<source_id2>
+cht --local delete-contacts -- --ids=<id1>,<id2>
 
 ${bold('OPTIONS')}
---destination=<destination_id>
-  Specifies the ID of the contact that should receive the moving contacts and reports.
-
---sources=<source_id1>,<source_id2>
-  A comma delimited list of IDs of contacts which will be deleted. The hierarchy of contacts and reports under it will be moved to be under the destination contact.
+--ids=<id1>,<id2>
+  A comma delimited list of ids of contacts to be deleted.
 
 --disable-users
   When flag is present, users at to any deleted place will be permanently disabled.
