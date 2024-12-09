@@ -14,7 +14,7 @@ const { info, trace, warn } = log;
 const FILE_EXTENSION = '.doc.json';
 const INITIAL_BATCH_SIZE = 100;
 
-const execute = async () => {
+async function execute() {
   const args = minimist(environment.extraArgs || [], { boolean: true });
 
   const docDir = path.resolve(environment.pathToProject, args.docDirectoryPath || 'json_docs');
@@ -101,10 +101,10 @@ const execute = async () => {
   };
 
   return processNextBatch(filenamesToUpload, INITIAL_BATCH_SIZE);
-};
+}
 
-const preuploadAnalysis = filePaths =>
-  filePaths
+function preuploadAnalysis(filePaths) {
+  return filePaths
     .map(filePath => {
       const json = fs.readJson(filePath);
       const idFromFilename = path.basename(filePath, FILE_EXTENSION);
@@ -118,67 +118,71 @@ const preuploadAnalysis = filePaths =>
       }
     })
     .filter(Boolean);
+}
 
-const handleUsersAtDeletedFacilities = async deletedDocIds => {
-  const affectedUsers = await getAffectedUsers();
+
+
+async function handleUsersAtDeletedFacilities(deletedDocIds) {
+  const affectedUsers = await getAffectedUsers(deletedDocIds);
     const usernames = affectedUsers.map(userDoc => userDoc.username).join(', ');
   warn(`This operation will update permissions for ${affectedUsers.length} user accounts: ${usernames}. Are you sure you want to continue?`);
   if (affectedUsers.length === 0 || !userPrompt.keyInYN()) {
     return;
   }
 
-  await updateAffectedUsers();
+  await updateAffectedUsers(affectedUsers);
+}
 
-  async function getAffectedUsers() {
-    const knownUserDocs = {};
-    for (const facilityId of deletedDocIds) {
-      const fetchedUserInfos = await api().getUsersAtPlace(facilityId);
-      for (const fetchedUserInfo of fetchedUserInfos) {
-        const userDoc = knownUserDocs[fetchedUserInfo.username] || toPostApiFormat(fetchedUserInfo);
-        removePlace(userDoc, facilityId);
-        knownUserDocs[userDoc.username] = userDoc;
-      }
+
+async function getAffectedUsers(deletedDocIds) {
+  const knownUserDocs = {};
+  for (const facilityId of deletedDocIds) {
+    const fetchedUserInfos = await api().getUsersAtPlace(facilityId);
+    for (const fetchedUserInfo of fetchedUserInfos) {
+      const userDoc = knownUserDocs[fetchedUserInfo.username] || toPostApiFormat(fetchedUserInfo);
+      removePlace(userDoc, facilityId);
+      knownUserDocs[userDoc.username] = userDoc;
     }
-
-    return Object.values(knownUserDocs);
   }
 
-  function toPostApiFormat(apiResponse) {
-    return {
-      _id: apiResponse.id,
-      _rev: apiResponse.rev,
-      username: apiResponse.username,
-      place: apiResponse.place?.filter(Boolean).map(place => place._id),
-    };
-  }
+  return Object.values(knownUserDocs);
+}
 
-  function removePlace(userDoc, placeId) {
-    if (Array.isArray(userDoc.place)) {
-      userDoc.place = userDoc.place
-        .filter(id => id !== placeId);
+function toPostApiFormat(apiResponse) {
+  return {
+    _id: apiResponse.id,
+    _rev: apiResponse.rev,
+    username: apiResponse.username,
+    place: apiResponse.place?.filter(Boolean).map(place => place._id),
+  };
+}
+
+function removePlace(userDoc, placeId) {
+  if (Array.isArray(userDoc.place)) {
+    userDoc.place = userDoc.place
+      .filter(id => id !== placeId);
+  } else {
+    delete userDoc.place;
+  }
+}
+
+async function updateAffectedUsers(affectedUsers) {
+  let disabledUsers = 0, updatedUsers = 0;
+  for (const userDoc of affectedUsers) {
+    const shouldDisable = !userDoc.place || userDoc.place?.length === 0;
+    if (shouldDisable) {
+      trace(`Disabling ${userDoc.username}`);
+      await api().disableUser(userDoc.username);
+      disabledUsers++;
     } else {
-      delete userDoc.place;
+      trace(`Updating ${userDoc.username}`);
+      await api().updateUser(userDoc);
+      updatedUsers++;
     }
   }
 
-  async function updateAffectedUsers() {
-    let disabledUsers = 0, updatedUsers = 0;
-    for (const userDoc of affectedUsers) {
-      const shouldDisable = !userDoc.place || userDoc.place?.length === 0;
-      if (shouldDisable) {
-        trace(`Disabling ${userDoc.username}`);
-        await api().disableUser(userDoc.username);
-        disabledUsers++;
-      } else {
-        trace(`Updating ${userDoc.username}`);
-        await api().updateUser(userDoc);
-        updatedUsers++;
-      }
-    }
-
-    info(`${disabledUsers} users disabled. ${updatedUsers} users updated.`);
-  }
-};
+  info(`${disabledUsers} users disabled. ${updatedUsers} users updated.`);
+}
 
 module.exports = {
   requiresInstance: true,
