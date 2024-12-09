@@ -1,19 +1,20 @@
 const path = require('path');
 const minimist = require('minimist');
-const userPrompt = require('../lib/user-prompt');
 
+const api = require('../lib/api');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const log = require('../lib/log');
 const pouch = require('../lib/db');
 const progressBar = require('../lib/progress-bar');
+const userPrompt = require('../lib/user-prompt');
 
 const { info, trace, warn } = log;
 
 const FILE_EXTENSION = '.doc.json';
 const INITIAL_BATCH_SIZE = 100;
 
-const execute = async () => {
+async function execute() {
   const args = minimist(environment.extraArgs || [], { boolean: true });
 
   const docDir = path.resolve(environment.pathToProject, args.docDirectoryPath || 'json_docs');
@@ -22,20 +23,23 @@ const execute = async () => {
     return Promise.resolve();
   }
 
-  const filesToUpload = fs.recurseFiles(docDir).filter(name => name.endsWith(FILE_EXTENSION));
-  const docIdErrors = getErrorsWhereDocIdDiffersFromFilename(filesToUpload);
-  if (docIdErrors.length > 0) {
-    throw new Error(`upload-docs: ${docIdErrors.join('\n')}`);
-  }
-
-  const totalCount = filesToUpload.length;
+  const filenamesToUpload = fs.recurseFiles(docDir).filter(name => name.endsWith(FILE_EXTENSION));
+  const totalCount = filenamesToUpload.length;
   if (totalCount === 0) {
     return; // nothing to upload
   }
 
-  warn(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
-  if (!userPrompt.keyInYN()) {
-    throw new Error('User aborted execution.');
+  const analysis = analyseFiles(filenamesToUpload);
+  const errors = analysis.map(result => result.error).filter(Boolean);
+  if (errors.length > 0) {
+    throw new Error(`upload-docs: ${errors.join('\n')}`);
+  }
+
+  warnAndPrompt(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
+
+  if (args['disable-users']) {
+    const deletedDocIds = analysis.map(result => result.delete).filter(Boolean);
+    await handleUsersAtDeletedFacilities(deletedDocIds);
   }
 
   const results = { ok:[], failed:{} };
@@ -93,20 +97,92 @@ const execute = async () => {
     }
   };
 
-  return processNextBatch(filesToUpload, INITIAL_BATCH_SIZE);
-};
+  return processNextBatch(filenamesToUpload, INITIAL_BATCH_SIZE);
+}
 
-const getErrorsWhereDocIdDiffersFromFilename = filePaths =>
-  filePaths
+function warnAndPrompt(warningMessage) {
+  warn(warningMessage);
+  if (!userPrompt.keyInYN()) {
+    throw new Error('User aborted execution.');
+  }
+}
+
+function analyseFiles(filePaths) {
+  return filePaths
     .map(filePath => {
       const json = fs.readJson(filePath);
       const idFromFilename = path.basename(filePath, FILE_EXTENSION);
 
       if (json._id !== idFromFilename) {
-        return `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.`;
+        return { error: `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.` };
+      }
+
+      if (json._deleted) {
+        return { delete: json._id };
       }
     })
-    .filter(err => err);
+    .filter(Boolean);
+}
+
+async function handleUsersAtDeletedFacilities(deletedDocIds) {
+  const affectedUsers = await getAffectedUsers(deletedDocIds);
+  const usernames = affectedUsers.map(userDoc => userDoc.username).join(', ');
+  if (affectedUsers.length === 0) {
+    return;
+  }
+
+  warnAndPrompt(`This operation will update permissions for ${affectedUsers.length} user accounts: ${usernames}. Are you sure you want to continue?`);
+  await updateAffectedUsers(affectedUsers);
+}
+
+
+async function getAffectedUsers(deletedDocIds) {
+  const toPostApiFormat = (apiResponse) => ({
+    _id: apiResponse.id,
+    _rev: apiResponse.rev,
+    username: apiResponse.username,
+    place: apiResponse.place?.filter(Boolean).map(place => place._id),
+  });
+
+  const knownUserDocs = {};
+  for (const facilityId of deletedDocIds) {
+    const fetchedUserInfos = await api().getUsersAtPlace(facilityId);
+    for (const fetchedUserInfo of fetchedUserInfos) {
+      const userDoc = knownUserDocs[fetchedUserInfo.username] || toPostApiFormat(fetchedUserInfo);
+      removePlace(userDoc, facilityId);
+      knownUserDocs[userDoc.username] = userDoc;
+    }
+  }
+
+  return Object.values(knownUserDocs);
+}
+
+function removePlace(userDoc, placeId) {
+  if (Array.isArray(userDoc.place)) {
+    userDoc.place = userDoc.place
+      .filter(id => id !== placeId);
+  } else {
+    delete userDoc.place;
+  }
+}
+
+async function updateAffectedUsers(affectedUsers) {
+  let disabledUsers = 0, updatedUsers = 0;
+  for (const userDoc of affectedUsers) {
+    const shouldDisable = !userDoc.place || userDoc.place?.length === 0;
+    if (shouldDisable) {
+      trace(`Disabling ${userDoc.username}`);
+      await api().disableUser(userDoc.username);
+      disabledUsers++;
+    } else {
+      trace(`Updating ${userDoc.username}`);
+      await api().updateUser(userDoc);
+      updatedUsers++;
+    }
+  }
+
+  info(`${disabledUsers} users disabled. ${updatedUsers} users updated.`);
+}
 
 module.exports = {
   requiresInstance: true,
