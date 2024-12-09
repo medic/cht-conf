@@ -97,10 +97,10 @@ function getReportsCreatedAtIds(moveContext) {
 function reassignReportSubjects(report, moveContext) {
   let updated = false;
   for (const subjectId of DataSource.SUBJECT_IDS) {
-    updated |= reassignSingleReport(report, subjectId, moveContext.sourceId, moveContext.destinationId);
+    updated = updated || reassignSingleReport(report, subjectId, moveContext.sourceId, moveContext.destinationId);
 
     if (moveContext.mergePrimaryContacts && moveContext.sourcePrimaryContactId && moveContext.destinationPrimaryContactId) {
-      updated |= reassignSingleReport(report, subjectId, moveContext.sourcePrimaryContactId, moveContext.destinationPrimaryContactId);
+      updated = updated || reassignSingleReport(report, subjectId, moveContext.sourcePrimaryContactId, moveContext.destinationPrimaryContactId);
     }
   }
   

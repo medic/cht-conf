@@ -745,7 +745,6 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc('district_primary_contact_report')).to.deep.eq({
         _id: 'district_primary_contact_report',
         form: 'foo',
-        type: 'person',
         type: 'data_record',
         contact: parentsToLineage('district_2_contact', 'district_1'),
         fields: {
@@ -811,7 +810,6 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc('district_primary_contact_report')).to.deep.eq({
         _id: 'district_primary_contact_report',
         form: 'foo',
-        type: 'person',
         type: 'data_record',
         contact: parentsToLineage('district_2_contact', 'district_1'),
         fields: {
@@ -846,7 +844,6 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc('district_primary_contact_report')).to.deep.eq({
         _id: 'district_primary_contact_report',
         form: 'foo',
-        type: 'person',
         type: 'data_record',
         contact: parentsToLineage('district_2_contact', 'district_1'),
         fields: {
@@ -881,7 +878,6 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc('district_primary_contact_report')).to.deep.eq({
         _id: 'district_primary_contact_report',
         form: 'foo',
-        type: 'person',
         type: 'data_record',
         contact: parentsToLineage('district_2_contact', 'district_1'),
         fields: {
