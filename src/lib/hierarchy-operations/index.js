@@ -69,7 +69,7 @@ async function updateReports(db, options, moveContext) {
     const createdAtId = options.merge && moveContext.sourceId;
     reportDocsBatch = await DataSource.getReportsForContacts(db, descendantIds, createdAtId, skip);
 
-    const lineageUpdates = replaceCreatorLineageInReports(reportDocsBatch, moveContext);
+    const lineageUpdates = replaceLineageOfReportCreator(reportDocsBatch, moveContext);
     const reassignUpdates = reassignReports(reportDocsBatch, moveContext);
     const updatedReports = reportDocsBatch.filter(doc => lineageUpdates.has(doc._id) || reassignUpdates.has(doc._id));
 
@@ -115,6 +115,7 @@ function reassignReports(reports, moveContext) {
   return updated;
 }
 
+// This ensures all documents written are fully minified. Some docs in CouchDB are not minified to start with.
 function minifyLineageAndWriteToDisk(options, docs) {
   docs.forEach(doc => {
     lineageManipulation.minifyLineagesInDoc(doc);
@@ -122,7 +123,7 @@ function minifyLineageAndWriteToDisk(options, docs) {
   });
 }
 
-function replaceCreatorLineageInReports(reports, moveContext) {
+function replaceLineageOfReportCreator(reports, moveContext) {
   const replaceContactLineage = doc => lineageManipulation.replaceContactLineage(doc, {
     replaceWith: moveContext.replacementLineage,
     startingFromId: moveContext.sourceId,
@@ -152,10 +153,14 @@ function replaceLineageInAncestors(descendantsAndSelf, ancestors) {
   return updatedAncestors;
 }
 
-function replaceForSingleContact(doc, moveContext) {
+function replaceLineageInSingleContact(doc, moveContext) {
   const { sourceId } = moveContext;
-  const docIsDestination = doc._id === sourceId;
-  const startingFromId = moveContext.merge || !docIsDestination ? sourceId : undefined;
+  const docIsSource = doc._id === moveContext.sourceId;
+  if (docIsSource && moveContext.merge) {
+    return;
+  }
+
+  const startingFromId = moveContext.merge || !docIsSource ? sourceId : undefined;
   const replaceLineageOptions = {
     replaceWith: moveContext.replacementLineage,
     startingFromId,
@@ -171,24 +176,9 @@ function replaceForSingleContact(doc, moveContext) {
 }
 
 function replaceLineageInContacts(options, moveContext) {
-  function sonarQubeComplexityFiveIsTooLow(doc) {
-    const docIsSource = doc._id === moveContext.sourceId;
-    
-    // skip source because it will be deleted
-    if (!options.merge || !docIsSource) {
-      return replaceForSingleContact(doc, moveContext);
-    }
-  }
-
-  const result = [];
-  for (const doc of moveContext.descendantsAndSelf) {
-    const updatedDoc = sonarQubeComplexityFiveIsTooLow(doc);
-    if (updatedDoc) {
-      result.push(updatedDoc);
-    }
-  }
-
-  return result;
+  return moveContext.descendantsAndSelf
+    .map(descendant => replaceLineageInSingleContact(descendant, moveContext))
+    .filter(Boolean);
 }
 
 module.exports = (db, options) => {
