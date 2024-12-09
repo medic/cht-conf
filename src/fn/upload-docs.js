@@ -29,16 +29,13 @@ async function execute() {
     return; // nothing to upload
   }
 
-  const analysis = preuploadAnalysis(filenamesToUpload);
+  const analysis = analyseFiles(filenamesToUpload);
   const errors = analysis.map(result => result.error).filter(Boolean);
   if (errors.length > 0) {
     throw new Error(`upload-docs: ${errors.join('\n')}`);
   }
 
-  warn(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
-  if (!userPrompt.keyInYN()) {
-    throw new Error('User aborted execution.');
-  }
+  warnAndPrompt(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
 
   if (args['disable-users']) {
     const deletedDocIds = analysis.map(result => result.delete).filter(Boolean);
@@ -103,7 +100,14 @@ async function execute() {
   return processNextBatch(filenamesToUpload, INITIAL_BATCH_SIZE);
 }
 
-function preuploadAnalysis(filePaths) {
+function warnAndPrompt(warningMessage) {
+  warn(warningMessage);
+  if (!userPrompt.keyInYN()) {
+    throw new Error('User aborted execution.');
+  }
+}
+
+function analyseFiles(filePaths) {
   return filePaths
     .map(filePath => {
       const json = fs.readJson(filePath);
@@ -120,21 +124,26 @@ function preuploadAnalysis(filePaths) {
     .filter(Boolean);
 }
 
-
-
 async function handleUsersAtDeletedFacilities(deletedDocIds) {
   const affectedUsers = await getAffectedUsers(deletedDocIds);
-    const usernames = affectedUsers.map(userDoc => userDoc.username).join(', ');
-  warn(`This operation will update permissions for ${affectedUsers.length} user accounts: ${usernames}. Are you sure you want to continue?`);
-  if (affectedUsers.length === 0 || !userPrompt.keyInYN()) {
+  const usernames = affectedUsers.map(userDoc => userDoc.username).join(', ');
+  if (affectedUsers.length === 0) {
     return;
   }
 
+  warnAndPrompt(`This operation will update permissions for ${affectedUsers.length} user accounts: ${usernames}. Are you sure you want to continue?`);
   await updateAffectedUsers(affectedUsers);
 }
 
 
 async function getAffectedUsers(deletedDocIds) {
+  const toPostApiFormat = (apiResponse) => ({
+    _id: apiResponse.id,
+    _rev: apiResponse.rev,
+    username: apiResponse.username,
+    place: apiResponse.place?.filter(Boolean).map(place => place._id),
+  });
+
   const knownUserDocs = {};
   for (const facilityId of deletedDocIds) {
     const fetchedUserInfos = await api().getUsersAtPlace(facilityId);
@@ -146,15 +155,6 @@ async function getAffectedUsers(deletedDocIds) {
   }
 
   return Object.values(knownUserDocs);
-}
-
-function toPostApiFormat(apiResponse) {
-  return {
-    _id: apiResponse.id,
-    _rev: apiResponse.rev,
-    username: apiResponse.username,
-    place: apiResponse.place?.filter(Boolean).map(place => place._id),
-  };
 }
 
 function removePlace(userDoc, placeId) {
