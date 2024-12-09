@@ -35,6 +35,7 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
 
   return {
     sourceIds,
+    disableUsers: !!args['disable-users'],
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
   };

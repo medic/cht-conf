@@ -28,7 +28,8 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
     };
 
     if (options.merge) {
-      JsDocs.deleteDoc(options, sourceDoc, constraints.isPlace(sourceDoc));
+      const toDeleteUsers = options.disableUsers && constraints.isPlace(sourceDoc);
+      JsDocs.deleteDoc(options, sourceDoc, toDeleteUsers);
     }
 
     const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;

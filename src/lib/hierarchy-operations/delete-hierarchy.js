@@ -14,7 +14,8 @@ async function deleteHierarchy(db, options, sourceIds) {
 
     let affectedReportCount = 0;
     for (const descendant of descendantsAndSelf) {
-      JsDocs.deleteDoc(options, descendant, constraints.isPlace(descendant));
+      const toDeleteUsers = options.disableUsers && constraints.isPlace(descendant);
+      JsDocs.deleteDoc(options, descendant, toDeleteUsers);
       affectedReportCount += await deleteReportsForContact(db, options, descendant);
     }
 

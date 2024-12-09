@@ -664,7 +664,7 @@ describe('hierarchy-operations', () => {
       });
   
       // action 
-      await HierarchyOperations(pouchDb).merge(['district_2'], 'district_1');
+      await HierarchyOperations(pouchDb, { disableUsers: true }).merge(['district_2'], 'district_1');
   
       // assert
       expectWrittenDocs([
@@ -797,7 +797,7 @@ describe('hierarchy-operations', () => {
       });
   
       // action 
-      await HierarchyOperations(pouchDb).delete(['district_2']);
+      await HierarchyOperations(pouchDb, { disableUsers: true }).delete(['district_2']);
   
       // assert
       const deletedPlaces = [
@@ -816,6 +816,11 @@ describe('hierarchy-operations', () => {
       expectWrittenDocs([...deletedPlaces, ...deletedNonPeople]);
       deletedPlaces.forEach(id => expectDeleted(id, true));
       deletedNonPeople.forEach(id => expectDeleted(id, false));
+    });
+
+    it('users at are not disabled when disableUsers: false', async () => {
+      await HierarchyOperations(pouchDb, { disableUsers: false }).delete(['district_2']);
+      expectDeleted('district_2', false);
     });
 
     it('reports created by deleted contacts are not deleted', async () => {
