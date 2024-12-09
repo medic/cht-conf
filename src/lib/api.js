@@ -170,10 +170,9 @@ const api = {
     }
   },
 
-  async version() {
-     // endpoint added in 3.5
-    const response = await request.get({ uri: `${environment.instanceUrl}/api/deploy-info`, json: true });
-    return response.deploy_info?.version;
+  version() {
+    return request.get({ uri: `${environment.instanceUrl}/api/deploy-info`, json: true }) // endpoint added in 3.5
+      .then(deploy_info => deploy_info && deploy_info.version);
   },
 
   /**
