@@ -15,6 +15,7 @@ module.exports = {
     const options = {
       docDirectoryPath: args.docDirectoryPath,
       force: args.force,
+      disableUsers: args.disableUsers,
     };
     return HierarchyOperations(db, options).delete(args.sourceIds);
   }

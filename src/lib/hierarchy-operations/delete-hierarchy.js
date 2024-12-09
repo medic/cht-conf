@@ -5,6 +5,8 @@ const { trace, info } = require('../log');
 
 const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
 async function deleteHierarchy(db, options, sourceIds) {
+  JsDocs.prepareFolder(options);
+  
   const sourceDocs = await DataSource.getContactsByIds(db, sourceIds);
   const constraints = await lineageConstraints(db, options);
   for (const sourceId of sourceIds) {

@@ -13,6 +13,7 @@ module.exports = {
     const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
     const db = pouch();
     const options = {
+      disableUsers: args.disableUsers,
       docDirectoryPath: args.docDirectoryPath,
       force: args.force,
     };

@@ -12,6 +12,8 @@ uploadDocs.__set__('userPrompt', userPrompt);
 
 let fs, expectedDocs;
 
+const API_VERSION_RESPONSE = { status: 200, body: { deploy_info: { version: '4.10.0'} }};
+
 describe('upload-docs', function() {
   beforeEach(() => {
     sinon.stub(environment, 'isArchiveMode').get(() => false);
@@ -41,6 +43,8 @@ describe('upload-docs', function() {
   });
 
   it('should upload docs to pouch', async () => {
+    apiStub.giveResponses(API_VERSION_RESPONSE);
+    
     await assertDbEmpty();
     await uploadDocs.execute();
     const res = await apiStub.db.allDocs();
@@ -82,6 +86,7 @@ describe('upload-docs', function() {
     expectedDocs = new Array(10).fill('').map((x, i) => ({ _id: i.toString() }));
     const clock = sinon.useFakeTimers(0);
     const imported_date = new Date().toISOString();
+    apiStub.giveResponses(API_VERSION_RESPONSE);
     return uploadDocs.__with__({
       INITIAL_BATCH_SIZE: 4,
       Date,
@@ -128,6 +133,7 @@ describe('upload-docs', function() {
   });
 
   it('should not throw if force is set', async () => {
+    apiStub.giveResponses(API_VERSION_RESPONSE);
     userPrompt.__set__('environment', { force: () => true });
     await assertDbEmpty();
     sinon.stub(process, 'exit');
@@ -156,6 +162,22 @@ describe('upload-docs', function() {
       expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
 
       assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} },
+        { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
+        { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
+      ]);
+    });
+
+    it('user with single place gets deleted (old core api format)', async () => {
+      await setupDeletedFacilities('one');
+      setupApiResponses(1, [{ id: 'org.couchdb.user:user1', username: 'user1', place: { _id: 'one' } }]);
+
+      await uploadDocs.execute();
+      const res = await apiStub.db.allDocs();
+      expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
+
+      assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} },
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
         { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
       ]);
@@ -163,6 +185,8 @@ describe('upload-docs', function() {
 
     it('users associated with docs without truthy deleteUser attribute are not deleted', async () => {
       const writtenDoc = await apiStub.db.put({ _id: 'one' });
+      apiStub.giveResponses(API_VERSION_RESPONSE);
+
       const oneDoc = expectedDocs[0];
       oneDoc._rev = writtenDoc.rev;
       oneDoc._deleted = true;
@@ -170,7 +194,9 @@ describe('upload-docs', function() {
       await uploadDocs.execute();
       const res = await apiStub.db.allDocs();
       expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
-      assert.deepEqual(apiStub.requestLog(), []);
+      assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} }
+      ]);
     });
 
     it('user with multiple places gets updated', async () => {
@@ -187,6 +213,7 @@ describe('upload-docs', function() {
         place: [ 'two' ],
       };
       assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} },
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
         { method: 'POST', url: '/api/v1/users/user1', body: expectedBody },
       ]);
@@ -202,6 +229,7 @@ describe('upload-docs', function() {
       expect(res.rows.map(doc => doc.id)).to.deep.eq(['three']);
 
       assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} },
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
         { method: 'GET', url: '/api/v2/users?facility_id=two', body: {} },
         { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
@@ -225,6 +253,7 @@ describe('upload-docs', function() {
         place: ['two'],
       };
       assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} },
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
         { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
         { method: 'POST', url: '/api/v1/users/user2', body: expectedUser2 },
@@ -237,6 +266,7 @@ function setupApiResponses(writeCount, ...userDocResponseRows) {
   const responseBodies = userDocResponseRows.map(body => ({ body }));
   const writeResponses = new Array(writeCount).fill({ status: 200 });
   apiStub.giveResponses(
+    API_VERSION_RESPONSE,
     ...responseBodies,
     ...writeResponses,
   );
