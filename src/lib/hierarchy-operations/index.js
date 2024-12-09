@@ -197,7 +197,7 @@ function updateContacts(options, constraints, moveContext) {
   return moveContext.descendantsAndSelf
     .map(descendant => {
       const toDelete = (moveContext.merge && descendant._id === moveContext.sourceId) || 
-        (moveContext.mergePrimaryContacts && descendant._id === moveContext.sourcePrimaryContactId);
+        (moveContext.mergePrimaryContacts && descendant._id === moveContext.sourcePrimaryContactId && moveContext.destinationPrimaryContactId);
 
       if (toDelete) {
         const toDeleteUsers = options.disableUsers && constraints.isPlace(descendant);
