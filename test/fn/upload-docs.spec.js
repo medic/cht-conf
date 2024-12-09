@@ -161,6 +161,18 @@ describe('upload-docs', function() {
       ]);
     });
 
+    it('users associated with docs without truthy deleteUser attribute are not deleted', async () => {
+      const writtenDoc = await apiStub.db.put({ _id: 'one' });
+      const oneDoc = expectedDocs[0];
+      oneDoc._rev = writtenDoc.rev;
+      oneDoc._deleted = true;
+
+      await uploadDocs.execute();
+      const res = await apiStub.db.allDocs();
+      expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
+      assert.deepEqual(apiStub.requestLog(), []);
+    });
+
     it('user with multiple places gets updated', async () => {
       await setupDeletedFacilities('one');
       setupApiResponses(1, [{ id: 'org.couchdb.user:user1', username: 'user1', place: twoPlaces }]);

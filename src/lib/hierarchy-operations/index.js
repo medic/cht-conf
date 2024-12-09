@@ -5,9 +5,6 @@ const lineageManipulation = require('./lineage-manipulation');
 const LineageConstraints = require('./lineage-constraints');
 const { trace, info } = require('../log');
 
-const JsDocs = require('./jsdocFolder');
-const DataSource = require('./hierarchy-data-source');
-
 async function moveHierarchy(db, options, sourceIds, destinationId) {
   JsDocs.prepareFolder(options);
   trace(`Fetching contact details: ${destinationId}`);
@@ -31,7 +28,7 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
     };
 
     if (options.merge) {
-      JsDocs.deleteDoc(options, sourceDoc);
+      JsDocs.deleteDoc(options, sourceDoc, constraints.isPlace(sourceDoc));
     }
 
     const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;

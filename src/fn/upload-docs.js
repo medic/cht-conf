@@ -117,7 +117,7 @@ function analyseFiles(filePaths) {
         return { error: `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.` };
       }
 
-      if (json._deleted) {
+      if (json._deleted && json.disableUsers) {
         return { delete: json._id };
       }
     })

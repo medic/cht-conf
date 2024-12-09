@@ -678,6 +678,7 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc('district_2')).to.deep.eq({
         _id: 'district_2',
         _deleted: true,
+        disableUsers: true,
       });
   
       expect(getWrittenDoc('health_center_2')).to.deep.eq({
@@ -756,6 +757,7 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc('patient_2')).to.deep.eq({
         _id: 'patient_2',
         _deleted: true,
+        disableUsers: false,
       });
   
       expect(getWrittenDoc('pat2')).to.deep.eq({
@@ -772,10 +774,11 @@ describe('hierarchy-operations', () => {
   });
 
   describe('delete', () => {
-    const expectDelted = id => {
+    const expectDeleted = (id, disableUsers = false) => {
       expect(getWrittenDoc(id)).to.deep.eq({
         _id: id,
         _deleted: true,
+        disableUsers,
       });
     };
 
@@ -797,15 +800,22 @@ describe('hierarchy-operations', () => {
       await HierarchyOperations(pouchDb).delete(['district_2']);
   
       // assert
-      const deletedDocIds = [
-        'district_2', 'district_2_contact', 
-        'health_center_2', 'health_center_2_contact', 
-        'clinic_2', 'clinic_2_contact',
-        'patient_2',
-        'district_report', 'patient_report',
+      const deletedPlaces = [
+        'district_2', 
+        'health_center_2', 
+        'clinic_2',
       ];
-      expectWrittenDocs(deletedDocIds);
-      deletedDocIds.forEach(id => expectDelted(id));
+      const deletedNonPeople = [
+        'district_2_contact', 
+        'health_center_2_contact', 
+        'clinic_2_contact',
+        'patient_2',
+        'district_report',
+        'patient_report',
+      ];
+      expectWrittenDocs([...deletedPlaces, ...deletedNonPeople]);
+      deletedPlaces.forEach(id => expectDeleted(id, true));
+      deletedNonPeople.forEach(id => expectDeleted(id, false));
     });
 
     it('reports created by deleted contacts are not deleted', async () => {
