@@ -50,9 +50,9 @@ function replaceEntireLineage(replaceInDoc, lineageAttributeName, replaceWith) {
 
 module.exports = {
 /**
- * Given a doc, replace the lineage information therein with "replaceWith"
+ * Given a doc, replace the parent's lineage
  * 
- * @param {Object} doc A CouchDB document containing a hierarchy that needs replacing
+ * @param {Object} doc A CouchDB document containing a parent lineage (eg. parent.parent._id) 
  * @param {Object} params 
  * @param {Object} params.replaceWith The new hierarchy { parent: { _id: 'parent', parent: { _id: 'grandparent' } }
  * @param {string} params.startingFromId Only the part of the lineage "after" this id will be replaced
@@ -63,9 +63,9 @@ module.exports = {
   },
 
 /**
- * Given a doc, replace the lineage information therein with "replaceWith"
+ * Given a doc, replace the contact's lineage
  * 
- * @param {Object} doc A CouchDB document containing a hierarchy that needs replacing
+ * @param {Object} doc A CouchDB document containing a contact lineage (eg. contact.parent._id)
  * @param {Object} params 
  * @param {Object} params.replaceWith The new hierarchy { parent: { _id: 'parent', parent: { _id: 'grandparent' } }
  * @param {string} params.startingFromId Only the part of the lineage "after" this id will be replaced
