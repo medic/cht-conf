@@ -2,6 +2,7 @@ const lineageManipulation = require('./lineage-manipulation');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
+const SUBJECT_IDS = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
 
 /*
 Fetches all of the documents associated with the "contactIds" and confirms they exist.
@@ -54,14 +55,10 @@ async function getContactWithDescendants(db, contactId) {
     .filter(doc => doc && doc.type !== 'tombstone');
 }
 
-async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
+async function getReportsForContacts(db, createdByIds, createdAtIds, skip) {
   const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-  const createdAtKeys = createdAtId ? [
-    [`patient_id:${createdAtId}`],
-    [`patient_uuid:${createdAtId}`],
-    [`place_id:${createdAtId}`],
-    [`place_uuid:${createdAtId}`]
-  ] : [];
+  const mapIdToSubjectKeys = id => SUBJECT_IDS.map(subjectId => [`${subjectId}:${id}`]);
+  const createdAtKeys = createdAtIds ? createdAtIds.map(mapIdToSubjectKeys).flat() : [];
 
   const reports = await db.query('medic-client/reports_by_freetext', {
     keys: [
@@ -95,6 +92,7 @@ async function getAncestorsOf(db, contactDoc) {
 module.exports = {
   BATCH_SIZE,
   HIERARCHY_ROOT,
+  SUBJECT_IDS,
   getAncestorsOf,
   getContactWithDescendants,
   getContact,
