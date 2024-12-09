@@ -92,8 +92,8 @@ async function getAncestorsOf(db, contactDoc) {
 }
 
 module.exports = {
-  HIERARCHY_ROOT,
   BATCH_SIZE,
+  HIERARCHY_ROOT,
   getAncestorsOf,
   getContactWithDescendants,
   getContact,
