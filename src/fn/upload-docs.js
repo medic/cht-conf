@@ -144,7 +144,7 @@ async function assertCoreVersion() {
     throw Error(`CHT Core Version 4.7.0 or newer is required to use --disable-users options. Version is ${actualCoreVersion}.`);
   }
 
-  trace(`Core version is ${actualCoreVersion}. Proceeding to disable users.`)
+  trace(`Core version is ${actualCoreVersion}. Proceeding to disable users.`);
 }
 
 async function getAffectedUsers(deletedDocIds) {
