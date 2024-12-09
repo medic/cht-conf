@@ -236,6 +236,7 @@ async function setupDeletedFacilities(...docIds) {
     const expected = expectedDocs.find(doc => doc._id === id);
     expected._rev = writtenDoc.rev;
     expected._deleted = true;
+    expected.disableUsers = true;
   }
 }
 

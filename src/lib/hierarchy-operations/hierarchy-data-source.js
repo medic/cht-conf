@@ -49,7 +49,8 @@ async function getContactWithDescendants(db, contactId) {
 
   return descendantDocs.rows
     .map(row => row.doc)
-    /* We should not move or update tombstone documents */
+    // We should not move or update tombstone documents
+    // Not relevant for 4.x cht-core versions, but needed in older versions.
     .filter(doc => doc && doc.type !== 'tombstone');
 }
 
@@ -92,8 +93,8 @@ async function getAncestorsOf(db, contactDoc) {
 }
 
 module.exports = {
-  HIERARCHY_ROOT,
   BATCH_SIZE,
+  HIERARCHY_ROOT,
   getAncestorsOf,
   getContactWithDescendants,
   getContact,
