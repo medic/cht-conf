@@ -35,13 +35,16 @@ const mockHierarchy = async (db, hierarchy, existingLineage, depth = 0) => {
 };
 
 const mockReport = async (db, report) => {
-  const creatorDoc = await db.get(report.creatorId);
+  const creatorDoc = report.creatorId && await db.get(report.creatorId);
 
   await db.put({
     _id: report.id,
     form: 'foo',
     type: 'data_record',
-    contact: buildLineage(report.creatorId, creatorDoc.parent),
+    contact: buildLineage(report.creatorId || 'dne', creatorDoc?.parent),
+    fields: {
+      patient_uuid: report.patientId,
+    }
   });
 };
 

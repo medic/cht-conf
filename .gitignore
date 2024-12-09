@@ -5,6 +5,7 @@ upload-docs.*.log.json
 /.vscode/
 /.idea/
 /.settings/
+/json_docs/
 *.swp
 coverage
 .nyc_output
