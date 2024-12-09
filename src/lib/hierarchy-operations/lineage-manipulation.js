@@ -25,9 +25,6 @@ const minifyLineagesInDoc = doc => {
   
   if ('contact' in doc) {
     doc.contact = minifyLineage(doc.contact);
-    if (doc.contact && !doc.contact.parent) {
-      delete doc.contact.parent; // for unit test clarity
-    }
   }
 
   if (doc.type === 'data_record') {

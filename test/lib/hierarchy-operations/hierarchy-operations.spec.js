@@ -464,6 +464,7 @@ describe('move-contacts', () => {
         type: 'data_record',
         contact: { 
           _id: 'dne',
+          parent: undefined,
         },
         fields: {
           patient_uuid: 'district_1'
