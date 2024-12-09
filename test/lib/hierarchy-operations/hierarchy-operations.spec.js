@@ -644,6 +644,14 @@ describe('hierarchy-operations', () => {
   });
 
   describe('merge', () => {
+    beforeEach(async () => {
+      await mockReport(pouchDb, {
+        id: 'district_primary_contact_report',
+        creatorId: 'district_2_contact',
+        patientId: 'district_2_contact'
+      });
+    });
+
     it('merge district_2 into district_1', async () => {
       // setup
       await mockReport(pouchDb, {
@@ -672,7 +680,7 @@ describe('hierarchy-operations', () => {
         'health_center_2', 'health_center_2_contact', 
         'clinic_2', 'clinic_2_contact',
         'patient_2',
-        'changing_subject_and_contact', 'changing_contact', 'changing_subject'
+        'changing_subject_and_contact', 'changing_contact', 'changing_subject', 'district_primary_contact_report'
       ]);
   
       expect(getWrittenDoc('district_2')).to.deep.eq({
@@ -733,6 +741,16 @@ describe('hierarchy-operations', () => {
           patient_uuid: 'district_1'
         }
       });
+
+      expect(getWrittenDoc('district_primary_contact_report')).to.deep.eq({
+        _id: 'district_primary_contact_report',
+        form: 'foo',
+        type: 'data_record',
+        contact: parentsToLineage('district_2_contact', 'district_1'),
+        fields: {
+          patient_uuid: 'district_2_contact'
+        }
+      });
     });
   
     it('merge two patients', async () => {
@@ -768,6 +786,102 @@ describe('hierarchy-operations', () => {
         contact: parentsToLineage('clinic_2_contact', 'clinic_2', 'health_center_2', 'district_2'),
         fields: {
           patient_uuid: 'patient_1'
+        }
+      });
+    });
+
+    it('--merge-primary-contacts results in merge of primary contacts and reports', async () => {
+      await HierarchyOperations(pouchDb, { mergePrimaryContacts: true }).merge(['district_2'], 'district_1');
+
+      expectWrittenDocs([
+        'district_2', 'district_2_contact', 
+        'health_center_2', 'health_center_2_contact', 
+        'clinic_2', 'clinic_2_contact',
+        'patient_2',
+        'district_primary_contact_report'
+      ]);
+
+      expect(getWrittenDoc('district_2_contact')).to.deep.eq({
+        _id: 'district_2_contact',
+        _deleted: true,
+        disableUsers: false,
+      });
+
+      expect(getWrittenDoc('district_primary_contact_report')).to.deep.eq({
+        _id: 'district_primary_contact_report',
+        form: 'foo',
+        type: 'data_record',
+        contact: parentsToLineage('district_2_contact', 'district_1'),
+        fields: {
+          patient_uuid: 'district_1_contact'
+        }
+      });
+    });
+    
+    it('--merge-primary-contacts when no primary contact on source', async () => {
+      await upsert('district_2', {
+        type: 'district_hospital',
+      });
+
+      await HierarchyOperations(pouchDb, { mergePrimaryContacts: true }).merge(['district_2'], 'district_1');
+
+      expectWrittenDocs([
+        'district_2', 'district_2_contact', 
+        'health_center_2', 'health_center_2_contact', 
+        'clinic_2', 'clinic_2_contact',
+        'patient_2',
+        'district_primary_contact_report'
+      ]);
+
+      // not deleted
+      expect(getWrittenDoc('district_2_contact')).to.deep.eq({
+        _id: 'district_2_contact',
+        type: 'person',
+        parent: parentsToLineage('district_1'),
+      });
+
+      // not reassigned
+      expect(getWrittenDoc('district_primary_contact_report')).to.deep.eq({
+        _id: 'district_primary_contact_report',
+        form: 'foo',
+        type: 'data_record',
+        contact: parentsToLineage('district_2_contact', 'district_1'),
+        fields: {
+          patient_uuid: 'district_2_contact'
+        }
+      });
+    });
+
+    it('--merge-primary-contacts when no primary contact on destination', async () => {
+      await upsert('district_1', {
+        type: 'district_hospital',
+      });
+
+      await HierarchyOperations(pouchDb, { mergePrimaryContacts: true }).merge(['district_2'], 'district_1');
+
+      expectWrittenDocs([
+        'district_2', 'district_2_contact', 
+        'health_center_2', 'health_center_2_contact', 
+        'clinic_2', 'clinic_2_contact',
+        'patient_2',
+        'district_primary_contact_report'
+      ]);
+
+      // not deleted
+      expect(getWrittenDoc('district_2_contact')).to.deep.eq({
+        _id: 'district_2_contact',
+        type: 'person',
+        parent: parentsToLineage('district_1'),
+      });
+
+      // not reassigned
+      expect(getWrittenDoc('district_primary_contact_report')).to.deep.eq({
+        _id: 'district_primary_contact_report',
+        form: 'foo',
+        type: 'data_record',
+        contact: parentsToLineage('district_2_contact', 'district_1'),
+        fields: {
+          patient_uuid: 'district_2_contact'
         }
       });
     });

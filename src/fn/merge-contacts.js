@@ -15,6 +15,7 @@ module.exports = {
     const options = {
       disableUsers: args.disableUsers,
       docDirectoryPath: args.docDirectoryPath,
+      mergePrimaryContacts: args.mergePrimaryContacts,
       force: args.force,
     };
     return HierarchyOperations(db, options).merge(args.sourceIds, args.destinationId);
@@ -44,6 +45,7 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
     sourceIds,
     disableUsers: !!args['disable-users'],
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
+    mergePrimaryContacts: !!args['merge-primary-contacts'],
     force: !!args.force,
   };
 };
@@ -67,6 +69,9 @@ ${bold('OPTIONS')}
 
 --disable-users
   When flag is present, users at to any deleted place will be permanently disabled.
+
+--merge-primary-contacts
+  When flag is present, the primary contacts for all the top-level places will also be merged into a single resulting contact.
 
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
