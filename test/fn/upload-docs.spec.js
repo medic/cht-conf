@@ -12,7 +12,7 @@ uploadDocs.__set__('userPrompt', userPrompt);
 
 let fs, expectedDocs;
 
-const API_VERSION_RESPONSE = { status: 200, body: { deploy_info: { version: '4.10.0'} }};
+const API_VERSION_RESPONSE = { status: 200, body: { version: '4.10.0' }};
 
 describe('upload-docs', function() {
   beforeEach(() => {
