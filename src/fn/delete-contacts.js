@@ -53,6 +53,9 @@ ${bold('OPTIONS')}
 --ids=<id1>,<id2>
   A comma delimited list of ids of contacts to be deleted.
 
+--disable-users
+  When flag is present, users at to any deleted place will be permanently disabled.
+
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
 `);
