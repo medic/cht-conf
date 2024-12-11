@@ -73,6 +73,19 @@ describe('lineage constriants', () => {
       expect(actual).to.throw('root');
     });
 
+    it('cannot merge different types', async () => {
+      const sourceType = 'person';
+      const destinationType = 'health_center';
+      const actual = runScenario([{
+        id: 'person',
+        parents: ['health_center'],
+      }], sourceType, destinationType, true);
+
+      await expect(actual).to.eventually.rejectedWith(
+        `Hierarchy Constraints: source and destinations must have the same type. Source is "${sourceType}" while destination is "${destinationType}".`
+      );
+    });
+
     describe('default schema', () => {
       it('no defined rules enforces defaults schema', async () => await expect(runScenario(undefined, 'district_hospital', 'health_center')).to.eventually.rejectedWith('cannot have parent'));
       
