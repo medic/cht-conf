@@ -1,3 +1,10 @@
+# [4.2.0](https://github.com/medic/cht-conf/compare/v4.1.3...v4.2.0) (2024-12-11)
+
+
+### Features
+
+* **#373:** merge-contacts action ([#647](https://github.com/medic/cht-conf/issues/647)) ([006554c](https://github.com/medic/cht-conf/commit/006554cf3a414d9577e05c6dfaef3bbd59849403)), closes [#373](https://github.com/medic/cht-conf/issues/373)
+
 ## [4.1.3](https://github.com/medic/cht-conf/compare/v4.1.2...v4.1.3) (2024-11-13)
 
 
