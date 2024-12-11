@@ -84,6 +84,7 @@ describe('mocks', () => {
       _id: 'report_1',
       type: 'data_record',
       form: 'foo',
+      fields: {},
       contact: {
         _id: 'health_center_1_contact',
         parent: {
