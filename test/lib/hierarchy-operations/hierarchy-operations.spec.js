@@ -144,6 +144,11 @@ describe('hierarchy-operations', () => {
       });
     });
 
+    it('move root to health_center_1', async () => {
+      const actual = HierarchyOperations(pouchDb).move(['root'], 'health_center_1');
+      await expect(actual).to.eventually.be.rejectedWith(`'root' could not be found`);
+    });
+
     it('move health_center_1 to root', async () => {
       sinon.spy(pouchDb, 'query');
 
@@ -431,7 +436,7 @@ describe('hierarchy-operations', () => {
         await HierarchyOperations(pouchDb).move(['health_center_1'], 'clinic_1');
         assert.fail('should throw');
       } catch (err) {
-        expect(err.message).to.include('circular');
+        expect(err.message).to.include('itself');
       }
     });
   
@@ -465,6 +470,26 @@ describe('hierarchy-operations', () => {
       await updateHierarchyRules([{ id: 'district_hospital', parents: [] }]);
       const actual = HierarchyOperations(pouchDb).move(['district_1'], 'district_2');
       await expect(actual).to.eventually.rejectedWith('parent of type');
+    });
+
+    it('throw if source does not exist', async () => {
+      const nonExistentId = 'dne_parent_id';
+      const actual = HierarchyOperations(pouchDb).move(['health_center_1',  nonExistentId], 'district_2');
+      await expect(actual).to.eventually.rejectedWith(`Contact with id '${nonExistentId}' could not be found.`);
+    });
+
+    it('throw if ancestor does not exist', async () => {
+      const sourceId = 'health_center_1';
+      await upsert(sourceId, {
+        type: 'health_center',
+        name: 'no parent',
+        parent: parentsToLineage('dne'),
+      });
+
+      const actual = HierarchyOperations(pouchDb).move([sourceId], 'district_2');
+      await expect(actual).to.eventually.rejectedWith(
+        `(${sourceId}) has parent id(s) 'dne' which could not be found.`
+      );
     });
   
     describe('batching works as expected', () => {

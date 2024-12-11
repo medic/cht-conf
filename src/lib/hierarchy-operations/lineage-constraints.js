@@ -54,8 +54,8 @@ module.exports = async (db, options) => {
 Enforce the list of allowed parents for each contact type
 Ensure we are not creating a circular hierarchy
 */
-const getMovingViolations = (mapTypeToAllowedParents, sourceDoc, destinationDoc) => {
-  const contactTypeError = getMovingContactTypeError(mapTypeToAllowedParents, sourceDoc, destinationDoc);
+const getMovingViolations = (contactTypeInfo, sourceDoc, destinationDoc) => {
+  const contactTypeError = getMovingContactTypeError(contactTypeInfo, sourceDoc, destinationDoc);
   const circularHierarchyError = findCircularHierarchyErrors(sourceDoc, destinationDoc);
   return contactTypeError || circularHierarchyError;
 };
