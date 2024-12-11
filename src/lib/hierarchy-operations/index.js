@@ -130,14 +130,10 @@ function replaceLineageOfReportCreator(reports, moveContext) {
     merge: moveContext.merge,
   });
     
-  const updates = new Set();
-  reports.forEach(doc => {
-    if (replaceContactLineage(doc)) {
-      updates.add(doc._id);
-    }
-  });
-
-  return updates;
+  const updatedReportIds = reports
+    .filter(replaceContactLineage)
+    .map(({ _id }) => _id);
+  return new Set(updatedReportIds);
 }
 
 function replaceLineageInAncestors(descendantsAndSelf, ancestors) {
