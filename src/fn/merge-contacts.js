@@ -53,7 +53,7 @@ const usage = () => {
   info(`
 ${bold('cht-conf\'s merge-contacts action')}
 When combined with 'upload-docs' this action moves all of the contacts and reports under ${bold('sources')} to be under ${bold('destination')}.
-The top-level contact(s) ${bold('at source')} are deleted and no data in this document is merged or preserved.
+The top-level ${bold('source contact(s)')} are deleted and no data from this document is merged or preserved.
 
 ${bold('USAGE')}
 cht --local merge-contacts -- --destination=<destination_id> --sources=<source_id1>,<source_id2>
