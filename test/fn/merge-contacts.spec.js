@@ -1,10 +1,10 @@
 const { expect } = require('chai');
 const rewire = require('rewire');
-const Mergeremove = rewire('../../src/fn/merge-contacts');
-const parseExtraArgs = Mergeremove.__get__('parseExtraArgs');
+const MergeContactsAction = rewire('../../src/fn/merge-contacts');
 
 describe('merge-contacts', () => {
   describe('parseExtraArgs', () => {
+    const parseExtraArgs = MergeContactsAction.__get__('parseExtraArgs');
     it('undefined arguments', () => {
       expect(() => parseExtraArgs(__dirname, undefined)).to.throw('required contact');
     });

@@ -31,9 +31,9 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
       destinationPrimaryContactId: getPrimaryContactId(destinationDoc),
     };
 
-    const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
     await constraints.assertNoPrimaryContactViolations(sourceDoc, destinationDoc, descendantsAndSelf);
-
+    
+    const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
     trace(`Considering updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
     const updatedDescendants = updateContacts(options, constraints, moveContext);
     
@@ -153,14 +153,10 @@ function replaceLineageOfReportCreator(reports, moveContext) {
     merge: moveContext.merge,
   });
     
-  const updates = new Set();
-  reports.forEach(doc => {
-    if (replaceContactLineage(doc)) {
-      updates.add(doc._id);
-    }
-  });
-
-  return updates;
+  const updatedReportIds = reports
+    .filter(replaceContactLineage)
+    .map(({ _id }) => _id);
+  return new Set(updatedReportIds);
 }
 
 function replaceLineageInAncestors(descendantsAndSelf, ancestors) {
@@ -176,8 +172,12 @@ function replaceLineageInAncestors(descendantsAndSelf, ancestors) {
   return updatedAncestors;
 }
 
-function replaceLineageInSingleContact(doc, moveContext) {   
+function replaceLineageInSingleContact(doc, moveContext) {
   const docIsSource = doc._id === moveContext.sourceId;
+  if (docIsSource && moveContext.merge) {
+    return;
+  }
+
   const startingFromId = moveContext.merge || !docIsSource ? moveContext.sourceId : undefined;
   const replaceLineageOptions = {
     replaceWith: moveContext.replacementLineage,

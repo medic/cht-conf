@@ -55,7 +55,7 @@ const usage = () => {
   info(`
 ${bold('cht-conf\'s merge-contacts action')}
 When combined with 'upload-docs' this action moves all of the contacts and reports under ${bold('sources')} to be under ${bold('destination')}.
-The top-level contact(s) ${bold('at source')} are deleted and no data in this document is merged or preserved.
+The top-level ${bold('source contact(s)')} are deleted and no data from this document is merged or preserved.
 
 ${bold('USAGE')}
 cht --local merge-contacts -- --destination=<destination_id> --sources=<source_id1>,<source_id2>
@@ -68,7 +68,7 @@ ${bold('OPTIONS')}
   A comma delimited list of IDs of contacts which will be deleted. The hierarchy of contacts and reports under it will be moved to be under the destination contact.
 
 --disable-users
-  When flag is present, users at to any deleted place will be permanently disabled.
+  When flag is present, users at any deleted place will be permanently disabled.
 
 --merge-primary-contacts
   When flag is present, the primary contacts for all the top-level places will also be merged into a single resulting contact.
