@@ -136,6 +136,11 @@ describe('move-contacts', () => {
     });
   });
 
+  it('move root to health_center_1', async () => {
+    const actual = HierarchyOperations(pouchDb).move(['root'], 'health_center_1');
+    await expect(actual).to.eventually.be.rejectedWith(`'root' could not be found`);
+  });
+  
   it('move health_center_1 to root', async () => {
     sinon.spy(pouchDb, 'query');
 
@@ -387,7 +392,7 @@ describe('move-contacts', () => {
       await mockReport(pouchDb, {
         id: 'changing_subject_and_contact',
         creatorId: 'health_center_2_contact',
-        patientId: 'district_2'
+        patient_id: 'district_2'
       });
   
       await mockReport(pouchDb, {
@@ -443,9 +448,8 @@ describe('move-contacts', () => {
         form: 'foo',
         type: 'data_record',
         contact: parentsToLineage('health_center_2_contact', 'health_center_2', 'district_1'),
-        fields: {
-          patient_uuid: 'district_1'
-        }
+        fields: {},
+        patient_id: 'district_1'
       });
   
       expect(getWrittenDoc('changing_contact')).to.deep.eq({
@@ -578,7 +582,7 @@ describe('move-contacts', () => {
   it('throw if setting parent to self', async () => {
     await updateHierarchyRules([{ id: 'clinic', parents: ['clinic'] }]);
     const actual = HierarchyOperations(pouchDb).move(['clinic_1'], 'clinic_1');
-    await expect(actual).to.eventually.rejectedWith('circular');
+    await expect(actual).to.eventually.rejectedWith('itself');
   });
 
   it('throw when moving place to unconfigured parent', async () => {

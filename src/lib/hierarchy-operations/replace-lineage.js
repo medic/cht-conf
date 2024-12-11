@@ -41,10 +41,9 @@ function replaceEntireLineage(replaceInDoc, lineageAttributeName, replaceWith) {
     const lineageWasDeleted = !!replaceInDoc[lineageAttributeName];
     replaceInDoc[lineageAttributeName] = undefined;
     return lineageWasDeleted;
-  } else {
-    replaceInDoc[lineageAttributeName] = replaceWith;
   }
 
+  replaceInDoc[lineageAttributeName] = replaceWith;
   return true;
 }
 

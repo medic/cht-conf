@@ -27,6 +27,8 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
       merge: !!options.merge,
     };
 
+    await constraints.assertNoPrimaryContactViolations(sourceDoc, destinationDoc, descendantsAndSelf);
+    
     if (options.merge) {
       JsDocs.writeDoc(options, {
         _id: sourceDoc._id,
@@ -34,12 +36,10 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
         _deleted: true,
       });
     }
-
+        
     const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
-    await constraints.assertNoPrimaryContactViolations(sourceDoc, destinationDoc, descendantsAndSelf);
-
     trace(`Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
-    const updatedDescendants = replaceLineageInContacts(options, moveContext);
+    const updatedDescendants = replaceLineageInContacts(moveContext);
     
     const ancestors = await DataSource.getAncestorsOf(db, sourceDoc);
     trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
@@ -154,13 +154,12 @@ function replaceLineageInAncestors(descendantsAndSelf, ancestors) {
 }
 
 function replaceLineageInSingleContact(doc, moveContext) {
-  const { sourceId } = moveContext;
   const docIsSource = doc._id === moveContext.sourceId;
   if (docIsSource && moveContext.merge) {
     return;
   }
 
-  const startingFromId = moveContext.merge || !docIsSource ? sourceId : undefined;
+  const startingFromId = moveContext.merge || !docIsSource ? moveContext.sourceId : undefined;
   const replaceLineageOptions = {
     replaceWith: moveContext.replacementLineage,
     startingFromId,
@@ -168,14 +167,14 @@ function replaceLineageInSingleContact(doc, moveContext) {
   };
   const parentWasUpdated = lineageManipulation.replaceParentLineage(doc, replaceLineageOptions);
 
-  replaceLineageOptions.startingFromId = sourceId;
+  replaceLineageOptions.startingFromId = moveContext.sourceId;
   const contactWasUpdated = lineageManipulation.replaceContactLineage(doc, replaceLineageOptions);
   if (parentWasUpdated || contactWasUpdated) {
     return doc;
   }
 }
 
-function replaceLineageInContacts(options, moveContext) {
+function replaceLineageInContacts(moveContext) {
   return moveContext.descendantsAndSelf
     .map(descendant => replaceLineageInSingleContact(descendant, moveContext))
     .filter(Boolean);

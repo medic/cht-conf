@@ -41,32 +41,35 @@ describe('lineage constriants', () => {
     it('no settings doc requires valid parent type', async () => {
       const mockDb = { get: () => { throw { status: 404 }; } };
       const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
-      const actual = () => assertNoHierarchyErrors([{ type: 'person' }], { type: 'dne' });
+      const actual = () => assertNoHierarchyErrors([{ _id: 'a', type: 'person' }], { _id: 'b', type: 'dne' });
       expect(actual).to.throw('cannot have parent of type');
     });
 
     it('no settings doc requires valid contact type', async () => {
       const mockDb = { get: () => { throw { status: 404 }; } };
       const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
-      const actual = () => assertNoHierarchyErrors({ type: 'dne' }, { type: 'clinic' });
+      const actual = () => assertNoHierarchyErrors([{ _id: 'a', type: 'dne' }], { _id: 'b', type: 'clinic' });
       expect(actual).to.throw('unknown type');
     });
 
     it('no settings doc yields not defined', async () => {
       const mockDb = { get: () => { throw { status: 404 }; } };
       const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
-      const actual = assertNoHierarchyErrors({ type: 'person' }, { type: 'clinic' });
+      const actual = assertNoHierarchyErrors([{ _id: 'a', type: 'person' }], { _id: 'b', type: 'clinic' });
       expect(actual).to.be.undefined;
     });
 
     it('cannot merge with self', async () => {
-      await expect(runScenario([], 'a', 'a', true)).to.eventually.rejectedWith('self');
+      const mockDb = { get: () => ({ settings: { contact_types: [] } }) };
+      const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: true });
+      const actual = () => assertNoHierarchyErrors([{ _id: 'a', type: 'a' }], { _id: 'a', type: 'a' });
+      expect(actual).to.throw('self');
     });
 
     it('cannot merge with id: "root"', async () => {
       const mockDb = { get: () => ({ settings: { contact_types: [] } }) };
       const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: true });
-      const actual = () => assertNoHierarchyErrors({ _id: 'root', type: 'dne' }, { _id: 'foo', type: 'clinic' });
+      const actual = () => assertNoHierarchyErrors([{ _id: 'root', type: 'dne' }], { _id: 'foo', type: 'clinic' });
       expect(actual).to.throw('root');
     });
 
@@ -78,7 +81,7 @@ describe('lineage constriants', () => {
       it('can move district_hospital to root', async () => {
         const mockDb = { get: () => ({ settings: { } }) };
         const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge: false });
-        const actual = assertNoHierarchyErrors({ type: 'district_hospital' }, undefined);
+        const actual = assertNoHierarchyErrors([{ _id: 'a', type: 'district_hospital' }], undefined);
         expect(actual).to.be.undefined;
       });
     });
@@ -172,5 +175,5 @@ describe('lineage constriants', () => {
 const runScenario = async (contact_types, sourceType, destinationType, merge = false) => {
   const mockDb = { get: () => ({ settings: { contact_types } }) };
   const { assertNoHierarchyErrors } = await lineageConstraints(mockDb, { merge });
-  return assertNoHierarchyErrors({ type: sourceType }, { type: destinationType });
+  return assertNoHierarchyErrors([{ _id: 'a', type: sourceType }], { _id: 'b', type: destinationType });
 };
