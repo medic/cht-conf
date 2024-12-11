@@ -1,4 +1,5 @@
-const { expect, assert } = require('chai');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
@@ -6,6 +7,9 @@ const apiStub = require('../api-stub');
 const environment = require('../../src/lib/environment');
 let uploadDocs = rewire('../../src/fn/upload-docs');
 const userPrompt = rewire('../../src/lib/user-prompt');
+
+const { assert, expect } = chai;
+chai.use(chaiAsPromised);
 let readLine = { keyInYN: () => true };
 userPrompt.__set__('readline', readLine);
 uploadDocs.__set__('userPrompt', userPrompt);
@@ -123,13 +127,8 @@ describe('upload-docs', function() {
   it('should throw if user denies the warning', async () => {
     userPrompt.__set__('readline', { keyInYN: () => false });
     await assertDbEmpty();
-    await uploadDocs.execute()
-      .then(() => {
-        assert.fail('Expected error to be thrown');
-      })
-      .catch(err => {
-        expect(err.message).to.equal('User aborted execution.');
-      });
+    const actual = uploadDocs.execute();
+    await expect(actual).to.eventually.be.rejectedWith('User aborted execution.');
   });
 
   it('should not throw if force is set', async () => {

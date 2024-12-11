@@ -13,7 +13,7 @@ chai.use(chaiAsPromised);
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const { assert, expect } = chai;
+const { expect } = chai;
 
 const HierarchyOperations = rewire('../../../src/lib/hierarchy-operations');
 const deleteHierarchy = rewire('../../../src/lib/hierarchy-operations/delete-hierarchy');
@@ -431,13 +431,8 @@ describe('hierarchy-operations', () => {
     it('cannot create circular hierarchy', async () => {
       // even if the hierarchy rules allow it
       await updateHierarchyRules([{ id: 'health_center', parents: ['clinic'] }]);
-  
-      try {
-        await HierarchyOperations(pouchDb).move(['health_center_1'], 'clinic_1');
-        assert.fail('should throw');
-      } catch (err) {
-        expect(err.message).to.include('itself');
-      }
+      const actual = HierarchyOperations(pouchDb).move(['health_center_1'], 'clinic_1');
+      await expect(actual).to.eventually.be.rejectedWith('circular');
     });
   
     it('throw if parent does not exist', async () => {
@@ -463,7 +458,7 @@ describe('hierarchy-operations', () => {
     it('throw if setting parent to self', async () => {
       await updateHierarchyRules([{ id: 'clinic', parents: ['clinic'] }]);
       const actual = HierarchyOperations(pouchDb).move(['clinic_1'], 'clinic_1');
-      await expect(actual).to.eventually.rejectedWith('circular');
+      await expect(actual).to.eventually.rejectedWith('itself');
     });
   
     it('throw when moving place to unconfigured parent', async () => {
