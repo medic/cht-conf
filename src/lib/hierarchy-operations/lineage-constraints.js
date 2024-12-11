@@ -15,15 +15,14 @@ module.exports = async (db, options) => {
       }
     },
     assertNoHierarchyErrors: (sourceDocs, destinationDoc) => {
-      if (!Array.isArray(sourceDocs)) {
-        sourceDocs = [sourceDocs];
-      }
 
       sourceDocs.forEach(sourceDoc => {
-        const hierarchyError = options.merge ?
+        const commonViolations = getCommonViolations(sourceDoc, destinationDoc);
+        const specificViolation = options.merge ?
           getMergeViolations(sourceDoc, destinationDoc)
           : getMovingViolations(mapTypeToAllowedParents, sourceDoc, destinationDoc);
 
+        const hierarchyError = commonViolations || specificViolation;
         if (hierarchyError) {
           throw Error(`Hierarchy Constraints: ${hierarchyError}`);
         }
@@ -51,10 +50,9 @@ Enforce the list of allowed parents for each contact type
 Ensure we are not creating a circular hierarchy
 */
 const getMovingViolations = (mapTypeToAllowedParents, sourceDoc, destinationDoc) => {
-  const commonViolations = getCommonViolations(sourceDoc, destinationDoc);
   const contactTypeError = getMovingContactTypeError(mapTypeToAllowedParents, sourceDoc, destinationDoc);
   const circularHierarchyError = findCircularHierarchyErrors(sourceDoc, destinationDoc);
-  return commonViolations || contactTypeError || circularHierarchyError;
+  return contactTypeError || circularHierarchyError;
 };
 
 function getMovingContactTypeError(mapTypeToAllowedParents, sourceDoc, destinationDoc) {
@@ -72,17 +70,21 @@ function getMovingContactTypeError(mapTypeToAllowedParents, sourceDoc, destinati
 }
 
 function findCircularHierarchyErrors(sourceDoc, destinationDoc) {
-  if (!destinationDoc || !sourceDoc._id) {
+  if (!destinationDoc) {
     return;
   }
 
-  const parentAncestry = [destinationDoc._id, ...lineageManipulation.pluckIdsFromLineage(destinationDoc.parent)];
+  const parentAncestry = lineageManipulation.pluckIdsFromLineage(destinationDoc);
   if (parentAncestry.includes(sourceDoc._id)) {
     return `Circular hierarchy: Cannot set parent of contact '${sourceDoc._id}' as it would create a circular hierarchy.`;
   }
 }
 
 const getCommonViolations = (sourceDoc, destinationDoc) => {
+  if (!sourceDoc) {
+    return `source doc cannot be found`;
+  }
+
   const sourceContactType = getContactType(sourceDoc);
   const destinationContactType = getContactType(destinationDoc);
   if (!sourceContactType) {
@@ -92,12 +94,15 @@ const getCommonViolations = (sourceDoc, destinationDoc) => {
   if (destinationDoc && !destinationContactType) {
     return `destination contact "${destinationDoc._id}" required attribute "type" is undefined`;
   }
+
+  if (sourceDoc._id === destinationDoc?._id) {
+    return `cannot move or merge contact that is itself`;
+  }
 };
 
 const getMergeViolations = (sourceDoc, destinationDoc) => {
-  const commonViolations = getCommonViolations(sourceDoc, destinationDoc);
-  if (commonViolations) {
-    return commonViolations;
+  if (!destinationDoc) {
+    return `destination doc cannot be found`;
   }
 
   if ([sourceDoc._id, destinationDoc._id].includes(HIERARCHY_ROOT)) {
@@ -108,10 +113,6 @@ const getMergeViolations = (sourceDoc, destinationDoc) => {
   const destinationContactType = getContactType(destinationDoc);
   if (sourceContactType !== destinationContactType) {
     return `source and destinations must have the same type. Source is "${sourceContactType}" while destination is "${destinationContactType}".`;
-  }
-
-  if (sourceDoc._id === destinationDoc._id) {
-    return `cannot move contact to destination that is itself`;
   }
 };
 

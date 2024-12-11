@@ -1,11 +1,10 @@
 const { expect } = require('chai');
 const rewire = require('rewire');
-const MoveContacts = rewire('../../src/fn/move-contacts');
-const parseExtraArgs = MoveContacts.__get__('parseExtraArgs');
+const MoveContactsAction = rewire('../../src/fn/move-contacts');
 
 describe('move-contacts', () => {
   describe('parseExtraArgs', () => {
-    // const parseExtraArgs = MoveContactsLib.__get__('parseExtraArgs');
+    const parseExtraArgs = MoveContactsAction.__get__('parseExtraArgs');
     it('undefined arguments', () => {
       expect(() => parseExtraArgs(__dirname, undefined)).to.throw('required list of contacts');
     });
