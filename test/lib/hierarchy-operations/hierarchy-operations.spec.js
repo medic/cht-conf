@@ -591,6 +591,25 @@ describe('move-contacts', () => {
     await expect(actual).to.eventually.rejectedWith('parent of type');
   });
 
+  it('throw if source does not exist', async () => {
+    const nonExistentId = 'dne_parent_id';
+    const actual = HierarchyOperations(pouchDb).move(['health_center_1',  nonExistentId], 'district_2');
+    await expect(actual).to.eventually.rejectedWith(`Contact with id '${nonExistentId}' could not be found.`);
+  });
+
+  it('throw if ancestor does not exist', async () => {
+    const sourceId = 'health_center_1';
+    const healthCenter = await pouchDb.get(sourceId);
+    healthCenter.name = 'no parent';
+    healthCenter.parent._id = 'dne_parent_id';
+    await pouchDb.put(healthCenter);
+
+    const actual = HierarchyOperations(pouchDb).move([sourceId], 'district_2');
+    await expect(actual).to.eventually.rejectedWith(
+      `Contact '${healthCenter.name}' (${sourceId}) has parent id(s) '${healthCenter.parent._id}' which could not be found.`
+    );
+  });
+
   describe('batching works as expected', () => {
     const initialBatchSize = DataSource.BATCH_SIZE;
     beforeEach(async () => {
