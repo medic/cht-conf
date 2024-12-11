@@ -43,4 +43,24 @@ describe('JsDocs', () => {
     JsDocs.prepareFolder(docOnj);
     assert.equal(fs.deleteFilesInFolder.callCount, 1);
   });
+
+  it('creates directory if it does not exist', () => {
+    sinon.stub(fs, 'mkdir');
+    fs.exists.returns(false);
+    JsDocs.prepareFolder(docOnj);
+    assert.isTrue(fs.mkdir.calledOnceWithExactly(docOnj.docDirectoryPath));
+  });
+
+  [
+    true, false
+  ].forEach(exists => {
+    it('writeDoc writes JSON to destination', () => {
+      const doc = { _id: 'test', _rev: '1', hello: 'world' };
+      sinon.stub(fs, 'writeJson');
+      fs.exists.returns(exists);
+      JsDocs.writeDoc(docOnj, doc);
+      const destinationPath = `${docOnj.docDirectoryPath}/${doc._id}.doc.json`;
+      assert.isTrue(fs.writeJson.calledOnceWithExactly(destinationPath, doc));
+    });
+  });
 });
