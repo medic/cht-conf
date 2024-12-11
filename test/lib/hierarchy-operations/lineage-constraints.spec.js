@@ -82,7 +82,7 @@ describe('lineage constriants', () => {
       }], sourceType, destinationType, true);
 
       await expect(actual).to.eventually.rejectedWith(
-        `Hierarchy Constraints: source and destinations must have the same type. Source is "${sourceType}" while destination is "${destinationType}".`
+        `source and destinations must have the same type. Source is "${sourceType}" while destination is "${destinationType}".`
       );
     });
 

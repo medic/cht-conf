@@ -599,14 +599,15 @@ describe('move-contacts', () => {
 
   it('throw if ancestor does not exist', async () => {
     const sourceId = 'health_center_1';
-    const healthCenter = await pouchDb.get(sourceId);
-    healthCenter.name = 'no parent';
-    healthCenter.parent._id = 'dne_parent_id';
-    await pouchDb.put(healthCenter);
+    await upsert(sourceId, {
+      type: 'health_center',
+      name: 'no parent',
+      parent: parentsToLineage('dne'),
+    });
 
     const actual = HierarchyOperations(pouchDb).move([sourceId], 'district_2');
     await expect(actual).to.eventually.rejectedWith(
-      `Contact '${healthCenter.name}' (${sourceId}) has parent id(s) '${healthCenter.parent._id}' which could not be found.`
+      `(${sourceId}) has parent id(s) 'dne' which could not be found.`
     );
   });
 
