@@ -15,9 +15,6 @@ module.exports = async (db, options) => {
       }
     },
     assertNoHierarchyErrors: (sourceDocs, destinationDoc) => {
-      if (!Array.isArray(sourceDocs)) {
-        sourceDocs = [sourceDocs];
-      }
 
       sourceDocs.forEach(sourceDoc => {
         const hierarchyError = options.merge ?
