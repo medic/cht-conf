@@ -48,8 +48,6 @@ describe('upload-docs', function() {
   });
 
   it('should upload docs to pouch', async () => {
-    apiStub.giveResponses(API_VERSION_RESPONSE);
-
     await assertDbEmpty();
     await uploadDocs.execute();
     const res = await apiStub.db.allDocs();
@@ -91,7 +89,6 @@ describe('upload-docs', function() {
     expectedDocs = new Array(10).fill('').map((x, i) => ({ _id: i.toString() }));
     const clock = sinon.useFakeTimers(0);
     const imported_date = new Date().toISOString();
-    apiStub.giveResponses(API_VERSION_RESPONSE);
     return uploadDocs.__with__({
       INITIAL_BATCH_SIZE: 4,
       Date,
@@ -132,7 +129,6 @@ describe('upload-docs', function() {
   });
 
   it('should not throw if force is set', async () => {
-    apiStub.giveResponses(API_VERSION_RESPONSE);
     userPrompt.__set__('environment', { force: () => true });
     await assertDbEmpty();
     sinon.stub(process, 'exit');

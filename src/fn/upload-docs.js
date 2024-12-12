@@ -39,8 +39,10 @@ async function execute() {
 
   userPrompt.warnPromptAbort(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
 
-  const deletedDocIds = analysis.map(result => result.delete).filter(Boolean);
-  await handleUsersAtDeletedFacilities(deletedDocIds);
+  if (args['disable-users']) {
+    const deletedDocIds = analysis.map(result => result.delete).filter(Boolean);
+    await handleUsersAtDeletedFacilities(deletedDocIds);
+  }
 
   const results = { ok:[], failed:{} };
   const progress = log.level > log.LEVEL_ERROR ? progressBar.init(totalCount, '{{n}}/{{N}} docs ', ' {{%}} {{m}}:{{s}}') : null;
