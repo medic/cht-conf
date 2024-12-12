@@ -37,7 +37,7 @@ async function execute() {
     throw new Error(`upload-docs: ${errors.join('\n')}`);
   }
 
-  warnAndPrompt(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
+  userPrompt.warnPromptAbort(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
 
   const deletedDocIds = analysis.map(result => result.delete).filter(Boolean);
   await handleUsersAtDeletedFacilities(deletedDocIds);
@@ -100,13 +100,6 @@ async function execute() {
   return processNextBatch(filenamesToUpload, INITIAL_BATCH_SIZE);
 }
 
-function warnAndPrompt(warningMessage) {
-  warn(warningMessage);
-  if (!userPrompt.keyInYN()) {
-    throw new Error('User aborted execution.');
-  }
-}
-
 function analyseFiles(filePaths) {
   return filePaths
     .map(filePath => {
@@ -134,7 +127,7 @@ async function handleUsersAtDeletedFacilities(deletedDocIds) {
     return;
   }
 
-  warnAndPrompt(`This operation will update permissions for ${affectedUsers.length} user accounts: ${usernames}. Are you sure you want to continue?`);
+  userPrompt.warnPromptAbort(`This operation will update ${affectedUsers.length} user accounts: ${usernames} and cannot be undone. Are you sure you want to continue?`);
   await updateAffectedUsers(affectedUsers);
 }
 
