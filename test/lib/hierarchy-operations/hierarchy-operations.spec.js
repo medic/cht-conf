@@ -29,7 +29,7 @@ const reports_by_freetext = {
   map: "function(doc) {\n  var skip = [ '_id', '_rev', 'type', 'refid', 'content' ];\n\n  var usedKeys = [];\n  var emitMaybe = function(key, value) {\n    if (usedKeys.indexOf(key) === -1 && // Not already used\n        key.length > 2 // Not too short\n    ) {\n      usedKeys.push(key);\n      emit([key], value);\n    }\n  };\n\n  var emitField = function(key, value, reportedDate) {\n    if (!key || !value) {\n      return;\n    }\n    key = key.toLowerCase();\n    if (skip.indexOf(key) !== -1 || /_date$/.test(key)) {\n      return;\n    }\n    if (typeof value === 'string') {\n      value = value.toLowerCase();\n      value.split(/\\s+/).forEach(function(word) {\n        emitMaybe(word, reportedDate);\n      });\n    }\n    if (typeof value === 'number' || typeof value === 'string') {\n      emitMaybe(key + ':' + value, reportedDate);\n    }\n  };\n\n  if (doc.type === 'data_record' && doc.form) {\n    Object.keys(doc).forEach(function(key) {\n      emitField(key, doc[key], doc.reported_date);\n    });\n    if (doc.fields) {\n      Object.keys(doc.fields).forEach(function(key) {\n        emitField(key, doc.fields[key], doc.reported_date);\n      });\n    }\n    if (doc.contact && doc.contact._id) {\n      emitMaybe('contact:' + doc.contact._id.toLowerCase(), doc.reported_date);\n    }\n  }\n}"
 };
 
-describe('move-contacts', () => {
+describe('hierarchy-operations', () => {
   let pouchDb, scenarioCount = 0;
   const writtenDocs = [];
   const getWrittenDoc = docId => {
@@ -55,7 +55,7 @@ describe('move-contacts', () => {
   const updateHierarchyRules = contact_types => upsert('settings', { settings: { contact_types } });
 
   beforeEach(async () => {
-    pouchDb = new PouchDB(`move-contacts-${scenarioCount++}`);
+    pouchDb = new PouchDB(`hierarchy-operations-${scenarioCount++}`);
 
     await mockHierarchy(pouchDb, {
       district_1: {
@@ -407,7 +407,7 @@ describe('move-contacts', () => {
       });
   
       // action 
-      await HierarchyOperations(pouchDb).merge(['district_2'], 'district_1');
+      await HierarchyOperations(pouchDb, { disableUsers: true }).merge(['district_2'], 'district_1');
   
       // assert
       expectWrittenDocs([
@@ -421,6 +421,7 @@ describe('move-contacts', () => {
       expect(getWrittenDoc('district_2')).to.deep.eq({
         _id: 'district_2',
         _deleted: true,
+        cht_disable_linked_users: true,
       });
   
       expect(getWrittenDoc('health_center_2')).to.deep.eq({
@@ -498,6 +499,7 @@ describe('move-contacts', () => {
       expect(getWrittenDoc('patient_2')).to.deep.eq({
         _id: 'patient_2',
         _deleted: true,
+        cht_disable_linked_users: false,
       });
   
       expect(getWrittenDoc('pat2')).to.deep.eq({

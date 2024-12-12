@@ -1,9 +1,11 @@
 const path = require('path');
 const minimist = require('minimist');
+const semver = require('semver');
 
 const api = require('../lib/api');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
+const { getValidApiVersion } = require('../lib/get-api-version');
 const log = require('../lib/log');
 const pouch = require('../lib/db');
 const progressBar = require('../lib/progress-bar');
@@ -37,10 +39,8 @@ async function execute() {
 
   warnAndPrompt(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
 
-  if (args['disable-users']) {
-    const deletedDocIds = analysis.map(result => result.delete).filter(Boolean);
-    await handleUsersAtDeletedFacilities(deletedDocIds);
-  }
+  const deletedDocIds = analysis.map(result => result.delete).filter(Boolean);
+  await handleUsersAtDeletedFacilities(deletedDocIds);
 
   const results = { ok:[], failed:{} };
   const progress = log.level > log.LEVEL_ERROR ? progressBar.init(totalCount, '{{n}}/{{N}} docs ', ' {{%}} {{m}}:{{s}}') : null;
@@ -117,7 +117,7 @@ function analyseFiles(filePaths) {
         return { error: `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.` };
       }
 
-      if (json._deleted) {
+      if (json._deleted && json.cht_disable_linked_users) {
         return { delete: json._id };
       }
     })
@@ -125,9 +125,12 @@ function analyseFiles(filePaths) {
 }
 
 async function handleUsersAtDeletedFacilities(deletedDocIds) {
+  await assertCoreVersion();
+  
   const affectedUsers = await getAffectedUsers(deletedDocIds);
   const usernames = affectedUsers.map(userDoc => userDoc.username).join(', ');
   if (affectedUsers.length === 0) {
+    trace('No users found needing an update.');
     return;
   }
 
@@ -135,14 +138,24 @@ async function handleUsersAtDeletedFacilities(deletedDocIds) {
   await updateAffectedUsers(affectedUsers);
 }
 
+async function assertCoreVersion() {
+  const actualCoreVersion = await getValidApiVersion();
+  if (semver.lt(actualCoreVersion, '4.7.0-dev')) {
+    throw Error(`CHT Core Version 4.7.0 or newer is required to use --disable-users options. Version is ${actualCoreVersion}.`);
+  }
+
+  trace(`Core version is ${actualCoreVersion}. Proceeding to disable users.`);
+}
 
 async function getAffectedUsers(deletedDocIds) {
-  const toPostApiFormat = (apiResponse) => ({
-    _id: apiResponse.id,
-    _rev: apiResponse.rev,
-    username: apiResponse.username,
-    place: apiResponse.place?.filter(Boolean).map(place => place._id),
-  });
+  const toPostApiFormat = (apiResponse) => {
+    const places = Array.isArray(apiResponse.place) ? apiResponse.place.filter(Boolean) : [apiResponse.place];
+    const placeIds = places.map(place => place?._id);
+    return {
+      username: apiResponse.username,
+      place: placeIds,
+    };
+  };
 
   const knownUserDocs = {};
   for (const facilityId of deletedDocIds) {

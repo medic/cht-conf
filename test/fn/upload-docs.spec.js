@@ -1,4 +1,6 @@
-const { expect, assert } = require('chai');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+
 const rewire = require('rewire');
 const sinon = require('sinon');
 
@@ -6,11 +8,16 @@ const apiStub = require('../api-stub');
 const environment = require('../../src/lib/environment');
 let uploadDocs = rewire('../../src/fn/upload-docs');
 const userPrompt = rewire('../../src/lib/user-prompt');
+
+const { assert, expect } = chai;
+chai.use(chaiAsPromised);
 let readLine = { keyInYN: () => true };
 userPrompt.__set__('readline', readLine);
 uploadDocs.__set__('userPrompt', userPrompt);
 
 let fs, expectedDocs;
+
+const API_VERSION_RESPONSE = { status: 200, body: { version: '4.10.0' }};
 
 describe('upload-docs', function() {
   beforeEach(() => {
@@ -41,6 +48,8 @@ describe('upload-docs', function() {
   });
 
   it('should upload docs to pouch', async () => {
+    apiStub.giveResponses(API_VERSION_RESPONSE);
+
     await assertDbEmpty();
     await uploadDocs.execute();
     const res = await apiStub.db.allDocs();
@@ -82,6 +91,7 @@ describe('upload-docs', function() {
     expectedDocs = new Array(10).fill('').map((x, i) => ({ _id: i.toString() }));
     const clock = sinon.useFakeTimers(0);
     const imported_date = new Date().toISOString();
+    apiStub.giveResponses(API_VERSION_RESPONSE);
     return uploadDocs.__with__({
       INITIAL_BATCH_SIZE: 4,
       Date,
@@ -117,17 +127,12 @@ describe('upload-docs', function() {
 
   it('should throw if user denies the warning', async () => {
     userPrompt.__set__('readline', { keyInYN: () => false });
-    await assertDbEmpty();
-    await uploadDocs.execute()
-      .then(() => {
-        assert.fail('Expected error to be thrown');
-      })
-      .catch(err => {
-        expect(err.message).to.equal('User aborted execution.');
-      });
+    const actual = uploadDocs.execute();
+    await expect(actual).to.eventually.be.rejectedWith('User aborted execution.');
   });
 
   it('should not throw if force is set', async () => {
+    apiStub.giveResponses(API_VERSION_RESPONSE);
     userPrompt.__set__('environment', { force: () => true });
     await assertDbEmpty();
     sinon.stub(process, 'exit');
@@ -156,8 +161,40 @@ describe('upload-docs', function() {
       expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
 
       assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} },
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
         { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
+      ]);
+    });
+
+    it('user with single place gets deleted (old core api format)', async () => {
+      await setupDeletedFacilities('one');
+      setupApiResponses(1, [{ id: 'org.couchdb.user:user1', username: 'user1', place: { _id: 'one' } }]);
+
+      await uploadDocs.execute();
+      const res = await apiStub.db.allDocs();
+      expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
+
+      assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} },
+        { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
+        { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
+      ]);
+    });
+
+    it('users associated with docs without truthy deleteUser attribute are not deleted', async () => {
+      const writtenDoc = await apiStub.db.put({ _id: 'one' });
+      apiStub.giveResponses(API_VERSION_RESPONSE);
+
+      const oneDoc = expectedDocs[0];
+      oneDoc._rev = writtenDoc.rev;
+      oneDoc._deleted = true;
+
+      await uploadDocs.execute();
+      const res = await apiStub.db.allDocs();
+      expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
+      assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} }
       ]);
     });
 
@@ -170,11 +207,11 @@ describe('upload-docs', function() {
       expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
 
       const expectedBody = {
-        _id: 'org.couchdb.user:user1',
         username: 'user1',
         place: [ 'two' ],
       };
       assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} },
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
         { method: 'POST', url: '/api/v1/users/user1', body: expectedBody },
       ]);
@@ -190,13 +227,14 @@ describe('upload-docs', function() {
       expect(res.rows.map(doc => doc.id)).to.deep.eq(['three']);
 
       assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} },
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
         { method: 'GET', url: '/api/v2/users?facility_id=two', body: {} },
         { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
       ]);
     });
 
-    it('two users disabled when single place has multiple users', async () => {
+    it('one user disabled and one updated when single place has multiple users', async () => {
       await setupDeletedFacilities('one');
       setupApiResponses(2, [
         { id: 'org.couchdb.user:user1', username: 'user1', place: [{ _id: 'one' }] },
@@ -208,11 +246,11 @@ describe('upload-docs', function() {
       expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
 
       const expectedUser2 = {
-        _id: 'org.couchdb.user:user2',
         username: 'user2',
         place: ['two'],
       };
       assert.deepEqual(apiStub.requestLog(), [
+        { method: 'GET', url: '/api/deploy-info', body: {} },
         { method: 'GET', url: '/api/v2/users?facility_id=one', body: {} },
         { method: 'DELETE', url: '/api/v1/users/user1', body: {} },
         { method: 'POST', url: '/api/v1/users/user2', body: expectedUser2 },
@@ -225,6 +263,7 @@ function setupApiResponses(writeCount, ...userDocResponseRows) {
   const responseBodies = userDocResponseRows.map(body => ({ body }));
   const writeResponses = new Array(writeCount).fill({ status: 200 });
   apiStub.giveResponses(
+    API_VERSION_RESPONSE,
     ...responseBodies,
     ...writeResponses,
   );
@@ -236,7 +275,7 @@ async function setupDeletedFacilities(...docIds) {
     const expected = expectedDocs.find(doc => doc._id === id);
     expected._rev = writtenDoc.rev;
     expected._deleted = true;
-    expected.disableUsers = true;
+    expected.cht_disable_linked_users = true;
   }
 }
 

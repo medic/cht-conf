@@ -34,6 +34,7 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
         _id: sourceDoc._id,
         _rev: sourceDoc._rev,
         _deleted: true,
+        cht_disable_linked_users: !!options.disableUsers,
       });
     }
         
