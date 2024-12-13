@@ -37,7 +37,7 @@ async function execute() {
     throw new Error(`upload-docs: ${errors.join('\n')}`);
   }
 
-  warnAndPrompt(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
+  userPrompt.warnPromptAbort(`This operation will permanently write ${totalCount} docs.  Are you sure you want to continue?`);
 
   const deletedDocIds = analysis.map(result => result.delete).filter(Boolean);
   await handleUsersAtDeletedFacilities(deletedDocIds);
@@ -100,13 +100,6 @@ async function execute() {
   return processNextBatch(filenamesToUpload, INITIAL_BATCH_SIZE);
 }
 
-function warnAndPrompt(warningMessage) {
-  warn(warningMessage);
-  if (!userPrompt.keyInYN()) {
-    throw new Error('User aborted execution.');
-  }
-}
-
 function analyseFiles(filePaths) {
   return filePaths
     .map(filePath => {
@@ -117,7 +110,7 @@ function analyseFiles(filePaths) {
         return { error: `File '${filePath}' sets _id:'${json._id}' but the file's expected _id is '${idFromFilename}'.` };
       }
 
-      if (json._deleted && json.disableUsers) {
+      if (json._deleted && json.cht_disable_linked_users) {
         return { delete: json._id };
       }
     })
@@ -125,8 +118,12 @@ function analyseFiles(filePaths) {
 }
 
 async function handleUsersAtDeletedFacilities(deletedDocIds) {
-  await assertCoreVersion();
+  if (!deletedDocIds?.length) {
+    return;
+  }
 
+  await assertCoreVersion();
+  
   const affectedUsers = await getAffectedUsers(deletedDocIds);
   const usernames = affectedUsers.map(userDoc => userDoc.username).join(', ');
   if (affectedUsers.length === 0) {
@@ -134,7 +131,7 @@ async function handleUsersAtDeletedFacilities(deletedDocIds) {
     return;
   }
 
-  warnAndPrompt(`This operation will update permissions for ${affectedUsers.length} user accounts: ${usernames}. Are you sure you want to continue?`);
+  userPrompt.warnPromptAbort(`This operation will update ${affectedUsers.length} user accounts: ${usernames} and cannot be undone. Are you sure you want to continue?`);
   await updateAffectedUsers(affectedUsers);
 }
 
@@ -152,8 +149,6 @@ async function getAffectedUsers(deletedDocIds) {
     const places = Array.isArray(apiResponse.place) ? apiResponse.place.filter(Boolean) : [apiResponse.place];
     const placeIds = places.map(place => place?._id);
     return {
-      _id: apiResponse.id,
-      _rev: apiResponse.rev,
       username: apiResponse.username,
       place: placeIds,
     };

@@ -698,7 +698,7 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc('district_2')).to.deep.eq({
         _id: 'district_2',
         _deleted: true,
-        disableUsers: true,
+        cht_disable_linked_users: true,
       });
   
       expect(getWrittenDoc('health_center_2')).to.deep.eq({
@@ -777,7 +777,7 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc('patient_2')).to.deep.eq({
         _id: 'patient_2',
         _deleted: true,
-        disableUsers: false,
+        cht_disable_linked_users: false,
       });
   
       expect(getWrittenDoc('pat2')).to.deep.eq({
@@ -798,7 +798,7 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc(id)).to.deep.eq({
         _id: id,
         _deleted: true,
-        disableUsers,
+        cht_disable_linked_users: disableUsers,
       });
     };
 

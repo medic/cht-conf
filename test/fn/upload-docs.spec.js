@@ -47,8 +47,6 @@ describe('upload-docs', function() {
   });
 
   it('should upload docs to pouch', async () => {
-    apiStub.giveResponses(API_VERSION_RESPONSE);
-    
     await assertDbEmpty();
     await uploadDocs.execute();
     const res = await apiStub.db.allDocs();
@@ -90,7 +88,6 @@ describe('upload-docs', function() {
     expectedDocs = new Array(10).fill('').map((x, i) => ({ _id: i.toString() }));
     const clock = sinon.useFakeTimers(0);
     const imported_date = new Date().toISOString();
-    apiStub.giveResponses(API_VERSION_RESPONSE);
     return uploadDocs.__with__({
       INITIAL_BATCH_SIZE: 4,
       Date,
@@ -126,13 +123,11 @@ describe('upload-docs', function() {
 
   it('should throw if user denies the warning', async () => {
     userPrompt.__set__('readline', { keyInYN: () => false });
-    await assertDbEmpty();
     const actual = uploadDocs.execute();
     await expect(actual).to.eventually.be.rejectedWith('User aborted execution.');
   });
 
   it('should not throw if force is set', async () => {
-    apiStub.giveResponses(API_VERSION_RESPONSE);
     userPrompt.__set__('environment', { force: () => true });
     await assertDbEmpty();
     sinon.stub(process, 'exit');
@@ -184,7 +179,6 @@ describe('upload-docs', function() {
 
     it('users associated with docs without truthy deleteUser attribute are not deleted', async () => {
       const writtenDoc = await apiStub.db.put({ _id: 'one' });
-      apiStub.giveResponses(API_VERSION_RESPONSE);
 
       const oneDoc = expectedDocs[0];
       oneDoc._rev = writtenDoc.rev;
@@ -193,9 +187,7 @@ describe('upload-docs', function() {
       await uploadDocs.execute();
       const res = await apiStub.db.allDocs();
       expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
-      assert.deepEqual(apiStub.requestLog(), [
-        { method: 'GET', url: '/api/deploy-info', body: {} }
-      ]);
+      assert.deepEqual(apiStub.requestLog(), []);
     });
 
     it('user with multiple places gets updated', async () => {
@@ -207,7 +199,6 @@ describe('upload-docs', function() {
       expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
 
       const expectedBody = {
-        _id: 'org.couchdb.user:user1',
         username: 'user1',
         place: [ 'two' ],
       };
@@ -235,7 +226,7 @@ describe('upload-docs', function() {
       ]);
     });
 
-    it('two users disabled when single place has multiple users', async () => {
+    it('one user disabled and one updated when single place has multiple users', async () => {
       await setupDeletedFacilities('one');
       setupApiResponses(2, [
         { id: 'org.couchdb.user:user1', username: 'user1', place: [{ _id: 'one' }] },
@@ -247,7 +238,6 @@ describe('upload-docs', function() {
       expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
 
       const expectedUser2 = {
-        _id: 'org.couchdb.user:user2',
         username: 'user2',
         place: ['two'],
       };
@@ -277,7 +267,7 @@ async function setupDeletedFacilities(...docIds) {
     const expected = expectedDocs.find(doc => doc._id === id);
     expected._rev = writtenDoc.rev;
     expected._deleted = true;
-    expected.disableUsers = true;
+    expected.cht_disable_linked_users = true;
   }
 }
 
