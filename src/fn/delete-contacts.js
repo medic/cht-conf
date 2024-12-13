@@ -25,7 +25,7 @@ module.exports = {
 const parseExtraArgs = (projectDir, extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
 
-  const sourceIds = (args.ids || args.id || '')
+  const sourceIds = (args.contacts || args.contact || '')
     .split(',')
     .filter(id => id);
 
@@ -52,7 +52,7 @@ ${bold('USAGE')}
 cht --local delete-contacts -- --ids=<id1>,<id2>
 
 ${bold('OPTIONS')}
---ids=<id1>,<id2>
+--contacts=<id1>,<id2>  (or --contact=<id1>,<id2>)
   A comma delimited list of ids of contacts to be deleted.
 
 --disable-users
