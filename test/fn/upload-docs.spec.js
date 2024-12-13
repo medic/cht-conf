@@ -180,7 +180,6 @@ describe('upload-docs', function() {
 
     it('users associated with docs without truthy deleteUser attribute are not deleted', async () => {
       const writtenDoc = await apiStub.db.put({ _id: 'one' });
-      apiStub.giveResponses(API_VERSION_RESPONSE);
 
       const oneDoc = expectedDocs[0];
       oneDoc._rev = writtenDoc.rev;
@@ -189,9 +188,7 @@ describe('upload-docs', function() {
       await uploadDocs.execute();
       const res = await apiStub.db.allDocs();
       expect(res.rows.map(doc => doc.id)).to.deep.eq(['three', 'two']);
-      assert.deepEqual(apiStub.requestLog(), [
-        { method: 'GET', url: '/api/deploy-info', body: {} }
-      ]);
+      assert.deepEqual(apiStub.requestLog(), []);
     });
 
     it('user with multiple places gets updated', async () => {
