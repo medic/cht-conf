@@ -13,6 +13,7 @@ module.exports = {
     const args = parseExtraArgs(environment.pathToProject, environment.extraArgs);
     const db = pouch();
     const options = {
+      disableUsers: args.disableUsers,
       docDirectoryPath: args.docDirectoryPath,
       force: args.force,
     };
@@ -41,6 +42,7 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
   return {
     destinationId: args.destination,
     sourceIds,
+    disableUsers: !!args['disable-users'],
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
   };
@@ -62,6 +64,9 @@ ${bold('OPTIONS')}
 
 --sources=<source_id1>,<source_id2>
   A comma delimited list of IDs of contacts which will be deleted. The hierarchy of contacts and reports under it will be moved to be under the destination contact.
+
+--disable-users
+  When flag is present, users at any deleted place will be updated and may be permanently disabled. Supported by CHT Core 4.7 and above.
 
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
