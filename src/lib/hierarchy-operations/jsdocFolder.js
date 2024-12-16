@@ -30,7 +30,17 @@ function deleteAfterConfirmation(docDirectoryPath) {
   fs.deleteFilesInFolder(docDirectoryPath);
 }
 
+function deleteDoc(options, doc, disableUsers) {
+  writeDoc(options, {
+    _id: doc._id,
+    _rev: doc._rev,
+    _deleted: true,
+    cht_disable_linked_users: !!disableUsers,
+  });
+}
+
 module.exports = {
+  deleteDoc,
   prepareFolder,
   writeDoc,
 };

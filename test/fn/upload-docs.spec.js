@@ -1,6 +1,5 @@
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
-
 const rewire = require('rewire');
 const sinon = require('sinon');
 

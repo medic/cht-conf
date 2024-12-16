@@ -5,7 +5,7 @@ const { trace } = log;
 const lineageManipulation = require('./lineage-manipulation');
 
 module.exports = async (db, options) => {
-  const mapTypeToAllowedParents = await fetchAllowedParents(db);
+  const contactTypeInfo = await fetchContactTypeInfo(db);
 
   return {
     assertNoPrimaryContactViolations: async (sourceDoc, destinationDoc, descendantDocs) => {
@@ -20,7 +20,7 @@ module.exports = async (db, options) => {
         const commonViolations = getCommonViolations(sourceDoc, destinationDoc);
         const specificViolation = options.merge ?
           getMergeViolations(sourceDoc, destinationDoc)
-          : getMovingViolations(mapTypeToAllowedParents, sourceDoc, destinationDoc);
+          : getMovingViolations(contactTypeInfo, sourceDoc, destinationDoc);
 
         const hierarchyError = commonViolations || specificViolation;
         if (hierarchyError) {
@@ -41,7 +41,12 @@ module.exports = async (db, options) => {
             throw Error(`Unable to move two documents from the same lineage: '${doc._id}' and '${violatingParentId}'`);
           }
         });
-    }    
+    },
+
+    isPlace: (contact) => {
+      const contactType = getContactType(contact);
+      return !contactTypeInfo[contactType]?.person;
+    },
   };
 };
 
@@ -49,22 +54,22 @@ module.exports = async (db, options) => {
 Enforce the list of allowed parents for each contact type
 Ensure we are not creating a circular hierarchy
 */
-const getMovingViolations = (mapTypeToAllowedParents, sourceDoc, destinationDoc) => {
-  const contactTypeError = getMovingContactTypeError(mapTypeToAllowedParents, sourceDoc, destinationDoc);
+const getMovingViolations = (contactTypeInfo, sourceDoc, destinationDoc) => {
+  const contactTypeError = getMovingContactTypeError(contactTypeInfo, sourceDoc, destinationDoc);
   const circularHierarchyError = findCircularHierarchyErrors(sourceDoc, destinationDoc);
   return contactTypeError || circularHierarchyError;
 };
 
-function getMovingContactTypeError(mapTypeToAllowedParents, sourceDoc, destinationDoc) {
+function getMovingContactTypeError(contactTypeInfo, sourceDoc, destinationDoc) {
   const sourceContactType = getContactType(sourceDoc);
   const destinationType = getContactType(destinationDoc);
-  const rulesForContact = mapTypeToAllowedParents[sourceContactType];
-  if (!rulesForContact) {
+  const parentsForContactType = contactTypeInfo[sourceContactType]?.parents;
+  if (!parentsForContactType) {
     return `cannot move contact with unknown type '${sourceContactType}'`;
   }
 
-  const isPermittedMoveToRoot = !destinationDoc && rulesForContact.length === 0;
-  if (!isPermittedMoveToRoot && !rulesForContact.includes(destinationType)) {
+  const isPermittedMoveToRoot = !destinationDoc && parentsForContactType.length === 0;
+  if (!isPermittedMoveToRoot && !parentsForContactType.includes(destinationType)) {
     return `contacts of type '${sourceContactType}' cannot have parent of type '${destinationType}'`;
   }
 }
@@ -139,9 +144,9 @@ const getPrimaryContactViolations = async (db, contactDoc, destinationDoc, desce
   return descendantDocs.find(descendant => primaryContactIds.some(primaryId => descendant._id === primaryId));
 };
 
-const getContactType = doc => doc && (doc.type === 'contact' ? doc.contact_type : doc.type);
+const getContactType = doc => doc?.type === 'contact' ? doc?.contact_type : doc?.type;
 
-async function fetchAllowedParents(db) {
+async function fetchContactTypeInfo(db) {
   try {
     const { settings: { contact_types } } = await db.get('settings');
 
@@ -150,7 +155,7 @@ async function fetchAllowedParents(db) {
       const parentDict = {};
       contact_types
         .filter(Boolean)
-        .forEach(({ id, parents }) => parentDict[id] = parents);
+        .forEach(({ id, person, parents }) => parentDict[id] = { parents, person: !!person });
       return parentDict;
     }
   } catch (err) {
@@ -161,10 +166,10 @@ async function fetchAllowedParents(db) {
 
   trace('Default hierarchy constraints will be enforced.');
   return {
-    district_hospital: [],
-    health_center: ['district_hospital'],
-    clinic: ['health_center'],
-    person: ['district_hospital', 'health_center', 'clinic'],
+    district_hospital: { parents: [] },
+    health_center: { parents: ['district_hospital'] },
+    clinic: { parents: ['health_center'] },
+    person: { parents: ['district_hospital', 'health_center', 'clinic'], person: true },
   };
 }
 
