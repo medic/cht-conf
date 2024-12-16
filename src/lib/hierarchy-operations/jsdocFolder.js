@@ -35,7 +35,7 @@ function deleteDoc(options, doc, disableUsers) {
     _id: doc._id,
     _rev: doc._rev,
     _deleted: true,
-    disableUsers: !!disableUsers,
+    cht_disable_linked_users: !!disableUsers,
   });
 }
 

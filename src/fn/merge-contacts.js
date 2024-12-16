@@ -68,7 +68,7 @@ ${bold('OPTIONS')}
   A comma delimited list of IDs of contacts which will be deleted. The hierarchy of contacts and reports under it will be moved to be under the destination contact.
 
 --disable-users
-  When flag is present, users at any deleted place will be permanently disabled.
+  When flag is present, users at any deleted place will be updated and may be permanently disabled. Supported by CHT Core 4.7 and above.
 
 --merge-primary-contacts
   When flag is present, the primary contacts for all the top-level places will also be merged into a single resulting contact.

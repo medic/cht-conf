@@ -1,3 +1,17 @@
+# [4.4.0](https://github.com/medic/cht-conf/compare/v4.3.0...v4.4.0) (2024-12-16)
+
+
+### Features
+
+* **#650:** delete-contacts action ([#652](https://github.com/medic/cht-conf/issues/652)) ([129f38f](https://github.com/medic/cht-conf/commit/129f38fca83fa84717c7ba16857b315c25d33b9e)), closes [#650](https://github.com/medic/cht-conf/issues/650)
+
+# [4.3.0](https://github.com/medic/cht-conf/compare/v4.2.0...v4.3.0) (2024-12-16)
+
+
+### Features
+
+* **#648:** add --disable-users command for merge-contacts action ([#649](https://github.com/medic/cht-conf/issues/649)) ([c78d3fd](https://github.com/medic/cht-conf/commit/c78d3fd1ed1588cfefdf21384840743f5faea62d)), closes [#648](https://github.com/medic/cht-conf/issues/648)
+
 # [4.2.0](https://github.com/medic/cht-conf/compare/v4.1.3...v4.2.0) (2024-12-11)
 
 

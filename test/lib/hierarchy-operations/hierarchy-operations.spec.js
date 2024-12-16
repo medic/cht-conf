@@ -671,7 +671,7 @@ describe('hierarchy-operations', () => {
         patientId: 'district_2_contact'
       });
     });
-
+    
     it('merge district_2 into district_1', async () => {
       // setup
       await mockReport(pouchDb, {
@@ -706,7 +706,7 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc('district_2')).to.deep.eq({
         _id: 'district_2',
         _deleted: true,
-        disableUsers: true,
+        cht_disable_linked_users: true,
       });
   
       expect(getWrittenDoc('health_center_2')).to.deep.eq({
@@ -795,7 +795,7 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc('patient_2')).to.deep.eq({
         _id: 'patient_2',
         _deleted: true,
-        disableUsers: false,
+        cht_disable_linked_users: false,
       });
   
       expect(getWrittenDoc('pat2')).to.deep.eq({
@@ -824,7 +824,7 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc('district_2_contact')).to.deep.eq({
         _id: 'district_2_contact',
         _deleted: true,
-        disableUsers: false,
+        cht_disable_linked_users: false,
       });
 
       expect(getWrittenDoc('district_primary_contact_report')).to.deep.eq({
@@ -837,7 +837,7 @@ describe('hierarchy-operations', () => {
         }
       });
     });
-    
+
     it('--merge-primary-contacts when no primary contact on source', async () => {
       await upsert('district_2', {
         type: 'district_hospital',
@@ -912,7 +912,7 @@ describe('hierarchy-operations', () => {
       expect(getWrittenDoc(id)).to.deep.eq({
         _id: id,
         _deleted: true,
-        disableUsers,
+        cht_disable_linked_users: disableUsers,
       });
     };
 
@@ -970,6 +970,464 @@ describe('hierarchy-operations', () => {
 
       const writtenIds = writtenDocs.map(doc => doc._id);
       expect(writtenIds).to.not.include(['other_report']);
+    });
+
+    it('move district_1 from root', async () => {
+      await updateHierarchyRules([{ id: 'district_hospital', parents: ['district_hospital'] }]);
+
+      await HierarchyOperations(pouchDb).move(['district_1'], 'district_2');
+
+      expect(getWrittenDoc('district_1')).to.deep.eq({
+        _id: 'district_1',
+        type: 'district_hospital',
+        contact: parentsToLineage('district_1_contact', 'district_1', 'district_2'),
+        parent: parentsToLineage('district_2'),
+      });
+
+      expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
+        _id: 'health_center_1_contact',
+        type: 'person',
+        parent: parentsToLineage('health_center_1', 'district_1', 'district_2'),
+      });
+
+      expect(getWrittenDoc('health_center_1')).to.deep.eq({
+        _id: 'health_center_1',
+        type: 'health_center',
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1', 'district_2'),
+        parent: parentsToLineage('district_1', 'district_2'),
+      });
+
+      expect(getWrittenDoc('clinic_1')).to.deep.eq({
+        _id: 'clinic_1',
+        type: 'clinic',
+        contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_1', 'district_2'),
+        parent: parentsToLineage('health_center_1', 'district_1', 'district_2'),
+      });
+
+      expect(getWrittenDoc('patient_1')).to.deep.eq({
+        _id: 'patient_1',
+        type: 'person',
+        parent: parentsToLineage('clinic_1', 'health_center_1', 'district_1', 'district_2'),
+      });
+
+      expect(getWrittenDoc('report_1')).to.deep.eq({
+        _id: 'report_1',
+        form: 'foo',
+        type: 'data_record',
+        fields: {},
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1', 'district_2'),
+      });
+    });
+
+    it('move district_1 to flexible hierarchy parent', async () => {
+      await pouchDb.put({
+        _id: `county_1`,
+        type: 'contact',
+        contact_type: 'county',
+      });
+
+      await updateHierarchyRules([
+        { id: 'county', parents: [] },
+        { id: 'district_hospital', parents: ['county'] },
+      ]);
+
+      await HierarchyOperations(pouchDb).move(['district_1'], 'county_1');
+
+      expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
+        _id: 'health_center_1_contact',
+        type: 'person',
+        parent: parentsToLineage('health_center_1', 'district_1', 'county_1'),
+      });
+
+      expect(getWrittenDoc('health_center_1')).to.deep.eq({
+        _id: 'health_center_1',
+        type: 'health_center',
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1', 'county_1'),
+        parent: parentsToLineage('district_1', 'county_1'),
+      });
+
+      expect(getWrittenDoc('clinic_1')).to.deep.eq({
+        _id: 'clinic_1',
+        type: 'clinic',
+        contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_1', 'county_1'),
+        parent: parentsToLineage('health_center_1', 'district_1', 'county_1'),
+      });
+
+      expect(getWrittenDoc('patient_1')).to.deep.eq({
+        _id: 'patient_1',
+        type: 'person',
+        parent: parentsToLineage('clinic_1', 'health_center_1', 'district_1', 'county_1'),
+      });
+
+      expect(getWrittenDoc('report_1')).to.deep.eq({
+        _id: 'report_1',
+        form: 'foo',
+        type: 'data_record',
+        fields: {},
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1', 'county_1'),
+      });
+    });
+
+    it('moves flexible hierarchy contact to flexible hierarchy parent', async () => {
+      await updateHierarchyRules([
+        { id: 'county', parents: [] },
+        { id: 'subcounty', parents: ['county'] },
+        { id: 'focal', parents: ['county', 'subcounty'], person: true }
+      ]);
+
+      await pouchDb.bulkDocs([
+        { _id: `county`, type: 'contact', contact_type: 'county' },
+        { _id: `subcounty`, type: 'contact', contact_type: 'subcounty', parent: { _id: 'county' } },
+        { _id: `focal`, type: 'contact', contact_type: 'focal', parent: { _id: 'county' } },
+      ]);
+
+      await mockReport(pouchDb, {
+        id: 'report_focal',
+        creatorId: 'focal',
+      });
+
+      await HierarchyOperations(pouchDb).move(['focal'], 'subcounty');
+
+      expect(getWrittenDoc('focal')).to.deep.eq({
+        _id: 'focal',
+        type: 'contact',
+        contact_type: 'focal',
+        parent: parentsToLineage('subcounty', 'county'),
+      });
+
+      expect(getWrittenDoc('report_focal')).to.deep.eq({
+        _id: 'report_focal',
+        form: 'foo',
+        type: 'data_record',
+        fields: {},
+        contact: parentsToLineage('focal', 'subcounty', 'county'),
+      });
+    });
+
+    it('moving primary contact updates parents', async () => {
+      await mockHierarchy(pouchDb, {
+        t_district_1: {
+          t_health_center_1: {
+            t_clinic_1: {
+              t_patient_1: {},
+            },
+            t_clinic_2: {
+              t_patient_2: {},
+            }
+          },
+        },
+      });
+
+      const patient1Lineage = parentsToLineage('t_patient_1', 't_clinic_1', 't_health_center_1', 't_district_1');
+      await upsert('t_health_center_1', {
+        type: 'health_center',
+        contact: patient1Lineage,
+        parent: parentsToLineage('t_district_1'),
+      });
+
+      await upsert('t_district_1', {
+        type: 'district_hospital',
+        contact: patient1Lineage,
+        parent: parentsToLineage(),
+      });
+
+      await HierarchyOperations(pouchDb).move(['t_patient_1'], 't_clinic_2');
+
+      expect(getWrittenDoc('t_health_center_1')).to.deep.eq({
+        _id: 't_health_center_1',
+        type: 'health_center',
+        contact: parentsToLineage('t_patient_1', 't_clinic_2', 't_health_center_1', 't_district_1'),
+        parent: parentsToLineage('t_district_1'),
+      });
+
+      expect(getWrittenDoc('t_district_1')).to.deep.eq({
+        _id: 't_district_1',
+        type: 'district_hospital',
+        contact: parentsToLineage('t_patient_1', 't_clinic_2', 't_health_center_1', 't_district_1'),
+      });
+
+      expectWrittenDocs(['t_patient_1', 't_district_1', 't_health_center_1']);
+    });
+
+    // We don't want lineage { id, parent: '' } to result from district_hospitals which have parent: ''
+    it('district_hospital with empty string parent is not preserved', async () => {
+      await upsert('district_2', { parent: '', type: 'district_hospital' });
+      await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
+
+      expect(getWrittenDoc('health_center_1')).to.deep.eq({
+        _id: 'health_center_1',
+        type: 'health_center',
+        contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+        parent: parentsToLineage('district_2'),
+      });
+    });
+
+    it('documents should be minified', async () => {
+      await updateHierarchyRules([{ id: 'clinic', parents: ['district_hospital'] }]);
+      const patient = {
+        parent: parentsToLineage('clinic_1', 'health_center_1', 'district_1'),
+        type: 'person',
+        important: true,
+      };
+      const clinic = {
+        parent: parentsToLineage('health_center_1', 'district_1'),
+        type: 'clinic',
+        important: true,
+      };
+      patient.parent.important = false;
+      clinic.parent.parent.important = false;
+  
+      await upsert('clinic_1', clinic);
+      await upsert('patient_1', patient);
+  
+      await HierarchyOperations(pouchDb).move(['clinic_1'], 'district_2');
+  
+      expect(getWrittenDoc('clinic_1')).to.deep.eq({
+        _id: 'clinic_1',
+        type: 'clinic',
+        important: true,
+        parent: parentsToLineage('district_2'),
+      });
+      expect(getWrittenDoc('patient_1')).to.deep.eq({
+        _id: 'patient_1',
+        type: 'person',
+        important: true,
+        parent: parentsToLineage('clinic_1', 'district_2'),
+      });
+    });
+  
+    it('cannot create circular hierarchy', async () => {
+      // even if the hierarchy rules allow it
+      await updateHierarchyRules([{ id: 'health_center', parents: ['clinic'] }]);
+      const actual = HierarchyOperations(pouchDb).move(['health_center_1'], 'clinic_1');
+      await expect(actual).to.eventually.be.rejectedWith('circular');
+    });
+  
+    it('throw if parent does not exist', async () => {
+      const actual = HierarchyOperations(pouchDb).move(['clinic_1'], 'dne_parent_id');
+      await expect(actual).to.eventually.rejectedWith('could not be found');
+    });
+  
+    it('throw when altering same lineage', async () => {
+      const actual = HierarchyOperations(pouchDb).move(['patient_1', 'health_center_1'], 'district_2');
+      await expect(actual).to.eventually.rejectedWith('same lineage');
+    });
+  
+    it('throw if contact_id is not a contact', async () => {
+      const actual = HierarchyOperations(pouchDb).move(['report_1'], 'clinic_1');
+      await expect(actual).to.eventually.rejectedWith('unknown type');
+    });
+  
+    it('throw if moving primary contact of parent', async () => {
+      const actual = HierarchyOperations(pouchDb).move(['clinic_1_contact'], 'district_1');
+      await expect(actual).to.eventually.rejectedWith('primary contact');
+    });
+  
+    it('throw if setting parent to self', async () => {
+      await updateHierarchyRules([{ id: 'clinic', parents: ['clinic'] }]);
+      const actual = HierarchyOperations(pouchDb).move(['clinic_1'], 'clinic_1');
+      await expect(actual).to.eventually.rejectedWith('itself');
+    });
+  
+    it('throw when moving place to unconfigured parent', async () => {
+      await updateHierarchyRules([{ id: 'district_hospital', parents: [] }]);
+      const actual = HierarchyOperations(pouchDb).move(['district_1'], 'district_2');
+      await expect(actual).to.eventually.rejectedWith('parent of type');
+    });
+
+    it('throw if source does not exist', async () => {
+      const nonExistentId = 'dne_parent_id';
+      const actual = HierarchyOperations(pouchDb).move(['health_center_1',  nonExistentId], 'district_2');
+      await expect(actual).to.eventually.rejectedWith(`Contact with id '${nonExistentId}' could not be found.`);
+    });
+
+    it('throw if ancestor does not exist', async () => {
+      const sourceId = 'health_center_1';
+      await upsert(sourceId, {
+        type: 'health_center',
+        name: 'no parent',
+        parent: parentsToLineage('dne'),
+      });
+
+      const actual = HierarchyOperations(pouchDb).move([sourceId], 'district_2');
+      await expect(actual).to.eventually.rejectedWith(
+        `(${sourceId}) has parent id(s) 'dne' which could not be found.`
+      );
+    });
+  
+    describe('batching works as expected', () => {
+      const initialBatchSize = DataSource.BATCH_SIZE;
+      beforeEach(async () => {
+        await mockReport(pouchDb, {
+          id: 'report_2',
+          creatorId: 'health_center_1_contact',
+        });
+  
+        await mockReport(pouchDb, {
+          id: 'report_3',
+          creatorId: 'health_center_1_contact',
+        });
+  
+        await mockReport(pouchDb, {
+          id: 'report_4',
+          creatorId: 'health_center_1_contact',
+        });
+      });
+  
+      afterEach(() => {
+        DataSource.BATCH_SIZE = initialBatchSize;
+        DataSource.__set__('BATCH_SIZE', initialBatchSize);
+      });
+  
+      it('move health_center_1 to district_2 in batches of 1', async () => {
+        DataSource.__set__('BATCH_SIZE', 1);
+        DataSource.BATCH_SIZE = 1;
+        sinon.spy(pouchDb, 'query');
+  
+        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
+        
+        expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
+          _id: 'health_center_1_contact',
+          type: 'person',
+          parent: parentsToLineage('health_center_1', 'district_2'),
+        });
+  
+        expect(getWrittenDoc('health_center_1')).to.deep.eq({
+          _id: 'health_center_1',
+          type: 'health_center',
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+          parent: parentsToLineage('district_2'),
+        });
+  
+        expect(getWrittenDoc('clinic_1')).to.deep.eq({
+          _id: 'clinic_1',
+          type: 'clinic',
+          contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_2'),
+          parent: parentsToLineage('health_center_1', 'district_2'),
+        });
+  
+        expect(getWrittenDoc('patient_1')).to.deep.eq({
+          _id: 'patient_1',
+          type: 'person',
+          parent: parentsToLineage('clinic_1', 'health_center_1', 'district_2'),
+        });
+  
+        expect(getWrittenDoc('report_1')).to.deep.eq({
+          _id: 'report_1',
+          form: 'foo',
+          type: 'data_record',
+          fields: {},
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+        });
+  
+        expect(getWrittenDoc('report_2')).to.deep.eq({
+          _id: 'report_2',
+          form: 'foo',
+          type: 'data_record',
+          fields: {},
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+        });
+  
+        expect(getWrittenDoc('report_3')).to.deep.eq({
+          _id: 'report_3',
+          form: 'foo',
+          type: 'data_record',
+          fields: {},
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+        });
+  
+        expect(pouchDb.query.callCount).to.deep.equal(6);
+  
+        const contactIdsKeys = [
+          ['contact:clinic_1'],
+          ['contact:clinic_1_contact'],
+          ['contact:health_center_1'],
+          ['contact:health_center_1_contact'],
+          ['contact:patient_1']
+        ];
+        expect(pouchDb.query.args).to.deep.equal([
+          ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 0, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 1, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 2, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 3, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 4, group_level: undefined }],
+        ]);
+      });
+  
+      it('should health_center_1 to district_1 in batches of 2', async () => {
+        DataSource.__set__('BATCH_SIZE', 2);
+        DataSource.BATCH_SIZE = 2;
+        sinon.spy(pouchDb, 'query');
+  
+        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_1');
+  
+        expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
+          _id: 'health_center_1_contact',
+          type: 'person',
+          parent: parentsToLineage('health_center_1', 'district_1'),
+        });
+  
+        expect(getWrittenDoc('health_center_1')).to.deep.eq({
+          _id: 'health_center_1',
+          type: 'health_center',
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
+          parent: parentsToLineage('district_1'),
+        });
+  
+        expect(getWrittenDoc('clinic_1')).to.deep.eq({
+          _id: 'clinic_1',
+          type: 'clinic',
+          contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_1'),
+          parent: parentsToLineage('health_center_1', 'district_1'),
+        });
+  
+        expect(getWrittenDoc('patient_1')).to.deep.eq({
+          _id: 'patient_1',
+          type: 'person',
+          parent: parentsToLineage('clinic_1', 'health_center_1', 'district_1'),
+        });
+  
+        expect(getWrittenDoc('report_1')).to.deep.eq({
+          _id: 'report_1',
+          form: 'foo',
+          type: 'data_record',
+          fields: {},
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
+        });
+  
+        expect(getWrittenDoc('report_2')).to.deep.eq({
+          _id: 'report_2',
+          form: 'foo',
+          type: 'data_record',
+          fields: {},
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
+        });
+  
+        expect(getWrittenDoc('report_3')).to.deep.eq({
+          _id: 'report_3',
+          form: 'foo',
+          type: 'data_record',
+          fields: {},
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
+        });
+  
+        expect(pouchDb.query.callCount).to.deep.equal(4);
+  
+        const contactIdsKeys = [
+          ['contact:clinic_1'],
+          ['contact:clinic_1_contact'],
+          ['contact:health_center_1'],
+          ['contact:health_center_1_contact'],
+          ['contact:patient_1']
+        ];
+        expect(pouchDb.query.args).to.deep.equal([
+          ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 0, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 2, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 4, group_level: undefined }]
+        ]);
+      });
     });
   });
 });

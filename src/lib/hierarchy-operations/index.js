@@ -205,7 +205,7 @@ function updateContacts(options, constraints, moveContext) {
           _id: descendant._id,
           _rev: descendant._rev,
           _deleted: true,
-          disableUsers: !!toDeleteUsers,
+          cht_disable_linked_users: !!toDeleteUsers,
         };
       }
 

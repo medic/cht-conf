@@ -25,7 +25,7 @@ module.exports = {
 const parseExtraArgs = (projectDir, extraArgs = []) => {
   const args = minimist(extraArgs, { boolean: true });
 
-  const sourceIds = (args.ids || args.id || '')
+  const sourceIds = (args.contacts || args.contact || '')
     .split(',')
     .filter(id => id);
 
@@ -49,14 +49,14 @@ ${bold('cht-conf\'s delete-contacts action')}
 When combined with 'upload-docs' this action recursively deletes a contact and all of their descendant contacts and data. ${bold('This operation is permanent. It cannot be undone.')}
 
 ${bold('USAGE')}
-cht --local delete-contacts -- --ids=<id1>,<id2>
+cht --local delete-contacts -- --contacts=<id1>,<id2>
 
 ${bold('OPTIONS')}
---ids=<id1>,<id2>
+--contacts=<id1>,<id2>  (or --contact=<id1>,<id2>)
   A comma delimited list of ids of contacts to be deleted.
 
 --disable-users
-  When flag is present, users at any deleted place will be permanently disabled.
+  When flag is present, users at any deleted place will be updated and may be permanently disabled. Supported by CHT Core 4.7 and above.
 
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
