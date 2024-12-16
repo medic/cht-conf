@@ -49,7 +49,7 @@ ${bold('cht-conf\'s delete-contacts action')}
 When combined with 'upload-docs' this action recursively deletes a contact and all of their descendant contacts and data. ${bold('This operation is permanent. It cannot be undone.')}
 
 ${bold('USAGE')}
-cht --local delete-contacts -- --ids=<id1>,<id2>
+cht --local delete-contacts -- --contacts=<id1>,<id2>
 
 ${bold('OPTIONS')}
 --contacts=<id1>,<id2>  (or --contact=<id1>,<id2>)
