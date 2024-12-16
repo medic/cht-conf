@@ -26,6 +26,7 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
       descendantsAndSelf,
       replacementLineage,
       merge: !!options.merge,
+      disableUsers: !!options.disableUsers,
       mergePrimaryContacts: !!options.mergePrimaryContacts,
       sourcePrimaryContactId: getPrimaryContactId(sourceDoc),
       destinationPrimaryContactId: getPrimaryContactId(destinationDoc),
@@ -35,7 +36,7 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
     
     const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
     trace(`Considering updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
-    const updatedDescendants = updateContacts(options, constraints, moveContext);
+    const updatedDescendants = updateContacts(moveContext, constraints);
     
     const ancestors = await DataSource.getAncestorsOf(db, sourceDoc);
     trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
@@ -193,7 +194,7 @@ function replaceLineageInSingleContact(doc, moveContext) {
   }
 }
 
-function updateContacts(options, constraints, moveContext) {
+function updateContacts(moveContext, constraints) {
   return moveContext.descendantsAndSelf
     .map(descendant => {
       const deleteSource = moveContext.merge && descendant._id === moveContext.sourceId;
@@ -202,7 +203,7 @@ function updateContacts(options, constraints, moveContext) {
         && moveContext.destinationPrimaryContactId;
 
       if (deleteSource || deletePrimaryContact) {
-        const toDeleteUsers = options.disableUsers && constraints.isPlace(descendant);
+        const toDeleteUsers = moveContext.disableUsers && constraints.isPlace(descendant);
         return {
           _id: descendant._id,
           _rev: descendant._rev,
