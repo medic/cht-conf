@@ -56,7 +56,7 @@ ${bold('OPTIONS')}
   A comma delimited list of ids of contacts to be deleted.
 
 --disable-users
-  When flag is present, users at any deleted place will be permanently disabled.
+  When flag is present, users at any deleted place will be updated and may be permanently disabled. Supported by CHT Core 4.7 and above.
 
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
