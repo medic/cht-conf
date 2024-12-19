@@ -167,7 +167,7 @@ describe('lineage constriants', () => {
         const parentDoc = await pouchDb.get('district_2');
 
         const descendants = await Promise.all(['health_center_1_contact', 'clinic_1', 'clinic_1_contact', 'patient_1'].map(id => pouchDb.get(id)));
-        const actual = assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, [contactDoc]);
+        const actual = assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, descendants);
         expect(actual).to.eventually.be.rejectedWith(`patient_1) from the hierarchy`);
       });
 
