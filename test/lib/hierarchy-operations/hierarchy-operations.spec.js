@@ -152,7 +152,10 @@ describe('hierarchy-operations', () => {
     it('move health_center_1 to root', async () => {
       sinon.spy(pouchDb, 'query');
 
-      await updateHierarchyRules([{ id: 'health_center', parents: [] }]);
+      await updateHierarchyRules([
+        { id: 'health_center', parents: [] },
+        { id: 'person', parents: [], person: true },
+      ]);
 
       await HierarchyOperations(pouchDb).move(['health_center_1'], 'root');
 
@@ -205,7 +208,10 @@ describe('hierarchy-operations', () => {
     });
 
     it('move district_1 from root', async () => {
-      await updateHierarchyRules([{ id: 'district_hospital', parents: ['district_hospital'] }]);
+      await updateHierarchyRules([
+        { id: 'district_hospital', parents: ['district_hospital'] },
+        { id: 'person', parents: [], person: true },
+      ]);
 
       await HierarchyOperations(pouchDb).move(['district_1'], 'district_2');
 
@@ -261,6 +267,7 @@ describe('hierarchy-operations', () => {
       await updateHierarchyRules([
         { id: 'county', parents: [] },
         { id: 'district_hospital', parents: ['county'] },
+        { id: 'person', parents: [], person: true },
       ]);
 
       await HierarchyOperations(pouchDb).move(['district_1'], 'county_1');
@@ -904,6 +911,16 @@ describe('hierarchy-operations', () => {
           patient_uuid: 'district_2_contact'
         }
       });
+    });
+
+    it('--merge-primary-contacts errors if primary contact is a place', async () => {
+      await upsert('district_2', {
+        type: 'district_hospital',
+        contact: 'health_center_2',
+      });
+
+      const actual = HierarchyOperations(pouchDb, { mergePrimaryContacts: true }).merge(['district_2'], 'district_1');
+      await expect(actual).to.eventually.be.rejectedWith('"health_center_2" which is of type place');
     });
   });
 
