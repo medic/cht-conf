@@ -1,3 +1,10 @@
+## [4.4.1](https://github.com/medic/cht-conf/compare/v4.4.0...v4.4.1) (2025-02-03)
+
+
+### Bug Fixes
+
+* remove typo from .eslintrc file created by initialize-project-layout ([#658](https://github.com/medic/cht-conf/issues/658)) ([1aaad4c](https://github.com/medic/cht-conf/commit/1aaad4c336843bd85db8ca7d0373a0f87d629827))
+
 # [4.4.0](https://github.com/medic/cht-conf/compare/v4.3.0...v4.4.0) (2024-12-16)
 
 
