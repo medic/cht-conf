@@ -112,6 +112,8 @@ CHT Conf supports authentication using a session token by adding `--session-toke
 
 	cht --url=https://example.com:12345 --session-token=*my_token* 
 
+_NOTE: the `token` can be obtained by doing a POST request to `/_session` endpoint with `username` and `password` as form parameters. [More info](https://docs.couchdb.org/en/stable/api/server/authn.html#cookie-authentication)_
+
 ### Into an archive to be uploaded later
 
     cht --archive
