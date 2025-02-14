@@ -242,8 +242,8 @@ const api = {
       if (cache.has('compressibleTypes')) {
         return cache.get('compressibleTypes');
       }
-      const resp = await request.get({ url: configUrl, json: true });
-      const compressibleTypes = resp.compressible_types.split(',').map(s=>s.trim());
+      const resp = await request.get({url: configUrl, json: true});
+      const compressibleTypes = resp.compressible_types.split(',').map(s => s.trim());
       cache.set('compressibleTypes', compressibleTypes);
       return compressibleTypes;
     } catch (e) {
@@ -254,7 +254,9 @@ const api = {
       }
       return [];
     }
-  }
+  },
+
+  request
 };
 
 Object.entries(api)

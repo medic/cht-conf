@@ -2,10 +2,12 @@ const DataSource = require('./hierarchy-data-source');
 const JsDocs = require('./jsdocFolder');
 const lineageConstraints = require('./lineage-constraints');
 const { trace, info } = require('../log');
+const requestsApi = require('../api');
 
 const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
 async function deleteHierarchy(db, options, sourceIds) {
   JsDocs.prepareFolder(options);
+  const api = requestsApi();
   
   const sourceDocs = await DataSource.getContactsByIds(db, sourceIds);
   const constraints = await lineageConstraints(db, options);
@@ -18,7 +20,7 @@ async function deleteHierarchy(db, options, sourceIds) {
     for (const descendant of descendantsAndSelf) {
       const toDeleteUsers = options.disableUsers && constraints.isPlace(descendant);
       JsDocs.deleteDoc(options, descendant, toDeleteUsers);
-      affectedReportCount += await deleteReportsForContact(db, options, descendant);
+      affectedReportCount += await deleteReportsForContact(api, options, descendant);
     }
 
     const affectedContactCount = descendantsAndSelf.length;
@@ -27,11 +29,11 @@ async function deleteHierarchy(db, options, sourceIds) {
   }
 }
 
-async function deleteReportsForContact(db, options, contact) {
+async function deleteReportsForContact(api, options, contact) {
   let skip = 0;
   let reportBatch;
   do {
-    reportBatch = await DataSource.getReportsForContacts(db, [], contact._id, skip);
+    reportBatch = await DataSource.getReportsForContacts(api, [], contact._id, skip);
 
     for (const report of reportBatch) {
       JsDocs.deleteDoc(options, report);
