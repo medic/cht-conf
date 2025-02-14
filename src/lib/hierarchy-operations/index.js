@@ -4,9 +4,11 @@ const JsDocs = require('./jsdocFolder');
 const lineageManipulation = require('./lineage-manipulation');
 const LineageConstraints = require('./lineage-constraints');
 const { trace, info } = require('../log');
+const requestsApi = require('../../lib/api');
 
 async function moveHierarchy(db, options, sourceIds, destinationId) {
   JsDocs.prepareFolder(options);
+  const api = requestsApi();
   trace(`Fetching contact details: ${destinationId}`);
   const constraints = await LineageConstraints(db, options);
   const destinationDoc = await DataSource.getContact(db, destinationId);
@@ -44,7 +46,7 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
     
     minifyLineageAndWriteToDisk(options, [...updatedDescendants, ...updatedAncestors]);
     
-    const movedReportsCount = await updateReports(db, options, moveContext);
+    const movedReportsCount = await updateReports(api, options, moveContext);
     trace(`${movedReportsCount} report(s) created by these affected contact(s) will be updated`);
 
     affectedContactCount += updatedDescendants.length + updatedAncestors.length;
@@ -56,7 +58,7 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
   info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);
 }
 
-async function updateReports(db, options, moveContext) {
+async function updateReports(api, options, moveContext) {
   const descendantIds = moveContext.descendantsAndSelf.map(contact => contact._id);
 
   let skip = 0;
@@ -64,7 +66,7 @@ async function updateReports(db, options, moveContext) {
   do {
     info(`Processing ${skip} to ${skip + DataSource.BATCH_SIZE} report docs`);
     const createdAtId = options.merge && moveContext.sourceId;
-    reportDocsBatch = await DataSource.getReportsForContacts(db, descendantIds, createdAtId, skip);
+    reportDocsBatch = await DataSource.getReportsForContacts(api, descendantIds, createdAtId, skip);
 
     const lineageUpdates = replaceLineageOfReportCreator(reportDocsBatch, moveContext);
     const reassignUpdates = reassignReports(reportDocsBatch, moveContext);

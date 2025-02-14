@@ -54,7 +54,7 @@ async function getContactWithDescendants(db, contactId) {
     .filter(doc => doc && doc.type !== 'tombstone');
 }
 
-async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
+async function getReportsForContacts(api, createdByIds, createdAtId, skip) {
   const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
   const createdAtKeys = createdAtId ? [
     [`patient_id:${createdAtId}`],
