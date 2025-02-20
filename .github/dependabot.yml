@@ -12,9 +12,9 @@ updates:
       commitlint:
         patterns:
           - "@commitlint/*"
-    pouchdb:
-      patterns:
-        - "pouchdb-*"
+      pouchdb:
+        patterns:
+          - "pouchdb-*"
     ignore:
       - dependency-name: "chai" # ESM Modules https://github.com/medic/cht-conf/issues/629
       - dependency-name: "chai-as-promised" # ESM Modules https://github.com/medic/cht-conf/issues/629
