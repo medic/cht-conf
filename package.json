@@ -9,7 +9,7 @@
   "scripts": {
     "clean": "rm -rf ./build/",
     "eslint": "eslint 'src/**/*.js' test/*.js 'test/**/*.js'",
-    "test": "npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha \"../../test/**/*.spec.js\" --exclude \"../../test/e2e/**/*.spec.js\" --timeout 10000",
+    "test": "npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha \"../../test/**/*.spec.js\" --exclude \"../../test/e2e/**/*.spec.js\"",
     "test-e2e": "mocha --config test/e2e/.mocharc.js",
     "semantic-release": "semantic-release"
   },
