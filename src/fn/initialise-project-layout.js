@@ -9,14 +9,14 @@ const LAYOUT = {
   fields: [],
   cards: [],
   context: {}
-};`,
+};\n`,
   'privacy-policies.json': {},
   'privacy-policies': {},
   'resources.json': {},
   'harness.defaults.json': {},
   resources: {},
-  'targets.js': 'module.exports = [];',
-  'tasks.js': 'module.exports = [];',
+  'targets.js': 'module.exports = [];\n',
+  'tasks.js': 'module.exports = [];\n',
   '.eslintrc': `{
   "env": {
     "node": true,
@@ -25,7 +25,7 @@ const LAYOUT = {
   "parserOptions": {
     "ecmaVersion": 2022
   }
-}`,
+}\n`,
   forms: {
     app: {},
     collect: {},
