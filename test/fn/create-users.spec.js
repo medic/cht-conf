@@ -260,11 +260,28 @@ describe('create-users', () => {
     );
 
     sinon.stub(readLine, 'keyInYN').returns(true);
-    const todd = { username: 'todd', password: pwd, roles: ['district-admin'],  place: 'place_uuid_1', contact: 'contact_uuid_1' };
-    const jack = { username: 'jack', password: pwd, roles: ['district-admin', 'supervisor'],  place: 'place_uuid_2', contact: 'contact_uuid_2' };
-    const jill = { username: 'jill', password: pwd, roles: ['role1', 'role2', 'role3'],  place: 'place_uuid_3', contact: 'contact_uuid_3' };
-    const john = { username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4' };
-    const qs = (user) => querystring.stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
+    const todd = {
+      username: 'todd', password: pwd, roles: ['district-admin'],  place: 'place_uuid_1', contact: 'contact_uuid_1'
+    };
+    const jack = {
+      username: 'jack',
+      password: pwd,
+      roles: ['district-admin', 'supervisor'],
+      place: 'place_uuid_2',
+      contact: 'contact_uuid_2'
+    };
+    const jill = {
+      username: 'jill',
+      password: pwd,
+      roles: ['role1', 'role2', 'role3'],
+      place: 'place_uuid_3',
+      contact: 'contact_uuid_3'
+    };
+    const john = {
+      username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4'
+    };
+    const qs = (user) => querystring
+      .stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
     return assertDbEmpty()
       .then(() => createUsers.execute())
       .then(() => {
@@ -293,11 +310,28 @@ describe('create-users', () => {
     );
 
     sinon.stub(readLine, 'keyInYN').onCall(1).returns(false);
-    const todd = { username: 'todd', password: pwd, roles: ['district-admin'],  place: 'place_uuid_1', contact: 'contact_uuid_1' };
-    const jack = { username: 'jack', password: pwd, roles: ['district-admin', 'supervisor'],  place: 'place_uuid_2', contact: 'contact_uuid_2' };
-    const jill = { username: 'jill', password: pwd, roles: ['role1', 'role2', 'role3'],  place: 'place_uuid_3', contact: 'contact_uuid_3' };
-    const john = { username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4' };
-    const qs = (user) => querystring.stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
+    const todd = {
+      username: 'todd', password: pwd, roles: ['district-admin'],  place: 'place_uuid_1', contact: 'contact_uuid_1'
+    };
+    const jack = {
+      username: 'jack',
+      password: pwd,
+      roles: ['district-admin', 'supervisor'],
+      place: 'place_uuid_2',
+      contact: 'contact_uuid_2'
+    };
+    const jill = {
+      username: 'jill',
+      password: pwd,
+      roles: ['role1', 'role2', 'role3'],
+      place: 'place_uuid_3',
+      contact: 'contact_uuid_3'
+    };
+    const john = {
+      username: 'john', password: pwd, roles: ['role2', 'role3'],  place: 'place_uuid_4', contact: 'contact_uuid_4'
+    };
+    const qs = (user) => querystring
+      .stringify({ facility_id: user.place, role: JSON.stringify(user.roles), contact: user.contact });
     return assertDbEmpty()
       .then(() => createUsers.execute())
       .then(() => {

@@ -6,7 +6,8 @@ const fse = require('fs-extra');
 const log = require('../../src/lib/log');
 const { getProjectUrl, DEFAULT_PROJECT_NAME } = require('./cht-docker-utils');
 
-const getProjectDirectory = (projectName = DEFAULT_PROJECT_NAME) => path.resolve(__dirname, `../../build/${projectName}`);
+const getProjectDirectory = (projectName = DEFAULT_PROJECT_NAME) => path
+  .resolve(__dirname, `../../build/${projectName}`);
 
 const runChtConf = async (
   command,

@@ -48,7 +48,7 @@ const LAYOUT = {
 function createRecursively(dir, layout) {
   fs.mkdir(dir);
 
-  for (const k in layout) {
+  for (const k of Object.keys(layout)) {
     const path = `${dir}/${k}`;
 
     const val = layout[k];

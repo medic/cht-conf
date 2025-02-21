@@ -52,7 +52,9 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   const oldTaskSchedulesPath = path.join(projectDir, 'tasks.json');
   if (fs.exists(oldTaskSchedulesPath)) {
     if (fs.exists(taskSchedulesPath)) {
-      throw new Error(`You have both ${taskSchedulesPath} and ${oldTaskSchedulesPath}.  Please remove one to continue!`);
+      throw new Error(
+        `You have both ${taskSchedulesPath} and ${oldTaskSchedulesPath}.  Please remove one to continue!`
+      );
     }
     warn(`tasks.json file is deprecated.  Please rename ${oldTaskSchedulesPath} to ${taskSchedulesPath}`);
     taskSchedulesPath = oldTaskSchedulesPath;
@@ -70,7 +72,10 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   }
 
   if (!fs.exists(baseSettingsPath) && !fs.exists(appSettingsPath)) {
-    throw new Error('No configuration defined please create a base_settings.json file in app_settings folder with the desired configuration');
+    throw new Error(
+      'No configuration defined please create a base_settings.json file in app_settings folder ' +
+      'with the desired configuration'
+    );
   }
   if (fs.exists(baseSettingsPath)) {
     // using modular config so should override anything already defined in app_settings.json
@@ -109,8 +114,10 @@ const compileAppSettingsForProject = async (projectDir, options) => {
       appSettings.assetlinks = assetlinks;
     }
   } else {
-    warn(`app_settings.json file should not be edited directly.
-    Please create a base_settings.json file in app_settings folder and move any manually defined configurations there.`);
+    warn(
+      `app_settings.json file should not be edited directly.
+    Please create a base_settings.json file in app_settings folder and move any manually defined configurations there.`
+    );
     appSettings = fs.readJson(appSettingsPath);
   }
   appSettings.contact_summary = await compilation.compileContactSummary(projectDir, options);

@@ -21,9 +21,11 @@ const UNSUPPORTED_CHAR = '[*@:[\\]]';
 const XPATH_CHAR = `(${SUPPORTED_CHAR}|${UNSUPPORTED_CHAR})`;
 // Some XPaths lookup nodes in separate instances (e.g. instance('contact-summary')/context/pregnancy_uuid)
 const INSTANCE = `instance\\([\\w-'"]+\\)`;
-// Look ahead and make sure there are an even number of quotes following the match (this means that the match itself is not in quotes).
+// Look ahead and make sure there are an even number of quotes following the match
+// (this means that the match itself is not in quotes).
 const LOOK_AHEADS_FOR_EVEN_QUOTES = `(?=([^"]*"[^"]*")*[^"]*$)(?=([^']*'[^']*')*[^']*$)`;
-// Matches on all possible XPaths (simple and complex) not in quotes. May start with an instance reference. Must include a slash.
+// Matches on all possible XPaths (simple and complex) not in quotes. May start with an instance reference.
+// Must include a slash.
 const XPATH_PATTERN = new RegExp(`(${INSTANCE}|)${XPATH_CHAR}*\\/${XPATH_CHAR}+${LOOK_AHEADS_FOR_EVEN_QUOTES}`, 'g');
 // Matches on XPaths containing complex calculations (note that '//' indicates a deep lookup, which we do not validate)
 const UNSUPPORTED_XPATH_PATTERN = new RegExp(`\\/\\/|${UNSUPPORTED_CHAR}|${INSTANCE}`, 'g');
@@ -97,7 +99,10 @@ module.exports = {
     try {
       const fields = getFieldsWithInvalidXPaths(xmlDoc);
       if(fields.length) {
-        errors.push(`Form at ${xformPath} contains invalid XPath expressions (absolute or relative paths that refer to a non-existant node):`);
+        errors.push(
+          `Form at ${xformPath} contains invalid XPath expressions `
+          + '(absolute or relative paths that refer to a non-existant node):'
+        );
 
         fields.forEach(field => {
           const recordError = (expressionName) => {

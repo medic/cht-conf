@@ -17,7 +17,10 @@ const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.jso
 
 // check to see if we should write/overwrite the file
 const overwriteFileCheck = (doc, args, overwriteAllFiles) => {
-  return args.updateOfflineDocs || environment.force || overwriteAllFiles || !fs.exists(jsonDocPath(args.docDirectoryPath, doc._id));
+  return args.updateOfflineDocs
+    || environment.force
+    || overwriteAllFiles
+    || !fs.exists(jsonDocPath(args.docDirectoryPath, doc._id));
 };
 
 const saveJsonDoc = (doc, args) => {

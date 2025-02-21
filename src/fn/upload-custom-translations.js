@@ -40,23 +40,23 @@ const execute = async () => {
       }
       for (const error of err.errors) {
         switch (error.error) {
-          case 'cannot-access-dir':
-            return log.warn('Could not find custom translations dir:', dir);
-          case 'missed-placeholder':
-          case 'wrong-placeholder':
-            placeholderErrorsFound++;
-            log.error(error.message);
-            break;
-          case 'empty-message':
-            emptiesFound++;
-            log.warn(error.message);
-            break;
-          case 'wrong-messageformat':
-            formatErrorsFound++;
-            log.error(error.message);
-            break;
-          default:  // 'wrong-file-name', ...
-            log.error(error.message);
+        case 'cannot-access-dir':
+          return log.warn('Could not find custom translations dir:', dir);
+        case 'missed-placeholder':
+        case 'wrong-placeholder':
+          placeholderErrorsFound++;
+          log.error(error.message);
+          break;
+        case 'empty-message':
+          emptiesFound++;
+          log.warn(error.message);
+          break;
+        case 'wrong-messageformat':
+          formatErrorsFound++;
+          log.error(error.message);
+          break;
+        default:  // 'wrong-file-name', ...
+          log.error(error.message);
         }
       }
       if (emptiesFound > 0) {

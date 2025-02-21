@@ -162,7 +162,14 @@ describe('main', () => {
   });
 
   it('add validate forms actions for upload forms actions', async () => {
-    await main([...normalArgv, '--local', 'upload-collect-forms', 'upload-contact-forms', 'upload-app-forms', 'upload-training-forms'], {});
+    await main([
+      ...normalArgv,
+      '--local',
+      'upload-collect-forms',
+      'upload-contact-forms',
+      'upload-app-forms',
+      'upload-training-forms'
+    ], {});
     expectExecuteActionBehavior(
       [
         'validate-collect-forms', 'upload-collect-forms',
@@ -175,7 +182,15 @@ describe('main', () => {
   });
 
   it('--skip-validate for upload forms actions', async () => {
-    await main([...normalArgv, '--local', '--skip-validate', 'upload-collect-forms', 'upload-contact-forms', 'upload-app-forms', 'upload-training-forms'], {});
+    await main([
+      ...normalArgv,
+      '--local',
+      '--skip-validate',
+      'upload-collect-forms',
+      'upload-contact-forms',
+      'upload-app-forms',
+      'upload-training-forms'
+    ], {});
     expectExecuteActionBehavior(
       [
         'upload-collect-forms',
@@ -191,8 +206,18 @@ describe('main', () => {
   });
 
   it('--skip-validate for validate forms actions', async () => {
-    await main([...normalArgv, '--local', '--skip-validate', 'validate-collect-forms', 'validate-contact-forms',
-      'validate-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-app-forms', 'upload-training-forms'], {});
+    await main([
+      ...normalArgv,
+      '--local',
+      '--skip-validate',
+      'validate-collect-forms',
+      'validate-contact-forms',
+      'validate-app-forms',
+      'upload-collect-forms',
+      'upload-contact-forms',
+      'upload-app-forms',
+      'upload-training-forms'
+    ], {});
     expectExecuteActionBehavior(
       [
         'upload-collect-forms',

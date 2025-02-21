@@ -219,27 +219,27 @@ describe('edit-contacts', function() {
     const db = sinon.stub(pouch, 'allDocs');
     sinon
       .stub(environment,'extraArgs')
-      .get(() => ['--column=type', '--files=contact.type.csv', '--updateOfflineDocs', `--docDirectoryPath=${editedJsonDocs}`]);
+      .get(() => [
+        '--column=type', '--files=contact.type.csv', '--updateOfflineDocs', `--docDirectoryPath=${editedJsonDocs}`
+      ]);
     await editContactsModule.execute();
 
-    expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/09efb53f-9cd8-524c-9dfd-f62c242f1817.doc.json`)).to.deep.equal(
-      {
+    expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/09efb53f-9cd8-524c-9dfd-f62c242f1817.doc.json`))
+      .to.deep.equal({
         type: 'health_center',
         name: 'carla olamide',
         is_in_emnch: false,
         rbf: true,
         _id: '09efb53f-9cd8-524c-9dfd-f62c242f1817'
-      }
-    );
-    expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/7ac33d1f-10d8-5198-b39d-9d61595292f6.doc.json`)).to.deep.equal(
-      {
+      });
+    expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/7ac33d1f-10d8-5198-b39d-9d61595292f6.doc.json`))
+      .to.deep.equal({
         type: 'person',
         name: 'kelly adisa',
         is_in_emnch: true,
         rbf: false,
         _id: '7ac33d1f-10d8-5198-b39d-9d61595292f6'
-      }
-    );
+      });
     expect(db.callCount).to.equal(0);
   });
 
@@ -276,47 +276,48 @@ describe('edit-contacts', function() {
       keys: [ '0ebca32d-c1b7-5522-94a3-97dd8b3df146' ],
       include_docs: true
     });  
-    expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/7ac33d1f-10d8-5198-b39d-9d61595292f6.doc.json`)).to.deep.equal(
-      {
+    expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/7ac33d1f-10d8-5198-b39d-9d61595292f6.doc.json`))
+      .to.deep.equal({
         type: 'person',
         name: 'kelly adisa',
         is_in_emnch: false,
         rbf: false,
         _id: '7ac33d1f-10d8-5198-b39d-9d61595292f6'
-      }
-    );
-    expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/0ebca32d-c1b7-5522-94a3-97dd8b3df146.doc.json`)).to.deep.equal(
-      {
+      });
+    expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/0ebca32d-c1b7-5522-94a3-97dd8b3df146.doc.json`))
+      .to.deep.equal({
         type: 'person',
         name: 'janie',
         is_in_emnch: true,
         rbf: false,
         _id: '0ebca32d-c1b7-5522-94a3-97dd8b3df146',
         _rev: '1-ccec0024d98011c6d33c223ba389b1da'
-      }
-    );
-    expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/09efb53f-9cd8-524c-9dfd-f62c242f1817.doc.json`)).to.deep.equal(
-      {
+      });
+    expect(fs.readJson(`${editContactsPath}/${editedJsonDocs}/09efb53f-9cd8-524c-9dfd-f62c242f1817.doc.json`))
+      .to.deep.equal({
         type: 'health_center',
         name: 'carla olamide',
         is_in_emnch: false,
         rbf: true,
         _id: '09efb53f-9cd8-524c-9dfd-f62c242f1817'
-      }
-    );
+      });
   });
 
-  it('should prompt a user if they will ovewrite files in a directory if they have not passed the updateOfflineDocs flag', async () => {
-    const prompt = sinon
-      .stub(userPrompt, 'keyInSelect')
-      .returns(0);
-    sinon
-      .stub(environment, 'extraArgs')
-      .get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`]);
-    await editContactsModule.execute();
+  it(
+    'should prompt a user if they will ovewrite files in a directory ' +
+    'if they have not passed the updateOfflineDocs flag',
+    async () => {
+      const prompt = sinon
+        .stub(userPrompt, 'keyInSelect')
+        .returns(0);
+      sinon
+        .stub(environment, 'extraArgs')
+        .get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`]);
+      await editContactsModule.execute();
 
-    expect(prompt.callCount).to.equal(2);
-  });
+      expect(prompt.callCount).to.equal(2);
+    }
+  );
 
   it('should not prompt a user again if they choose to ovewrite all files', async () => {
     const prompt = sinon.stub(userPrompt, 'keyInSelect').returns(1);
@@ -362,7 +363,12 @@ describe('edit-contacts', function() {
       .throws(new Error('db fetching failed'));
     sinon
       .stub(environment,'extraArgs')
-      .get(() => ['--columns=is_in_emnch,rbf', '--files=contact.fail.fetch.csv', '--updateOfflineDocs', `--docDirectoryPath=${editedJsonDocs}`]);
+      .get(() => [
+        '--columns=is_in_emnch,rbf',
+        '--files=contact.fail.fetch.csv',
+        '--updateOfflineDocs',
+        `--docDirectoryPath=${editedJsonDocs}`
+      ]);
     try {
       await editContactsModule.execute();
       assert.fail('should throw an error when fetching from the db fails');
@@ -377,7 +383,12 @@ describe('edit-contacts', function() {
       .throws(new Error('failed to write file'));
     sinon
       .stub(environment,'extraArgs')
-      .get(() => ['--columns=is_in_emnch,rbf', '--files=contact.csv', '--updateOfflineDocs=true', `--docDirectoryPath=${editedJsonDocs}`]);
+      .get(() => [
+        '--columns=is_in_emnch,rbf',
+        '--files=contact.csv',
+        '--updateOfflineDocs=true',
+        `--docDirectoryPath=${editedJsonDocs}`
+      ]);
     try {
       await editContactsModule.execute();
       assert.fail('should throw an error saving a JSON doc fails');

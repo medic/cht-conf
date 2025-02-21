@@ -200,9 +200,11 @@ describe('validate-declarative-schema', () => {
       const actual = validate([aTask], TaskSchema);
 
       // then
-      expect(actual).to.deep.eq(
-        ['Invalid schema at tasks[0].resolvedIf\nERROR: Schema error in actions array: Actions with property "type" which value is different than "report", ' + 
-         'should define property "resolvedIf" as: function(contact, report) { ... }.\nCurrent value of tasks[0].resolvedIf is undefined\n']);
+      expect(actual).to.deep.eq([
+        'Invalid schema at tasks[0].resolvedIf\nERROR: Schema error in actions array: '
+        + 'Actions with property "type" which value is different than "report", should define property "resolvedIf" '
+        + 'as: function(contact, report) { ... }.\nCurrent value of tasks[0].resolvedIf is undefined\n'
+      ]);
     });
   });
 });

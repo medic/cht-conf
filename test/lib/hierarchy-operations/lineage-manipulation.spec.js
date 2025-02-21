@@ -1,13 +1,17 @@
 const { expect } = require('chai');
-const { replaceParentLineage, replaceContactLineage, pluckIdsFromLineage, minifyLineagesInDoc } = require('../../../src/lib/hierarchy-operations/lineage-manipulation');
+const {
+  replaceParentLineage, replaceContactLineage, pluckIdsFromLineage, minifyLineagesInDoc
+} = require('../../../src/lib/hierarchy-operations/lineage-manipulation');
 const log = require('../../../src/lib/log');
 log.level = log.LEVEL_TRACE;
 
 const { parentsToLineage } = require('../../mock-hierarchies');
 
 describe('lineage manipulation', () => {
-  const mockReport = data => Object.assign({ _id: 'r', type: 'data_record', contact: parentsToLineage('parent', 'grandparent') }, data);
-  const mockContact = data => Object.assign({ _id: 'c', type: 'person', parent: parentsToLineage('parent', 'grandparent') }, data);
+  const mockReport = data => Object
+    .assign({ _id: 'r', type: 'data_record', contact: parentsToLineage('parent', 'grandparent') }, data);
+  const mockContact = data => Object
+    .assign({ _id: 'c', type: 'person', parent: parentsToLineage('parent', 'grandparent') }, data);
 
   describe('replaceParentLineage', () => {
     it('replace full lineage', () => {

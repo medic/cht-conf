@@ -168,7 +168,8 @@ module.exports = async (argv, env) => {
     await api().available();
   }
 
-  const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
+  const productionUrlMatch = environment.instanceUrl
+    && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
   const expectedOptions = ['alpha', projectName];
   if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
     warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,

@@ -79,7 +79,10 @@ const deleteForm = (fileName, formDir) => {
     return false;
   }
   const absFormDirPath = path.join(environment.pathToProject, formDir);
-  const formFiles = fs.readdirSync(absFormDirPath).map(file => (uploadForms.formFileMatcher(file) || convertForms.formFileMatcher(file))).filter(_form => _form === form);
+  const formFiles = fs
+    .readdirSync(absFormDirPath)
+    .map(file => (uploadForms.formFileMatcher(file) || convertForms.formFileMatcher(file)))
+    .filter(_form => _form === form);
   const canDelete = formFiles.length <= 0;
   if (canDelete) {
     eventQueue.enqueue(async () => {
@@ -88,7 +91,10 @@ const deleteForm = (fileName, formDir) => {
     });
     return true;
   }
-  warn(`You have to delete all form files (.xlsx, .properties.json, .xml) associated with the ${form} form to delete it from ${environment.apiUrl}`);
+  warn(
+    `You have to delete all form files (.xlsx, .properties.json, .xml) associated with the ${form} form `
+    + `to delete it from ${environment.apiUrl}`
+  );
   return false;
 };
 

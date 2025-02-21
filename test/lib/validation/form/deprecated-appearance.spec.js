@@ -57,8 +57,8 @@ const assertEmpty = (output) => {
 };
 
 const LATEST_VERSION = '999.99.99';
-const ERROR_HEADER = `Form at ${xformPath} contains fields with the deprecated \`horizontal\`/\`compact\` appearance. ` +
-  'These have been deprecated in favor of the `columns` appearance. Please update the following fields:';
+const ERROR_HEADER = `Form at ${xformPath} contains fields with the deprecated \`horizontal\`/\`compact\` ` +
+  'appearance. These have been deprecated in favor of the `columns` appearance. Please update the following fields:';
 
 describe('deprecated-appearance', () => {
   it(`resolves OK for form with no appearances`, () => {
@@ -97,8 +97,12 @@ describe('deprecated-appearance', () => {
         expect(output.warnings[1]).to.equal(`  - /data/name: replace [horizontal] with [columns]`);
         expect(output.warnings[2]).to.equal(`  - /data/age: replace [horizontal-compact] with [columns-pack]`);
         expect(output.warnings[3]).to.equal(`  - /data/address: replace [compact] with [columns-pack no-buttons]`);
-        expect(output.warnings[4]).to.equal(`  - /data/address/street-nbr: replace [compact-1] with [columns-1 no-buttons]`);
-        expect(output.warnings[5]).to.equal(`  - /data/address/city: replace [compact-10] with [columns-10 no-buttons]`);
+        expect(output.warnings[4]).to.equal(
+          `  - /data/address/street-nbr: replace [compact-1] with [columns-1 no-buttons]`
+        );
+        expect(output.warnings[5]).to.equal(
+          `  - /data/address/city: replace [compact-10] with [columns-10 no-buttons]`
+        );
       });
   });
 
@@ -119,8 +123,12 @@ describe('deprecated-appearance', () => {
         expect(output.warnings[1]).to.equal(`  - /data/name: replace [horizontal] with [columns]`);
         expect(output.warnings[2]).to.equal(`  - /data/age: replace [horizontal-compact] with [columns-pack]`);
         expect(output.warnings[3]).to.equal(`  - /data/address: replace [compact] with [columns-pack no-buttons]`);
-        expect(output.warnings[4]).to.equal(`  - /data/address/street-nbr: replace [compact-1] with [columns-1 no-buttons]`);
-        expect(output.warnings[5]).to.equal(`  - /data/address/city: replace [compact-10] with [columns-10 no-buttons]`);
+        expect(output.warnings[4]).to.equal(
+          `  - /data/address/street-nbr: replace [compact-1] with [columns-1 no-buttons]`
+        );
+        expect(output.warnings[5]).to.equal(
+          `  - /data/address/city: replace [compact-10] with [columns-10 no-buttons]`
+        );
       });
   });
 

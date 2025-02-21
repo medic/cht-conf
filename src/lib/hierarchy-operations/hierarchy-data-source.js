@@ -12,7 +12,9 @@ async function getContactsByIds(db, ids) {
     include_docs: true,
   });
 
-  const missingContactErrors = contactDocs.rows.filter(row => !row.doc).map(row => `Contact with id '${row.key}' could not be found.`);
+  const missingContactErrors = contactDocs.rows
+    .filter(row => !row.doc)
+    .map(row => `Contact with id '${row.key}' could not be found.`);
   if (missingContactErrors.length > 0) {
     throw Error(missingContactErrors);
   }
@@ -86,7 +88,10 @@ async function getAncestorsOf(db, contactDoc) {
 
   const ancestorIdsNotFound = ancestors.rows.filter(ancestor => !ancestor.doc).map(ancestor => ancestor.key);
   if (ancestorIdsNotFound.length > 0) {
-    throw Error(`Contact '${contactDoc?.name}' (${contactDoc?._id}) has parent id(s) '${ancestorIdsNotFound.join(',')}' which could not be found.`);
+    throw Error(
+      `Contact '${contactDoc?.name}' (${contactDoc?._id}) has parent id(s) `
+      + `'${ancestorIdsNotFound.join(',')}' which could not be found.`
+    );
   }
 
   return ancestors.rows.map(ancestor => ancestor.doc);

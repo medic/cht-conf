@@ -247,23 +247,23 @@ function parseColumn(rawCol, rawVal) {
   } else if(parts.length === 2) {
     const type = parts[1];
     switch(type) {
-      case 'date': val = new Date(rawVal); break;
-      case 'rel-date': val = (new Date(calcRelTimestampInDays(rawVal))).toISOString().substring(0, 10); break;
-      case 'timestamp': val = parseTimestamp(rawVal); break;
-      case 'rel-timestamp': val = calcRelTimestampInMilliseconds(rawVal); break;
-      case 'int': val = int(rawVal); break;
-      case 'bool': val = parseBool(rawVal); break;
-      case 'string': val = rawVal; break;
-      case 'float': val = Number.parseFloat(rawVal); break;
-      case 'excluded': val = rawVal; excluded = true; break;
-      default: {
-        if(isReference(type)) {
-          val = rawVal;
-          reference = type;
-        } else {
-          throw new Error(`Unrecognised column type: ${type} for ${rawCol}`);
-        }
+    case 'date': val = new Date(rawVal); break;
+    case 'rel-date': val = (new Date(calcRelTimestampInDays(rawVal))).toISOString().substring(0, 10); break;
+    case 'timestamp': val = parseTimestamp(rawVal); break;
+    case 'rel-timestamp': val = calcRelTimestampInMilliseconds(rawVal); break;
+    case 'int': val = int(rawVal); break;
+    case 'bool': val = parseBool(rawVal); break;
+    case 'string': val = rawVal; break;
+    case 'float': val = Number.parseFloat(rawVal); break;
+    case 'excluded': val = rawVal; excluded = true; break;
+    default: {
+      if(isReference(type)) {
+        val = rawVal;
+        reference = type;
+      } else {
+        throw new Error(`Unrecognised column type: ${type} for ${rawCol}`);
       }
+    }
     }
   } else {
     throw new Error(

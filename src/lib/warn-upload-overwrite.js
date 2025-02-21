@@ -10,7 +10,8 @@ const environment = require('./environment');
 const { compare, GroupingReporter } = require('dom-compare');
 const DOMParser = require('@xmldom/xmldom').DOMParser;
 
-const question = 'You are trying to modify a configuration that has been modified since your last upload. Do you want to?';
+const question = 'You are trying to modify a configuration that has been modified since your last upload. ' +
+  'Do you want to?';
 const responseChoicesWithoutDiff = [
   'Overwrite the changes', 
   'Abort so that you can update the configuration'
@@ -196,7 +197,9 @@ const preUploadForm = async (db, localDoc, localXml, properties) => {
     } else {
       // Unexpected error, we report it then quit
       log.trace('Trying to fetch remote xml', e);
-      throw new Error(`Unable to fetch xml attachment of doc with id ${localDoc._id}, returned status code = ${e.status}`);
+      throw new Error(
+        `Unable to fetch xml attachment of doc with id ${localDoc._id}, returned status code = ${e.status}`
+      );
     }
   }
 
