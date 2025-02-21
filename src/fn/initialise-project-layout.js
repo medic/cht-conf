@@ -66,7 +66,7 @@ function createRecursively(dir, layout) {
 
 function execute() {
   const { extraArgs } = environment;
-  if(extraArgs && extraArgs.length) {
+  if(extraArgs?.length) {
     extraArgs.forEach(createProject);
   }
   else {
