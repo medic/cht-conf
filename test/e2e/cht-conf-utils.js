@@ -52,7 +52,6 @@ const initProject = async (projectName = DEFAULT_PROJECT_NAME) => {
       version: '1.0.0',
       dependencies: {
         'cht-conf': 'file:../..',
-        '@medic/eslint-config': 'file:../../node_modules/@medic/eslint-config',
       },
     }, null, 4),
   );
