@@ -3,7 +3,9 @@ const fs = require('./sync-fs');
 const warn = require('./log').warn;
 
 module.exports = dir => {
-  if(!fs.exists(dir)) return warn('Cannot build list of attachments from non-existent dir:', dir);
+  if(!fs.exists(dir)) {
+    return warn('Cannot build list of attachments from non-existent dir:', dir);
+  }
 
   const attachments = {};
   fs.recurseFiles(dir)

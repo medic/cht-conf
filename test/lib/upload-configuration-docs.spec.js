@@ -11,7 +11,7 @@ describe('Upload Configuration Docs', () => {
   let warnUploadOverwrite;
   let insertOrReplace;
   let attachmentsFromDir;
-  let configuration = {
+  const configuration = {
     title: 'ABC Company',
     resources: {
       greatCompany: 'greatCompany.png',

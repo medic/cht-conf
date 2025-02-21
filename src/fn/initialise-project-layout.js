@@ -58,14 +58,20 @@ function createRecursively(dir, layout) {
       } else {
         createRecursively(path, val);
       }
-    } else fs.write(path, val);
+    } else {
+      fs.write(path, val);
+    }
   }
 }
 
 function execute() {
   const { extraArgs } = environment;
-  if(extraArgs && extraArgs.length) extraArgs.forEach(createProject);
-  else createProject('.');
+  if(extraArgs && extraArgs.length) {
+    extraArgs.forEach(createProject);
+  }
+  else {
+    createProject('.');
+  }
 
   function createProject(root) {
     const dir = path.join(environment.pathToProject, root);

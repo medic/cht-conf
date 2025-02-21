@@ -153,7 +153,7 @@ describe('validate-declarative-schema', () => {
     const TaskSchema = validateDeclarativeSchema.__get__('TaskSchema');
     it('resolvedIf is not required if there is one action with type report', () => {
       // given
-      let aTask = buildTaskWithAction();
+      const aTask = buildTaskWithAction();
       aTask.actions = actionsCollection.oneActionReportType;
       delete aTask.resolvedIf;
 
@@ -166,7 +166,7 @@ describe('validate-declarative-schema', () => {
 
     it('resolvedIf is not required if there are two actions with one type report', () => {
       // given
-      let aTask = buildTaskWithAction();
+      const aTask = buildTaskWithAction();
       aTask.actions = actionsCollection.twoActionsOneReportType;
       delete aTask.resolvedIf;
 
@@ -179,7 +179,7 @@ describe('validate-declarative-schema', () => {
 
     it('resolvedIf is not required if there is one action with type undefined', () => {
       // given
-      let aTask = buildTaskWithAction();
+      const aTask = buildTaskWithAction();
       aTask.actions = actionsCollection.oneActionReportUndefined;
       delete aTask.resolvedIf;
 
@@ -192,7 +192,7 @@ describe('validate-declarative-schema', () => {
 
     it('resolvedIf is required for a contact based action', () => {
       // given
-      let aTask = buildTaskWithAction();
+      const aTask = buildTaskWithAction();
       aTask.actions = actionsCollection.oneActionContactType;
       delete aTask.resolvedIf;
 

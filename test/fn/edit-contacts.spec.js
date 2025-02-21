@@ -7,7 +7,8 @@ const environment = require('../../src/lib/environment');
 const sinon = require('sinon');
 const userPrompt = require('../../src/lib/user-prompt');
 
-let pouch, editContactsModule;
+let pouch;
+let editContactsModule;
 
 // specifying directory paths to use
 const editContactsPath = `data/edit-contacts`;
@@ -32,14 +33,14 @@ const uploadDocuments = (docs) => {
 };
 
 const compareDocuments = (expectedDocsDir) => {
-      fs.recurseFiles(expectedDocsDir)
-      .map(file => fs.path.basename(file))
-      .forEach(file => {
-        const expected  = fs.readJson(`${expectedDocsDir}/${file}`);
-        const generated = fs.readJson(`${saveDocsDir}/${file}`);
-        delete generated._rev;
-        expect(expected).to.deep.eq(generated);
-      });
+  fs.recurseFiles(expectedDocsDir)
+    .map(file => fs.path.basename(file))
+    .forEach(file => {
+      const expected  = fs.readJson(`${expectedDocsDir}/${file}`);
+      const generated = fs.readJson(`${saveDocsDir}/${file}`);
+      delete generated._rev;
+      expect(expected).to.deep.eq(generated);
+    });
 };
 
 describe('edit-contacts', function() {
@@ -61,24 +62,31 @@ describe('edit-contacts', function() {
     sinon.restore();
   });
 
-  it(`should do a top-down test well and add all available columns to the docs since they are not specified`, async function(){
-    sinon.stub(environment, 'force').get(() => false);
-    sinon.stub(environment, 'extraArgs').get(() => undefined);
-    await editContactsModule.execute();
-    assert.equal(countFilesInDir(saveDocsDir),
-                countFilesInDir(expectedDocsDirAllCols),
-                `Different number of files in ${saveDocsDir} and ${expectedDocsDirAllCols}.`);
-    compareDocuments(expectedDocsDirAllCols);
-  }); 
+  it(
+    `should do a top-down test well and add all available columns to the docs since they are not specified`,
+    async function(){
+      sinon.stub(environment, 'force').get(() => false);
+      sinon.stub(environment, 'extraArgs').get(() => undefined);
+      await editContactsModule.execute();
+      assert.equal(
+        countFilesInDir(saveDocsDir),
+        countFilesInDir(expectedDocsDirAllCols),
+        `Different number of files in ${saveDocsDir} and ${expectedDocsDirAllCols}.`
+      );
+      compareDocuments(expectedDocsDirAllCols);
+    }
+  );
 
   it(`should only process listed files`, async function(){
 
     sinon.stub(environment, 'extraArgs').get(() => ['--files=contact.csv,contact.two.csv,users.csv']);
 
     await editContactsModule.execute();
-    assert.equal(countFilesInDir(saveDocsDir),
-                countFilesInDir(expectedDocsMultipleCsv),
-                `Different number of files in ${saveDocsDir} and ${expectedDocsMultipleCsv}.`);
+    assert.equal(
+      countFilesInDir(saveDocsDir),
+      countFilesInDir(expectedDocsMultipleCsv),
+      `Different number of files in ${saveDocsDir} and ${expectedDocsMultipleCsv}.`
+    );
     compareDocuments(expectedDocsMultipleCsv);
   });
 
@@ -88,9 +96,11 @@ describe('edit-contacts', function() {
 
     await editContactsModule.execute();
 
-    assert.equal(countFilesInDir(saveDocsDir),
-                countFilesInDir(expectedDocsDirOneCol),
-                `Different number of files in ${saveDocsDir} and ${expectedDocsDirOneCol}.`);
+    assert.equal(
+      countFilesInDir(saveDocsDir),
+      countFilesInDir(expectedDocsDirOneCol),
+      `Different number of files in ${saveDocsDir} and ${expectedDocsDirOneCol}.`
+    );
     compareDocuments(expectedDocsDirOneCol);
   });
   
@@ -100,21 +110,27 @@ describe('edit-contacts', function() {
 
     await editContactsModule.execute();
 
-    assert.equal(countFilesInDir(saveDocsDir),
-                countFilesInDir(expectedDocsDirNested),
-                `Different number of files in ${saveDocsDir} and ${expectedDocsDirOneCol}.`);
+    assert.equal(
+      countFilesInDir(saveDocsDir),
+      countFilesInDir(expectedDocsDirNested),
+      `Different number of files in ${saveDocsDir} and ${expectedDocsDirOneCol}.`
+    );
     compareDocuments(expectedDocsDirNested);
   });
 
   it(`should add nested columns to the json docs perfectly`, async function(){
 
-    sinon.stub(environment, 'extraArgs').get(() => ['--files=contact.nested.csv','--columns=is_pilot.rbf.place,weird_property,another_property']);
+    sinon
+      .stub(environment, 'extraArgs')
+      .get(() => ['--files=contact.nested.csv','--columns=is_pilot.rbf.place,weird_property,another_property']);
 
     await editContactsModule.execute();
 
-    assert.equal(countFilesInDir(saveDocsDir),
-                countFilesInDir(expectedDocsDirNested),
-                `Different number of files in ${saveDocsDir} and ${expectedDocsDirOneCol}.`);
+    assert.equal(
+      countFilesInDir(saveDocsDir),
+      countFilesInDir(expectedDocsDirNested),
+      `Different number of files in ${saveDocsDir} and ${expectedDocsDirOneCol}.`
+    );
     compareDocuments(expectedDocsDirNested);
   });
 
@@ -178,9 +194,11 @@ describe('edit-contacts', function() {
 
 
     await editContactsModule.execute();
-    assert.equal(countFilesInDir(saveDocsDir),
-                countFilesInDir(expectedDocsUsersCsv),
-                `Different number of files in ${saveDocsDir} and ${expectedDocsUsersCsv}.`);
+    assert.equal(
+      countFilesInDir(saveDocsDir),
+      countFilesInDir(expectedDocsUsersCsv),
+      `Different number of files in ${saveDocsDir} and ${expectedDocsUsersCsv}.`
+    );
     compareDocuments(expectedDocsUsersCsv);
     
   }); 
@@ -242,10 +260,15 @@ describe('edit-contacts', function() {
             }
           }
         ]
-    });
+      });
     sinon
       .stub(environment,'extraArgs')
-      .get(() => ['--columns=is_in_emnch,rbf', '--files=contact.csv', '--updateOfflineDocs', `--docDirectoryPath=${editedJsonDocs}`]);
+      .get(() => [
+        '--columns=is_in_emnch,rbf',
+        '--files=contact.csv',
+        '--updateOfflineDocs',
+        `--docDirectoryPath=${editedJsonDocs}`
+      ]);
     await editContactsModule.execute();
 
     expect(db.callCount).to.equal(1);

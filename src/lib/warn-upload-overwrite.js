@@ -110,7 +110,7 @@ const getDocHash = async (db, originalDoc) => {
     for (const attachmentName of Object.keys(originalDoc._attachments)) {
       const attachment = originalDoc._attachments[attachmentName];
       const attachmentCompressible = compressibleTypes.length ?
-          compressibleTypes.some(c => matchRegex(c, attachment.content_type)) : true;
+        compressibleTypes.some(c => matchRegex(c, attachment.content_type)) : true;
       if (attachmentCompressible) {
         const data = attachment.data ? attachment.data : await db.getAttachment(originalDoc._id, attachmentName);
         crypt.update(data);

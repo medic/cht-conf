@@ -57,23 +57,25 @@ const TargetSchema = joi.array().items(
       otherwise: joi.forbidden(),
     }),
     date: joi.alternatives().try(
-        joi.string().valid('reported', 'now'),
-        joi.function(),
-      )
+      joi.string().valid('reported', 'now'),
+      joi.function(),
+    )
       .optional()
-      .error(targetError('"date" should be either ["reported", "now"] or "function(contact, report)" returning timestamp')),
+      .error(targetError(
+        '"date" should be either ["reported", "now"] or "function(contact, report)" returning timestamp'
+      )),
     emitCustom: joi.function().optional()
       .error(targetError('"emitCustom" should be a function')),
     dhis: joi.alternatives().try(
-        DhisSchema,
-        joi.array().items(DhisSchema),
-      )
-        .optional(),
+      DhisSchema,
+      joi.array().items(DhisSchema),
+    )
+      .optional(),
     visible: joi.boolean().optional(),
     idType: joi.alternatives().try(
-        joi.string().valid('report', 'contact'),
-        joi.function(),
-      )
+      joi.string().valid('report', 'contact'),
+      joi.function(),
+    )
       .optional()
       .error(targetError('idType should be either "report" or "contact" or "function(contact, report)"')),
     aggregate: joi.boolean().optional(),
@@ -83,14 +85,20 @@ const TargetSchema = joi.array().items(
   .required();
 
 const EventSchema = idPresence => joi.object({
-    id: joi.string().presence(idPresence),
-    days: joi.alternatives().conditional('dueDate', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.number().required() })
-      .error(taskError('"event.days" is a required integer field only when "event.dueDate" is absent')),
-    dueDate: joi.alternatives().conditional('days', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.function().required() })
-      .error(taskError('"event.dueDate" is required to be "function(event, contact, report)" only when "event.days" is absent')),
-    start: joi.number().min(0).required(),
-    end: joi.number().min(0).required(),
-  });
+  id: joi.string().presence(idPresence),
+  days: joi.alternatives().conditional(
+    'dueDate',
+    { is: joi.exist(), then: joi.forbidden(), otherwise: joi.number().required() }
+  ).error(taskError('"event.days" is a required integer field only when "event.dueDate" is absent')),
+  dueDate: joi.alternatives().conditional(
+    'days',
+    { is: joi.exist(), then: joi.forbidden(), otherwise: joi.function().required() }
+  ).error(taskError(
+    '"event.dueDate" is required to be "function(event, contact, report)" only when "event.days" is absent'
+  )),
+  start: joi.number().min(0).required(),
+  end: joi.number().min(0).required(),
+});
 
 const TaskSchema = joi.array().items(
   joi.object({
@@ -103,7 +111,7 @@ const TaskSchema = joi.array().items(
     appliesToType: joi.array().items(joi.string()).optional().min(1),
     contactLabel:
       joi.alternatives().try( joi.string().min(1), joi.function() ).optional()
-      .error(taskError('"contactLabel" should either be a non-empty string or function(contact, report)')),
+        .error(taskError('"contactLabel" should either be a non-empty string or function(contact, report)')),
     resolvedIf: joi
       .alternatives()
       .conditional('actions', {

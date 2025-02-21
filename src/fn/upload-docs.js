@@ -47,7 +47,9 @@ async function execute() {
   const processNextBatch = async (docFiles, batchSize) => {
     const now = new Date();
     if(!docFiles.length) {
-      if(progress) progress.done();
+      if(progress) {
+        progress.done();
+      }
 
       const reportFile = `upload-docs.${now.getTime()}.log.json`;
       fs.writeJson(reportFile, results);
@@ -57,11 +59,11 @@ async function execute() {
     }
 
     const docs = docFiles.slice(0, batchSize)
-        .map(file => {
-          const doc = fs.readJson(file);
-          doc.imported_date = now.toISOString();
-          return doc;
-        });
+      .map(file => {
+        const doc = fs.readJson(file);
+        doc.imported_date = now.toISOString();
+        return doc;
+      });
 
     trace('');
     trace(`Attempting to upload batch of ${docs.length} docs…`);
@@ -177,7 +179,8 @@ function removePlace(userDoc, placeId) {
 }
 
 async function updateAffectedUsers(affectedUsers) {
-  let disabledUsers = 0, updatedUsers = 0;
+  let disabledUsers = 0;
+  let updatedUsers = 0;
   for (const userDoc of affectedUsers) {
     const shouldDisable = !userDoc.place || userDoc.place?.length === 0;
     if (shouldDisable) {

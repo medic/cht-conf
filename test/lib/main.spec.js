@@ -39,7 +39,7 @@ describe('main', () => {
       }),
     };
 
-    for (let attr of Object.keys(mocks)) {
+    for (const attr of Object.keys(mocks)) {
       main.__set__(attr, mocks[attr]);
     }
   });

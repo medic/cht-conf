@@ -19,7 +19,9 @@ module.exports = function() {
 
     const response = responses.shift();
 
-    if(!response) return error(req, res);
+    if(!response) {
+      return error(req, res);
+    }
 
     res.status(response.status || 200);
     res.type(response.type || 'json');

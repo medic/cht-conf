@@ -1,6 +1,6 @@
 const chai = require('chai');
-var {expect, assert}  = require('chai');
-var chaiXml = require('chai-xml');
+const { expect, assert }  = require('chai');
+const chaiXml = require('chai-xml');
 const sinon = require('sinon');
 
 const environment = require('../../src/lib/environment');

@@ -10,13 +10,13 @@ function aReportBasedTask() {
 }
 
 function aPersonBasedTask() {
-  var task = aTask('contacts');
+  const task = aTask('contacts');
   task.appliesToType = ['person'];
   return task;
 }
 
 function aPlaceBasedTask() {
-  var task = aTask('contacts');
+  const task = aTask('contacts');
   task.appliesToType = ['clinic'];
   return task;
 }
@@ -87,7 +87,9 @@ function aReportWithScheduledTasks(scheduledTaskCount) {
   ++idCounter;
 
   const scheduled_tasks = [];
-  while(scheduledTaskCount--) scheduled_tasks.push({ due:TEST_DATE });
+  while(scheduledTaskCount--) {
+    scheduled_tasks.push({ due:TEST_DATE });
+  }
 
   return { _id:`r-${idCounter}`, form:'F', scheduled_tasks };
 }

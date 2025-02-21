@@ -10,7 +10,7 @@ const userPrompt = rewire('../../../src/lib/user-prompt');
 describe('JsDocs', () => {
   let readline;
   
-  let docOnj = { docDirectoryPath: '/test/path/for/testing ', force: false };
+  const docOnj = { docDirectoryPath: '/test/path/for/testing ', force: false };
   beforeEach(() => {
     readline = { keyInYN: sinon.stub() };
     userPrompt.__set__('readline', readline);

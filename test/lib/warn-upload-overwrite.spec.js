@@ -335,7 +335,7 @@ describe('warn-upload-overwrite', () => {
     });
 
     it('uploads the local xml if remote xml does not exist', () => {
-      let error = new Error('No attachment');
+      const error = new Error('No attachment');
       error.status = 404;
       const getAttachment = sinon.stub(apiStub.db, 'get').rejects(error);
       sinon.stub(fs, 'read').returns('{"localhost/medic":"y"}');

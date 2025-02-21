@@ -35,7 +35,8 @@ const reports_by_freetext = {
 };
 
 describe('hierarchy-operations', () => {
-  let pouchDb, scenarioCount = 0;
+  let pouchDb;
+  let scenarioCount = 0;
   const writtenDocs = [];
   const getWrittenDoc = docId => {
     const matches = writtenDocs.filter(doc => doc && doc._id === docId);

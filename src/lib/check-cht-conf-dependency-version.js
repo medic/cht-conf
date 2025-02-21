@@ -19,8 +19,8 @@ module.exports = projectDir => {
   const majorRunningVersion = semver.major(runningVersion);
   let upgradeDowngradeLocalMsg = '';
   let upgradeDowngradeProjectMsg = '';
-  let satisfiesLessThanMajorRunningVersion = semver.satisfies(projectVersion, `<${majorRunningVersion}.x`);
-  let satisifiesGreaterThanRunningVersion = semver.satisfies(projectVersion, `>${runningVersion}`);
+  const satisfiesLessThanMajorRunningVersion = semver.satisfies(projectVersion, `<${majorRunningVersion}.x`);
+  const satisifiesGreaterThanRunningVersion = semver.satisfies(projectVersion, `>${runningVersion}`);
 
   if(satisfiesLessThanMajorRunningVersion || satisifiesGreaterThanRunningVersion) {
 

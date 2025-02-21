@@ -104,7 +104,8 @@ describe('lineage constriants', () => {
     const assertNoHierarchyErrors = lineageConstraints.__get__('getPrimaryContactViolations');
 
     describe('on memory pouchdb', async () => {
-      let pouchDb, scenarioCount = 0;
+      let pouchDb;
+      let scenarioCount = 0;
       beforeEach(async () => {
         pouchDb = new PouchDB(`lineage${scenarioCount++}`, { adapter: 'memory' });
 

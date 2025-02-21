@@ -18,18 +18,18 @@ module.exports = {
         const raw = fs.readCsv(csvFile);
 
         const messages = raw.rows.map(row => {
-        const valueOf = column => row[raw.cols.indexOf(column)];
+          const valueOf = column => row[raw.cols.indexOf(column)];
 
-        return {
-          id:           uuid(),
-          from:         valueOf('from'),
-          content:      valueOf('message'),
-          sms_sent:     valueOf('sent_timestamp') || Date.now(),
-          sms_received: Date.now(),
-        };
-      });
+          return {
+            id:           uuid(),
+            from:         valueOf('from'),
+            content:      valueOf('message'),
+            sms_sent:     valueOf('sent_timestamp') || Date.now(),
+            sms_received: Date.now(),
+          };
+        });
 
-      return api().uploadSms(messages);
-    }, Promise.resolve());
+        return api().uploadSms(messages);
+      }, Promise.resolve());
   }
 };
