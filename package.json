@@ -36,7 +36,7 @@
   "dependencies": {
     "@medic/translation-checker": "^1.1.0",
     "@parcel/watcher": "^2.5.1",
-    "@xmldom/xmldom": "^0.8.10",
+    "@xmldom/xmldom": "^0.9.7",
     "async-retry": "^1.3.3",
     "canonical-json": "0.0.4",
     "csv-parse": "^5.6.0",
