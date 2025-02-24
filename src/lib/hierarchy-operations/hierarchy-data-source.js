@@ -55,19 +55,13 @@ async function getContactWithDescendants(db, contactId) {
 }
 
 async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
-  const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-  const createdAtKeys = createdAtId ? [
-    [`patient_id:${createdAtId}`],
-    [`patient_uuid:${createdAtId}`],
-    [`place_id:${createdAtId}`],
-    [`place_uuid:${createdAtId}`]
-  ] : [];
+  const keys = [...createdByIds];
+  if (createdAtId) {
+    keys.push(createdAtId);
+  }
 
-  const reports = await db.query('medic-client/reports_by_freetext', {
-    keys: [
-      ...createdByKeys,
-      ...createdAtKeys,
-    ],
+  const reports = await db.query('medic-client/reports_by_subject', {
+    keys,
     include_docs: true,
     limit: BATCH_SIZE,
     skip,
