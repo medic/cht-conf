@@ -29,6 +29,11 @@ const contacts_by_depth = {
   map: "function(doc) {\n  if (doc.type === 'tombstone' && doc.tombstone) {\n    doc = doc.tombstone;\n  }\n  if (['contact', 'person', 'clinic', 'health_center', 'district_hospital'].indexOf(doc.type) !== -1) {\n    var value = doc.patient_id || doc.place_id;\n    var parent = doc;\n    var depth = 0;\n    while (parent) {\n      if (parent._id) {\n        emit([parent._id], value);\n        emit([parent._id, depth], value);\n      }\n      depth++;\n      parent = parent.parent;\n    }\n  }\n}",
 };
 
+const reports_by_freetext = {
+  // eslint-disable-next-line quotes
+  map: "function(doc) {\n  var skip = [ '_id', '_rev', 'type', 'refid', 'content' ];\n\n  var usedKeys = [];\n  var emitMaybe = function(key, value) {\n    if (usedKeys.indexOf(key) === -1 && // Not already used\n        key.length > 2 // Not too short\n    ) {\n      usedKeys.push(key);\n      emit([key], value);\n    }\n  };\n\n  var emitField = function(key, value, reportedDate) {\n    if (!key || !value) {\n      return;\n    }\n    key = key.toLowerCase();\n    if (skip.indexOf(key) !== -1 || /_date$/.test(key)) {\n      return;\n    }\n    if (typeof value === 'string') {\n      value = value.toLowerCase();\n      value.split(/\\s+/).forEach(function(word) {\n        emitMaybe(word, reportedDate);\n      });\n    }\n    if (typeof value === 'number' || typeof value === 'string') {\n      emitMaybe(key + ':' + value, reportedDate);\n    }\n  };\n\n  if (doc.type === 'data_record' && doc.form) {\n    Object.keys(doc).forEach(function(key) {\n      emitField(key, doc[key], doc.reported_date);\n    });\n    if (doc.fields) {\n      Object.keys(doc.fields).forEach(function(key) {\n        emitField(key, doc.fields[key], doc.reported_date);\n      });\n    }\n    if (doc.contact && doc.contact._id) {\n      emitMaybe('contact:' + doc.contact._id.toLowerCase(), doc.reported_date);\n    }\n  }\n}"
+};
+
 const reports_by_subject = {
   // eslint-disable-next-line quotes
   map: "function(doc) {\n  if (doc.type === 'data_record' && doc.form) {\n    var emitField = function(obj, field) {\n      if (obj[field]) {\n        emit(obj[field], doc.reported_date);\n      }\n    };\n\n    emitField(doc, 'patient_id');\n    emitField(doc, 'place_id');\n    emitField(doc, 'case_id');\n\n    if (doc.fields) {\n      emitField(doc.fields, 'patient_id');\n      emitField(doc.fields, 'place_id');\n      emitField(doc.fields, 'case_id');\n      emitField(doc.fields, 'patient_uuid');\n      emitField(doc.fields, 'place_uuid');\n    }\n  }\n}"
@@ -89,7 +94,10 @@ describe('hierarchy-operations', () => {
 
     await pouchDb.put({
       _id: '_design/medic-client',
-      views: { reports_by_subject },
+      views: {
+        reports_by_freetext,
+        reports_by_subject
+      },
     });
 
     await pouchDb.put({
@@ -196,16 +204,16 @@ describe('hierarchy-operations', () => {
       });
 
       const contactIdsKeys = [
-        'clinic_1',
-        'clinic_1_contact',
-        'health_center_1',
-        'health_center_1_contact',
-        'patient_1'
+        ['contact:clinic_1'],
+        ['contact:clinic_1_contact'],
+        ['contact:health_center_1'],
+        ['contact:health_center_1_contact'],
+        ['contact:patient_1']
       ];
       expect(pouchDb.query.callCount).to.equal(2);
       expect(pouchDb.query.args).to.deep.equal([
         ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
-        ['medic-client/reports_by_subject', { keys: contactIdsKeys, include_docs: true, limit: 10000, skip: 0, group_level: undefined }],
+        ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 10000, skip: 0, group_level: undefined }],
       ]);
     });
 
@@ -592,19 +600,19 @@ describe('hierarchy-operations', () => {
         expect(pouchDb.query.callCount).to.deep.equal(6);
   
         const contactIdsKeys = [
-          'clinic_1',
-          'clinic_1_contact',
-          'health_center_1',
-          'health_center_1_contact',
-          'patient_1'
+          ['contact:clinic_1'],
+          ['contact:clinic_1_contact'],
+          ['contact:health_center_1'],
+          ['contact:health_center_1_contact'],
+          ['contact:patient_1']
         ];
         expect(pouchDb.query.args).to.deep.equal([
           ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
-          ['medic-client/reports_by_subject', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 0, group_level: undefined }],
-          ['medic-client/reports_by_subject', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 1, group_level: undefined }],
-          ['medic-client/reports_by_subject', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 2, group_level: undefined }],
-          ['medic-client/reports_by_subject', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 3, group_level: undefined }],
-          ['medic-client/reports_by_subject', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 4, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 0, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 1, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 2, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 3, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 4, group_level: undefined }],
         ]);
       });
   
@@ -674,17 +682,17 @@ describe('hierarchy-operations', () => {
         expect(pouchDb.query.callCount).to.deep.equal(4);
   
         const contactIdsKeys = [
-          'clinic_1',
-          'clinic_1_contact',
-          'health_center_1',
-          'health_center_1_contact',
-          'patient_1'
+          ['contact:clinic_1'],
+          ['contact:clinic_1_contact'],
+          ['contact:health_center_1'],
+          ['contact:health_center_1_contact'],
+          ['contact:patient_1']
         ];
         expect(pouchDb.query.args).to.deep.equal([
           ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
-          ['medic-client/reports_by_subject', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 0, group_level: undefined }],
-          ['medic-client/reports_by_subject', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 2, group_level: undefined }],
-          ['medic-client/reports_by_subject', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 4, group_level: undefined }]
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 0, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 2, group_level: undefined }],
+          ['medic-client/reports_by_freetext', { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 4, group_level: undefined }]
         ]);
       });
     });
