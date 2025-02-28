@@ -5,16 +5,17 @@ const sinon = require('sinon');
 
 const apiStub = require('../api-stub');
 const environment = require('../../src/lib/environment');
-let uploadDocs = rewire('../../src/fn/upload-docs');
+const uploadDocs = rewire('../../src/fn/upload-docs');
 const userPrompt = rewire('../../src/lib/user-prompt');
 
 const { assert, expect } = chai;
 chai.use(chaiAsPromised);
-let readLine = { keyInYN: () => true };
+const readLine = { keyInYN: () => true };
 userPrompt.__set__('readline', readLine);
 uploadDocs.__set__('userPrompt', userPrompt);
 
-let fs, expectedDocs;
+let fs;
+let expectedDocs;
 
 const API_VERSION_RESPONSE = { status: 200, body: { version: '4.10.0' }};
 

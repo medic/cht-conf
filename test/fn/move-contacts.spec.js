@@ -11,7 +11,8 @@ describe('move-contacts', () => {
 
     it('empty arguments', () => expect(() => parseExtraArgs(__dirname, [])).to.throw('required list of contacts'));
 
-    it('contacts only', () => expect(() => parseExtraArgs(__dirname, ['--contacts=a'])).to.throw('required parameter parent'));
+    it('contacts only', () => expect(() => parseExtraArgs(__dirname, ['--contacts=a']))
+      .to.throw('required parameter parent'));
 
     it('contacts and parents', () => {
       const args = ['--contacts=food,is,tasty', '--parent=bar', '--docDirectoryPath=/', '--force=hi'];

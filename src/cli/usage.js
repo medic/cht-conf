@@ -1,6 +1,7 @@
 const supportedActions = require('./supported-actions');
 
 module.exports = () => {
+  /* eslint-disable max-len */
   console.log(`
 ${bold('NAME')}
   cht - Configure your CHT instances
@@ -69,6 +70,7 @@ ${bold('OPTIONS')}
   --force
     CAN BE DANGEROUS! Passes yes to all commands and any where that would prompt to overwrite changes will overwrite automatically. 
 `);
+  /* eslint-enable max-len */
 };
 
 const bold = text => `\x1b[1m${text}\x1b[0m`;

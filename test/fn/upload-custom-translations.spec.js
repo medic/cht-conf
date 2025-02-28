@@ -158,7 +158,9 @@ describe('upload-custom-translations', () => {
         .then(() => getTranslationDoc(apiStub, 'qp'))
         .then(messagesQp => {
           assert(messagesQp.name === 'TODO: please ask admin to set this in settings UI');
-          assert(log.warn.lastCall.calledWithMatch('\'qp\' is not a recognized ISO 639 language code, please ask admin to set the name'));
+          assert(log.warn.lastCall.calledWithMatch(
+            '\'qp\' is not a recognized ISO 639 language code, please ask admin to set the name'
+          ));
         });
     });
   });
@@ -552,7 +554,11 @@ describe('upload-custom-translations', () => {
           assert.fail('Expected error to be thrown');
         })
         .catch(err => {
-          assert.equal(err.message, 'The language code \'bad(code\' is not valid. It must begin with a letter(a-z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.');
+          assert.equal(
+            err.message,
+            'The language code \'bad(code\' is not valid. It must begin with a letter(a-z, A-Z), '
+            + 'followed by any number of hyphens, underscores, letters, or numbers.'
+          );
         });
     };
 

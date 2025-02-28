@@ -5,8 +5,8 @@ module.exports = {
   requiresInstance: false,
   execute: async () => {
     await fetchFilesFromGoogleDrive(
-        `${environment.pathToProject}/csvs-on-google-drive.json`,
-        `${environment.pathToProject}/csv`,
-        'text/csv');
+      `${environment.pathToProject}/csvs-on-google-drive.json`,
+      `${environment.pathToProject}/csv`,
+      'text/csv');
   }
 };

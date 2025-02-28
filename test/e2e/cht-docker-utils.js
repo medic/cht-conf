@@ -94,7 +94,8 @@ const startProject = (projectName) => new Promise((resolve, reject) => {
 });
 
 const destroyProject = (projectName) => new Promise((resolve, reject) => {
-  // stdio: 'inherit' to see the script's logs and understand why it requests elevated permissions when cleaning up project files
+  // stdio: 'inherit' to see the script's logs and understand why it requests elevated permissions
+  // when cleaning up project files
   const childProcess = spawn(dockerHelperScript, [`${projectName}.env`, 'destroy'], {
     stdio: 'inherit',
     cwd: dockerHelperDirectory,

@@ -40,7 +40,9 @@ const formMediaMatcher = (formMediaDir) => {
 
 const execute = async (projectDir, subDirectory, options) => {
   const db = pouch();
-  if (!options) options = {};
+  if (!options) {
+    options = {};
+  }
   const formsDir = getFormDir(projectDir, subDirectory);
   if (!fs.exists(formsDir)) {
     log.info(`Forms dir not found: ${formsDir}`);
@@ -68,7 +70,9 @@ const execute = async (projectDir, subDirectory, options) => {
     };
 
     const internalId = readIdFrom(xml);
-    if (internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/cht-core/issues/3342.');
+    if (internalId !== baseDocId) {
+      log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/cht-core/issues/3342.');
+    }
 
     const docId = `form:${baseDocId}`;
     const doc = {
@@ -111,7 +115,7 @@ module.exports = {
 const updateFromPropertiesFile = (doc, path) => {
   if (fs.exists(path)) {
 
-    let ignoredKeys = [];
+    const ignoredKeys = [];
     const properties = fs.readJson(path);
 
     Object.keys(properties).forEach(key => {

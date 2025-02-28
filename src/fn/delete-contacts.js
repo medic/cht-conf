@@ -44,6 +44,7 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
 
 const bold = text => `\x1b[1m${text}\x1b[0m`;
 const usage = () => {
+  /* eslint-disable max-len */
   info(`
 ${bold('cht-conf\'s delete-contacts action')}
 When combined with 'upload-docs' this action recursively deletes a contact and all of their descendant contacts and data. ${bold('This operation is permanent. It cannot be undone.')}
@@ -61,4 +62,5 @@ ${bold('OPTIONS')}
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
 `);
+  /* eslint-enable max-len */
 };

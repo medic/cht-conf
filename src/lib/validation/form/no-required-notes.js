@@ -16,7 +16,10 @@ module.exports = {
       .filter(bind => !bind.getAttribute('calculate'))
       .map(bind => bind.getAttribute('nodeset'));
     if(requiredNotes.length) {
-      errors.push(`Form at ${xformPath} contains the following note fields with 'required' expressions: [${requiredNotes.join(', ')}]`);
+      errors.push(
+        `Form at ${xformPath} contains the following note fields with 'required' expressions: `
+        + `[${requiredNotes.join(', ')}]`
+      );
     }
     return { errors, warnings: [] };
   }

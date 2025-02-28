@@ -188,7 +188,9 @@ describe('validate-forms', () => {
     return validateForms.__with__({ validations: [mockValidation(), mockValidation(), mockValidation()] })(async () => {
       await validateForms(`${BASE_DIR}/non-existant-directory`, FORMS_SUBDIR);
       expect(logInfo.callCount).to.equal(1);
-      expect(logInfo.args[0][0]).to.equal(`Forms dir not found: ${BASE_DIR}/non-existant-directory/forms/${FORMS_SUBDIR}`);
+      expect(logInfo.args[0][0]).to.equal(
+        `Forms dir not found: ${BASE_DIR}/non-existant-directory/forms/${FORMS_SUBDIR}`
+      );
     });
   });
 });

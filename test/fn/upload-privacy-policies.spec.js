@@ -177,8 +177,14 @@ describe('upload privacy policies', () => {
         chai.expect(warnUploadOverwrite.postUploadDoc.callCount).to.equal(1);
         chai.expect(logger.warn.callCount).to.equal(2);
         chai.expect(logger.warn.args).to.deep.equal([
-          ['Privacy policies attachment files must be of type text/html. Found attachment.fr.txt of type text/plain. Skipping.'],
-          ['Privacy policies attachment files must be of type text/html. Found attachment.fr.png of type image/png. Skipping.'],
+          [
+            'Privacy policies attachment files must be of type text/html. ' +
+            'Found attachment.fr.txt of type text/plain. Skipping.'
+          ],
+          [
+            'Privacy policies attachment files must be of type text/html. ' +
+            'Found attachment.fr.png of type image/png. Skipping.'
+          ],
         ]);
       })
       .then(() => getDoc())

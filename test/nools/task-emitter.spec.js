@@ -223,7 +223,7 @@ describe('task-emitter', () => {
           },
         ];
 
-        for (let scenario of scenarios) {
+        for (const scenario of scenarios) {
           it(scenario.name, () => {
             // given
             const config = {

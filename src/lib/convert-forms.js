@@ -31,7 +31,9 @@ const formFileMatcher = (fileName) => {
 };
 
 const execute = async (projectDir, subDirectory, options) => {
-  if (!options) options = {};
+  if (!options) {
+    options = {};
+  }
 
   const formsDir = getFormDir(projectDir, subDirectory);
 
@@ -43,7 +45,7 @@ const execute = async (projectDir, subDirectory, options) => {
   const filesToConvert = argsFormFilter(formsDir, FORM_EXTENSION, options)
     .filter(name => formFileMatcher(name));
 
-  for (let xls of filesToConvert) {
+  for (const xls of filesToConvert) {
     const originalSourcePath = `${formsDir}/${xls}`;
     let sourcePath;
 
@@ -51,7 +53,9 @@ const execute = async (projectDir, subDirectory, options) => {
       const temporaryPath = `${fs.mkdtemp()}/${options.force_data_node}.xlsx`;
       fs.copy(originalSourcePath, temporaryPath);
       sourcePath = temporaryPath;
-    } else sourcePath = originalSourcePath;
+    } else {
+      sourcePath = originalSourcePath;
+    }
 
     const targetPath = `${fs.withoutExtension(originalSourcePath)}.xml`;
 
@@ -76,8 +80,14 @@ const xls2xform = (sourcePath, targetPath) =>
       if (executableAvailable()) {
         if (e.includes('unrecognized arguments: --skip_validate')) {
           throw new Error('Your xls2xform installation appears to be out of date.' + UPDATE_INSTRUCTIONS);
-        } else throw e;
-      } else throw new Error('There was a problem executing xls2xform.  It may not be installed.' + INSTALLATION_INSTRUCTIONS);
+        } else {
+          throw e;
+        }
+      } else {
+        throw new Error(
+          'There was a problem executing xls2xform.  It may not be installed.' + INSTALLATION_INSTRUCTIONS
+        );
+      }
     });
 
 // here we fix the form content in arcane ways.  Seeing as we have out own fork
@@ -103,14 +113,18 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
 
   // Enketo _may_ not work with forms which define a default language - see
   // https://github.com/medic/cht-core/issues/3174
-  if (enketo) xml = xml.replace(/ default="true\(\)"/g, '');
+  if (enketo) {
+    xml = xml.replace(/ default="true\(\)"/g, '');
+  }
 
   if (hiddenFields) {
     const r = new RegExp(`<(${hiddenFields.join('|')})(/?)>`, 'g');
     xml = xml.replace(r, '<$1 tag="hidden"$2>');
   }
 
-  if (transformer) xml = transformer(xml, path);
+  if (transformer) {
+    xml = transformer(xml, path);
+  }
 
 
   // Check for deprecations
@@ -122,8 +136,12 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
 };
 
 function getHiddenFields(propsJson) {
-  if (!fs.exists(propsJson)) return [];
-  else return fs.readJson(propsJson).hidden_fields;
+  if (!fs.exists(propsJson)) {
+    return [];
+  }
+  else {
+    return fs.readJson(propsJson).hidden_fields;
+  }
 }
 
 function executableAvailable() {

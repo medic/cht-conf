@@ -48,6 +48,7 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
 
 const bold = text => `\x1b[1m${text}\x1b[0m`;
 const usage = () => {
+  /* eslint-disable max-len */
   info(`
 ${bold('cht-conf\'s move-contacts action')}
 When combined with 'upload-docs' this action effectively moves a contact from one place in the hierarchy to another.
@@ -65,4 +66,5 @@ ${bold('OPTIONS')}
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
 `);
+  /* eslint-enable max-len */
 };

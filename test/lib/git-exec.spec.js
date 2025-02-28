@@ -17,9 +17,8 @@ describe('git-exec', () => {
   });
 
   it('`status` returns `false` if the working directory does not have a git repository', async () => {
-    let result;
     git.__set__('exec', () => Promise.reject('fatal: not a git repository (or any of the parent directories): .git'));
-    result = await git.status();
+    const result = await git.status();
     expect(result).to.be.null;
   });
 

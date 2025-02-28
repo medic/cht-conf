@@ -130,7 +130,9 @@ describe('watch-project', () => {
     sinon.stub(environment, 'skipTranslationCheck').get(() => false);
     sinon.stub(environment, 'skipValidate').get(() => false);
     sinon.stub(environment, 'force').get(() => false);
-    return apiStub.db.put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } }).then(() => apiStub.start());
+    return apiStub.db
+      .put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } })
+      .then(() => apiStub.start());
   });
 
   afterEach(async () => {
