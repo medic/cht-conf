@@ -15,8 +15,9 @@ module.exports = {
     const options = {
       docDirectoryPath: args.docDirectoryPath,
       force: args.force,
+      disableUsers: args.disableUsers,
     };
-    return HierarchyOperations(db, options).move(args.sourceIds, args.destinationId);
+    return HierarchyOperations(db, options).delete(args.sourceIds);
   }
 };
 
@@ -30,17 +31,12 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
 
   if (sourceIds.length === 0) {
     usage();
-    throw Error('Action "move-contacts" is missing required list of contacts to be moved');
-  }
-
-  if (!args.parent) {
-    usage();
-    throw Error('Action "move-contacts" is missing required parameter parent');
+    throw Error('Action "delete-contacts" is missing required list of contacts to be deleted');
   }
 
   return {
-    destinationId: args.parent,
     sourceIds,
+    disableUsers: !!args['disable-users'],
     docDirectoryPath: path.resolve(projectDir, args.docDirectoryPath || 'json_docs'),
     force: !!args.force,
   };
@@ -49,18 +45,18 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
 const bold = text => `\x1b[1m${text}\x1b[0m`;
 const usage = () => {
   info(`
-${bold('cht-conf\'s move-contacts action')}
-When combined with 'upload-docs' this action effectively moves a contact from one place in the hierarchy to another.
+${bold('cht-conf\'s delete-contacts action')}
+When combined with 'upload-docs' this action recursively deletes a contact and all of their descendant contacts and data. ${bold('This operation is permanent. It cannot be undone.')}
 
 ${bold('USAGE')}
-cht --local move-contacts -- --contacts=<id1>,<id2> --parent=<parent_id>
+cht --local delete-contacts -- --contacts=<id1>,<id2>
 
 ${bold('OPTIONS')}
---contacts=<id1>,<id2>
-  A comma delimited list of ids of contacts to be moved.
+--contacts=<id1>,<id2>  (or --contact=<id1>,<id2>)
+  A comma delimited list of ids of contacts to be deleted.
 
---parent=<parent_id>
-  Specifies the ID of the new parent. Use '${HierarchyOperations.HIERARCHY_ROOT}' to identify the top of the hierarchy (no parent).
+--disable-users
+  When flag is present, users at any deleted place will be permanently disabled.
 
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.

@@ -1,3 +1,45 @@
+## [4.4.1](https://github.com/medic/cht-conf/compare/v4.4.0...v4.4.1) (2025-02-03)
+
+
+### Bug Fixes
+
+* remove typo from .eslintrc file created by initialize-project-layout ([#658](https://github.com/medic/cht-conf/issues/658)) ([1aaad4c](https://github.com/medic/cht-conf/commit/1aaad4c336843bd85db8ca7d0373a0f87d629827))
+
+# [4.4.0](https://github.com/medic/cht-conf/compare/v4.3.0...v4.4.0) (2024-12-16)
+
+
+### Features
+
+* **#650:** delete-contacts action ([#652](https://github.com/medic/cht-conf/issues/652)) ([129f38f](https://github.com/medic/cht-conf/commit/129f38fca83fa84717c7ba16857b315c25d33b9e)), closes [#650](https://github.com/medic/cht-conf/issues/650)
+
+# [4.3.0](https://github.com/medic/cht-conf/compare/v4.2.0...v4.3.0) (2024-12-16)
+
+
+### Features
+
+* **#648:** add --disable-users command for merge-contacts action ([#649](https://github.com/medic/cht-conf/issues/649)) ([c78d3fd](https://github.com/medic/cht-conf/commit/c78d3fd1ed1588cfefdf21384840743f5faea62d)), closes [#648](https://github.com/medic/cht-conf/issues/648)
+
+# [4.2.0](https://github.com/medic/cht-conf/compare/v4.1.3...v4.2.0) (2024-12-11)
+
+
+### Features
+
+* **#373:** merge-contacts action ([#647](https://github.com/medic/cht-conf/issues/647)) ([006554c](https://github.com/medic/cht-conf/commit/006554cf3a414d9577e05c6dfaef3bbd59849403)), closes [#373](https://github.com/medic/cht-conf/issues/373)
+
+## [4.1.3](https://github.com/medic/cht-conf/compare/v4.1.2...v4.1.3) (2024-11-13)
+
+
+### Bug Fixes
+
+* **#644:** support node 22 ([d8ece55](https://github.com/medic/cht-conf/commit/d8ece55cd601ae8f4f1a98cd496394f14c5ded0d)), closes [#644](https://github.com/medic/cht-conf/issues/644)
+
+## [4.1.2](https://github.com/medic/cht-conf/compare/v4.1.1...v4.1.2) (2024-10-09)
+
+
+### Bug Fixes
+
+* **#635:** update upload-artifact GH action to version 4 ([#636](https://github.com/medic/cht-conf/issues/636)) ([bafd6e3](https://github.com/medic/cht-conf/commit/bafd6e35607a481daaa911b16af4899bb1a00f7a)), closes [#635](https://github.com/medic/cht-conf/issues/635) [#635](https://github.com/medic/cht-conf/issues/635)
+
 ## [4.1.1](https://github.com/medic/cht-conf/compare/v4.1.0...v4.1.1) (2024-08-21)
 
 
