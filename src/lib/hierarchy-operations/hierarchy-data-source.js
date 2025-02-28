@@ -55,25 +55,27 @@ async function getContactWithDescendants(db, contactId) {
 }
 
 async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
+  // TODO: add check based on CHT version to query the right view i.e. clouseau or nouveau
   const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-  const createdAtKeys = createdAtId ? [
-    [`patient_id:${createdAtId}`],
-    [`patient_uuid:${createdAtId}`],
-    [`place_id:${createdAtId}`],
-    [`place_uuid:${createdAtId}`]
-  ] : [];
-
-  const reports = await db.query('medic-client/reports_by_freetext', {
-    keys: [
-      ...createdByKeys,
-      ...createdAtKeys,
-    ],
+  const reportsFromCreatedByKeys = await db.query('medic-client/reports_by_freetext', {
+    keys: createdByKeys,
     include_docs: true,
     limit: BATCH_SIZE,
     skip,
   });
 
-  const docsWithId = reports.rows.map(({ doc }) => [doc._id, doc]);
+  let reportsFromCreatedAtId = { rows: [] };
+  if (createdAtId) {
+    reportsFromCreatedAtId = await db.query('medic-client/reports_by_subject', {
+      key: createdAtId,
+      include_docs: true,
+      limit: BATCH_SIZE,
+      skip,
+    });
+  }
+  const allRows = [...reportsFromCreatedByKeys.rows, ...reportsFromCreatedAtId.rows];
+
+  const docsWithId = allRows.map(({ doc }) => [doc._id, doc]);
   return Array.from(new Map(docsWithId).values());
 }
 
