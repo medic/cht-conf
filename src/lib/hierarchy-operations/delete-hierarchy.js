@@ -22,8 +22,7 @@ async function deleteHierarchy(db, options, sourceIds) {
     }
 
     const affectedContactCount = descendantsAndSelf.length;
-    
-    info(`Staged updates to delete ${prettyPrintDocument(sourceDoc)}. ${affectedContactCount.length} contact(s) and ${affectedReportCount} report(s).`);
+    info(`Staged updates to delete ${prettyPrintDocument(sourceDoc)}. ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);
   }
 }
 
@@ -31,7 +30,7 @@ async function deleteReportsForContact(db, options, contact) {
   let skip = 0;
   let reportBatch;
   do {
-    reportBatch = await DataSource.getReportsForContacts(db, [], contact._id, skip);
+    reportBatch = await DataSource.getReportsForContacts(db, [], [contact._id], skip);
 
     for (const report of reportBatch) {
       JsDocs.deleteDoc(options, report);
