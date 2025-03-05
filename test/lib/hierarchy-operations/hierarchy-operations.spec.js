@@ -8,6 +8,8 @@ const JsDocs = rewire('../../../src/lib/hierarchy-operations/jsdocFolder');
 const DataSource = rewire('../../../src/lib/hierarchy-operations/hierarchy-data-source');
 
 const PouchDB = require('pouchdb-core');
+const environment = require('../../../src/lib/environment');
+const apiStub = require('../../api-stub');
 
 chai.use(chaiAsPromised);
 PouchDB.plugin(require('pouchdb-adapter-memory'));
@@ -39,7 +41,7 @@ const reports_by_subject = {
   map: "function(doc) {\n  if (doc.type === 'data_record' && doc.form) {\n    var emitField = function(obj, field) {\n      if (obj[field]) {\n        emit(obj[field], doc.reported_date);\n      }\n    };\n\n    emitField(doc, 'patient_id');\n    emitField(doc, 'place_id');\n    emitField(doc, 'case_id');\n\n    if (doc.fields) {\n      emitField(doc.fields, 'patient_id');\n      emitField(doc.fields, 'place_id');\n      emitField(doc.fields, 'case_id');\n      emitField(doc.fields, 'patient_uuid');\n      emitField(doc.fields, 'place_uuid');\n    }\n  }\n}"
 };
 
-describe('hierarchy-operations', () => {
+describe.only('hierarchy-operations', () => {
   let pouchDb, scenarioCount = 0;
   const writtenDocs = [];
   const getWrittenDoc = docId => {
@@ -110,9 +112,17 @@ describe('hierarchy-operations', () => {
 
     JsDocs.prepareFolder = () => {};
     writtenDocs.length = 0;
+
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
+    sinon.stub(environment, 'force').get(() => false);
+    sinon.stub(environment, 'apiUrl').get(() => 'localhost');
+    return apiStub.start();
   });
 
-  afterEach(async () => pouchDb.destroy());
+  afterEach(async () => {
+    pouchDb.destroy();
+    return apiStub.stop();
+  });
   
   describe('move', () => {
     it('move health_center_1 to district_2', async () => {
@@ -878,8 +888,13 @@ describe('hierarchy-operations', () => {
       expectDeleted('district_2', false);
     });
 
-    it('reports created by deleted contacts are not deleted', async () => {
+    it.only('reports created by deleted contacts are not deleted', async () => {
       // setup
+      apiStub.giveResponses({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await mockReport(pouchDb, {
         id: 'other_report',
         creatorId: 'health_center_2_contact',

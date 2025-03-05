@@ -1,4 +1,8 @@
 const lineageManipulation = require('./lineage-manipulation');
+const {getValidApiVersion} = require('../get-api-version');
+const semver = require('semver');
+const api = require('../api');
+const environment = require('../environment');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
@@ -54,28 +58,63 @@ async function getContactWithDescendants(db, contactId) {
     .filter(doc => doc && doc.type !== 'tombstone');
 }
 
-async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
-  // TODO: add check based on CHT version to query the right view i.e. clouseau or nouveau
-  const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-  const reportsFromCreatedByKeys = await db.query('medic-client/reports_by_freetext', {
-    keys: createdByKeys,
+const getReportsFromNouveauByCreatedByIds = async (createdByIds, skip) => {
+  const queryString = createdByIds.map(id => `contact:"${id}"`).join(' OR ');
+  let reportsFromCreatedByKeys = [];
+  // the request to the API needs to be skipped altogether unlike the clouseau
+  // view because this view does not take in an empty query string
+  if (queryString.trim().length > 0) {
+    const api_ = api();
+    const res = await api_.request.get(`${environment.apiUrl}/_design/medic-nouveau/_nouveau/reports_by_freetext`, {
+      qs: {
+        q: queryString,
+        include_docs: true,
+        limit: BATCH_SIZE,
+        skip
+      },
+      json: true
+    });
+    reportsFromCreatedByKeys = res.hits.map(item => item.doc);
+  }
+  return reportsFromCreatedByKeys;
+};
+
+const getFromDbView = async (db, view, keys, skip) => {
+  const res = await db.query(view, {
+    keys,
     include_docs: true,
     limit: BATCH_SIZE,
-    skip,
+    skip
   });
+  return res.rows;
+};
 
-  let reportsFromCreatedAtId = { rows: [] };
-  if (createdAtId) {
-    reportsFromCreatedAtId = await db.query('medic-client/reports_by_subject', {
-      key: createdAtId,
-      include_docs: true,
-      limit: BATCH_SIZE,
-      skip,
-    });
+async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
+  console.log('here');
+  console.log('createdByIds:', createdByIds);
+  console.log('createdAt:', createdAtId);
+  console.log('skip', skip);
+  const coreVersion = await getValidApiVersion();
+  // NOTE: this is the latest version at the time of writing this code
+  // probably need to change this with the actual version in which the
+  // nouveau code got shipped
+  let reportsFromCreatedByKeys = [];
+  if (coreVersion && semver.gt(coreVersion, '4.16.0')) {
+    console.log('querying nouveau');
+    reportsFromCreatedByKeys = await getReportsFromNouveauByCreatedByIds(createdByIds, skip);
+  } else {
+    console.log('querying closeau');
+    const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
+    reportsFromCreatedByKeys = await getFromDbView(db ,'medic-client/reports_by_freetext', createdByKeys, skip);
   }
-  const allRows = [...reportsFromCreatedByKeys.rows, ...reportsFromCreatedAtId.rows];
 
-  const docsWithId = allRows.map(({ doc }) => [doc._id, doc]);
+  let reportsFromCreatedAtId = [];
+  if (createdAtId) {
+    reportsFromCreatedByKeys = await getFromDbView(db, 'medic-client/reports_by_subject', [createdAtId], skip);
+  }
+  const allRows = [...reportsFromCreatedByKeys, ...reportsFromCreatedAtId];
+
+  const docsWithId = allRows.map(( doc ) => [doc._id, doc]);
   return Array.from(new Map(docsWithId).values());
 }
 
