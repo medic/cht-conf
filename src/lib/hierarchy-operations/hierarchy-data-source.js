@@ -6,6 +6,7 @@ const environment = require('../environment');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
+const NOUVEAU_MIN_VERSION = '4.16.0';
 
 /*
 Fetches all of the documents associated with the "contactIds" and confirms they exist.
@@ -60,23 +61,16 @@ async function getContactWithDescendants(db, contactId) {
 
 const getReportsFromNouveauByCreatedByIds = async (createdByIds, skip) => {
   const queryString = createdByIds.map(id => `contact:"${id}"`).join(' OR ');
-  let reportsFromCreatedByKeys = [];
-  // the request to the API needs to be skipped altogether unlike the clouseau
-  // view because this view does not take in an empty query string
-  if (queryString.trim().length > 0) {
-    const api_ = api();
-    const res = await api_.request.get(`${environment.apiUrl}/_design/medic-nouveau/_nouveau/reports_by_freetext`, {
-      qs: {
-        q: queryString,
-        include_docs: true,
-        limit: BATCH_SIZE,
-        skip
-      },
-      json: true
-    });
-    reportsFromCreatedByKeys = res.hits.map(item => item.doc);
-  }
-  return reportsFromCreatedByKeys;
+  const api_ = api();
+  const res = await api_.request.get(`${environment.apiUrl}/_design/medic-nouveau/_nouveau/reports_by_freetext`, {
+    qs: {
+      q: queryString,
+      include_docs: true,
+      limit: BATCH_SIZE,
+      skip
+    }, json: true
+  });
+  return res.hits.map(item => item.doc);
 };
 
 const getFromDbView = async (db, view, keys, skip) => {
@@ -89,28 +83,29 @@ const getFromDbView = async (db, view, keys, skip) => {
   return res.rows.map(row => row.doc);
 };
 
-async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
+const getReportsForContacts = async (db, createdByIds, createdAtId, skip) => {
   const coreVersion = await getValidApiVersion();
   // NOTE: this is the latest version at the time of writing this code
   // probably need to change this with the actual version in which the
   // nouveau code got shipped
-  let reportsFromCreatedByKeys = [];
-  if (coreVersion && semver.gt(coreVersion, '4.16.0')) {
-    reportsFromCreatedByKeys = await getReportsFromNouveauByCreatedByIds(createdByIds, skip);
-  } else {
-    const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-    reportsFromCreatedByKeys = await getFromDbView(db ,'medic-client/reports_by_freetext', createdByKeys, skip);
+  let reportsFromCreatedByIds = [];
+  if (createdByIds.length > 0) {
+    if (coreVersion && semver.gt(coreVersion, NOUVEAU_MIN_VERSION)) {
+      reportsFromCreatedByIds = await getReportsFromNouveauByCreatedByIds(createdByIds, skip);
+    } else {
+      const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
+      reportsFromCreatedByIds = await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
+    }
   }
-
-  let reportsFromCreatedAtId = [];
+  let reportsBySubject = [];
   if (createdAtId) {
-    reportsFromCreatedAtId = await getFromDbView(db, 'medic-client/reports_by_subject', [createdAtId], skip);
+    reportsBySubject = await getFromDbView(db, 'medic-client/reports_by_subject', [createdAtId], skip);
   }
-  const allRows = [...reportsFromCreatedByKeys, ...reportsFromCreatedAtId];
+  const allRows = [...reportsFromCreatedByIds, ...reportsBySubject];
 
   const docsWithId = allRows.map(( doc ) => [doc._id, doc]);
   return Array.from(new Map(docsWithId).values());
-}
+};
 
 async function getAncestorsOf(db, contactDoc) {
   const ancestorIds = lineageManipulation.pluckIdsFromLineage(contactDoc.parent);

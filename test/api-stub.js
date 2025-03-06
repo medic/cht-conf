@@ -22,6 +22,7 @@ app.post('/api/sms', (req, res) => {
   res.write('{}');
   res.end();
 });
+app.all('/medic/_design/medic-nouveau/_nouveau/*', mockMiddleware.requestHandler);
 app.all('/api/*', mockMiddleware.requestHandler);
 app.use('/', stripAuth, expressPouch(PouchDB, opts));
 
