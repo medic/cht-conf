@@ -6,6 +6,9 @@ const environment = require('../environment');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
+// NOTE: this is the latest version at the time of writing this code
+// probably need to change this with the actual version in which the
+// nouveau code got shipped
 const NOUVEAU_MIN_VERSION = '4.16.0';
 
 /*
@@ -83,25 +86,32 @@ const getFromDbView = async (db, view, keys, skip) => {
   return res.rows.map(row => row.doc);
 };
 
-const getReportsForContacts = async (db, createdByIds, createdAtId, skip) => {
+const fetchReportsByCreator = async (db, createdByIds, skip) => {
+  if (createdByIds.length === 0) {
+    return [];
+  }
+
   const coreVersion = await getValidApiVersion();
-  // NOTE: this is the latest version at the time of writing this code
-  // probably need to change this with the actual version in which the
-  // nouveau code got shipped
-  let reportsFromCreatedByIds = [];
-  if (createdByIds.length > 0) {
-    if (coreVersion && semver.gt(coreVersion, NOUVEAU_MIN_VERSION)) {
-      reportsFromCreatedByIds = await getReportsFromNouveauByCreatedByIds(createdByIds, skip);
-    } else {
-      const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-      reportsFromCreatedByIds = await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
-    }
+  if (coreVersion && semver.gt(coreVersion, NOUVEAU_MIN_VERSION)) {
+    return await getReportsFromNouveauByCreatedByIds(createdByIds, skip);
   }
-  let reportsBySubject = [];
-  if (createdAtId) {
-    reportsBySubject = await getFromDbView(db, 'medic-client/reports_by_subject', [createdAtId], skip);
+
+  const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
+  return await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
+};
+
+const fetchReportsBySubject = async (db, createdAtId, skip) => {
+  if (!createdAtId) {
+    return [];
   }
-  const allRows = [...reportsFromCreatedByIds, ...reportsBySubject];
+  return await getFromDbView(db, 'medic-client/reports_by_subject', [createdAtId], skip);
+};
+
+const getReportsForContacts = async (db, createdByIds, createdAtId, skip) => {
+  const creatorReports = await fetchReportsByCreator(db, createdByIds, skip);
+  const subjectReports = await fetchReportsBySubject(db, createdAtId, skip);
+
+  const allRows = [...creatorReports, ...subjectReports];
 
   const docsWithId = allRows.map(( doc ) => [doc._id, doc]);
   return Array.from(new Map(docsWithId).values());
