@@ -41,7 +41,7 @@ const reports_by_subject = {
   map: "function(doc) {\n  if (doc.type === 'data_record' && doc.form) {\n    var emitField = function(obj, field) {\n      if (obj[field]) {\n        emit(obj[field], doc.reported_date);\n      }\n    };\n\n    emitField(doc, 'patient_id');\n    emitField(doc, 'place_id');\n    emitField(doc, 'case_id');\n\n    if (doc.fields) {\n      emitField(doc.fields, 'patient_id');\n      emitField(doc.fields, 'place_id');\n      emitField(doc.fields, 'case_id');\n      emitField(doc.fields, 'patient_uuid');\n      emitField(doc.fields, 'place_uuid');\n    }\n  }\n}"
 };
 
-describe.only('hierarchy-operations', () => {
+describe('hierarchy-operations', () => {
   let pouchDb, scenarioCount = 0;
   const writtenDocs = [];
   const getWrittenDoc = docId => {

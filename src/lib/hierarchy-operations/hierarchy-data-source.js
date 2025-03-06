@@ -90,20 +90,14 @@ const getFromDbView = async (db, view, keys, skip) => {
 };
 
 async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
-  console.log('here');
-  console.log('createdByIds:', createdByIds);
-  console.log('createdAt:', createdAtId);
-  console.log('skip', skip);
   const coreVersion = await getValidApiVersion();
   // NOTE: this is the latest version at the time of writing this code
   // probably need to change this with the actual version in which the
   // nouveau code got shipped
   let reportsFromCreatedByKeys = [];
   if (coreVersion && semver.gt(coreVersion, '4.16.0')) {
-    console.log('querying nouveau');
     reportsFromCreatedByKeys = await getReportsFromNouveauByCreatedByIds(createdByIds, skip);
   } else {
-    console.log('querying closeau');
     const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
     reportsFromCreatedByKeys = await getFromDbView(db ,'medic-client/reports_by_freetext', createdByKeys, skip);
   }
