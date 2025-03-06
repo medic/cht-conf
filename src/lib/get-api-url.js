@@ -25,7 +25,10 @@ const getApiUrl = (cmdArgs, env = {}) => {
     // See ./archiving-db.js
     instanceUrl = parseLocalUrl(env.COUCH_URL);
     if (instanceUrl.hostname !== 'localhost') {
-      throw Error(`--local was specified but COUCH_URL env var is set to '${instanceUrl.hostname}'.  Please use --url for remote servers.`);
+      throw Error(
+        `--local was specified but COUCH_URL env var is set to '${instanceUrl.hostname}'.  `
+        + `Please use --url for remote servers.`
+      );
     }
   } else if (cmdArgs.instance) {
     const password = userPrompt.question(`${emoji.key}  Password: `, { hideEchoBack: true });

@@ -210,28 +210,28 @@ const api = {
       headers: { 'Content-Type': 'application/xml' },
       body: formXml,
     })
-    .then(resp => {
-      try {
-        return JSON.parse(resp);
-      } catch (e) {
-        throw new Error('Invalid JSON response validating XForm against the API: ' + resp);
-      }
-    })
-    .catch(err => {
-      if (err.statusCode === 404) {
-        // The endpoint doesn't exist in the API (old CHT version), so
-        // we assume the form is valid but return special JSON
-        // highlighting the situation, and remembering the lack
-        // of the endpoint so next call there is no need
-        // to call the missed endpoint again
-        this._formsValidateEndpointFound = false;
-        return {ok: true, formsValidateEndpointFound: false};
-      }
-      if (err.statusCode === 400 && err.error) {
-        throw new Error(JSON.parse(err.error).error);
-      }
-      throw err;
-    });
+      .then(resp => {
+        try {
+          return JSON.parse(resp);
+        } catch (e) {
+          throw new Error('Invalid JSON response validating XForm against the API: ' + resp);
+        }
+      })
+      .catch(err => {
+        if (err.statusCode === 404) {
+          // The endpoint doesn't exist in the API (old CHT version), so
+          // we assume the form is valid but return special JSON
+          // highlighting the situation, and remembering the lack
+          // of the endpoint so next call there is no need
+          // to call the missed endpoint again
+          this._formsValidateEndpointFound = false;
+          return {ok: true, formsValidateEndpointFound: false};
+        }
+        if (err.statusCode === 400 && err.error) {
+          throw new Error(JSON.parse(err.error).error);
+        }
+        throw err;
+      });
   },
 
   async getCompressibleTypes () {

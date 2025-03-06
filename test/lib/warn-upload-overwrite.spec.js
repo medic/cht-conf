@@ -134,7 +134,10 @@ describe('warn-upload-overwrite', () => {
         assert.equal(calls.length, 1);
         assert.equal(request.get.args[0][0].url, 'http://admin:pass@localhost:35423/api/couch-config-attachments');
         assert.equal(request.get.callCount, 1);
-        assert.equal(calls[0][0], ' {\n\u001b[31m-  _rev: "x"\u001b[39m\n\u001b[31m-  value: 1\u001b[39m\n\u001b[32m+  value: 2\u001b[39m\n }\n');
+        assert.equal(
+          calls[0][0],
+          ' {\n\u001b[31m-  _rev: "x"\u001b[39m\n\u001b[31m-  value: 1\u001b[39m\n\u001b[32m+  value: 2\u001b[39m\n }\n'
+        );
       });
     });
 
@@ -335,7 +338,7 @@ describe('warn-upload-overwrite', () => {
     });
 
     it('uploads the local xml if remote xml does not exist', () => {
-      let error = new Error('No attachment');
+      const error = new Error('No attachment');
       error.status = 404;
       const getAttachment = sinon.stub(apiStub.db, 'get').rejects(error);
       sinon.stub(fs, 'read').returns('{"localhost/medic":"y"}');

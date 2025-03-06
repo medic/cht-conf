@@ -33,7 +33,9 @@ module.exports = {
   giveResponses: mockMiddleware.setResponses,
   requestLog: () => mockMiddleware.requests.map(r => ({ method:r.method, url:r.originalUrl, body:r.body })),
   start: () => {
-    if(server) throw new Error('Server already started.');
+    if(server) {
+      throw new Error('Server already started.');
+    }
     server = app.listen();
 
     const port = server.address().port;

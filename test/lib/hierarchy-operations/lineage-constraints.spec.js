@@ -16,9 +16,11 @@ log.level = log.LEVEL_INFO;
 
 describe('lineage constriants', () => {
   describe('assertNoHierarchyErrors', () => {
-    it('empty rules yields error', async () => await expect(runScenario([], 'person', 'health_center')).to.eventually.rejectedWith('unknown type'));
+    it('empty rules yields error', async () => await expect(runScenario([], 'person', 'health_center'))
+      .to.eventually.rejectedWith('unknown type'));
 
-    it('no valid parent yields error', async () => await expect(runScenario([undefined], 'person', 'health_center')).to.eventually.rejectedWith('unknown type'));
+    it('no valid parent yields error', async () => await expect(runScenario([undefined], 'person', 'health_center'))
+      .to.eventually.rejectedWith('unknown type'));
 
     it('valid parent yields no error', async () => {
       const actual = runScenario([{
@@ -29,9 +31,11 @@ describe('lineage constriants', () => {
       await expect(actual).to.eventually.equal(undefined);
     });
 
-    it('no contact type yields undefined error', async () => expect(runScenario([])).to.eventually.rejectedWith('undefined'));
+    it('no contact type yields undefined error', async () => expect(runScenario([]))
+      .to.eventually.rejectedWith('undefined'));
 
-    it('no parent type yields undefined error', async () => expect(runScenario([], 'person')).to.eventually.rejectedWith('undefined'));
+    it('no parent type yields undefined error', async () => expect(runScenario([], 'person'))
+      .to.eventually.rejectedWith('undefined'));
 
     it('no valid parents yields not defined', async () => expect(runScenario([{
       id: 'person',
@@ -82,12 +86,17 @@ describe('lineage constriants', () => {
       }], sourceType, destinationType, true);
 
       await expect(actual).to.eventually.rejectedWith(
-        `source and destinations must have the same type. Source is "${sourceType}" while destination is "${destinationType}".`
+        `source and destinations must have the same type. `
+        + `Source is "${sourceType}" while destination is "${destinationType}".`
       );
     });
 
     describe('default schema', () => {
-      it('no defined rules enforces defaults schema', async () => await expect(runScenario(undefined, 'district_hospital', 'health_center')).to.eventually.rejectedWith('cannot have parent'));
+      it('no defined rules enforces defaults schema', async () => await expect(runScenario(
+        undefined,
+        'district_hospital',
+        'health_center'
+      )).to.eventually.rejectedWith('cannot have parent'));
       
       it('nominal case', async () => expect(await runScenario(undefined, 'person', 'health_center')).to.be.undefined);
 
@@ -104,7 +113,8 @@ describe('lineage constriants', () => {
     const assertNoHierarchyErrors = lineageConstraints.__get__('getPrimaryContactViolations');
 
     describe('on memory pouchdb', async () => {
-      let pouchDb, scenarioCount = 0;
+      let pouchDb;
+      let scenarioCount = 0;
       beforeEach(async () => {
         pouchDb = new PouchDB(`lineage${scenarioCount++}`, { adapter: 'memory' });
 
@@ -153,7 +163,9 @@ describe('lineage constriants', () => {
         const contactDoc = await pouchDb.get('health_center_2');
         const parentDoc = await pouchDb.get('district_1');
 
-        const descendants = await Promise.all(['health_center_2_contact', 'clinic_2', 'clinic_2_contact', 'patient_2'].map(id => pouchDb.get(id)));
+        const descendants = await Promise.all([
+          'health_center_2_contact', 'clinic_2', 'clinic_2_contact', 'patient_2'
+        ].map(id => pouchDb.get(id)));
         const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, descendants);
         expect(doc).to.be.undefined;
       });
@@ -166,7 +178,9 @@ describe('lineage constriants', () => {
         const contactDoc = await pouchDb.get('health_center_1');
         const parentDoc = await pouchDb.get('district_2');
 
-        const descendants = await Promise.all(['health_center_1_contact', 'clinic_1', 'clinic_1_contact', 'patient_1'].map(id => pouchDb.get(id)));
+        const descendants = await Promise.all([
+          'health_center_1_contact', 'clinic_1', 'clinic_1_contact', 'patient_1'
+        ].map(id => pouchDb.get(id)));
         const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, descendants);
         expect(doc).to.deep.include({ _id: 'patient_1' });
       });

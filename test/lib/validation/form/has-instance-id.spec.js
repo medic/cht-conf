@@ -43,7 +43,10 @@ describe('has-instance-id', () => {
       .then(output => {
         expect(output.warnings).is.empty;
         expect(output.errors).deep
-          .equals([`Form at ${xformPath} appears to be missing <meta><instanceID/></meta> node. This form will not work on CHT webapp.`]);
+          .equals([
+            `Form at ${xformPath} appears to be missing <meta><instanceID/></meta> node. `
+            + 'This form will not work on CHT webapp.'
+          ]);
       });
   });
 });

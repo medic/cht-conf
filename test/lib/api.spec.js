@@ -318,7 +318,8 @@ describe('api', () => {
   });
 
   describe('with session cookie', function () {
-    let retrySub, rpnStub;
+    let retrySub;
+    let rpnStub;
     const sessionCookieName = 'AuthSession';
     const sessionToken = 'sessionTokenValue';
 

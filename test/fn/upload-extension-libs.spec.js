@@ -38,7 +38,8 @@ describe('Upload extension libs', () => {
     expect(attachmentsFromDir.args[0][0]).to.equal('/testpath/extension-libs');
     expect(insertOrReplace.callCount).to.equal(0);
     expect(log.info.callCount).to.equal(1);
-    expect(log.info.args[0][0]).to.equal('No configuration found at "/testpath/extension-libs" - not uploading extension-libs');
+    expect(log.info.args[0][0])
+      .to.equal('No configuration found at "/testpath/extension-libs" - not uploading extension-libs');
   });
 
   it('log and skip when dir does not exist', async () => {
@@ -47,7 +48,8 @@ describe('Upload extension libs', () => {
     expect(attachmentsFromDir.callCount).to.equal(1);
     expect(insertOrReplace.callCount).to.equal(0);
     expect(log.info.callCount).to.equal(1);
-    expect(log.info.args[0][0]).to.equal('No configuration found at "/testpath/extension-libs" - not uploading extension-libs');
+    expect(log.info.args[0][0])
+      .to.equal('No configuration found at "/testpath/extension-libs" - not uploading extension-libs');
   });
 
   it('does nothing if doc matches remote', async () => {

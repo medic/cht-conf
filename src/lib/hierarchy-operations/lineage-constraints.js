@@ -11,7 +11,10 @@ module.exports = async (db, options) => {
     assertNoPrimaryContactViolations: async (sourceDoc, destinationDoc, descendantDocs) => {
       const invalidPrimaryContactDoc = await getPrimaryContactViolations(db, sourceDoc, destinationDoc, descendantDocs);
       if (invalidPrimaryContactDoc) {
-        throw Error(`Cannot remove contact '${invalidPrimaryContactDoc?.name}' (${invalidPrimaryContactDoc?._id}) from the hierarchy for which they are a primary contact.`);
+        throw Error(
+          `Cannot remove contact '${invalidPrimaryContactDoc?.name}' (${invalidPrimaryContactDoc?._id}) from the `
+          + 'hierarchy for which they are a primary contact.'
+        );
       }
     },
     assertNoHierarchyErrors: (sourceDocs, destinationDoc) => {
@@ -29,9 +32,10 @@ module.exports = async (db, options) => {
       });
   
       /*
-      It is nice that the tool can move lists of contacts as one operation, but strange things happen when two contactIds are in the same lineage.
-      For example, moving a district_hospital and moving a contact under that district_hospital to a new clinic causes multiple colliding writes to the same json file.
-      */
+       * It is nice that the tool can move lists of contacts as one operation, but strange things happen when two
+       * contactIds are in the same lineage. For example, moving a district_hospital and moving a contact under that
+       * district_hospital to a new clinic causes multiple colliding writes to the same json file.
+       */
       const contactIds = sourceDocs.map(doc => doc._id);
       sourceDocs
         .forEach(doc => {
@@ -81,7 +85,8 @@ function findCircularHierarchyErrors(sourceDoc, destinationDoc) {
 
   const parentAncestry = lineageManipulation.pluckIdsFromLineage(destinationDoc);
   if (parentAncestry.includes(sourceDoc._id)) {
-    return `Circular hierarchy: Cannot set parent of contact '${sourceDoc._id}' as it would create a circular hierarchy.`;
+    return `Circular hierarchy: Cannot set parent of contact '${sourceDoc._id}' `
+      + `as it would create a circular hierarchy.`;
   }
 }
 
@@ -117,7 +122,8 @@ const getMergeViolations = (sourceDoc, destinationDoc) => {
   const sourceContactType = getContactType(sourceDoc);
   const destinationContactType = getContactType(destinationDoc);
   if (sourceContactType !== destinationContactType) {
-    return `source and destinations must have the same type. Source is "${sourceContactType}" while destination is "${destinationContactType}".`;
+    return `source and destinations must have the same type. `
+      + `Source is "${sourceContactType}" while destination is "${destinationContactType}".`;
   }
 };
 

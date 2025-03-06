@@ -9,8 +9,8 @@ const findErrors = (rows) => {
 
   rows.forEach(row => {
     if (!row.doc) {
-        errors.docNotFound.push(`Document with id '${row.key}' could not be found.`);
-        return;
+      errors.docNotFound.push(`Document with id '${row.key}' could not be found.`);
+      return;
     }
 
     if (!VALID_DOC_TYPES.includes(row.doc.type)) {

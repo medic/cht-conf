@@ -11,11 +11,15 @@ const TOKENS_FILE = './.gdrive.session.json';
 module.exports = () => {
   const client = oauthClient();
 
-  if(!fs.exists(TOKENS_FILE)) return newSessionFor(client);
+  if(!fs.exists(TOKENS_FILE)) {
+    return newSessionFor(client);
+  }
 
   client.setCredentials(fs.readJson(TOKENS_FILE));
 
-  if(client.credentials.expiry_date < Date.now()) return newSessionFor(client);
+  if(client.credentials.expiry_date < Date.now()) {
+    return newSessionFor(client);
+  }
 
   return Promise.resolve(client);
 };
@@ -30,7 +34,9 @@ function newSessionFor(client) {
 
   return new Promise((resolve, reject) => {
     client.getToken(accessCode, function (err, tokens) {
-      if(err) return reject(err);
+      if(err) {
+        return reject(err);
+      }
 
       fs.writeJson(TOKENS_FILE, tokens);
 
@@ -61,7 +67,9 @@ function oauthClient() {
       checkRequired(clientSecret, 'client_secret', 'GOOGLE_CLIENT_SECRET') |
       checkRequired(redirectUri, 'redirect_uris', 'GOOGLE_REDIRECT_URI');
 
-  if(missingConfig) throw new Error('Missing required config for google drive access.  Please check warnings.');
+  if(missingConfig) {
+    throw new Error('Missing required config for google drive access.  Please check warnings.');
+  }
 
   return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 }
@@ -72,7 +80,9 @@ function openBrowserAt(url) {
 }
 
 function checkRequired(value, jsonKey, envVar) {
-  if(value) return;
+  if(value) {
+    return;
+  }
 
   warn(`Missing .${jsonKey} in ${SECRETS_FILE} or env var ${envVar}!`);
   return true;

@@ -31,12 +31,18 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
 
   if (!args.destination) {
     usage();
-    throw Error(`Action "merge-contacts" is missing required contact ID ${bold('--destination')}. Other contacts will be merged into this contact.`);
+    throw Error(
+      `Action "merge-contacts" is missing required contact ID ${bold('--destination')}. `
+      + 'Other contacts will be merged into this contact.'
+    );
   }
 
   if (sourceIds.length === 0) {
     usage();
-    throw Error(`Action "merge-contacts" is missing required contact ID(s) ${bold('--sources')}. These contacts will be merged into the contact specified by ${bold('--destination')}`);
+    throw Error(
+      `Action "merge-contacts" is missing required contact ID(s) ${bold('--sources')}. `
+      + `These contacts will be merged into the contact specified by ${bold('--destination')}`
+    );
   }
 
   return {
@@ -50,6 +56,7 @@ const parseExtraArgs = (projectDir, extraArgs = []) => {
 
 const bold = text => `\x1b[1m${text}\x1b[0m`;
 const usage = () => {
+  /* eslint-disable max-len */
   info(`
 ${bold('cht-conf\'s merge-contacts action')}
 When combined with 'upload-docs' this action moves all of the contacts and reports under ${bold('sources')} to be under ${bold('destination')}.
@@ -71,4 +78,5 @@ ${bold('OPTIONS')}
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
 `);
+  /* eslint-enable max-len */
 };
