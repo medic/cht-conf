@@ -86,7 +86,7 @@ const getFromDbView = async (db, view, keys, skip) => {
     limit: BATCH_SIZE,
     skip
   });
-  return res.rows;
+  return res.rows.map(row => row.doc);
 };
 
 async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
@@ -110,7 +110,7 @@ async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
 
   let reportsFromCreatedAtId = [];
   if (createdAtId) {
-    reportsFromCreatedByKeys = await getFromDbView(db, 'medic-client/reports_by_subject', [createdAtId], skip);
+    reportsFromCreatedAtId = await getFromDbView(db, 'medic-client/reports_by_subject', [createdAtId], skip);
   }
   const allRows = [...reportsFromCreatedByKeys, ...reportsFromCreatedAtId];
 

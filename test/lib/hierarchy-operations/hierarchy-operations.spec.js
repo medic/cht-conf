@@ -115,17 +115,22 @@ describe.only('hierarchy-operations', () => {
 
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'force').get(() => false);
-    sinon.stub(environment, 'apiUrl').get(() => 'localhost');
-    return apiStub.start();
+    apiStub.start();
   });
 
   afterEach(async () => {
     pouchDb.destroy();
-    return apiStub.stop();
+    sinon.restore();
+    await apiStub.stop();
   });
   
   describe('move', () => {
     it('move health_center_1 to district_2', async () => {
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
 
       expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
@@ -171,6 +176,11 @@ describe.only('hierarchy-operations', () => {
     });
 
     it('move health_center_1 to root', async () => {
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       sinon.spy(pouchDb, 'query');
 
       await updateHierarchyRules([{ id: 'health_center', parents: [] }]);
@@ -228,6 +238,11 @@ describe.only('hierarchy-operations', () => {
     });
 
     it('move district_1 from root', async () => {
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await updateHierarchyRules([{ id: 'district_hospital', parents: ['district_hospital'] }]);
 
       await HierarchyOperations(pouchDb).move(['district_1'], 'district_2');
@@ -277,6 +292,11 @@ describe.only('hierarchy-operations', () => {
     });
 
     it('move district_1 to flexible hierarchy parent', async () => {
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await pouchDb.put({
         _id: `county_1`,
         type: 'contact',
@@ -328,6 +348,11 @@ describe.only('hierarchy-operations', () => {
     });
 
     it('moves flexible hierarchy contact to flexible hierarchy parent', async () => {
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await updateHierarchyRules([
         { id: 'county', parents: [] },
         { id: 'subcounty', parents: ['county'] },
@@ -367,6 +392,11 @@ describe.only('hierarchy-operations', () => {
     });
 
     it('moving primary contact updates parents', async () => {
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await mockHierarchy(pouchDb, {
         t_district_1: {
           t_health_center_1: {
@@ -413,6 +443,11 @@ describe.only('hierarchy-operations', () => {
 
     // We don't want lineage { id, parent: '' } to result from district_hospitals which have parent: ''
     it('district_hospital with empty string parent is not preserved', async () => {
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await upsert('district_2', { parent: '', type: 'district_hospital' });
       await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
 
@@ -425,6 +460,11 @@ describe.only('hierarchy-operations', () => {
     });
 
     it('documents should be minified', async () => {
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await updateHierarchyRules([{ id: 'clinic', parents: ['district_hospital'] }]);
       const patient = {
         parent: parentsToLineage('clinic_1', 'health_center_1', 'district_1'),
@@ -548,7 +588,12 @@ describe.only('hierarchy-operations', () => {
         DataSource.__set__('BATCH_SIZE', 1);
         DataSource.BATCH_SIZE = 1;
         sinon.spy(pouchDb, 'query');
-  
+        apiStub.giveCommonResponse({
+          body: {
+            version: '4.15.0'
+          }
+        });
+
         await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
         
         expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
@@ -630,7 +675,12 @@ describe.only('hierarchy-operations', () => {
         DataSource.__set__('BATCH_SIZE', 2);
         DataSource.BATCH_SIZE = 2;
         sinon.spy(pouchDb, 'query');
-  
+        apiStub.giveCommonResponse({
+          body: {
+            version: '4.15.0'
+          }
+        });
+
         await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_1');
   
         expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
@@ -711,6 +761,11 @@ describe.only('hierarchy-operations', () => {
   describe('merge', () => {
     it('merge district_2 into district_1', async () => {
       // setup
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await mockReport(pouchDb, {
         id: 'changing_subject_and_contact',
         creatorId: 'health_center_2_contact',
@@ -802,6 +857,11 @@ describe.only('hierarchy-operations', () => {
   
     it('merge two patients', async () => {
       // setup
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await mockReport(pouchDb, {
         id: 'pat1',
         creatorId: 'clinic_1_contact',
@@ -849,6 +909,11 @@ describe.only('hierarchy-operations', () => {
 
     it('delete district_2', async () => {
       // setup
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await mockReport(pouchDb, {
         id: 'district_report',
         creatorId: 'health_center_2_contact',
@@ -884,13 +949,18 @@ describe.only('hierarchy-operations', () => {
     });
 
     it('users at are not disabled when disableUsers: false', async () => {
+      apiStub.giveCommonResponse({
+        body: {
+          version: '4.15.0'
+        }
+      });
       await HierarchyOperations(pouchDb, { disableUsers: false }).delete(['district_2']);
       expectDeleted('district_2', false);
     });
 
-    it.only('reports created by deleted contacts are not deleted', async () => {
+    it('reports created by deleted contacts are not deleted', async () => {
       // setup
-      apiStub.giveResponses({
+      apiStub.giveCommonResponse({
         body: {
           version: '4.15.0'
         }
@@ -900,8 +970,8 @@ describe.only('hierarchy-operations', () => {
         creatorId: 'health_center_2_contact',
         patientId: 'other'
       });
-  
-      // action 
+
+      // action
       await HierarchyOperations(pouchDb).delete(['district_2']);
 
       const writtenIds = writtenDocs.map(doc => doc._id);
