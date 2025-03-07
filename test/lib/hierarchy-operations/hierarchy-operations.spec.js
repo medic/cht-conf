@@ -37,7 +37,7 @@ const reports_by_freetext = {
 };
 
 const reports_by_subject = {
-  // eslint-disable-next-line quotes
+  // eslint-disable-next-line quotes,max-len
   map: "function(doc) {\n  if (doc.type === 'data_record' && doc.form) {\n    var emitField = function(obj, field) {\n      if (obj[field]) {\n        emit(obj[field], doc.reported_date);\n      }\n    };\n\n    emitField(doc, 'patient_id');\n    emitField(doc, 'place_id');\n    emitField(doc, 'case_id');\n\n    if (doc.fields) {\n      emitField(doc.fields, 'patient_id');\n      emitField(doc.fields, 'place_id');\n      emitField(doc.fields, 'case_id');\n      emitField(doc.fields, 'patient_uuid');\n      emitField(doc.fields, 'place_uuid');\n    }\n  }\n}"
 };
 
@@ -178,6 +178,7 @@ describe('hierarchy-operations', () => {
         }
       }, {
         body: {
+          // eslint-disable-next-line max-len
           hits: [{id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}}]
         }
       });
@@ -300,6 +301,7 @@ describe('hierarchy-operations', () => {
         }
       }, {
         body: {
+          // eslint-disable-next-line max-len
           hits: [{id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}}]
         }
       });
@@ -346,9 +348,13 @@ describe('hierarchy-operations', () => {
       });
 
       expect(pouchDb.query.callCount).to.equal(1);
-      expect(pouchDb.query.args).to.deep.equal([
-        ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
-      ]);
+      expect(pouchDb.query.args).to.deep.equal([['medic/contacts_by_depth', {
+        key: ['health_center_1'],
+        include_docs: true,
+        group_level: undefined,
+        skip: undefined,
+        limit: undefined
+      }],]);
     });
 
     it('move district_1 from root in CHT version 4.15.0', async () => {
@@ -412,6 +418,7 @@ describe('hierarchy-operations', () => {
         }
       }, {
         body: {
+          // eslint-disable-next-line max-len
           hits: [{id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}}]
         }
       });
@@ -526,6 +533,7 @@ describe('hierarchy-operations', () => {
         }
       }, {
         body: {
+          // eslint-disable-next-line max-len
           hits: [{id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}}]
         }
       });
@@ -630,6 +638,7 @@ describe('hierarchy-operations', () => {
         }
       }, {
         body: {
+          // eslint-disable-next-line max-len
           hits: [{id:'report_focal',fields:{patient_uuid:'focal'},doc:{form:'foo',type:'data_record',contact:{_id:'focal',parent:{_id:'county'}},fields:{patient_uuid:'focal'},_id:'report_focal',_rev:'1-3c114cf77eede46c9f65b5b696bdaa07'}}]
         }
       });
@@ -800,6 +809,7 @@ describe('hierarchy-operations', () => {
         }
       }, {
         body: {
+          // eslint-disable-next-line max-len
           hits: [{id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}}]
         }
       });
@@ -1098,6 +1108,7 @@ describe('hierarchy-operations', () => {
         }, {
           body: {
             hits: [
+              // eslint-disable-next-line max-len
               {id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}}
             ]
           }
@@ -1108,6 +1119,7 @@ describe('hierarchy-operations', () => {
         }, {
           body: {
             hits: [
+              // eslint-disable-next-line max-len
               {id:'report_2',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_2',_rev:'1-3cc001d7d9c9a306920e0caeb54709d4'}}
             ]
           }
@@ -1118,6 +1130,7 @@ describe('hierarchy-operations', () => {
         }, {
           body: {
             hits: [
+              // eslint-disable-next-line max-len
               {id:'report_3',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_3',_rev:'1-3b7b94f966bcc262a48063efdf1ebf84'}}
             ]
           }
@@ -1128,6 +1141,7 @@ describe('hierarchy-operations', () => {
         }, {
           body: {
             hits: [
+              // eslint-disable-next-line max-len
               {id:'report_4',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_4',_rev:'1-622a96629997c0e89d73af7cfb360056'}}
             ]
           }
@@ -1200,9 +1214,13 @@ describe('hierarchy-operations', () => {
         });
 
         expect(pouchDb.query.callCount).to.deep.equal(1);
-        expect(pouchDb.query.args).to.deep.equal([
-          ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
-       ]);
+        expect(pouchDb.query.args).to.deep.equal([['medic/contacts_by_depth', {
+          key: ['health_center_1'],
+          include_docs: true,
+          group_level: undefined,
+          skip: undefined,
+          limit: undefined
+        }],]);
       });
 
       it('should health_center_1 to district_1 in batches of 2 in CHT version 4.15.0', async () => {
@@ -1312,6 +1330,7 @@ describe('hierarchy-operations', () => {
           }
         }, {
           body: {
+            // eslint-disable-next-line max-len
             hits: [{id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}},{id:'report_2',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_2',_rev:'1-3cc001d7d9c9a306920e0caeb54709d4'}}]
           }
         }, {
@@ -1320,6 +1339,7 @@ describe('hierarchy-operations', () => {
           }
         }, {
           body: {
+            // eslint-disable-next-line max-len
             hits: [{id:'report_3',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_3',_rev:'1-3b7b94f966bcc262a48063efdf1ebf84'}},{id:'report_4',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_4',_rev:'1-622a96629997c0e89d73af7cfb360056'}}]
           }
         }, {
@@ -1392,6 +1412,7 @@ describe('hierarchy-operations', () => {
 
         expect(pouchDb.query.callCount).to.deep.equal(1);
         expect(pouchDb.query.args).to.deep.equal([
+          // eslint-disable-next-line max-len
           ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
         ]);
       });
@@ -1503,6 +1524,7 @@ describe('hierarchy-operations', () => {
         }
       }, {
         body: {
+          // eslint-disable-next-line max-len
           hits: [{id:'changing_contact',fields:{patient_uuid:'patient_2'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_2_contact',parent:{_id:'health_center_2',parent:{_id:'district_2'}}},fields:{patient_uuid:'patient_2'},_id:'changing_contact',_rev:'1-c9209b38cc343b10932c27f130175415'}},{id:'changing_subject_and_contact',fields:{patient_uuid:'district_2'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_2_contact',parent:{_id:'health_center_2',parent:{_id:'district_2'}}},fields:{patient_uuid:'district_2'},_id:'changing_subject_and_contact',_rev:'1-4c64faf5402e5c9e63060dc274448730'}}]
         }
       });
