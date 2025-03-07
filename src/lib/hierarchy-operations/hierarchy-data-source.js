@@ -1,7 +1,15 @@
 const lineageManipulation = require('./lineage-manipulation');
+const {getValidApiVersion} = require('../get-api-version');
+const semver = require('semver');
+const api = require('../api');
+const environment = require('../environment');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
+// NOTE: this is the latest version at the time of writing this code
+// probably need to change this with the actual version in which the
+// nouveau code got shipped
+const NOUVEAU_MIN_VERSION = '4.16.0';
 
 /*
 Fetches all of the documents associated with the "contactIds" and confirms they exist.
@@ -56,28 +64,60 @@ async function getContactWithDescendants(db, contactId) {
     .filter(doc => doc && doc.type !== 'tombstone');
 }
 
-async function getReportsForContacts(db, createdByIds, createdAtId, skip) {
-  const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-  const createdAtKeys = createdAtId ? [
-    [`patient_id:${createdAtId}`],
-    [`patient_uuid:${createdAtId}`],
-    [`place_id:${createdAtId}`],
-    [`place_uuid:${createdAtId}`]
-  ] : [];
+const getReportsFromNouveauByCreatedByIds = async (createdByIds, skip) => {
+  const queryString = createdByIds.map(id => `contact:"${id}"`).join(' OR ');
+  const api_ = api();
+  const res = await api_.request.get(`${environment.apiUrl}/_design/medic-nouveau/_nouveau/reports_by_freetext`, {
+    qs: {
+      q: queryString,
+      include_docs: true,
+      limit: BATCH_SIZE,
+      skip
+    }, json: true
+  });
+  return res.hits.map(item => item.doc);
+};
 
-  const reports = await db.query('medic-client/reports_by_freetext', {
-    keys: [
-      ...createdByKeys,
-      ...createdAtKeys,
-    ],
+const getFromDbView = async (db, view, keys, skip) => {
+  const res = await db.query(view, {
+    keys,
     include_docs: true,
     limit: BATCH_SIZE,
-    skip,
+    skip
   });
+  return res.rows.map(row => row.doc);
+};
 
-  const docsWithId = reports.rows.map(({ doc }) => [doc._id, doc]);
+const fetchReportsByCreator = async (db, createdByIds, skip) => {
+  if (createdByIds.length === 0) {
+    return [];
+  }
+
+  const coreVersion = await getValidApiVersion();
+  if (coreVersion && semver.gt(coreVersion, NOUVEAU_MIN_VERSION)) {
+    return await getReportsFromNouveauByCreatedByIds(createdByIds, skip);
+  }
+
+  const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
+  return await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
+};
+
+const fetchReportsBySubject = async (db, createdAtId, skip) => {
+  if (!createdAtId) {
+    return [];
+  }
+  return await getFromDbView(db, 'medic-client/reports_by_subject', [createdAtId], skip);
+};
+
+const getReportsForContacts = async (db, createdByIds, createdAtId, skip) => {
+  const creatorReports = await fetchReportsByCreator(db, createdByIds, skip);
+  const subjectReports = await fetchReportsBySubject(db, createdAtId, skip);
+
+  const allRows = [...creatorReports, ...subjectReports];
+
+  const docsWithId = allRows.map(( doc ) => [doc._id, doc]);
   return Array.from(new Map(docsWithId).values());
-}
+};
 
 async function getAncestorsOf(db, contactDoc) {
   const ancestorIds = lineageManipulation.pluckIdsFromLineage(contactDoc.parent);
