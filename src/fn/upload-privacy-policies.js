@@ -28,7 +28,10 @@ module.exports = {
         return;
       }
       if (attachmentFile && attachmentFile.content_type !== 'text/html') {
-        log.warn(`Privacy policies attachment files must be of type text/html. Found ${attachmentFileName} of type ${attachmentFile.content_type}. Skipping.`);
+        log.warn(
+          'Privacy policies attachment files must be of type text/html. '
+          + `Found ${attachmentFileName} of type ${attachmentFile.content_type}. Skipping.`
+        );
         delete privacyPoliciesMapping[languageCode];
         return;
       }

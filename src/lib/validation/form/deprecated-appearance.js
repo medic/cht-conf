@@ -53,8 +53,10 @@ const createWarning = ({ ref, appearance, deprecatedAppearance }) => {
 
 const populateWarningHeader = (xformPath, warnings) => {
   if (warnings.length) {
-    warnings.unshift(`Form at ${xformPath} contains fields with the deprecated \`horizontal\`/\`compact\` appearance. ` +
-      'These have been deprecated in favor of the `columns` appearance. Please update the following fields:');
+    warnings.unshift(
+      `Form at ${xformPath} contains fields with the deprecated \`horizontal\`/\`compact\` appearance. `
+      + 'These have been deprecated in favor of the `columns` appearance. Please update the following fields:'
+    );
   }
 };
 

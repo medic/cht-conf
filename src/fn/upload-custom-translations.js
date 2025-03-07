@@ -40,23 +40,23 @@ const execute = async () => {
       }
       for (const error of err.errors) {
         switch (error.error) {
-          case 'cannot-access-dir':
-            return log.warn('Could not find custom translations dir:', dir);
-          case 'missed-placeholder':
-          case 'wrong-placeholder':
-            placeholderErrorsFound++;
-            log.error(error.message);
-            break;
-          case 'empty-message':
-            emptiesFound++;
-            log.warn(error.message);
-            break;
-          case 'wrong-messageformat':
-            formatErrorsFound++;
-            log.error(error.message);
-            break;
-          default:  // 'wrong-file-name', ...
-            log.error(error.message);
+        case 'cannot-access-dir':
+          return log.warn('Could not find custom translations dir:', dir);
+        case 'missed-placeholder':
+        case 'wrong-placeholder':
+          placeholderErrorsFound++;
+          log.error(error.message);
+          break;
+        case 'empty-message':
+          emptiesFound++;
+          log.warn(error.message);
+          break;
+        case 'wrong-messageformat':
+          formatErrorsFound++;
+          log.error(error.message);
+          break;
+        default:  // 'wrong-file-name', ...
+          log.error(error.message);
         }
       }
       if (emptiesFound > 0) {
@@ -74,11 +74,14 @@ const execute = async () => {
     }
   }
 
-  for (let fileName of fileNames) {
+  for (const fileName of fileNames) {
     const id = idFor(fileName);
     const languageCode = id.substring('messages-'.length);
     if (!isLanguageCodeValid(languageCode)) {
-      throw new Error(`The language code '${languageCode}' is not valid. It must begin with a letter(a-z, A-Z), followed by any number of hyphens, underscores, letters, or numbers.`);
+      throw new Error(
+        `The language code '${languageCode}' is not valid. It must begin with a letter(a-z, A-Z), `
+        + 'followed by any number of hyphens, underscores, letters, or numbers.'
+      );
     }
 
     let languageName = iso639.getName(languageCode);
@@ -86,7 +89,7 @@ const execute = async () => {
       log.warn(`'${languageCode}' is not a recognized ISO 639 language code, please ask admin to set the name`);
       languageName = 'TODO: please ask admin to set this in settings UI';
     } else {
-      let languageNativeName = iso639.getNativeName(languageCode);
+      const languageNativeName = iso639.getNativeName(languageCode);
       if (languageNativeName !== languageName) {
         languageName = `${languageNativeName} (${languageName})`;
       }
@@ -101,7 +104,9 @@ const execute = async () => {
       if (e.status === 404) {
         doc = await newDocFor(fileName, db, languageName, languageCode);
       }
-      else throw e;
+      else {
+        throw e;
+      }
     }
 
     overwriteProperties(doc, translations);
@@ -122,7 +127,9 @@ const execute = async () => {
 function parse(filePath, options) {
   return new Promise((resolve, reject) => {
     properties.parse(filePath, options, (err, parsed) => {
-      if (err) return reject(err);
+      if (err) {
+        return reject(err);
+      }
       resolve(parsed);
     });
   });

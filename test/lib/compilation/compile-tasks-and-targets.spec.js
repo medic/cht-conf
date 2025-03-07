@@ -43,7 +43,8 @@ describe('compile tasks and targets', () => {
       .__with__(mocks)(() => compileTasksAndTargets('/project', { minifyScripts: true }))
       .then(actual => {
         expect(actual).to.deep.eq({
-          rules: 'define Target {_id: null}define Contact {contact: null,reports: null}rule GenerateEvents {when {c: Contact}then {var now = Utils.now();var today = new Date();}}',
+          rules: 'define Target {_id: null}define Contact {contact: null,reports: null}rule '
+            + 'GenerateEvents {when {c: Contact}then {var now = Utils.now();var today = new Date();}}',
         });
         expect(mocks.pack.callCount).to.eq(0);
       });

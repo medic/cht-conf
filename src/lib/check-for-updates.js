@@ -6,7 +6,9 @@ module.exports = (options) => {
   const current = require('../../package').version;
   info(`Current version: ${current}.  Checking NPM for updates…`);
 
-  if (!options) options = {};
+  if (!options) {
+    options = {};
+  }
 
   return request
     .get('https://registry.npmjs.org/cht-conf')
@@ -33,6 +35,5 @@ module.exports = (options) => {
       } else {
         warn(`Could not check NPM for updates. Error: ${err.message}`);
       }
-    })
-    ;
+    });
 };

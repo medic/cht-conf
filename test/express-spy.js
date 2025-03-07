@@ -28,7 +28,9 @@ module.exports = function() {
 
     const response = responses.shift();
 
-    if(!response) return error(req, res);
+    if(!response) {
+      return error(req, res);
+    }
 
     res.status(response.status || 200);
     res.type(response.type || 'json');
@@ -50,5 +52,8 @@ module.exports = function() {
 
 function error(req, res) {
   res.status(500);
-  res.send(`Unexpected request: ${req.method} ${req.originalUrl} - no more API HTTP responses have been defined for this test.  If you forgot to add one, use \`apiStub.requests.push({ status, type, body })\``);
+  res.send(
+    `Unexpected request: ${req.method} ${req.originalUrl} - no more API HTTP responses have been defined for this ` +
+    `test.  If you forgot to add one, use \`apiStub.requests.push({ status, type, body })\``
+  );
 }

@@ -41,8 +41,9 @@ describe('csv-to-docs', function() {
 
             // then
             expect(countFilesInDir(generatedDocsDir)).to.equal(
-                         countFilesInDir(expectedDocsDir ),
-                         `Different number of files in ${generatedDocsDir} and ${expectedDocsDir}.`);
+              countFilesInDir(expectedDocsDir ),
+              `Different number of files in ${generatedDocsDir} and ${expectedDocsDir}.`
+            );
 
             fs.recurseFiles(expectedDocsDir)
               .map(file => fs.path.basename(file))
@@ -61,7 +62,7 @@ describe('csv-to-docs', function() {
         expect(warnIfDirectoryIsNotEmptySpy.threw('User aborted execution.')).to.be.false;
       });
 
-  });
+    });
 
 });
 

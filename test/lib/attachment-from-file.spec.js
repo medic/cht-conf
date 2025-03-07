@@ -7,12 +7,12 @@ const BASE_DIR = path.join(__dirname, '../data/attachment-from-file');
 describe('attachment-from-file', () => {
 
   it('files are identified with the right MIME type', () => {
-    let attachment = attachmentFromFile(`${BASE_DIR}/icon-people-woman-pregnant@2x.webp`);
+    const attachment = attachmentFromFile(`${BASE_DIR}/icon-people-woman-pregnant@2x.webp`);
     expect(attachment.content_type).to.eq('image/webp');
   });
 
   it('files with more than one extension are identified with the right MIME type', () => {
-    let attachment = attachmentFromFile(`${BASE_DIR}/chloris.66a.mp3`);
+    const attachment = attachmentFromFile(`${BASE_DIR}/chloris.66a.mp3`);
     expect(attachment.content_type).to.eq('audio/mpeg');
   });
 

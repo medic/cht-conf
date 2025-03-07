@@ -17,7 +17,10 @@ const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.jso
 
 // check to see if we should write/overwrite the file
 const overwriteFileCheck = (doc, args, overwriteAllFiles) => {
-  return args.updateOfflineDocs || environment.force || overwriteAllFiles || !fs.exists(jsonDocPath(args.docDirectoryPath, doc._id));
+  return args.updateOfflineDocs
+    || environment.force
+    || overwriteAllFiles
+    || !fs.exists(jsonDocPath(args.docDirectoryPath, doc._id));
 };
 
 const saveJsonDoc = (doc, args) => {
@@ -62,19 +65,19 @@ const execute = () => {
     .filter(name => name.endsWith('.csv'))
     .reduce((promiseChain, csv) =>
       promiseChain
-      .then(() => {
-        info('Processing CSV file:', csv, '…');
+        .then(() => {
+          info('Processing CSV file:', csv, '…');
 
-        const nameParts = fs.path.basename(csv).split('.');
-        const prefix = nameParts[0];
-        switch(prefix) {
+          const nameParts = fs.path.basename(csv).split('.');
+          const prefix = nameParts[0];
+          switch(prefix) {
           case 'contact':  return processDocuments('contact', csv, getIDs(csv, prefix), db, args);
           case 'users': return processDocuments('user', csv, getIDs(csv, prefix), db, args);
           default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
-        }
-      })
-      .then(docs => addToModel(csv, docs)),
-      Promise.resolve())
+          }
+        })
+        .then(docs => addToModel(csv, docs)),
+    Promise.resolve())
 
     .then(() => model.exclusions.forEach(toDocs.removeExcludedField))
     .then(() => writeDocs(model.docs, args));
@@ -98,7 +101,7 @@ function getIDs(csv, docType) {
   const { rows, cols } = fs.readCsv(csv);
   const index = cols.indexOf(DOCUMENT_ID);
   if (index === -1){
-   throw Error('missing "documentID" column.');
+    throw Error('missing "documentID" column.');
   }
 
   const idPrefix =  docType === 'contact' ? '' : 'org.couchdb.user:';

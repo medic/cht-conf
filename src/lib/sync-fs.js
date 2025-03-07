@@ -18,7 +18,9 @@ function read(path) {
 
 function readCsv(path) {
   const raw = csvParse(read(path));
-  if(!raw.length) return { cols:[], rows:[] };
+  if(!raw.length) {
+    return { cols:[], rows:[] };
+  }
   return {
     cols: raw[0],
     rows: raw.slice(1),
@@ -36,14 +38,16 @@ function readJson(path) {
 
 function dirs(dir) {
   return fs
-      .readdirSync(dir)
-      .filter(file => fs
-          .statSync(path.join(dir, file))
-          .isDirectory());
+    .readdirSync(dir)
+    .filter(file => fs
+      .statSync(path.join(dir, file))
+      .isDirectory());
 }
 
 function recurseFiles(dir, files) {
-  if(!files) files = [];
+  if(!files) {
+    files = [];
+  }
 
   fs.readdirSync(dir)
     .filter(name => !name.startsWith('.'))
@@ -52,11 +56,19 @@ function recurseFiles(dir, files) {
       try {
         const stat = fs.statSync(f);
 
-        if(stat.isDirectory()) recurseFiles(f, files);
-        else files.push(f);
+        if(stat.isDirectory()) {
+          recurseFiles(f, files);
+        }
+        else {
+          files.push(f);
+        }
       } catch(e) {
-        if(e.code === 'ENOENT') trace('Ignoring file (err ENOENT - may be a symlink):', f);
-        else throw e;
+        if(e.code === 'ENOENT') {
+          trace('Ignoring file (err ENOENT - may be a symlink):', f);
+        }
+        else {
+          throw e;
+        }
       }
     });
 
@@ -66,8 +78,8 @@ function recurseFiles(dir, files) {
 function extension(fileName) {
   const extensionStart = fileName.lastIndexOf('.');
   return extensionStart === -1 ?
-      fileName :
-      fileName.substring(extensionStart+1);
+    fileName :
+    fileName.substring(extensionStart+1);
 }
 
 function withoutExtension(fileName) {
