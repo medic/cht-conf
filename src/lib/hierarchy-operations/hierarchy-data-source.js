@@ -69,6 +69,9 @@ const getReportsFromNouveauByCreatedByIds = async (createdByIds, skip) => {
   const api_ = api();
   const res = await api_.request.get(`${environment.apiUrl}/_design/medic-nouveau/_nouveau/reports_by_freetext`, {
     qs: {
+      // sorting by this field ensures that the output are same with the clouseau views
+      // https://github.com/medic/cht-core/pull/9541
+      sort: '"reported_date"',
       q: queryString,
       include_docs: true,
       limit: BATCH_SIZE,
