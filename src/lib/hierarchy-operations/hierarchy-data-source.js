@@ -67,7 +67,7 @@ async function getContactWithDescendants(db, contactId) {
 const getReportsFromNouveauByCreatedByIds = async (createdByIds, skip) => {
   const queryString = createdByIds.map(id => `contact:"${id}"`).join(' OR ');
   const api_ = api();
-  const res = await api_.request.get(`${environment.apiUrl}/_design/medic-nouveau/_nouveau/reports_by_freetext`, {
+  const res = await api_.request.get(`${environment.apiUrl}/_design/medic/_nouveau/reports_by_freetext`, {
     qs: {
       // sorting by this field ensures that the output are same with the clouseau views
       // https://github.com/medic/cht-core/pull/9541
