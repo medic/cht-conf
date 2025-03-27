@@ -10,26 +10,6 @@ charset = utf-8
 indent_style = space
 indent_size = 2
 
-# JavaScript files
-[*.{js,jsx,ts,tsx}]
-indent_style = space
-indent_size = 2
-quote_type = single
-
-# JSON files
-[*.json]
-indent_style = space
-indent_size = 2
-
-# CouchDB document property names
-[*.{couch,couchdb}]
-indent_style = space
-indent_size = 2
-
-# Makefiles require tabs
-[Makefile]
-indent_style = tab
-
 # Markdown files
 [*.md]
 trim_trailing_whitespace = false
