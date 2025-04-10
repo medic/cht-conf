@@ -21,7 +21,7 @@ module.exports = (projectDir) => {
   }
 
   let purgeConfig;
-   if (purgeExists) {
+  if (purgeExists) {
     try {
       purgeConfig = require(purgePath);
     } catch (err) {
