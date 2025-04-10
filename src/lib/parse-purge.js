@@ -21,7 +21,7 @@ module.exports = (projectDir) => {
   }
 
   let purgeConfig;
-  if (purgeExists) {
+   if (purgeExists) {
     try {
       purgeConfig = require(purgePath);
     } catch (err) {
@@ -53,13 +53,13 @@ module.exports = (projectDir) => {
     }
 
     if (typeof purgeFn !== 'function') {
-      throwError('Configured purging.js does not contain a function');
+      throwError('Configured purge file does not contain a function');
     }
-
     const appSettings = fs.readJson(path.join(projectDir, 'app_settings.json'));
     purgeConfig = appSettings.purging || {};
     purgeConfig.fn = purgeFnString;
 
     return purgeConfig;
   }
+  return null;
 };
