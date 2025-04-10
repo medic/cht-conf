@@ -61,5 +61,4 @@ module.exports = (projectDir) => {
 
     return purgeConfig;
   }
-  return null;
 };

@@ -134,11 +134,8 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   if (purgeConfig) {
     appSettings.purge = purgeConfig;
   }
-  else {
-    // Explicitly delete the purge key and log when this happens
-    if (appSettings.purge) {
-      warn('Removing purge configuration as purge.js and purging.js files were not found.');
-    }
+  else if(appSettings.purge){
+    warn('Removing purge configuration as purge.js and purging.js files were not found.');
     delete appSettings.purge;
   }
   return appSettings;
