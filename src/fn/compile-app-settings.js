@@ -141,7 +141,6 @@ const compileAppSettingsForProject = async (projectDir, options) => {
     }
     delete appSettings.purge;
   }
-  // fs.writeJson(path.join(projectDir, 'app_settings.json'), appSettings);
   return appSettings;
 };
 
