@@ -1,0 +1,13 @@
+{
+  "forms": {},
+  "schedules": [],
+  "tasks": {
+    "rules": {},
+    "isDeclarative": true,
+    "schedules": [],
+    "targets": {
+      "enabled": true,
+      "items": []
+    }
+  }
+}

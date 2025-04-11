@@ -5,14 +5,12 @@ const rewire = require('rewire');
 
 const fs = require('../../src/lib/sync-fs');
 const compileAppSettings = rewire('../../src/fn/compile-app-settings');
-
 const { expect } = chai;
 chai.use(require('chai-exclude'));
 chai.use(require('chai-as-promised'));
 
 let writeJson;
 let environment;
-
 const scenarios = [
   {
     description: 'should handle simple config',
@@ -45,6 +43,10 @@ const scenarios = [
   {
     description: 'should handle a project with no export purge config',
     folder: 'purge/no-export-purge/project',
+  },
+  {
+    description: 'should remove purge config from app_settings when no purge files exist',
+    folder: 'purge/with-purge-config-in-app-settings/project',
   },
   {
     description: 'should handle a project with eslint error when --debug flag is present',
