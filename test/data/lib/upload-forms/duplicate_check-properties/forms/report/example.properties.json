@@ -1,0 +1,5 @@
+{
+  "duplicate_check": {
+    "test": "This property is not supposed to be consumed for this form type"
+  }
+}

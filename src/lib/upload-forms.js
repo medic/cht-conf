@@ -15,6 +15,7 @@ const {
 } = require('./forms-utils');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms', 'subject_key', 'hidden_fields'];
+const CONTACT_DUPLICATE_CHECK_PROPERTY = 'duplicate_check';
 const FORM_EXTENSTION = '.xml';
 const FORM_PROPERTIES_EXTENSION = '.properties.json';
 const FORM_MEDIA_MATCHER = /(.+)-media$/;
@@ -47,6 +48,11 @@ const execute = async (projectDir, subDirectory, options) => {
   if (!fs.exists(formsDir)) {
     log.info(`Forms dir not found: ${formsDir}`);
     return;
+  }
+
+  const PROPERTIES = [...SUPPORTED_PROPERTIES];
+  if (subDirectory === 'contact') {
+    PROPERTIES.push(CONTACT_DUPLICATE_CHECK_PROPERTY);
   }
 
   const fileNames = argsFormFilter(formsDir, FORM_EXTENSTION, options);
@@ -85,12 +91,12 @@ const execute = async (projectDir, subDirectory, options) => {
     };
 
     const propertiesPath = `${formsDir}/${baseFileName}${FORM_PROPERTIES_EXTENSION}`;
-    updateFromPropertiesFile(doc, propertiesPath);
+    updateFromPropertiesFile(doc, propertiesPath, PROPERTIES);
 
     doc._attachments = mediaDirExists ? attachmentsFromDir(mediaDir) : {};
     doc._attachments.xml = attachmentFromFile(xformPath);
 
-    const properties = SUPPORTED_PROPERTIES.concat('internalId');
+    const properties = PROPERTIES.concat('internalId');
 
     const changes = await warnUploadOverwrite.preUploadForm(db, doc, xml, properties);
     if (changes) {
@@ -112,7 +118,7 @@ module.exports = {
   execute
 };
 
-const updateFromPropertiesFile = (doc, path) => {
+const updateFromPropertiesFile = (doc, path, supported_properties) => {
   if (fs.exists(path)) {
 
     const ignoredKeys = [];
@@ -120,7 +126,7 @@ const updateFromPropertiesFile = (doc, path) => {
 
     Object.keys(properties).forEach(key => {
       if (typeof properties[key] !== 'undefined') {
-        if (SUPPORTED_PROPERTIES.includes(key)) {
+        if (supported_properties.includes(key)) {
           doc[key] = properties[key];
         } else if (key === 'internalId') {
           log.warn(`DEPRECATED: ${path}. Please do not manually set internalId in .properties.json for new projects. Support for configuring this value will be dropped. Please see https://github.com/medic/cht-core/issues/3342.`);

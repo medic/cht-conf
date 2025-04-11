@@ -79,4 +79,42 @@ describe('upload-forms', () => {
     });
   });
 
+  it('should consume "duplicate_check" property for contact', async () => {
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
+    sinon.stub(environment, 'pathToProject').get(() => '.');
+    sinon.stub(Date, 'now').returns(123123);
+    return uploadForms.__with__({ validateForms })(async () => {
+      const logInfo = sinon.stub(log, 'info');
+      const logWarn = sinon.stub(log, 'warn');
+      await uploadForms.execute(`${BASE_DIR}/duplicate_check-properties`, 'contact');
+      expect(logInfo.args[0][0]).to.equal('Preparing form for upload: example.xml…');
+      expect(logWarn.callCount).to.equal(0);
+      const form = await api.db.get('form:example');
+      expect(form.duplicate_check).to.deep.equal({
+        'expression': 'levenshteinEq(current.name, existing.name, 3) && ageInYears(current) === ageInYears(existing)',
+        'disabled': true
+      });
+    });
+  });
+
+  it('should ignore "duplicate_check" property for report', async () => {
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
+    sinon.stub(environment, 'pathToProject').get(() => '.');
+    sinon.stub(Date, 'now').returns(123123);
+    return uploadForms.__with__({ validateForms })(async () => {
+      const logInfo = sinon.stub(log, 'info');
+      const logWarn = sinon.stub(log, 'warn');
+      await uploadForms.execute(`${BASE_DIR}/duplicate_check-properties`, 'report');
+      expect(logInfo.args[0][0]).to.equal('Preparing form for upload: example.xml…');
+      expect(logWarn.callCount).to.equal(1);
+      const form = await api.db.get('form:example');
+      expect(form.duplicate_check).to.deep.equal(undefined);
+      expect(logWarn.args[0][0]).to.equal(
+        'Ignoring unknown properties in '+
+        'data/lib/upload-forms/duplicate_check-properties/forms/report/example.properties.json: '+
+        'duplicate_check'
+      );
+    });
+  });
+
 });
