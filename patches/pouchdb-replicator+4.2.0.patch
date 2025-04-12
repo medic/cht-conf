@@ -1,0 +1,13 @@
+diff --git a/node_modules/pouchdb-replicator/dist/pouchdb-replicator.js b/node_modules/pouchdb-replicator/dist/pouchdb-replicator.js
+index ad95708..9cc285e 100644
+--- a/node_modules/pouchdb-replicator/dist/pouchdb-replicator.js
++++ b/node_modules/pouchdb-replicator/dist/pouchdb-replicator.js
+@@ -4258,7 +4258,7 @@ module.exports = function() {
+ 
+ 'use strict';
+ 
+-var punycode = require('punycode');
++var punycode = require('punycode/');
+ var util = require('./util');
+ 
+ exports.parse = urlParse;
