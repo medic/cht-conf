@@ -1,3 +1,10 @@
+# [4.5.0](https://github.com/medic/cht-conf/compare/v4.4.1...v4.5.0) (2025-04-15)
+
+
+### Features
+
+* **#675:** support `duplicate_check` contact form property ([#677](https://github.com/medic/cht-conf/issues/677)) ([503bb7d](https://github.com/medic/cht-conf/commit/503bb7d94dc9ee87078f183e43e5d1141123a05c)), closes [#675](https://github.com/medic/cht-conf/issues/675)
+
 ## [4.4.1](https://github.com/medic/cht-conf/compare/v4.4.0...v4.4.1) (2025-02-03)
 
 
