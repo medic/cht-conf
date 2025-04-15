@@ -46,7 +46,7 @@ const scenarios = [
   },
   {
     description: 'should remove purge config from app_settings when no purge files exist',
-    folder: 'purge/with-purge-config-in-app-settings/project',
+    folder: 'purge/no-purge-file/project',
   },
   {
     description: 'should handle a project with eslint error when --debug flag is present',
