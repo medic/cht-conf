@@ -57,5 +57,6 @@
     "rules": "",
     "schedules": {},
     "targets": {}
-  }
+  },
+  "purge": {}
 }
