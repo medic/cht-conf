@@ -49,6 +49,10 @@ const scenarios = [
     folder: 'purge/no-purge-file/project',
   },
   {
+    description: 'should remove purge config from base_settings when no purge files exist',
+    folder: 'purge/base-settings-purge/project',
+  },
+  {
     description: 'should handle a project with eslint error when --debug flag is present',
     folder: 'eslint-error/project',
     extraArgs: ['--debug'],
