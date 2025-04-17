@@ -134,7 +134,7 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   if (purgeConfig) {
     appSettings.purge = purgeConfig;
   }
-  else if(appSettings.purge){
+  else{
     warn('Setting purge configuration to empty object as purge.js and purging.js files were not found.');
     appSettings.purge = {};
   }

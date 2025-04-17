@@ -1,8 +1,4 @@
 {
   "forms": {},
-  "schedules": [],
-  "purge": {
-    "fn": "function(contact, reports) { return true; }",
-    "run_every_days": 7
-  }
+  "schedules": []
 } 
