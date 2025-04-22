@@ -3,5 +3,6 @@
   "tasks": {
     "rules": "",
     "targets": {}
-  }
+  },
+  "purge": {}
 }

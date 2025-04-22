@@ -120,6 +120,7 @@ const compileAppSettingsForProject = async (projectDir, options) => {
     );
     appSettings = fs.readJson(appSettingsPath);
   }
+
   appSettings.contact_summary = await compilation.compileContactSummary(projectDir, options);
   const compiledTasksAndTargets = await compilation.compileTasksAndTargets(projectDir, options);
   appSettings.tasks = {
@@ -133,7 +134,10 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   if (purgeConfig) {
     appSettings.purge = purgeConfig;
   }
-
+  else{
+    warn('Setting purge configuration to empty object as purge.js and purging.js files were not found.');
+    appSettings.purge = {};
+  }
   return appSettings;
 };
 
