@@ -59,8 +59,7 @@ const createWarning = ({ ref, appearance, deprecatedAppearance }) => {
 const populateWarningHeader = (xformPath, warnings) => {
   if (warnings.length) {
     warnings.unshift(
-      `Form at ${xformPath} contains fields with a deprecated appearance. `
-      + 'Please update the following:'
+      `Form at ${xformPath} contains fields with a deprecated appearance. Please update the following:`
     );
   }
 };

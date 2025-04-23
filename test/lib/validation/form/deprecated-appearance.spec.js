@@ -21,7 +21,7 @@ const getXml = ({ name = '', age = '', address = '', streetNbr = '', city = '', 
           </address>
         </data>
       </instance>
-      <bind nodeset="/data/name" type="string" />   
+      <bind nodeset="/data/name" type="string" />
       <meta>
         <instanceID/>
       </meta>
@@ -60,8 +60,7 @@ const assertEmpty = (output) => {
 };
 
 const LATEST_VERSION = '999.99.99';
-const ERROR_HEADER = `Form at ${xformPath} contains fields with a deprecated appearance. ` +
-  'Please update the following:';
+const ERROR_HEADER = `Form at ${xformPath} contains fields with a deprecated appearance. Please update the following:`;
 
 describe('deprecated-appearance', () => {
   it(`resolves OK for form with no appearances`, () => {
@@ -180,7 +179,7 @@ describe('deprecated-appearance', () => {
     ['horizontal-compact', '4.0.0', 'columns-pack'],
     ['compact', '4.0.0', 'columns-pack no-buttons'],
     ['compact-1', '4.0.0', 'columns-1 no-buttons'],
-    ['db-object', '4.0.0', 'select-contact'],
+    ['db-object', '3.9.0', 'select-contact'],
   ].forEach(([appearance, apiVersion, replacement]) => {
     it(`returns error for deprecated [${appearance}] appearance when api version is [${apiVersion}]`, () => {
       const appearances = {
