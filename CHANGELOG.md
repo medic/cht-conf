@@ -1,3 +1,10 @@
+# [4.6.0](https://github.com/medic/cht-conf/compare/v4.5.0...v4.6.0) (2025-04-23)
+
+
+### Features
+
+* **#502:** warn when using deprecated `db-object` appearance ([#682](https://github.com/medic/cht-conf/issues/682)) ([ca6691b](https://github.com/medic/cht-conf/commit/ca6691b1f3285d1a59093fc3a6bb2c980dcb78e0)), closes [#502](https://github.com/medic/cht-conf/issues/502)
+
 # [4.5.0](https://github.com/medic/cht-conf/compare/v4.4.1...v4.5.0) (2025-04-15)
 
 
