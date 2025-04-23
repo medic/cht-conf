@@ -24,6 +24,11 @@ const getDeprecatedAppearances = (apiVersion) => [
     getReplacement: () => 'columns-pack no-buttons',
     versionDeprecated: '4.0.0'
   },
+  {
+    match: appearance => appearance.match(/(?:^|\s)db-object(?:$|\s)/),
+    getReplacement: () => 'select-contact',
+    versionDeprecated: '3.9.0'
+  },
 ].filter(deprecatedAppearance => semver.gte(apiVersion, deprecatedAppearance.versionDeprecated));
 
 const getElementsWithAppearance = (xmlDoc) => getNodes(xmlDoc, '/h:html/h:body//*[@appearance]');
@@ -54,8 +59,7 @@ const createWarning = ({ ref, appearance, deprecatedAppearance }) => {
 const populateWarningHeader = (xformPath, warnings) => {
   if (warnings.length) {
     warnings.unshift(
-      `Form at ${xformPath} contains fields with the deprecated \`horizontal\`/\`compact\` appearance. `
-      + 'These have been deprecated in favor of the `columns` appearance. Please update the following fields:'
+      `Form at ${xformPath} contains fields with a deprecated appearance. Please update the following:`
     );
   }
 };
