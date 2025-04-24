@@ -161,6 +161,7 @@ In order to avoid overwriting someone else's configuration cht-conf records the 
 * upload resources to server
 * upload custom translations to the server
 * upload privacy policies to server
+* upload db indexes to server
 * upload branding to server
 * upload partners to server
 
@@ -220,6 +221,7 @@ This tool expects a project to be structured as follows:
 		.eslintrc
 		app_settings.json
 		contact-summary.js
+		indexes.json
 		privacy-policies.json
 		privacy-policies/
 		    language1.html

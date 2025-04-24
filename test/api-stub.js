@@ -1,6 +1,7 @@
 const PouchDB = require('pouchdb-core');
 const sinon = require('sinon');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
+PouchDB.plugin(require('pouchdb-find'));
 
 const environment = require('../src/lib/environment');
 const express = require('express');
@@ -13,7 +14,12 @@ const mockMiddleware = new ExpressSpy();
 const opts = {
   inMemoryConfig: true,
   logPath: 'express-pouchdb.log',
-  mode: 'minimumForPouchDB'
+  mode: 'minimumForPouchDB',
+  overrideMode: {
+    include: [
+      'routes/find'
+    ]
+  }
 };
 const app = express();
 app.use(bodyParser.json());

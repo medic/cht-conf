@@ -12,6 +12,7 @@ const LAYOUT = {
 };\n`,
   'privacy-policies.json': {},
   'privacy-policies': {},
+  'indexes.json': {},
   'resources.json': {},
   'harness.defaults.json': {},
   resources: {},
