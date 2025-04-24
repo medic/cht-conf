@@ -9,6 +9,9 @@ _cht() {
     local current_pos=$CURRENT
     
     # Call the shell-completion-for-cht program to get available options
+    # current_pos - 1 gives the index of the previous word, which is typically the argument it is the word just before the current word
+    # previous_word helps in setting correct context for the completion
+    
     local completion_options
     completion_options=$(shell-completion-for-cht $((current_pos-1)) "$current_word")
     
