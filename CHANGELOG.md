@@ -1,3 +1,10 @@
+# [4.8.0](https://github.com/medic/cht-conf/compare/v4.7.0...v4.8.0) (2025-04-25)
+
+
+### Features
+
+* **#685:** added PR title linting workflow in GitHub CI ([#686](https://github.com/medic/cht-conf/issues/686)) ([c2d42f6](https://github.com/medic/cht-conf/commit/c2d42f60adb39584ee5c7eb861aa38d7d8df8498)), closes [#685](https://github.com/medic/cht-conf/issues/685)
+
 # [4.7.0](https://github.com/medic/cht-conf/compare/v4.6.0...v4.7.0) (2025-04-25)
 
 
