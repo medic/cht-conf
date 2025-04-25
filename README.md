@@ -68,6 +68,11 @@ To enable tab completion in bash, add the following to your `.bashrc`/`.bash_pro
 
 	eval "$(cht --shell-completion=bash)"
 
+## Zsh completion
+To enable tab completion in zsh, add the following to your `~/.zshrc` file:
+   
+    eval "$(cht --shell-completion=zsh)"
+	
 ## Upgrading
 
 To upgrade to the latest version
