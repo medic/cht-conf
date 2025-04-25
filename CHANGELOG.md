@@ -1,3 +1,10 @@
+# [4.7.0](https://github.com/medic/cht-conf/compare/v4.6.0...v4.7.0) (2025-04-25)
+
+
+### Features
+
+* **#683:** add autocompletion feature for zsh  ([#684](https://github.com/medic/cht-conf/issues/684)) ([356f2e8](https://github.com/medic/cht-conf/commit/356f2e8c25fa42e26d53e2d6df3be85da1bda704)), closes [#683](https://github.com/medic/cht-conf/issues/683)
+
 # [4.6.0](https://github.com/medic/cht-conf/compare/v4.5.0...v4.6.0) (2025-04-23)
 
 
