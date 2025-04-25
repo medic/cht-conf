@@ -22,6 +22,7 @@ app.post('/api/sms', (req, res) => {
   res.write('{}');
   res.end();
 });
+app.all('/medic/_design/medic/_nouveau/*', mockMiddleware.requestHandler);
 app.all('/api/*', mockMiddleware.requestHandler);
 app.use('/', stripAuth, expressPouch(PouchDB, opts));
 
@@ -31,6 +32,7 @@ const db = new PouchDB('medic', { adapter: 'memory' });
 module.exports = {
   db,
   giveResponses: mockMiddleware.setResponses,
+  giveCommonResponse: mockMiddleware.setCommonResponse,
   requestLog: () => mockMiddleware.requests.map(r => ({ method:r.method, url:r.originalUrl, body:r.body })),
   start: () => {
     if(server) {
