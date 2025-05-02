@@ -55,10 +55,10 @@ const parseLocalUrl = (couchUrl) => {
   const doParse = (unparsed) => {
     const parsed = new url.URL(unparsed);
     parsed.path = parsed.pathname = '';
-    parsed.host = `${parsed.hostname}:5988`;
+    parsed.host = `${parsed.hostname}:${parsed.port}`;
     return new url.URL(url.format(parsed));
   };
-
+  
   if (couchUrl) {
     info(`Using local url from COUCH_URL environment variable: ${couchUrl}`);
     return doParse(couchUrl);
