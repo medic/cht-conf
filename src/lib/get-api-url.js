@@ -24,7 +24,7 @@ const getApiUrl = (cmdArgs, env = {}) => {
     // behaviour as it is connecting to.
     // See ./archiving-db.js
     instanceUrl = parseLocalUrl(env.COUCH_URL);
-    if (instanceUrl.hostname !== 'localhost') {
+    if (instanceUrl.hostname !== 'localhost' && cmdArgs.archive) {
       throw Error(
         `--local was specified but COUCH_URL env var is set to '${instanceUrl.hostname}'.  `
         + `Please use --url for remote servers.`
@@ -55,7 +55,7 @@ const parseLocalUrl = (couchUrl) => {
   const doParse = (unparsed) => {
     const parsed = new url.URL(unparsed);
     parsed.path = parsed.pathname = '';
-    parsed.host = `${parsed.hostname}:${parsed.port}`;
+    parsed.host = `${parsed.hostname}:5988`;
     return new url.URL(url.format(parsed));
   };
   
