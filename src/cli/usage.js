@@ -17,39 +17,6 @@ ${bold('DESCRIPTION')}
 ${bold('SUPPORTED ACTIONS')}
   * ${supportedActions.join('\n  * ')}
 
-${bold('upload-database-indexes')}
-  Define indexes for the "medic" database to enhance query performance. To index only a subset of documents, use "partial_filter_selector".
-
-  Structure:
-  | ${bold('Prop')}                                 | ${bold('Description')}                                                                    |
-  | ${bold('[key]')}                                | The object key will be used for both the "name" and "ddoc" values of the index |
-  | ${bold('"fields"')}                             | A list of fields to index                                                      |
-  | ${bold('"partial_filter_selector"')} (optional) | A selector used to filter the set of documents included in the index           |
-
-  Example:
-  {
-    "testing_by_id_and_type": {
-      "fields": ["_id", "type"],
-      "partial_filter_selector": {
-        "type": { "$nin": ["form", "translations", "meta"] },
-        "_id": { "$nin": ["branding", "extension-libs", "resources"] }
-      }
-  }
-
-  In this example:
-  - The index is created on the "_id" and "type" fields. 
-    According to the ESR (Equality, Sort, Range) rule, fields used in equality matches should come first, followed by sort fields, and then range fields. 
-    This ordering optimizes query performance.
-  - The "partial_filter_selector" limits the index to documents where "type" and "_id" do not match the specified values, reducing index size and improving efficiency.
-
-  The filename 'database-indexes.json' should be used to contain the above configuration.
-
-  For more info:
-  https://pouchdb.com/api.html#create_index
-  https://pouchdb.com/api.html#query_index
-  https://docs.couchdb.org/en/stable/api/database/find.html#db-find
-  https://www.mongodb.com/docs/manual/tutorial/equality-sort-range-guideline/
-
 ${bold('SAVE CONFIG TO')}
   --local
     Upload to http://admin:pass@localhost:5988

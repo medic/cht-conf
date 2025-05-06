@@ -112,7 +112,7 @@ describe('upload database indexes', () => {
 
   it('should handle update', async () => {
     await setupAndTestNormalIndex();
-    
+
     const testDir = 'update';
     mockTestDir(testDir);
     await uploadIndexes.execute();
@@ -166,7 +166,7 @@ describe('upload database indexes', () => {
 
   it('should handle delete', async () => {
     await setupAndTestNormalIndex();
-    
+
     const testDir = 'delete';
     mockTestDir(testDir);
     await uploadIndexes.execute();
@@ -182,30 +182,13 @@ describe('upload database indexes', () => {
     chai.expect(result.indexes[0].type).to.equal('special');
   });
 
-  it('should not upload when no changes', async () => {
-    const testDir = `no-changes`;
-    mockTestDir(testDir);
-    warnUploadOverwrite.preUploadDoc.returns(false);
-
-    await uploadIndexes.execute();
-    chai.expect(warnUploadOverwrite.preUploadDoc.callCount).to.equal(1);
-    chai.expect(warnUploadOverwrite.postUploadDoc.callCount).to.equal(1);
-
-    try {
-      await getDoc();
-      chai.assert.fail('Should have thrown');
-    } catch (err) {
-      chai.expect(err.status).to.equal(404);
-    }
-  });
-
   it('should handle multi index diff', async () => {
     await setupAndTestNormalIndex();
-    
+
     const testDir = 'multi-index-diff-check';
     mockTestDir(testDir);
     await uploadIndexes.execute();
-    
+
     const doc = await getDoc();
     chai.expect(doc).excludingEvery(['_rev', 'revpos', 'digest']).to.deep.equal({
       _id: 'database-indexes',
@@ -296,5 +279,64 @@ describe('upload database indexes', () => {
       'name': 'testing_by_id_and_type',
       'type': 'json'
     });
+  });
+
+  it('should not upload when no changes', async () => {
+    const testDir = `no-changes`;
+    mockTestDir(testDir);
+    warnUploadOverwrite.preUploadDoc.returns(false);
+
+    await uploadIndexes.execute();
+    chai.expect(warnUploadOverwrite.preUploadDoc.callCount).to.equal(1);
+    chai.expect(warnUploadOverwrite.postUploadDoc.callCount).to.equal(1);
+
+    try {
+      await getDoc();
+      chai.assert.fail('Should have thrown');
+    } catch (err) {
+      chai.expect(err.status).to.equal(404);
+    }
+  });
+
+  it('should throw with instructions if root structure is NOT an map', async () => {
+    const testDir = 'incorrect-root-structure';
+    mockTestDir(testDir);
+    warnUploadOverwrite.preUploadDoc.returns(true);
+
+    try {
+      await uploadIndexes.execute();
+    } catch (err) {
+      chai.expect(warnUploadOverwrite.preUploadDoc.callCount).to.equal(0);
+      chai.expect(warnUploadOverwrite.postUploadDoc.callCount).to.equal(0);
+      chai.expect(err.message).to.equal('The top-level structure must be a JSON object (map).');
+    }
+  });
+
+  it('should throw with instructions if any index entry has the incorrect structure', async () => {
+    const testDir = 'incorrect-child-structure';
+    mockTestDir(testDir);
+    warnUploadOverwrite.preUploadDoc.returns(true);
+
+    try {
+      await uploadIndexes.execute();
+    } catch (err) {
+      chai.expect(warnUploadOverwrite.preUploadDoc.callCount).to.equal(0);
+      chai.expect(warnUploadOverwrite.postUploadDoc.callCount).to.equal(0);
+      chai.expect(err.message).to.equal('Entry "other" is not a valid JSON object (map).');
+    }
+  });
+
+  it('should throw with instructions if any index entry omits the "fields" prop', async () => {
+    const testDir = 'missing-field-props';
+    mockTestDir(testDir);
+    warnUploadOverwrite.preUploadDoc.returns(true);
+
+    try {
+      await uploadIndexes.execute();
+    } catch (err) {
+      chai.expect(warnUploadOverwrite.preUploadDoc.callCount).to.equal(0);
+      chai.expect(warnUploadOverwrite.postUploadDoc.callCount).to.equal(0);
+      chai.expect(err.message).to.equal('Missing "fields" property in entry "other".');
+    }
   });
 });
