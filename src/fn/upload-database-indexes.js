@@ -10,35 +10,41 @@ const jsonDiff = require('json-diff');
 // > Also tells you about the special _all_docs index, i.e. the default index on the _id field.
 const BUILT_IN_INDEX_TYPE = 'special';
 
+const standardizePartialFilterContent = (partialFilter) => {
+  if (!partialFilter) {
+    return;
+  }
+
+  const isRootAndOnly = (
+    Object.keys(partialFilter).length === 1 &&
+    Object.hasOwn(partialFilter, '$and') &&
+    Array.isArray(partialFilter['$and'])
+  );
+
+  return isRootAndOnly ? Object.assign({}, ...partialFilter['$and']) : partialFilter;
+};
+
 const hasDefinitionDiff = (dbIndex, configDefinition) => {
   // The db item's fields have an order accompanying the field
-  const dbItemDefinition = {...dbIndex.def, fields: (dbIndex.def.fields || []).map(e => Object.keys(e)[0])};
+  const dbItemDefinition = { ...dbIndex.def, fields: (dbIndex.def.fields || []).map(e => Object.keys(e)[0]) };
+
   // We observed that our unit tests returned no '$and' grouping for the partial filter.
   // In contrast, testing against a real instance returned a grouping.
   // To reliably determine definition diff, we ignore the db filter fields root '$and'.
   // https://docs.couchdb.org/en/stable/api/database/find.html#explicit-operators
+  dbItemDefinition.partial_filter_selector = standardizePartialFilterContent(dbItemDefinition.partial_filter_selector);
 
-  const isRootAndOnly = (
-    Object.keys(dbItemDefinition.partial_filter_selector).length === 1 &&
-    Object.hasOwn(dbItemDefinition.partial_filter_selector, '$and') &&
-    Array.isArray(dbItemDefinition.partial_filter_selector['$and'])
-  );
-
-  dbItemDefinition.partial_filter_selector = isRootAndOnly
-    ? Object.assign({}, ...dbItemDefinition.partial_filter_selector['$and'])
-    : dbItemDefinition.partial_filter_selector;
-  
   return !!jsonDiff.diff(configDefinition, dbItemDefinition);
 };
 
 const cleanUpIndexes = async (db, storedIndexes, indexConfig) => {
-  for(const [key, value] of Object.entries(storedIndexes)){
+  for (const [key, value] of Object.entries(storedIndexes)) {
     // Delete the index if it is no longer in the config
-    if(!(key in indexConfig)) {
+    if (!(key in indexConfig)) {
       await db.deleteIndex(value);
     }
     // We probably don't want to unnecessarily delete/recreate indexes
-    else if (key in indexConfig && hasDefinitionDiff(value, indexConfig[key])){
+    else if (key in indexConfig && hasDefinitionDiff(value, indexConfig[key])) {
       await db.deleteIndex(value);
       log.warn(`The "${value.name}" index config differs from what is saved and has been deleted for recreation.`);
     }
@@ -46,7 +52,7 @@ const cleanUpIndexes = async (db, storedIndexes, indexConfig) => {
 };
 
 const createIndexes = async (db, indexConfig) => {
-  for(const [key, value] of Object.entries(indexConfig)){
+  for (const [key, value] of Object.entries(indexConfig)) {
     const props = {
       'index': value,
       'ddoc': key,
@@ -73,13 +79,13 @@ const manageIndexes = async (db, indexMapping = {}) => {
 module.exports = {
   requiresInstance: true,
   execute: async () => {
-    const key = 'indexes';
+    const key = 'database-indexes';
     const path = `${environment.pathToProject}/${key}.json`;
     const indexPath = fs.path.resolve(path);
 
-    if(!fs.exists(indexPath)) {
+    if (!fs.exists(indexPath)) {
       log.warn(`No ${key} mapping file found at path: ${indexPath}`);
-      return Promise.resolve();
+      return;
     }
 
     const indexMapping = fs.readJson(indexPath);
@@ -102,7 +108,5 @@ module.exports = {
     }
 
     await warnUploadOverwrite.postUploadDoc(db, doc);
-
-    return Promise.resolve();
   }
 };

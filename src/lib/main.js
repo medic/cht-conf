@@ -38,7 +38,7 @@ const defaultActions = [
   'upload-custom-translations',
   'upload-privacy-policies',
   'upload-extension-libs',
-  'upload-indexes',
+  'upload-database-indexes',
 ];
 const defaultArchiveActions = [
   'compile-app-settings',
@@ -61,7 +61,7 @@ const defaultArchiveActions = [
   'upload-custom-translations',
   'upload-privacy-policies',
   'upload-extension-libs',
-  'upload-indexes',
+  'upload-database-indexes',
 ];
 
 module.exports = async (argv, env) => {
