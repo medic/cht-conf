@@ -168,6 +168,7 @@ In order to avoid overwriting someone else's configuration cht-conf records the 
 * upload privacy policies to server
 * upload branding to server
 * upload partners to server
+* upload database indexes to server
 
 ## Forms
 
