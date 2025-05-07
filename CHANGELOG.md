@@ -1,3 +1,10 @@
+## [4.8.1](https://github.com/medic/cht-conf/compare/v4.8.0...v4.8.1) (2025-05-07)
+
+
+### Bug Fixes
+
+* **#680:** add command for uploading db indexes ([#681](https://github.com/medic/cht-conf/issues/681)) ([6170b57](https://github.com/medic/cht-conf/commit/6170b576faa4cc72d09350ba72eaedb57155d6c4)), closes [#680](https://github.com/medic/cht-conf/issues/680)
+
 # [4.8.0](https://github.com/medic/cht-conf/compare/v4.7.0...v4.8.0) (2025-04-25)
 
 
