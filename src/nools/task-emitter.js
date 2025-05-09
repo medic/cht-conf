@@ -136,7 +136,7 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
 
       priority = taskDefinition.priority;
       if (typeof priority === 'function') {
-        priority = priority(c, r, event, dueDate, scheduledTaskIdx);
+        priority = priority(c, r);
       }
 
       if (priority) {
