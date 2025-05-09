@@ -1,3 +1,51 @@
+
+const contactTypeIncluded = (contactType, includedTypes) => {
+  return includedTypes.length === 0 || includedTypes.includes(contactType);
+};
+
+const contactTypeExcluded = (contactType, excludedTypes) => {
+  return excludedTypes.length === 0 || excludedTypes.includes('!' + contactType); // TODO
+};
+
+const fieldFilter = (contactType, field) => {
+  // These two arrays should be disjoint sets but they are not. 
+  const includedTypes = convertToArray(field.appliesToType); 
+  const excludedTypes = includedTypes.filter(function(type) {
+    return type && type.charAt(0) === '!';
+  });
+
+  const noTypesConfigured = includedTypes.length === 0;
+  const configuredTypeIncluded = includedTypes.includes(contactType);
+  const excludedTypesConfigured = excludedTypes.length > 0;
+  const contactTypeExcluded = excludedTypes.includes('!' + contactType);
+
+  const typeMatches = noTypesConfigured || configuredTypeIncluded || (excludedTypesConfigured && !contactTypeExcluded);
+
+  const hasAppliesIf = field.appliesIf && typeof field.appliesIf === 'function';
+
+  if (typeMatches && (!hasAppliesIf || field.appliesIf())) {
+    delete field.appliesToType;
+    delete field.appliesIf;
+    return true;
+  }
+};
+
+/**
+ * @param contactSummary {{
+ *   fields: {
+ *     appliesToType: string[] | undefined,
+ *     appliesIf: () => boolean | undefined,
+ *   }[] | undefined,
+ *   context: object | undefined,
+ *   cards: {
+ *     appliesToType: string[] | undefined,
+ *     appliesIf: (report: object) => boolean | boolean | undefined,
+ *   }[] | undefined,
+ * }}
+ * @param contact {object}
+ * @param reports {object[]}
+ * @returns {{cards: object[], fields: object[]}}
+ */
 function emitter(contactSummary, contact, reports) {
   var fields = contactSummary.fields || [];
   var context = contactSummary.context || {};
@@ -7,20 +55,22 @@ function emitter(contactSummary, contact, reports) {
 
   var result = {
     cards: [],
-    fields: fields.filter(function(f) {
-      var appliesToType = convertToArray(f.appliesToType);
-      var appliesToNotType = appliesToType.filter(function(type) {
-        return type && type.charAt(0) === '!';
-      });
-      if (appliesToType.length === 0 || appliesToType.includes(contactType) ||
-          (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
-        if (!f.appliesIf || f.appliesIf()) {
-          delete f.appliesToType;
-          delete f.appliesIf;
-          return true;
-        }
-      }
-    }),
+
+    fields: fields.filter(field => fieldFilter(contactType, field)),
+    // fields: fields.filter(function(f) {
+    //   var appliesToType = convertToArray(f.appliesToType);
+    //   var appliesToNotType = appliesToType.filter(function(type) {
+    //     return type && type.charAt(0) === '!';
+    //   });
+    //   if (appliesToType.length === 0 || appliesToType.includes(contactType) ||
+    //       (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
+    //     if (!f.appliesIf || f.appliesIf()) {
+    //       delete f.appliesToType;
+    //       delete f.appliesIf;
+    //       return true;
+    //     }
+    //   }
+    // }),
   };
 
   cards.forEach(function(card) {
