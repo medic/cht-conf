@@ -95,6 +95,101 @@ describe('task-emitter', () => {
         });
       });
 
+      it('task priority is not required', () => {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+        delete config.tasks[0].priority
+
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted).to.have.length(2);
+        expect(emitted[0]).to.not.include({
+          priority: 'high',
+          priorityLabel: [ { locale: 'en', label: 'High Priority' } ]
+        });
+      });
+
+      it('task priority is string set from object', () => {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+        config.tasks[0].priority = function(c, r, e, d) {
+          return {
+            level: 'high',
+            label: [ { locale:'en', label: 'High Priority' } ]
+          }
+        }
+        
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted).to.have.length(2);
+        expect(emitted[0]).to.deep.includes({
+          priority: 'high',
+          priorityLabel: [ { locale: 'en', label: 'High Priority' } ]
+        });
+      });
+
+      it('task priority is string set from callback function', () => {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+        config.tasks[0].priority = function(c, r, e, d) {
+          return {
+            level: 'high',
+            label: [ { locale:'en', label: 'High Priority' } ]
+          }
+        }
+        
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted).to.have.length(2);
+        expect(emitted[0]).to.deep.include({
+          priority: 'high',
+          priorityLabel: [ { locale: 'en', label: 'High Priority' } ]
+        });
+      });
+
+      it('task priority is number set from callback function', () => {
+        // given
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [ aPersonBasedTask() ],
+        };
+        config.tasks[0].priority = function(c, r, e, d) {
+          return {
+            level: 6,
+            label: [ { locale:'en', label: 'Medium Priority' } ]
+          }
+        }
+        
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        // then
+        expect(emitted).to.have.length(2);
+        expect(emitted[0]).to.deep.include({
+          priority: 6,
+          priorityLabel: [ { locale: 'en', label: 'Medium Priority' } ]
+        });
+      });
+      
       it('appliesToType should filter configurable hierarchy contact', () => {
         // given
         const config = {
