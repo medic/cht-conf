@@ -336,11 +336,11 @@ describe('task-emitter', () => {
         ]);
       });
 
-      it("should emit multiple tasks for multiple events", () => {
+      it('should emit multiple tasks for multiple events', () => {
         const task = aReportBasedTask();
         task.events = [
-          { id: "event1", days: 0, start: 0, end: 1 },
-          { id: "event2", days: 1, start: 1, end: 2 },
+          { id: 'event1', days: 0, start: 0, end: 1 },
+          { id: 'event2', days: 1, start: 1, end: 2 },
         ];
         const config = {
           c: personWithReports(aReport()),
@@ -348,10 +348,10 @@ describe('task-emitter', () => {
           tasks: [task],
         };
         const { emitted } = runNoolsLib(config);
-        expect(emitted.filter((e) => e._type === "task")).to.have.length(2);
-        expectAllToHaveUniqueIds(emitted.filter((e) => e._type === "task"));
+        expect(emitted.filter((e) => e._type === 'task')).to.have.length(2);
+        expectAllToHaveUniqueIds(emitted.filter((e) => e._type === 'task'));
       });
-      it("should skip emitting if Utils.isTimely returns false", () => {
+      it('should skip emitting if Utils.isTimely returns false', () => {
         const task = aReportBasedTask();
         const config = {
           c: personWithReports(aReport()),
@@ -363,7 +363,7 @@ describe('task-emitter', () => {
           },
         };
         const { emitted } = runNoolsLib(config);
-        expect(emitted.filter((e) => e._type === "task")).to.have.length(0);
+        expect(emitted.filter((e) => e._type === 'task')).to.have.length(0);
       });
     });
 
@@ -494,30 +494,30 @@ describe('task-emitter', () => {
         ]);
       });
 
-      it("should use contactLabel if provided as function", () => {
+      it('should use contactLabel if provided as function', () => {
         const task = aReportBasedTask();
-        task.contactLabel = sinon.stub().returns("custom label");
+        task.contactLabel = sinon.stub().returns('custom label');
         const config = {
           c: personWithReports(aReport()),
           targets: [],
           tasks: [task],
         };
         const { emitted } = runNoolsLib(config);
-        expect(emitted[0].contact).to.deep.equal({ name: "custom label" });
+        expect(emitted[0].contact).to.deep.equal({ name: 'custom label' });
         expect(task.contactLabel.called).to.be.true;
       });
-      it("should use contactLabel if provided as string", () => {
+      it('should use contactLabel if provided as string', () => {
         const task = aReportBasedTask();
-        task.contactLabel = "static label";
+        task.contactLabel = 'static label';
         const config = {
           c: personWithReports(aReport()),
           targets: [],
           tasks: [task],
         };
         const { emitted } = runNoolsLib(config);
-        expect(emitted[0].contact).to.deep.equal({ name: "static label" });
+        expect(emitted[0].contact).to.deep.equal({ name: 'static label' });
       });
-      it("should fallback to c.contact if contactLabel is not provided", () => {
+      it('should fallback to c.contact if contactLabel is not provided', () => {
         const task = aReportBasedTask();
         delete task.contactLabel;
         const config = {
@@ -526,7 +526,7 @@ describe('task-emitter', () => {
           tasks: [task],
         };
         const { emitted } = runNoolsLib(config);
-        expect(emitted[0].contact).to.have.property("_id");
+        expect(emitted[0].contact).to.have.property('_id');
       });
 
       it('appliesToType filters by form', () => {
