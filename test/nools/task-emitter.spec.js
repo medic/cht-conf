@@ -97,37 +97,59 @@ describe('task-emitter', () => {
 
       it('task priority is not required', () => {
         // given
+        const contact = personWithReports(aReport());
+        const task = aPersonBasedTask();
         const config = {
-          c: personWithReports(aReport()),
+          c: contact,
           targets: [],
-          tasks: [ aPersonBasedTask() ],
+          tasks: [ task ],
         };
-        delete config.tasks[0].priority
-
+        delete config.tasks[0].priority;
+        
         // when
         const { emitted } = runNoolsLib(config);
 
         // then
         expect(emitted).to.have.length(2);
-        expect(emitted[0]).to.not.include({
-          priority: 'high',
-          priorityLabel: [ { locale: 'en', label: 'High Priority' } ]
+        expect(emitted[0]).to.be.shallowDeepEqual({
+          '_type': 'task',
+          'actions': [{
+            'content': {
+              'contact': {
+                '_id': contact.contact._id,
+                'reported_date': TEST_DATE,
+                'type': 'person'
+              },
+              'source': 'task',
+              'source_id': contact.contact._id
+            },
+            'form': 'example-form',
+            'label': 'Follow up',
+            'type': 'report'
+          }],
+          'contact': {
+            '_id': contact.contact._id,
+            'reported_date': TEST_DATE,
+            'type': 'person'
+          },
+          'date': TEST_DAY,
+          'resolved': false
         });
       });
 
       it('task priority is string set from object', () => {
         // given
+        const report = aReport();
+        const contact = personWithReports(report);
         const config = {
-          c: personWithReports(aReport()),
+          c: contact,
           targets: [],
-          tasks: [ aPersonBasedTask() ],
+          tasks: [ aPersonBasedTask() ]
         };
-        config.tasks[0].priority = function(c, r, e, d) {
-          return {
-            level: 'high',
-            label: [ { locale:'en', label: 'High Priority' } ]
-          }
-        }
+        config.tasks[0].priority = {
+          level: 'high',
+          label: [{ locale: 'en', label: 'High Priority' }]
+        };
         
         // when
         const { emitted } = runNoolsLib(config);
@@ -142,17 +164,24 @@ describe('task-emitter', () => {
 
       it('task priority is string set from callback function', () => {
         // given
+        const report = aReport();
+        const contact = personWithReports(report);
         const config = {
-          c: personWithReports(aReport()),
+          c: contact,
           targets: [],
-          tasks: [ aPersonBasedTask() ],
+          tasks: [ aReportBasedTask() ],
         };
-        config.tasks[0].priority = function(c, r, e, d) {
+        config.tasks[0].priority = (c, r, e, d) => {
+          expect(c).to.be.deep.equals(contact);
+          expect(r).to.be.deep.equals(report);
+          expect(e).to.be.deep.equals(config.tasks[0].events[0]);
+          expect(d).to.be.deep.equals(TEST_DAY);
+
           return {
             level: 'high',
             label: [ { locale:'en', label: 'High Priority' } ]
-          }
-        }
+          };
+        };
         
         // when
         const { emitted } = runNoolsLib(config);
@@ -165,29 +194,105 @@ describe('task-emitter', () => {
         });
       });
 
-      it('task priority is number set from callback function', () => {
+      it('task priority is a number score set from callback function', () => {
         // given
-        const config = {
-          c: personWithReports(aReport()),
-          targets: [],
-          tasks: [ aPersonBasedTask() ],
-        };
-        config.tasks[0].priority = function(c, r, e, d) {
-          return {
-            level: 6,
-            label: [ { locale:'en', label: 'Medium Priority' } ]
+        const report = aReport();
+        const _20_YEARS_AGO = utilsMock.addDate(utilsMock.now(), -(20 * 365));
+        let person = personWithReports(report);
+        person = {
+          ...person,
+          contact: {
+            ...person.contact,
+            'name': 'New Underage Mother',
+            'sex': 'female',
+            'date_of_birth': utilsMock.addDate(utilsMock.now(), -(19 * 365)),
+            'vaccines_received': 'bcg_and_birth_polio',
+            't_danger_signs_referral_follow_up': 'yes',
+            't_danger_signs_referral_follow_up_date': utilsMock.addDate(utilsMock.now(), 2),
+            'measurements': {
+              'weight': '2500',
+              'length': '39'
+            },
+            'danger_signs': {
+              'convulsion': 'no',
+              'difficulty_feeding': 'yes',
+              'vomit': 'yes',
+              'drowsy': 'no',
+              'stiff': 'no',
+              'yellow_skin': 'no',
+              'fever': 'no',
+              'blue_skin': 'no',
+              'child_is_disabled': 'yes',
+              'known_chronic_condition': 'yes',
+              'is_multiparous': 'yes'
+            },
+            'created_by_doc': 'fake_delivery_report_uuid',
           }
-        }
-        
+        };
+
+        const taskWeightFactorScore = () => 10;
+        const individualRiskFactor = (c) => {
+          let factor = 0;
+          if (c.contact.t_danger_signs_referral_follow_up === 'yes') {
+            factor += 2;
+          }
+          if (c.contact.sex === 'female' && c.contact.date_of_birth >= _20_YEARS_AGO) {
+            factor += 2;
+          }
+          if (c.contact.danger_signs.is_multiparous === 'yes') {
+            factor += 1;
+          }
+          if (c.contact.danger_signs.known_chronic_condition === 'yes') {
+            factor += 3;
+          }
+          if (c.contact.danger_signs.child_is_disabled === 'yes') {
+            factor += 2;
+          }
+          return factor;
+        };
+
+        const calculatePriorityScore = (t, c, r, e, d) => {
+          let score = 0;
+          let label;
+
+          score += taskWeightFactorScore(t);
+          score += individualRiskFactor(c, r, e, d);
+          //normalize: out of 10, possible total: 21
+          score = ((score / 20.0) * 10).toFixed(2);
+
+          if (score >= 8 && score <= 10) {
+            label = 'High Priority';
+          } 
+          else if (score >= 5 && score < 8) {
+            label = 'Medium Priority';
+          }
+          else if (score > 0 && score < 5) {
+            label = 'Low Priority';
+          }
+          return { level: score, label: [ { locale:'en', label: (label || '') } ] };
+        };
+
+        const task = aReportBasedTask();
+        task.priority = (c, r, e, d) => {
+          expect(c).to.be.deep.equals(person);
+          expect(r).to.be.deep.equals(report);
+          expect(e).to.be.deep.equals(task.events[0]);
+          expect(d).to.be.deep.equals(TEST_DAY);
+
+          return calculatePriorityScore(task, c, r, e, d);
+        };
+
         // when
-        const { emitted } = runNoolsLib(config);
+        const { emitted } = runNoolsLib({
+          c: person,
+          targets: [],
+          tasks: [ task ]
+        });
 
         // then
         expect(emitted).to.have.length(2);
-        expect(emitted[0]).to.deep.include({
-          priority: 6,
-          priorityLabel: [ { locale: 'en', label: 'Medium Priority' } ]
-        });
+        expect(Number(emitted[0].priority)).to.equals(Number(10.0));
+        expect(emitted[0].priorityLabel).to.deep.equals([ { locale: 'en', label: 'High Priority' } ]);
       });
       
       it('appliesToType should filter configurable hierarchy contact', () => {
