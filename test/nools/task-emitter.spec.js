@@ -335,6 +335,36 @@ describe('task-emitter', () => {
           { _type:'_complete', _id: true },
         ]);
       });
+
+      it("should emit multiple tasks for multiple events", () => {
+        const task = aReportBasedTask();
+        task.events = [
+          { id: "event1", days: 0, start: 0, end: 1 },
+          { id: "event2", days: 1, start: 1, end: 2 },
+        ];
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [task],
+        };
+        const { emitted } = runNoolsLib(config);
+        expect(emitted.filter((e) => e._type === "task")).to.have.length(2);
+        expectAllToHaveUniqueIds(emitted.filter((e) => e._type === "task"));
+      });
+      it("should skip emitting if Utils.isTimely returns false", () => {
+        const task = aReportBasedTask();
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [task],
+          utilsMock: {
+            ...utilsMock,
+            isTimely: sinon.stub().returns(false),
+          },
+        };
+        const { emitted } = runNoolsLib(config);
+        expect(emitted.filter((e) => e._type === "task")).to.have.length(0);
+      });
     });
 
     describe('place-based', () => {
@@ -462,6 +492,41 @@ describe('task-emitter', () => {
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id: true },
         ]);
+      });
+
+      it("should use contactLabel if provided as function", () => {
+        const task = aReportBasedTask();
+        task.contactLabel = sinon.stub().returns("custom label");
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [task],
+        };
+        const { emitted } = runNoolsLib(config);
+        expect(emitted[0].contact).to.deep.equal({ name: "custom label" });
+        expect(task.contactLabel.called).to.be.true;
+      });
+      it("should use contactLabel if provided as string", () => {
+        const task = aReportBasedTask();
+        task.contactLabel = "static label";
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [task],
+        };
+        const { emitted } = runNoolsLib(config);
+        expect(emitted[0].contact).to.deep.equal({ name: "static label" });
+      });
+      it("should fallback to c.contact if contactLabel is not provided", () => {
+        const task = aReportBasedTask();
+        delete task.contactLabel;
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [task],
+        };
+        const { emitted } = runNoolsLib(config);
+        expect(emitted[0].contact).to.have.property("_id");
       });
 
       it('appliesToType filters by form', () => {
