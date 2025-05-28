@@ -18,7 +18,8 @@ const {
   placeWithoutReports,
   aHighRiskContact,
   utilsMock,
-  highRiskContactDefaults
+  highRiskContactDefaults,
+  calculatePriorityScore
 } = require('./mocks');
 
 const { assert, expect } = chai;
@@ -103,7 +104,9 @@ describe('task-emitter', () => {
 
         // then
         expect(emitted.filter((e) => e._type === 'task')).to.have.length(1);
-        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.shallowDeepEqual({
+        expect(emitted.filter((e) => e._type === 'task')[0]).to.not.have.property('priority');
+        expect(emitted.filter((e) => e._type === 'task')[0]).to.not.have.property('prioritLevel');
+        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.deep.shallowDeepEqual({
           _type: 'task',
           actions: [{
             content: {
@@ -148,7 +151,8 @@ describe('task-emitter', () => {
 
         // then
         expect(emitted.filter((e) => e._type === 'task')).to.have.length(1);
-        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.shallowDeepEqual({
+        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.deep.equals({
+          _id: 'c-2~task~task-3',
           _type: 'task',
           actions: [{
             content: {
@@ -170,7 +174,9 @@ describe('task-emitter', () => {
             type: 'person'
           },
           date: TEST_DAY,
-          resolved: false
+          resolved: false,
+          priority: 'high',
+          priorityLabel: [{ locale: 'en', label: 'High Priority' }]
         });
       });
 
@@ -229,52 +235,9 @@ describe('task-emitter', () => {
 
       it('task priority is a number score set from callback function', () => {
         // given
-        const _20_YEARS_AGO = utilsMock.addDate(TEST_DAY, -(20 * 365));
         const contact = aHighRiskContact();
-        const report = contact.reports[0];
-
-        const taskWeightFactorScore = () => 10;
-        const individualRiskFactor = (c) => {
-          let factor = 0;
-          if (c.contact.t_danger_signs_referral_follow_up === 'yes') {
-            factor += 2;
-          }
-          if (c.contact.sex === 'female' && c.contact.date_of_birth >= _20_YEARS_AGO) {
-            factor += 2;
-          }
-          if (c.contact.danger_signs.is_multiparous === 'yes') {
-            factor += 1;
-          }
-          if (c.contact.danger_signs.known_chronic_condition === 'yes') {
-            factor += 3;
-          }
-          if (c.contact.danger_signs.child_is_disabled === 'yes') {
-            factor += 2;
-          }
-          return factor;
-        };
-
-        const calculatePriorityScore = (t, c, r, e, d) => {
-          let score = 0;
-          let label;
-
-          score += taskWeightFactorScore(t);
-          score += individualRiskFactor(c, r, e, d);
-          //normalize: out of 10, possible total: 20
-          score = parseFloat((((score / 20.0) * 10).toFixed(2)));
-
-          if (score >= 8 && score <= 10) {
-            label = 'High Priority';
-          } 
-          else if (score >= 5 && score < 8) {
-            label = 'Medium Priority';
-          }
-          else if (score > 0 && score < 5) {
-            label = 'Low Priority';
-          }
-          return { level: score, label: [ { locale:'en', label: (label || '') } ] };
-        };
-
+        const report  = contact.reports[0];
+        
         const task = aReportBasedTask();
         task.priority = (c, r, e, d) => {
           expect(c).to.be.deep.equals(contact);
@@ -374,13 +337,24 @@ describe('task-emitter', () => {
           { id: 'event1', days: 0, start: 0, end: 1 },
           { id: 'event2', days: 1, start: 1, end: 2 },
         ];
+        task.priority = (_c, _r, e) => {
+          if (e.id === 'event1') {
+            return { level: 10 };
+          }
+          if (e.id === 'event2') {
+            return { level: 20 };
+          }
+          return { level: 0 }; 
+        };
         const config = {
           c: personWithReports(aReport()),
           targets: [],
           tasks: [task],
         };
-        const { emitted } = runNoolsLib(config);
+        const { emitted } = runNoolsLib(config); 
         expect(emitted.filter((e) => e._type === 'task')).to.have.length(2);
+        expect(emitted.filter((e) => e._type === 'task')[0]).to.have.property('priority', 10);
+        expect(emitted.filter((e) => e._type === 'task')[1]).to.have.property('priority', 20);
         expectAllToHaveUniqueIds(emitted.filter((e) => e._type === 'task'));
       });
       it('should skip emitting if Utils.isTimely returns false', () => {
@@ -429,11 +403,16 @@ describe('task-emitter', () => {
           targets: [],
           tasks: [ aReportBasedTask() ],
         };
+        config.tasks[0].priority = sinon.stub().returns({
+          level: 'high',
+          label: [ { locale:'en', label: 'High Priority' } ]
+        });
 
         // when
         const { emitted } = runNoolsLib(config);
-
+        
         // then
+        expect(config.tasks[0].priority.called).to.be.false;
         assert.deepEqual(emitted, [
           { _type:'_complete', _id: true },
         ]);
@@ -447,11 +426,16 @@ describe('task-emitter', () => {
           tasks: [ aReportBasedTask() ],
         };
         config.tasks[0].appliesToType = 'custom';
+        config.tasks[0].priority = sinon.stub().returns({
+          level: 'high',
+          label: [ { locale:'en', label: 'High Priority' } ]
+        });
 
         // when
         const emitted = runNoolsLib(config).emitted;
 
         // then
+        expect(config.tasks[0].priority.called).to.be.false;
         assert.deepEqual(emitted, [
           { _type:'_complete', _id: true },
         ]);
