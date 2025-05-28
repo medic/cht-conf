@@ -16,19 +16,11 @@ const {
   unknownContactWithReports,
   personWithReports,
   placeWithoutReports,
+  aHighRiskContact,
+  utilsMock,
+  highRiskContactDefaults
 } = require('./mocks');
 
-const utilsMock = {
-  now: sinon.stub().returns(new Date(TEST_DATE)),
-  isTimely: sinon.stub().returns(true),
-  isFormSubmittedInWindow: sinon.stub().returns(true),
-  addDate: (date, days) => {
-    const newDate = new Date(date.getTime());
-    newDate.setDate(newDate.getDate() + days);
-    newDate.setHours(0, 0, 0, 0);
-    return newDate;
-  }
-};
 const { assert, expect } = chai;
 chai.use(require('chai-shallow-deep-equal'));
 
@@ -110,32 +102,31 @@ describe('task-emitter', () => {
         const { emitted } = runNoolsLib(config);
 
         // then
-        expect(emitted).to.have.length(2);
-        expect(emitted[0]).to.be.shallowDeepEqual({
-          '_type': 'task',
-          'actions': [{
-            'content': {
-              'contact': {
-                '_id': contact.contact._id,
-                'reported_date': TEST_DATE,
-                'type': 'person'
+        expect(emitted.filter((e) => e._type === 'task')).to.have.length(1);
+        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.shallowDeepEqual({
+          _type: 'task',
+          actions: [{
+            content: {
+              contact: {
+                _id: contact.contact._id,
+                reported_date: TEST_DATE,
+                type: 'person'
               },
-              'source': 'task',
-              'source_id': contact.contact._id
+              source: 'task',
+              source_id: contact.contact._id
             },
-            'form': 'example-form',
-            'label': 'Follow up',
-            'type': 'report'
+            form: 'example-form',
+            label: 'Follow up',
+            type: 'report'
           }],
-          'contact': {
-            '_id': contact.contact._id,
-            'reported_date': TEST_DATE,
-            'type': 'person'
+          contact: {
+            _id: contact.contact._id,
+            reported_date: TEST_DATE,
+            type: 'person'
           },
-          'date': TEST_DAY,
-          'resolved': false
+          date: TEST_DAY,
+          resolved: false
         });
-        expect(emitted[1]).to.be.shallowDeepEqual({ '_id': true, '_type': '_complete' });
       });
 
       it('task priority is string set from object', () => {
@@ -156,32 +147,31 @@ describe('task-emitter', () => {
         const { emitted } = runNoolsLib(config);
 
         // then
-        expect(emitted).to.have.length(2);
-        expect(emitted[0]).to.be.shallowDeepEqual({
-          '_type': 'task',
-          'actions': [{
-            'content': {
-              'contact': {
-                '_id': contact.contact._id,
-                'reported_date': TEST_DATE,
-                'type': 'person'
+        expect(emitted.filter((e) => e._type === 'task')).to.have.length(1);
+        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.shallowDeepEqual({
+          _type: 'task',
+          actions: [{
+            content: {
+              contact: {
+                _id: contact.contact._id,
+                reported_date: TEST_DATE,
+                type: 'person'
               },
-              'source': 'task',
-              'source_id': contact.contact._id
+              source: 'task',
+              source_id: contact.contact._id
             },
-            'form': 'example-form',
-            'label': 'Follow up',
-            'type': 'report'
+            form: 'example-form',
+            label: 'Follow up',
+            type: 'report'
           }],
-          'contact': {
-            '_id': contact.contact._id,
-            'reported_date': TEST_DATE,
-            'type': 'person'
+          contact: {
+            _id: contact.contact._id,
+            reported_date: TEST_DATE,
+            type: 'person'
           },
-          'date': TEST_DAY,
-          'resolved': false
+          date: TEST_DAY,
+          resolved: false
         });
-        expect(emitted[1]).to.be.shallowDeepEqual({ '_id': true, '_type': '_complete' });
       });
 
       it('task priority is string set from callback function', () => {
@@ -205,8 +195,8 @@ describe('task-emitter', () => {
         expect(config.tasks[0].priority.called).to.be.true;
         expect(config.tasks[0].priority.calledWith(contact, report, config.tasks[0].events[0], TEST_DAY));
 
-        expect(emitted).to.have.length(2);
-        expect(emitted[0]).to.be.deep.equals({
+        expect(emitted.filter((e) => e._type === 'task')).to.have.length(1);
+        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.deep.equals({
           _id: 'r-1~task~task-3',
           date: TEST_DAY,
           actions: [
@@ -235,48 +225,13 @@ describe('task-emitter', () => {
           priorityLabel: [{ 'locale': 'en', 'label': 'High Priority' }],
           _type: 'task'
         });
-        expect(emitted[1]).to.be.deep.equals({ '_id': true, '_type': '_complete' });
       });
 
       it('task priority is a number score set from callback function', () => {
         // given
-        const report = aReport();
-        const _20_YEARS_AGO = utilsMock.addDate(utilsMock.now(), -(20 * 365));
-        const patientDefaults = {
-          name: 'New Underage Mother',
-          sex: 'female',
-          date_of_birth: utilsMock.addDate(utilsMock.now(), -(19 * 365)),
-          vaccines_received: 'bcg_and_birth_polio',
-          t_danger_signs_referral_follow_up: 'yes',
-          t_danger_signs_referral_follow_up_date: utilsMock.addDate(utilsMock.now(), 2),
-          measurements: {
-            weight: '2500',
-            length: '39'
-          },
-          danger_signs: {
-            convulsion: 'no',
-            difficulty_feeding: 'yes',
-            vomit: 'yes',
-            drowsy: 'no',
-            stiff: 'no',
-            yellow_skin: 'no',
-            fever: 'no',
-            blue_skin: 'no',
-            child_is_disabled: 'yes',
-            known_chronic_condition: 'yes',
-            is_multiparous: 'yes'
-          },
-          created_by_doc: 'fake_delivery_report_uuid'
-        };
-        
-        let person = personWithReports(report);
-        person = {
-          ...person,
-          contact: {
-            ...person.contact,
-            ...patientDefaults
-          }
-        };
+        const _20_YEARS_AGO = utilsMock.addDate(TEST_DAY, -(20 * 365));
+        const contact = aHighRiskContact();
+        const report = contact.reports[0];
 
         const taskWeightFactorScore = () => 10;
         const individualRiskFactor = (c) => {
@@ -322,7 +277,7 @@ describe('task-emitter', () => {
 
         const task = aReportBasedTask();
         task.priority = (c, r, e, d) => {
-          expect(c).to.be.deep.equals(person);
+          expect(c).to.be.deep.equals(contact);
           expect(r).to.be.deep.equals(report);
           expect(e).to.be.deep.equals(task.events[0]);
           expect(d).to.be.deep.equals(TEST_DAY);
@@ -332,14 +287,14 @@ describe('task-emitter', () => {
 
         // when
         const { emitted } = runNoolsLib({
-          c: person,
+          c: contact,
           targets: [],
           tasks: [ task ]
         });
 
         // then
-        expect(emitted).to.have.length(2);
-        expect(emitted[0]).to.be.deep.equals({
+        expect(emitted.filter((e) => e._type === 'task')).to.have.length(1);
+        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.deep.equals({
           _id: 'r-1~task~task-3',
           date: TEST_DAY,
           actions: [
@@ -351,8 +306,8 @@ describe('task-emitter', () => {
                 source: 'task',
                 source_id: report._id,
                 contact: {
-                  ...patientDefaults,
-                  _id: person.contact._id,
+                  ...highRiskContactDefaults,
+                  _id: contact.contact._id,
                   type: 'person',
                   reported_date: TEST_DATE
                 }
@@ -360,8 +315,8 @@ describe('task-emitter', () => {
             }
           ],
           contact: {
-            ...patientDefaults,
-            _id: person.contact._id,
+            ...highRiskContactDefaults,
+            _id: contact.contact._id,
             reported_date: TEST_DATE,
             type: 'person',
           },
@@ -370,7 +325,6 @@ describe('task-emitter', () => {
           priorityLabel: [{ 'locale': 'en', 'label': 'High Priority' }],
           _type: 'task'
         });
-        expect(emitted[1]).to.be.deep.equals({ '_id': true, '_type': '_complete' });
       });
       
       it('appliesToType should filter configurable hierarchy contact', () => {

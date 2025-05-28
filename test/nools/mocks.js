@@ -1,9 +1,50 @@
+const sinon = require('sinon');
+
 let idCounter;
 const TEST_DATE = 1431143098575;
 // make the tests work in any timezone.  TODO it's not clear if this is a hack,
 // or actually correct.  see https://github.com/medic/cht-core/issues/4928
 const TEST_DAY = new Date(TEST_DATE);
 TEST_DAY.setHours(0, 0, 0, 0);
+
+const utilsMock = {
+  now: sinon.stub().returns(new Date(TEST_DATE)),
+  isTimely: sinon.stub().returns(true),
+  isFormSubmittedInWindow: sinon.stub().returns(true),
+  addDate: (date, days) => {
+    const newDate = new Date(date.getTime());
+    newDate.setDate(newDate.getDate() + days);
+    newDate.setHours(0, 0, 0, 0);
+    return newDate;
+  }
+};
+
+const highRiskContactDefaults = {
+  name: 'New Underage Mother',
+  sex: 'female',
+  date_of_birth: utilsMock.addDate(utilsMock.now(), -(19 * 365)),
+  vaccines_received: 'bcg_and_birth_polio',
+  t_danger_signs_referral_follow_up: 'yes',
+  t_danger_signs_referral_follow_up_date: utilsMock.addDate(utilsMock.now(), 2),
+  measurements: {
+    weight: '2500',
+    length: '39'
+  },
+  danger_signs: {
+    convulsion: 'no',
+    difficulty_feeding: 'yes',
+    vomit: 'yes',
+    drowsy: 'no',
+    stiff: 'no',
+    yellow_skin: 'no',
+    fever: 'no',
+    blue_skin: 'no',
+    child_is_disabled: 'yes',
+    known_chronic_condition: 'yes',
+    is_multiparous: 'yes'
+  },
+  created_by_doc: 'fake_delivery_report_uuid'
+};
 
 function aReportBasedTask() {
   return aTask('reports');
@@ -19,6 +60,18 @@ function aPlaceBasedTask() {
   const task = aTask('contacts');
   task.appliesToType = ['clinic'];
   return task;
+}
+
+function aHighRiskContact() {  
+  const person = personWithReports(aReport());
+
+  return {
+    ...person,
+    contact: {
+      ...person.contact,
+      ...highRiskContactDefaults
+    }
+  };
 }
 
 function aTask(type) {
@@ -146,4 +199,7 @@ module.exports = {
   placeWithReports,
   unknownContactWithReports,
   aRandomTimestamp,
+  aHighRiskContact,
+  highRiskContactDefaults,
+  utilsMock
 };
