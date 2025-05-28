@@ -135,6 +135,7 @@ describe('task-emitter', () => {
           'date': TEST_DAY,
           'resolved': false
         });
+        expect(emitted[1]).to.be.shallowDeepEqual({ '_id': true, '_type': '_complete' });
       });
 
       it('task priority is string set from object', () => {
@@ -156,10 +157,31 @@ describe('task-emitter', () => {
 
         // then
         expect(emitted).to.have.length(2);
-        expect(emitted[0]).to.deep.includes({
-          priority: 'high',
-          priorityLabel: [ { locale: 'en', label: 'High Priority' } ]
+        expect(emitted[0]).to.be.shallowDeepEqual({
+          '_type': 'task',
+          'actions': [{
+            'content': {
+              'contact': {
+                '_id': contact.contact._id,
+                'reported_date': TEST_DATE,
+                'type': 'person'
+              },
+              'source': 'task',
+              'source_id': contact.contact._id
+            },
+            'form': 'example-form',
+            'label': 'Follow up',
+            'type': 'report'
+          }],
+          'contact': {
+            '_id': contact.contact._id,
+            'reported_date': TEST_DATE,
+            'type': 'person'
+          },
+          'date': TEST_DAY,
+          'resolved': false
         });
+        expect(emitted[1]).to.be.shallowDeepEqual({ '_id': true, '_type': '_complete' });
       });
 
       it('task priority is string set from callback function', () => {
@@ -171,62 +193,88 @@ describe('task-emitter', () => {
           targets: [],
           tasks: [ aReportBasedTask() ],
         };
-        config.tasks[0].priority = (c, r, e, d) => {
-          expect(c).to.be.deep.equals(contact);
-          expect(r).to.be.deep.equals(report);
-          expect(e).to.be.deep.equals(config.tasks[0].events[0]);
-          expect(d).to.be.deep.equals(TEST_DAY);
-
-          return {
-            level: 'high',
-            label: [ { locale:'en', label: 'High Priority' } ]
-          };
-        };
+        config.tasks[0].priority = sinon.stub().returns({
+          level: 'high',
+          label: [ { locale:'en', label: 'High Priority' } ]
+        });
         
         // when
         const { emitted } = runNoolsLib(config);
 
         // then
+        expect(config.tasks[0].priority.called).to.be.true;
+        expect(config.tasks[0].priority.calledWith(contact, report, config.tasks[0].events[0], TEST_DAY));
+
         expect(emitted).to.have.length(2);
-        expect(emitted[0]).to.deep.include({
+        expect(emitted[0]).to.be.deep.equals({
+          _id: 'r-1~task~task-3',
+          date: TEST_DAY,
+          actions: [
+            {
+              type: 'report',
+              form: 'example-form',
+              label: 'Follow up',
+              content: {
+                source: 'task',
+                source_id: report._id,
+                contact: {
+                  _id: contact.contact._id,
+                  type: 'person',
+                  reported_date: TEST_DATE
+                }
+              }
+            }
+          ],
+          contact: {
+            _id: contact.contact._id,
+            reported_date: TEST_DATE,
+            type: 'person',
+          },
+          resolved: false,
           priority: 'high',
-          priorityLabel: [ { locale: 'en', label: 'High Priority' } ]
+          priorityLabel: [{ 'locale': 'en', 'label': 'High Priority' }],
+          _type: 'task'
         });
+        expect(emitted[1]).to.be.deep.equals({ '_id': true, '_type': '_complete' });
       });
 
       it('task priority is a number score set from callback function', () => {
         // given
         const report = aReport();
         const _20_YEARS_AGO = utilsMock.addDate(utilsMock.now(), -(20 * 365));
+        const patientDefaults = {
+          name: 'New Underage Mother',
+          sex: 'female',
+          date_of_birth: utilsMock.addDate(utilsMock.now(), -(19 * 365)),
+          vaccines_received: 'bcg_and_birth_polio',
+          t_danger_signs_referral_follow_up: 'yes',
+          t_danger_signs_referral_follow_up_date: utilsMock.addDate(utilsMock.now(), 2),
+          measurements: {
+            weight: '2500',
+            length: '39'
+          },
+          danger_signs: {
+            convulsion: 'no',
+            difficulty_feeding: 'yes',
+            vomit: 'yes',
+            drowsy: 'no',
+            stiff: 'no',
+            yellow_skin: 'no',
+            fever: 'no',
+            blue_skin: 'no',
+            child_is_disabled: 'yes',
+            known_chronic_condition: 'yes',
+            is_multiparous: 'yes'
+          },
+          created_by_doc: 'fake_delivery_report_uuid'
+        };
+        
         let person = personWithReports(report);
         person = {
           ...person,
           contact: {
             ...person.contact,
-            'name': 'New Underage Mother',
-            'sex': 'female',
-            'date_of_birth': utilsMock.addDate(utilsMock.now(), -(19 * 365)),
-            'vaccines_received': 'bcg_and_birth_polio',
-            't_danger_signs_referral_follow_up': 'yes',
-            't_danger_signs_referral_follow_up_date': utilsMock.addDate(utilsMock.now(), 2),
-            'measurements': {
-              'weight': '2500',
-              'length': '39'
-            },
-            'danger_signs': {
-              'convulsion': 'no',
-              'difficulty_feeding': 'yes',
-              'vomit': 'yes',
-              'drowsy': 'no',
-              'stiff': 'no',
-              'yellow_skin': 'no',
-              'fever': 'no',
-              'blue_skin': 'no',
-              'child_is_disabled': 'yes',
-              'known_chronic_condition': 'yes',
-              'is_multiparous': 'yes'
-            },
-            'created_by_doc': 'fake_delivery_report_uuid',
+            ...patientDefaults
           }
         };
 
@@ -257,8 +305,8 @@ describe('task-emitter', () => {
 
           score += taskWeightFactorScore(t);
           score += individualRiskFactor(c, r, e, d);
-          //normalize: out of 10, possible total: 21
-          score = ((score / 20.0) * 10).toFixed(2);
+          //normalize: out of 10, possible total: 20
+          score = parseFloat((((score / 20.0) * 10).toFixed(2)));
 
           if (score >= 8 && score <= 10) {
             label = 'High Priority';
@@ -291,8 +339,38 @@ describe('task-emitter', () => {
 
         // then
         expect(emitted).to.have.length(2);
-        expect(Number(emitted[0].priority)).to.equals(Number(10.0));
-        expect(emitted[0].priorityLabel).to.deep.equals([ { locale: 'en', label: 'High Priority' } ]);
+        expect(emitted[0]).to.be.deep.equals({
+          _id: 'r-1~task~task-3',
+          date: TEST_DAY,
+          actions: [
+            {
+              type: 'report',
+              form: 'example-form',
+              label: 'Follow up',
+              content: {
+                source: 'task',
+                source_id: report._id,
+                contact: {
+                  ...patientDefaults,
+                  _id: person.contact._id,
+                  type: 'person',
+                  reported_date: TEST_DATE
+                }
+              }
+            }
+          ],
+          contact: {
+            ...patientDefaults,
+            _id: person.contact._id,
+            reported_date: TEST_DATE,
+            type: 'person',
+          },
+          resolved: false,
+          priority: 10.0,
+          priorityLabel: [{ 'locale': 'en', 'label': 'High Priority' }],
+          _type: 'task'
+        });
+        expect(emitted[1]).to.be.deep.equals({ '_id': true, '_type': '_complete' });
       });
       
       it('appliesToType should filter configurable hierarchy contact', () => {
