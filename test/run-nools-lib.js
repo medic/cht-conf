@@ -39,6 +39,11 @@ const runNoolsLib = ({ c, targets, tasks, utilsMock }) => {
       this.actions = props.actions;
       this.contact = props.contact;
       this.resolved = props.resolved;
+
+      if (props.priority) {
+        this.priority = props.priority;
+        this.priorityLabel = props.priorityLabel;
+      }
     },
     emit(type, taskOrTarget) {
       taskOrTarget._type = type;
