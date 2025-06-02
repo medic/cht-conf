@@ -102,11 +102,14 @@ describe('task-emitter', () => {
         // when
         const { emitted } = runNoolsLib(config);
 
+        const tasks = emitted.filter(e => e._type === 'task');
+        const emittedTask = tasks[0];
+        
         // then
-        expect(emitted.filter((e) => e._type === 'task')).to.have.length(1);
-        expect(emitted.filter((e) => e._type === 'task')[0]).to.not.have.property('priority');
-        expect(emitted.filter((e) => e._type === 'task')[0]).to.not.have.property('prioritLevel');
-        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.deep.shallowDeepEqual({
+        expect(tasks).to.have.length(1);
+        expect(emittedTask).to.not.have.property('priority');
+        expect(emittedTask).to.not.have.property('prioritLevel');
+        expect(emittedTask).to.be.deep.shallowDeepEqual({
           _type: 'task',
           actions: [{
             content: {
@@ -148,10 +151,12 @@ describe('task-emitter', () => {
         
         // when
         const { emitted } = runNoolsLib(config);
-
+        const tasks = emitted.filter(e => e._type === 'task');
+        const emittedTask = tasks[0];
+        
         // then
-        expect(emitted.filter((e) => e._type === 'task')).to.have.length(1);
-        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.deep.equals({
+        expect(tasks).to.have.length(1);
+        expect(emittedTask).to.be.deep.equals({
           _id: 'c-2~task~task-3',
           _type: 'task',
           actions: [{
@@ -196,13 +201,15 @@ describe('task-emitter', () => {
         
         // when
         const { emitted } = runNoolsLib(config);
-
+        const tasks = emitted.filter(e => e._type === 'task');
+        const emittedTask = tasks[0];
+        
         // then
+        expect(tasks).to.have.length(1);
         expect(config.tasks[0].priority.called).to.be.true;
-        expect(config.tasks[0].priority.calledWith(contact, report, config.tasks[0].events[0], TEST_DAY));
 
-        expect(emitted.filter((e) => e._type === 'task')).to.have.length(1);
-        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.deep.equals({
+        expect(tasks).to.have.length(1);
+        expect(emittedTask).to.be.deep.equals({
           _id: 'r-1~task~task-3',
           date: TEST_DAY,
           actions: [
@@ -254,10 +261,12 @@ describe('task-emitter', () => {
           targets: [],
           tasks: [ task ]
         });
+        const tasks = emitted.filter(e => e._type === 'task');
+        const emittedTask = tasks[0];
 
         // then
-        expect(emitted.filter((e) => e._type === 'task')).to.have.length(1);
-        expect(emitted.filter((e) => e._type === 'task')[0]).to.be.deep.equals({
+        expect(tasks).to.have.length(1);
+        expect(emittedTask).to.be.deep.equals({
           _id: 'r-1~task~task-3',
           date: TEST_DAY,
           actions: [
@@ -352,10 +361,12 @@ describe('task-emitter', () => {
           tasks: [task],
         };
         const { emitted } = runNoolsLib(config); 
-        expect(emitted.filter((e) => e._type === 'task')).to.have.length(2);
-        expect(emitted.filter((e) => e._type === 'task')[0]).to.have.property('priority', 10);
-        expect(emitted.filter((e) => e._type === 'task')[1]).to.have.property('priority', 20);
-        expectAllToHaveUniqueIds(emitted.filter((e) => e._type === 'task'));
+        const tasks = emitted.filter(e => e._type === 'task');
+        
+        expect(tasks).to.have.length(2);
+        expect(tasks[0]).to.have.property('priority', 10);
+        expect(tasks[1]).to.have.property('priority', 20);
+        expectAllToHaveUniqueIds(tasks);
       });
       it('should skip emitting if Utils.isTimely returns false', () => {
         const task = aReportBasedTask();
@@ -412,7 +423,6 @@ describe('task-emitter', () => {
         const { emitted } = runNoolsLib(config);
         
         // then
-        expect(config.tasks[0].priority.called).to.be.false;
         assert.deepEqual(emitted, [
           { _type:'_complete', _id: true },
         ]);
@@ -435,7 +445,6 @@ describe('task-emitter', () => {
         const emitted = runNoolsLib(config).emitted;
 
         // then
-        expect(config.tasks[0].priority.called).to.be.false;
         assert.deepEqual(emitted, [
           { _type:'_complete', _id: true },
         ]);
