@@ -1,3 +1,10 @@
+# [4.9.0](https://github.com/medic/cht-conf/compare/v4.8.1...v4.9.0) (2025-06-02)
+
+
+### Features
+
+* **#692:** update the priority function to accept additional parameters ([#699](https://github.com/medic/cht-conf/issues/699)) ([ad28242](https://github.com/medic/cht-conf/commit/ad28242603d5d2d89bb48324e93e60b55052ce3d)), closes [#692](https://github.com/medic/cht-conf/issues/692) [#692](https://github.com/medic/cht-conf/issues/692)
+
 ## [4.8.1](https://github.com/medic/cht-conf/compare/v4.8.0...v4.8.1) (2025-05-07)
 
 
