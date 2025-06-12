@@ -1,0 +1,9 @@
+[
+  {
+    "fields": ["_id", "type"],
+    "partial_filter_selector": {
+      "type": { "$nin": ["form", "translations", "meta"] },
+      "_id": { "$nin": ["branding", "extension-libs", "resources"] }
+    }
+  }
+]

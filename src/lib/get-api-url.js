@@ -25,7 +25,10 @@ const getApiUrl = (cmdArgs, env = {}) => {
     // See ./archiving-db.js
     instanceUrl = parseLocalUrl(env.COUCH_URL);
     if (instanceUrl.hostname !== 'localhost') {
-      throw Error(`--local was specified but COUCH_URL env var is set to '${instanceUrl.hostname}'.  Please use --url for remote servers.`);
+      throw Error(
+        `--local was specified but COUCH_URL env var is set to '${instanceUrl.hostname}'.  `
+        + `Please use --url for remote servers.`
+      );
     }
   } else if (cmdArgs.instance) {
     const password = userPrompt.question(`${emoji.key}  Password: `, { hideEchoBack: true });
@@ -36,7 +39,16 @@ const getApiUrl = (cmdArgs, env = {}) => {
     instanceUrl = new url.URL(cmdArgs.url);
   }
 
-  return `${instanceUrl.href}medic`;
+  instanceUrl.pathname = `${instanceUrl.pathname}medic`;
+  return instanceUrl;
+};
+
+const isLocalhost = (apiUrl) => {
+  if (!apiUrl) {
+    return false;
+  }
+  const localhosts = [/^localhost$/, /^127\.0\.0\.\d+$/];
+  return !!localhosts.find(localhost => localhost.test(apiUrl.hostname));
 };
 
 const parseLocalUrl = (couchUrl) => {
@@ -56,4 +68,7 @@ const parseLocalUrl = (couchUrl) => {
   return new url.URL('http://admin:pass@localhost:5988');
 };
 
-module.exports = getApiUrl;
+module.exports = {
+  getApiUrl,
+  isLocalhost,
+};

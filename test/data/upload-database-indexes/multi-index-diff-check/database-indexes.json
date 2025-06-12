@@ -1,0 +1,16 @@
+{
+  "testing_by_id_and_type": {
+    "fields": ["_id", "type"],
+    "partial_filter_selector": {
+      "type": { "$nin": ["form", "translations"] },
+      "_id": { "$nin": ["branding", "extension-libs", "resources"] }
+    }
+  },
+  "test_diff_check": {
+    "fields": ["_id", "name"],
+    "partial_filter_selector": {
+      "type": { "$nin": ["form", "translations", "meta"] },
+      "_id": { "$nin": ["branding", "extension-libs", "resources"] }
+    }
+  }
+}

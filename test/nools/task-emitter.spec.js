@@ -16,19 +16,12 @@ const {
   unknownContactWithReports,
   personWithReports,
   placeWithoutReports,
+  aHighRiskContact,
+  utilsMock,
+  highRiskContactDefaults,
+  calculatePriorityScore
 } = require('./mocks');
 
-const utilsMock = {
-  now: sinon.stub().returns(new Date(TEST_DATE)),
-  isTimely: sinon.stub().returns(true),
-  isFormSubmittedInWindow: sinon.stub().returns(true),
-  addDate: (date, days) => {
-    const newDate = new Date(date.getTime());
-    newDate.setDate(newDate.getDate() + days);
-    newDate.setHours(0, 0, 0, 0);
-    return newDate;
-  }
-};
 const { assert, expect } = chai;
 chai.use(require('chai-shallow-deep-equal'));
 
@@ -95,6 +88,217 @@ describe('task-emitter', () => {
         });
       });
 
+      it('task priority is not required', () => {
+        // given
+        const contact = personWithReports(aReport());
+        const task = aPersonBasedTask();
+        const config = {
+          c: contact,
+          targets: [],
+          tasks: [ task ],
+        };
+        delete config.tasks[0].priority;
+        
+        // when
+        const { emitted } = runNoolsLib(config);
+
+        const tasks = emitted.filter(e => e._type === 'task');
+        const emittedTask = tasks[0];
+        
+        // then
+        expect(tasks).to.have.length(1);
+        expect(emittedTask).to.not.have.property('priority');
+        expect(emittedTask).to.not.have.property('prioritLevel');
+        expect(emittedTask).to.be.deep.shallowDeepEqual({
+          _type: 'task',
+          actions: [{
+            content: {
+              contact: {
+                _id: contact.contact._id,
+                reported_date: TEST_DATE,
+                type: 'person'
+              },
+              source: 'task',
+              source_id: contact.contact._id
+            },
+            form: 'example-form',
+            label: 'Follow up',
+            type: 'report'
+          }],
+          contact: {
+            _id: contact.contact._id,
+            reported_date: TEST_DATE,
+            type: 'person'
+          },
+          date: TEST_DAY,
+          resolved: false
+        });
+      });
+
+      it('task priority is string set from object', () => {
+        // given
+        const report = aReport();
+        const contact = personWithReports(report);
+        const config = {
+          c: contact,
+          targets: [],
+          tasks: [ aPersonBasedTask() ]
+        };
+        config.tasks[0].priority = {
+          level: 'high',
+          label: [{ locale: 'en', label: 'High Priority' }]
+        };
+        
+        // when
+        const { emitted } = runNoolsLib(config);
+        const tasks = emitted.filter(e => e._type === 'task');
+        const emittedTask = tasks[0];
+        
+        // then
+        expect(tasks).to.have.length(1);
+        expect(emittedTask).to.be.deep.equals({
+          _id: 'c-2~task~task-3',
+          _type: 'task',
+          actions: [{
+            content: {
+              contact: {
+                _id: contact.contact._id,
+                reported_date: TEST_DATE,
+                type: 'person'
+              },
+              source: 'task',
+              source_id: contact.contact._id
+            },
+            form: 'example-form',
+            label: 'Follow up',
+            type: 'report'
+          }],
+          contact: {
+            _id: contact.contact._id,
+            reported_date: TEST_DATE,
+            type: 'person'
+          },
+          date: TEST_DAY,
+          resolved: false,
+          priority: 'high',
+          priorityLabel: [{ locale: 'en', label: 'High Priority' }]
+        });
+      });
+
+      it('task priority is string set from callback function', () => {
+        // given
+        const report = aReport();
+        const contact = personWithReports(report);
+        const config = {
+          c: contact,
+          targets: [],
+          tasks: [ aReportBasedTask() ],
+        };
+        config.tasks[0].priority = sinon.stub().returns({
+          level: 'high',
+          label: [ { locale:'en', label: 'High Priority' } ]
+        });
+        
+        // when
+        const { emitted } = runNoolsLib(config);
+        const tasks = emitted.filter(e => e._type === 'task');
+        const emittedTask = tasks[0];
+        
+        // then
+        expect(tasks).to.have.length(1);
+        expect(config.tasks[0].priority.called).to.be.true;
+
+        expect(tasks).to.have.length(1);
+        expect(emittedTask).to.be.deep.equals({
+          _id: 'r-1~task~task-3',
+          date: TEST_DAY,
+          actions: [
+            {
+              type: 'report',
+              form: 'example-form',
+              label: 'Follow up',
+              content: {
+                source: 'task',
+                source_id: report._id,
+                contact: {
+                  _id: contact.contact._id,
+                  type: 'person',
+                  reported_date: TEST_DATE
+                }
+              }
+            }
+          ],
+          contact: {
+            _id: contact.contact._id,
+            reported_date: TEST_DATE,
+            type: 'person',
+          },
+          resolved: false,
+          priority: 'high',
+          priorityLabel: [{ 'locale': 'en', 'label': 'High Priority' }],
+          _type: 'task'
+        });
+      });
+
+      it('task priority is a number score set from callback function', () => {
+        // given
+        const contact = aHighRiskContact();
+        const report  = contact.reports[0];
+        
+        const task = aReportBasedTask();
+        task.priority = (c, r, e, d) => {
+          expect(c).to.be.deep.equals(contact);
+          expect(r).to.be.deep.equals(report);
+          expect(e).to.be.deep.equals(task.events[0]);
+          expect(d).to.be.deep.equals(TEST_DAY);
+
+          return calculatePriorityScore(task, c, r, e, d);
+        };
+
+        // when
+        const { emitted } = runNoolsLib({
+          c: contact,
+          targets: [],
+          tasks: [ task ]
+        });
+        const tasks = emitted.filter(e => e._type === 'task');
+        const emittedTask = tasks[0];
+
+        // then
+        expect(tasks).to.have.length(1);
+        expect(emittedTask).to.be.deep.equals({
+          _id: 'r-1~task~task-3',
+          date: TEST_DAY,
+          actions: [
+            {
+              type: 'report',
+              form: 'example-form',
+              label: 'Follow up',
+              content: {
+                source: 'task',
+                source_id: report._id,
+                contact: {
+                  ...highRiskContactDefaults,
+                  _id: contact.contact._id,
+                  type: 'person',
+                  reported_date: TEST_DATE
+                }
+              }
+            }
+          ],
+          contact: {
+            ...highRiskContactDefaults,
+            _id: contact.contact._id,
+            reported_date: TEST_DATE,
+            type: 'person',
+          },
+          resolved: false,
+          priority: 10.0,
+          priorityLabel: [{ 'locale': 'en', 'label': 'High Priority' }],
+          _type: 'task'
+        });
+      });
+      
       it('appliesToType should filter configurable hierarchy contact', () => {
         // given
         const config = {
@@ -135,6 +339,49 @@ describe('task-emitter', () => {
           { _type:'_complete', _id: true },
         ]);
       });
+
+      it('should emit multiple tasks for multiple events', () => {
+        const task = aReportBasedTask();
+        task.events = [
+          { id: 'event1', days: 0, start: 0, end: 1 },
+          { id: 'event2', days: 1, start: 1, end: 2 },
+        ];
+        task.priority = (_c, _r, e) => {
+          if (e.id === 'event1') {
+            return { level: 10 };
+          }
+          if (e.id === 'event2') {
+            return { level: 20 };
+          }
+          return { level: 0 }; 
+        };
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [task],
+        };
+        const { emitted } = runNoolsLib(config); 
+        const tasks = emitted.filter(e => e._type === 'task');
+        
+        expect(tasks).to.have.length(2);
+        expect(tasks[0]).to.have.property('priority', 10);
+        expect(tasks[1]).to.have.property('priority', 20);
+        expectAllToHaveUniqueIds(tasks);
+      });
+      it('should skip emitting if Utils.isTimely returns false', () => {
+        const task = aReportBasedTask();
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [task],
+          utilsMock: {
+            ...utilsMock,
+            isTimely: sinon.stub().returns(false),
+          },
+        };
+        const { emitted } = runNoolsLib(config);
+        expect(emitted.filter((e) => e._type === 'task')).to.have.length(0);
+      });
     });
 
     describe('place-based', () => {
@@ -167,10 +414,14 @@ describe('task-emitter', () => {
           targets: [],
           tasks: [ aReportBasedTask() ],
         };
+        config.tasks[0].priority = sinon.stub().returns({
+          level: 'high',
+          label: [ { locale:'en', label: 'High Priority' } ]
+        });
 
         // when
         const { emitted } = runNoolsLib(config);
-
+        
         // then
         assert.deepEqual(emitted, [
           { _type:'_complete', _id: true },
@@ -185,6 +436,10 @@ describe('task-emitter', () => {
           tasks: [ aReportBasedTask() ],
         };
         config.tasks[0].appliesToType = 'custom';
+        config.tasks[0].priority = sinon.stub().returns({
+          level: 'high',
+          label: [ { locale:'en', label: 'High Priority' } ]
+        });
 
         // when
         const emitted = runNoolsLib(config).emitted;
@@ -223,7 +478,7 @@ describe('task-emitter', () => {
           },
         ];
 
-        for (let scenario of scenarios) {
+        for (const scenario of scenarios) {
           it(scenario.name, () => {
             // given
             const config = {
@@ -262,6 +517,41 @@ describe('task-emitter', () => {
           { _type:'task', date:TEST_DAY },
           { _type:'_complete', _id: true },
         ]);
+      });
+
+      it('should use contactLabel if provided as function', () => {
+        const task = aReportBasedTask();
+        task.contactLabel = sinon.stub().returns('custom label');
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [task],
+        };
+        const { emitted } = runNoolsLib(config);
+        expect(emitted[0].contact).to.deep.equal({ name: 'custom label' });
+        expect(task.contactLabel.called).to.be.true;
+      });
+      it('should use contactLabel if provided as string', () => {
+        const task = aReportBasedTask();
+        task.contactLabel = 'static label';
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [task],
+        };
+        const { emitted } = runNoolsLib(config);
+        expect(emitted[0].contact).to.deep.equal({ name: 'static label' });
+      });
+      it('should fallback to c.contact if contactLabel is not provided', () => {
+        const task = aReportBasedTask();
+        delete task.contactLabel;
+        const config = {
+          c: personWithReports(aReport()),
+          targets: [],
+          tasks: [task],
+        };
+        const { emitted } = runNoolsLib(config);
+        expect(emitted[0].contact).to.have.property('_id');
       });
 
       it('appliesToType filters by form', () => {
@@ -370,7 +660,7 @@ describe('task-emitter', () => {
       });
 
       it('given contact without reported_date, dueDate defaults to now', () => {
-        sinon.useFakeTimers();
+        const clock = sinon.useFakeTimers();
 
         // given
         const config = {
@@ -387,6 +677,8 @@ describe('task-emitter', () => {
         const expected = new Date();
         expected.setHours(0, 0, 0, 0);
         expect(emitted[0].date.getTime()).to.eq(expected.getTime());
+
+        clock.restore();
       });
 
       it('dueDate function is invoked with expected data', () => {
@@ -672,7 +964,7 @@ describe('task-emitter', () => {
 
     describe('defaultResolvedIf', () => {
       it('given task definition without resolvedIf, it defaults to defaultResolvedIf', () => {
-        sinon.useFakeTimers();
+        const clock = sinon.useFakeTimers();
 
         // given
         const config = {
@@ -689,6 +981,8 @@ describe('task-emitter', () => {
         // then
         expect(utilsMock.isFormSubmittedInWindow.callCount).to.equal(1);
         expect(emitted[0].resolved).to.be.true;
+
+        clock.restore();
       });
 
       it('this.definition.defaultResolvedIf can be used inside resolvedIf', () => {

@@ -11,7 +11,8 @@ const runNoolsLib = ({ c, targets, tasks, utilsMock }) => {
     targets,
     tasks,
     Utils: () => {
-      //TODO: preferred way is to use 'utilsMocks' and this one will be removed when the unit test are aligned with the new approach
+      //TODO: preferred way is to use 'utilsMocks' and this one will be removed when the unit test are aligned with
+      // the new approach
       return {
         addDate: function(date, days) {
           const d = new Date(date.getTime());
@@ -38,6 +39,11 @@ const runNoolsLib = ({ c, targets, tasks, utilsMock }) => {
       this.actions = props.actions;
       this.contact = props.contact;
       this.resolved = props.resolved;
+
+      if (props.priority) {
+        this.priority = props.priority;
+        this.priorityLabel = props.priorityLabel;
+      }
     },
     emit(type, taskOrTarget) {
       taskOrTarget._type = type;

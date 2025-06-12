@@ -1,5 +1,6 @@
 const environment = require('./environment');
 const readline = require('readline-sync');
+const { warn } = require('./log');
 
 
 /**
@@ -33,8 +34,16 @@ function keyInSelect(items, question, options = {}) {
   return readline.keyInSelect(items, question, options);
 }
 
+function warnPromptAbort(warningMessage) {
+  warn(warningMessage);
+  if (!keyInYN()) {
+    throw new Error('User aborted execution.');
+  }
+}
+
 module.exports = {
   keyInYN,
   question,
-  keyInSelect
+  keyInSelect,
+  warnPromptAbort,
 };

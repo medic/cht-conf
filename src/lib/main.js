@@ -3,7 +3,7 @@ const checkForUpdates = require('../lib/check-for-updates');
 const checkChtConfDependencyVersion = require('../lib/check-cht-conf-dependency-version');
 const environment = require('./environment');
 const fs = require('../lib/sync-fs');
-const getApiUrl = require('../lib/get-api-url');
+const { getApiUrl, isLocalhost } = require('../lib/get-api-url');
 const log = require('../lib/log');
 const userPrompt = require('../lib/user-prompt');
 const redactBasicAuth = require('redact-basic-auth');
@@ -37,6 +37,8 @@ const defaultActions = [
   'upload-partners',
   'upload-custom-translations',
   'upload-privacy-policies',
+  'upload-extension-libs',
+  'upload-database-indexes',
 ];
 const defaultArchiveActions = [
   'compile-app-settings',
@@ -58,6 +60,8 @@ const defaultArchiveActions = [
   'upload-partners',
   'upload-custom-translations',
   'upload-privacy-policies',
+  'upload-extension-libs',
+  'upload-database-indexes',
 ];
 
 module.exports = async (argv, env) => {
@@ -108,10 +112,6 @@ module.exports = async (argv, env) => {
     throw new Error('--destination=<path to save files> is required with --archive.');
   }
 
-  if (cmdArgs['accept-self-signed-certs']) {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
-  }
-
   //
   // Logging
   //
@@ -145,6 +145,10 @@ module.exports = async (argv, env) => {
   const requiresInstance = actions.some(action => action.requiresInstance);
   const apiUrl = requiresInstance && getApiUrl(cmdArgs, env);
 
+  if (cmdArgs['accept-self-signed-certs'] || isLocalhost(apiUrl)) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+  }
+
   let extraArgs = cmdArgs['--'];
   if (!extraArgs.length) {
     extraArgs = undefined;
@@ -158,18 +162,20 @@ module.exports = async (argv, env) => {
     apiUrl,
     cmdArgs.force,
     cmdArgs['skip-translation-check'],
-    skipValidate
+    skipValidate,
+    cmdArgs['session-token'],
   );
 
   if (requiresInstance && apiUrl) {
     await api().available();
   }
 
-  const productionUrlMatch = environment.instanceUrl && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
+  const productionUrlMatch = environment.instanceUrl
+    && environment.instanceUrl.match(/^https:\/\/(?:[^@]*@)?(.*)\.(app|dev)\.medicmobile\.org(?:$|\/)/);
   const expectedOptions = ['alpha', projectName];
   if (productionUrlMatch && !expectedOptions.includes(productionUrlMatch[1])) {
     warn(`Attempting to use project for \x1b[31m${projectName}\x1b[33m`,
-        `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
+      `against non-matching instance: \x1b[31m${redactBasicAuth(environment.instanceUrl)}\x1b[33m`);
     if (!userPrompt.keyInYN()) {
       throw new Error('User aborted execution.');
     }
@@ -186,7 +192,7 @@ module.exports = async (argv, env) => {
     await checkForUpdates({ nonFatal: true });
   }
 
-  for (let action of actions) {
+  for (const action of actions) {
     info(`Starting action: ${action.name}…`);
     await executeAction(action);
     info(`${action.name} complete.`);

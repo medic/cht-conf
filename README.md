@@ -5,8 +5,8 @@ CHT Conf is a command-line interface tool to manage and configure your apps buil
 
 # Requirements
 
-* nodejs 8 or later
-* python 2.7
+* nodejs 18 or later
+* python 3
 * or Docker
 
 # Installation
@@ -34,80 +34,45 @@ As Administrator:
 
 CHT Conf can also be run from within a Docker container. This is useful if you are already familiar with Docker and do not wish to configure the various dependencies required for developing CHT apps on your local machine. The necessary dependencies are pre-packaged in the Docker image.
 
-#### Building the image
+#### Using the image
+
+The Docker image can be used as a [VS Code Development Container](https://code.visualstudio.com/docs/devcontainers/containers) (easiest) or as a standalone Docker utility.
 
 Install [Docker](https://www.docker.com/). If you are using Windows, you also need to enable the [Windows Subsystem for Linux (WSL2)](https://learn.microsoft.com/en-us/windows/wsl/install) to perform the following steps.
 
-Using the terminal (or the WLS shell on Windows: _Start > wsl_), run the following commands to create a new project directory and build the Docker image:
+##### VS Code Development Container
 
-```shell
-mkdir -p ~/cht-project
-cd ~/cht-project
-curl https://raw.githubusercontent.com/medic/cht-conf/main/Dockerfile > Dockerfile
-docker build -t cht-ide .
-```
+If you want to develop CHT apps with VS Code, you can use the Docker image as a Development Container. This will allow you to use the `cht` utility and its associated tech stack from within VS Code (without needing to install dependencies like NodeJS on your host system).
 
-#### Using the image
-
-The resulting Docker image can be used as a [VSCode Development Container](https://code.visualstudio.com/docs/devcontainers/containers) (easiest) or as a standalone Docker utility.
-
-##### VSCode Development Container
-
-If you want to develop CHT apps with VSCode, you can use the Docker image as a Development Container. This will allow you to use the `cht-conf` utility and its associated tech stack from within VSCode (without needing to install dependencies like NodeJS on your host system).
-
-[Install VSCode](https://code.visualstudio.com/) if you do not have it already.
-
-Using the terminal (or the WLS shell on Windows: _Start > wsl_), run the following commands from within your project directory (created above) to download the `.devcontainer.json` config file, install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers), and open the project directory in VSCode:
-
-```shell
-cd ~/cht-project
-curl -s https://raw.githubusercontent.com/medic/cht-conf/main/devcontainer.cht-ide/.devcontainer.json > .devcontainer.json
-code --install-extension ms-vscode-remote.remote-containers
-code -n .
-```
-
-When opening VSCode, you may be prompted with the question:
-
-> **Do you trust the authors of the files in this folder?**
-
-Choose, "Yes, I trust the authors".
-
-Open the Command Palette in VSCode (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Reopen in Container`. This will open your workspace inside a container based on the `cht-ide` image. You can use the `cht` commands by opening a terminal in VSCode (_Ctrl+Shift+\`_ or _Cmd+Shift+\`_). If prompted "Do you trust the authors..." choose "Trust Folder & Continue".
-
-Run the following command in the VSCode terminal to bootstrap your new CHT project:
-
-```shell
-cht initialise-project-layout
-```
-
-###### Terminal environment
-
-When opening a terminal in VSCode in a development container, the terminal will be running on the _container environment_ by default. This is what gives you access to the various `cht` commands.  However, this also means you do NOT have access, within the default VSCode terminal, to commands from your _host environment_. So, for example, you cannot run `docker` commands since Docker is not installed inside the container.
-
-To open a terminal running on you _host environment_ in VSCode, open the Command Palette (_Ctrl+Shift+P_ or _Cmd+Shift+P_) and select `Create New Integrated Terminal (Local)`. Just remember that you will NOT be able to run `cht` commands from this terminal since cht-conf is not installed on your host machine.
+See the [CHT Documentation](https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/#developing-with-vs-code-dev-container) for more information on building CHT apps with VS Code Development Containers.
 
 ##### Standalone Docker utility
 
-If you are not using VSCode, you can use the Docker image as a standalone utility from the command line.  Instead of using the `cht ...` command, you can run `docker run -it --rm -v "$PWD":/workdir cht-ide ...`. This will create an ephemeral container with access to your current directory that will run the given cht command. (Do not include the `cht` part of the command, just your desired actions/parameters.)
+If you are not using VS Code, you can use the Docker image as a standalone utility from the command line.  Instead of using the `cht ...` command, you can run `docker run -it --rm -v "$PWD":/workdir medicmobile/cht-app-ide ...`. This will create an ephemeral container with access to your current directory that will run the given cht command. (Do not include the `cht` part of the command, just your desired actions/parameters.)
 
 Run the following command inside the project directory to bootstrap your new CHT project:
 
 ```shell
-docker run -it --rm -v "$PWD":/workdir cht-ide initialise-project-layout
+docker run -it --rm -v "$PWD":/workdir medicmobile/cht-app-ide initialise-project-layout
 ```
 
 #### Note on connecting to a local CHT instance
 
-When using `cht-conf` within a Docker container to connect to a CHT instance that is running on your local machine (e.g. a development instance), you cannot use the `--local` flag or `localhost` in your `--url` parameter (since these will be interpreted as "local to the container"). 
+When using `cht` within a Docker container to connect to a CHT instance that is running on your local machine (e.g. a development instance), you cannot use the `--local` flag or `localhost` in your `--url` parameter (since these will be interpreted as "local to the container"). 
 
-It is recommended to run a local CHT instance using the [CHT Docker Helper script](https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/). You can connect to the resulting `...my.local-ip.co` URL from the Docker container (or the VSCode terminal). (Just make sure the port your CHT instance is hosted on is not blocked by your firewall). 
+It is recommended to run a local CHT instance using the [CHT Docker Helper script](https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/). You can connect to the resulting `...my.local-ip.co` URL from the Docker container (or the VS Code terminal). (Just make sure the port your CHT instance is hosted on is not blocked by your firewall). 
 
 ## Bash completion
 
 To enable tab completion in bash, add the following to your `.bashrc`/`.bash_profile`:
 
-	eval "$(cht-conf --shell-completion=bash)"
+	eval "$(cht --shell-completion=bash)"
 
+## Zsh completion
+To enable tab completion in zsh, add the following to your `~/.zshrc` file:
+   
+    eval "$(cht --shell-completion=zsh)"
+	
 ## Upgrading
 
 To upgrade to the latest version
@@ -146,6 +111,20 @@ If a different username is required, add the `--user` switch:
 
 **NB** - When specifying the URL with `--url`, be sure not to specify the CouchDB database name in the URL. The CHT API will find the correct database.
 
+### Using a session token for authentication
+
+CHT Conf supports authentication using a session token by adding `--session-token` parameter:
+
+	cht --url=https://example.com:12345 --session-token=*my_token* 
+
+The `my_token` can be obtained by doing a POST request to `/_session` [endpoint](https://docs.couchdb.org/en/stable/api/server/authn.html#cookie-authentication) with `name` and `password` as form parameters.  
+
+For example, if your CHT instance is `my.cht.com`, you could use this `curl` call to specify your user `medic` and your password `secret123` to retrieve the header with the `AuthSession` value which is the token:
+
+```
+curl -v  -H 'Content-Type: application/json' -d '{"name":"medic","password":"secret123"}'  https://my.cht.com/_session 2>&1 | grep AuthSession 
+< set-cookie: AuthSession=bWVkaWM6NjdBRTM4MkE6EguRnzpSiK0t8wFaOQ_jgkZE8UWcgNWgpyStzbbHreI; Version=1; Expires=Fri, 13-Feb-2026 18:21:30 GMT; Max-Age=31536000; Path=/; HttpOnly
+```
 ### Into an archive to be uploaded later
 
     cht --archive
@@ -189,6 +168,7 @@ In order to avoid overwriting someone else's configuration cht-conf records the 
 * upload privacy policies to server
 * upload branding to server
 * upload partners to server
+* upload database indexes to server
 
 ## Forms
 
@@ -337,7 +317,15 @@ To develop a new action or improve an existing one, check the ["Actions" doc](sr
 
 ## Testing
 
+### Unit tests
+
 Execute `npm test` to run static analysis checks and the test suite. Requires Docker to run integration tests against a CouchDB instance. 
+
+### End-to-end tests
+
+Run `npm run test-e2e` to run the end-to-end test suite against an actual CHT instance locally. These tests rely on [CHT Docker Helper](https://docs.communityhealthtoolkit.org/hosting/4.x/app-developer/#cht-docker-helper-for-4x) to spin up and tear down an instance locally.
+
+The code interfacing with CHT Docker Helper lives in [`test/e2e/cht-docker-utils.js`](./test/e2e/cht-docker-utils.js). You should rely on the API exposed by this file to orchestrate CHT instances for testing purposes. It is preferable to keep the number of CHT instances orchestrated in E2E tests low as it takes a non-negligible amount of time to spin up an instance and can quickly lead to timeouts.
 
 ## Executing your local branch
 
@@ -383,7 +371,7 @@ Builds brought to you courtesy of GitHub actions.
 
 # Copyright
 
-Copyright 2013-2022 Medic Mobile, Inc. <hello@medic.org>
+Copyright 2013-2025 Medic Mobile, Inc. <hello@medic.org>
 
 # License
 

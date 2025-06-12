@@ -5,8 +5,10 @@ upload-docs.*.log.json
 /.vscode/
 /.idea/
 /.settings/
+/json_docs/
 *.swp
 coverage
 .nyc_output
 .DS_Store
 test/.DS_Store
+test/e2e/.cht-docker-helper

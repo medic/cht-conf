@@ -1,6 +1,7 @@
 const PouchDB = require('pouchdb-core');
 const sinon = require('sinon');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
+PouchDB.plugin(require('pouchdb-find'));
 
 const environment = require('../src/lib/environment');
 const express = require('express');
@@ -13,7 +14,12 @@ const mockMiddleware = new ExpressSpy();
 const opts = {
   inMemoryConfig: true,
   logPath: 'express-pouchdb.log',
-  mode: 'minimumForPouchDB'
+  mode: 'minimumForPouchDB',
+  overrideMode: {
+    include: [
+      'routes/find'
+    ]
+  }
 };
 const app = express();
 app.use(bodyParser.json());
@@ -33,12 +39,15 @@ module.exports = {
   giveResponses: mockMiddleware.setResponses,
   requestLog: () => mockMiddleware.requests.map(r => ({ method:r.method, url:r.originalUrl, body:r.body })),
   start: () => {
-    if(server) throw new Error('Server already started.');
+    if(server) {
+      throw new Error('Server already started.');
+    }
     server = app.listen();
 
     const port = server.address().port;
     const couchUrl = `http://admin:pass@localhost:${port}/medic`;
     sinon.stub(environment, 'apiUrl').get(() => couchUrl);
+    sinon.stub(environment, 'sessionToken').get(() => undefined);
     module.exports.couchUrl = couchUrl;
     module.exports.gatewayRequests = [];
   },

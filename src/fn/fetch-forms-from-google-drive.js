@@ -5,8 +5,8 @@ module.exports = {
   requiresInstance: false,
   execute: async () => {
     await fetchFilesFromGoogleDrive(
-        `${environment.pathToProject}/forms-on-google-drive.json`,
-        `${environment.pathToProject}/forms`,
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      `${environment.pathToProject}/forms-on-google-drive.json`,
+      `${environment.pathToProject}/forms`,
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   }
 };

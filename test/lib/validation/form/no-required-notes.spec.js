@@ -58,7 +58,8 @@ const assertEmpty = (output) => {
   expect(output.errors, output.errors).is.empty;
 };
 
-const getExpectedErrorMsg = requiredNotes => `Form at ${xformPath} contains the following note fields with 'required' expressions: [${requiredNotes.join(', ')}]`;
+const getExpectedErrorMsg = requiredNotes =>
+  `Form at ${xformPath} contains the following note fields with 'required' expressions: [${requiredNotes.join(', ')}]`;
 
 describe('no-required-notes', () => {
   it('resolves OK for form with no notes', () => {

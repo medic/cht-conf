@@ -175,16 +175,16 @@ describe('target emitter', () => {
         const target = aPersonBasedTarget();
         target.appliesToType = [ 'dne' ];
 
-         const config = {
+        const config = {
           c: personWithReports(aReport()),
           targets: [ target ],
           tasks: [],
         };
 
-         // when
+        // when
         const emitted = runNoolsLib(config).emitted;
 
-         // then
+        // then
         expect(emitted).to.have.property('length', 1);
       });
 
@@ -423,16 +423,16 @@ describe('target emitter', () => {
           const target = aReportBasedTarget();
           target.appliesToType = [ 'dne' ];
 
-           const config = {
+          const config = {
             c: personWithReports(aReport()),
             targets: [ target ],
             tasks: [],
           };
 
-           // when
+          // when
           const emitted = runNoolsLib(config).emitted;
 
-           // then
+          // then
           expect(emitted).to.have.property('length', 1);
         });
       });
@@ -502,16 +502,16 @@ describe('target emitter', () => {
       const target = aPersonBasedTarget();
       delete target.appliesToType;
 
-       const config = {
+      const config = {
         c: personWithReports(aReport()),
         targets: [ target ],
         tasks: [],
       };
 
-       // when
+      // when
       const emitted = runNoolsLib(config).emitted;
 
-       // then
+      // then
       assert.deepEqual(emitted, [
         { _id: 'c-3~pT-1', _type:'target', date: TEST_DATE },
         { _type:'_complete', _id: true },

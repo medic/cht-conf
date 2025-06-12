@@ -18,15 +18,22 @@
   ],
   "forms": {
     "IMM": {
-      "fields": [ "patient_id", "visit_confirmed" ]
+      "fields": [
+        "patient_id",
+        "visit_confirmed"
+      ]
     },
     "C": {
-      "fields": [ "weeks_since_birth", "patient_name" ]
+      "fields": [
+        "weeks_since_birth",
+        "patient_name"
+      ]
     }
   },
   "contact_summary": "",
   "tasks": {
     "rules": "",
     "targets": {}
-  }
+  },
+  "purge": {}
 }

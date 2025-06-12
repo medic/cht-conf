@@ -12,12 +12,14 @@ module.exports = {
         promiseChain
           .then(() => info('Compressing PNG:', png, '…'))
           .then(() =>
-              exec(['pngout-medic', `'${png}'`])
-                .then(() => trace('Compressed', png))
-                .catch(e => {
-                  if(e.status === 2) {
-                    info('Unable to compress further.');
-                  } else throw e;
-                })),
-        Promise.resolve())
+            exec(['pngout-medic', `'${png}'`])
+              .then(() => trace('Compressed', png))
+              .catch(e => {
+                if(e.status === 2) {
+                  info('Unable to compress further.');
+                } else {
+                  throw e;
+                }
+              })),
+      Promise.resolve())
 };

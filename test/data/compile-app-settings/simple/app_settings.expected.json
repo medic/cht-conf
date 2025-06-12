@@ -6,5 +6,6 @@
       "test": true
     },
     "targets": {}
-  }
+  },
+  "purge": {}
 }

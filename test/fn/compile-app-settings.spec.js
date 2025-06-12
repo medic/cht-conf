@@ -5,14 +5,12 @@ const rewire = require('rewire');
 
 const fs = require('../../src/lib/sync-fs');
 const compileAppSettings = rewire('../../src/fn/compile-app-settings');
-
 const { expect } = chai;
 chai.use(require('chai-exclude'));
 chai.use(require('chai-as-promised'));
 
 let writeJson;
 let environment;
-
 const scenarios = [
   {
     description: 'should handle simple config',
@@ -47,7 +45,15 @@ const scenarios = [
     folder: 'purge/no-export-purge/project',
   },
   {
-    description: 'should handle a project with eslint error when --debug flag is present', 
+    description: 'should remove purge config from app_settings when no purge files exist',
+    folder: 'purge/no-purge-file/project',
+  },
+  {
+    description: 'should remove purge config from base_settings when no purge files exist',
+    folder: 'purge/base-settings-purge/project',
+  },
+  {
+    description: 'should handle a project with eslint error when --debug flag is present',
     folder: 'eslint-error/project',
     extraArgs: ['--debug'],
   },
@@ -58,10 +64,14 @@ const scenarios = [
   {
     description: 'should handle a configuration using the base_settings file',
     folder: 'base-settings/project',
-  },  
+  },
   {
     description: 'should handle a configuration using the forms.json and schedules.json files',
     folder: 'sms-modules/project',
+  },
+  {
+    description: 'should handle a configuration using the assetlinks.json file',
+    folder: 'android-app-links/project',
   },
 
   // REJECTION SCENARIOS
@@ -103,7 +113,7 @@ const scenarios = [
   {
     description: 'should reject a project with eslint error',
     folder: 'eslint-error/project',
-    error: 'Webpack errors when building',
+    error: 'Webpack warnings when building',
   },
   {
     description: 'should reject a configuration using invalid forms.json or schedules.json files',
@@ -114,6 +124,11 @@ const scenarios = [
     description: 'should reject a project with no .eslintrc file defined',
     folder: 'missing-eslintrc/project',
     error: 'No eslint configuration',
+  },
+  {
+    description: 'should reject a configuration using an invalid assetlinks.json file',
+    folder: 'android-app-links/invalid-file',
+    error: 'Invalid assetlinks: ValidationError: "[0].target.sha256_cert_fingerprints" is required',
   },
 ];
 

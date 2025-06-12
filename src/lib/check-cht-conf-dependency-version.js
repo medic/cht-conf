@@ -19,8 +19,8 @@ module.exports = projectDir => {
   const majorRunningVersion = semver.major(runningVersion);
   let upgradeDowngradeLocalMsg = '';
   let upgradeDowngradeProjectMsg = '';
-  let satisfiesLessThanMajorRunningVersion = semver.satisfies(projectVersion, `<${majorRunningVersion}.x`);
-  let satisifiesGreaterThanRunningVersion = semver.satisfies(projectVersion, `>${runningVersion}`);
+  const satisfiesLessThanMajorRunningVersion = semver.satisfies(projectVersion, `<${majorRunningVersion}.x`);
+  const satisifiesGreaterThanRunningVersion = semver.satisfies(projectVersion, `>${runningVersion}`);
 
   if(satisfiesLessThanMajorRunningVersion || satisifiesGreaterThanRunningVersion) {
 
@@ -34,6 +34,7 @@ module.exports = projectDir => {
       upgradeDowngradeProjectMsg = 'downgrade';
     }
 
+    /* eslint-disable max-len */
     throw new Error(`Your cht-conf version is incompatible with the project's cht-conf version:
     Your local cht-conf version:   ${runningVersion}
     The project cht-conf version: ${projectVersion}
@@ -44,6 +45,7 @@ module.exports = projectDir => {
         npm i -g cht-conf@${projectVersion}
     and try again, or ${upgradeDowngradeProjectMsg} the project cht-conf version to ${runningVersion}, or ignore this warning with --skip-dependency-check
     `);
+    /* eslint-enable max-len */
 
   }
 };

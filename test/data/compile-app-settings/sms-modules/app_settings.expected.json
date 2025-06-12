@@ -94,5 +94,6 @@
   "tasks": {
     "rules": "",
     "targets": {}
-  }
+  },
+  "purge": {}
 }

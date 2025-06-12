@@ -5,19 +5,19 @@ const safeStringify = require('../../src/lib/safe-stringify');
 describe('safe-stringify', () => {
 
   it('stringifies an object', () => {
-      const given = {
-        name: 'harold',
-        count: 3,
-        match: true,
-        gender: null,
+    const given = {
+      name: 'harold',
+      count: 3,
+      match: true,
+      gender: null,
+      child: {
+        name: 'gerald',
         child: {
-          name: 'gerald',
-          child: {
-            name: 'gerald the second'
-          }
+          name: 'gerald the second'
         }
-      };
-      const expected =
+      }
+    };
+    const expected =
 `{
   "name": "harold",
   "count": 3,
@@ -30,7 +30,7 @@ describe('safe-stringify', () => {
     }
   }
 }`;
-      expect(safeStringify(given)).to.deep.equal(expected);
+    expect(safeStringify(given)).to.deep.equal(expected);
   });
 
   describe('types', () => {

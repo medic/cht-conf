@@ -2,6 +2,7 @@
   "contact_summary": "",
   "tasks": {
     "rules": "",
+    "isDeclarative": true,
     "schedules": {
       "test": true
     },
@@ -18,5 +19,6 @@
         }
       ]
     }
-  }
+  },
+  "purge": {}
 }

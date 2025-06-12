@@ -1,4 +1,5 @@
-const request = require('request-promise-native');
+const retry = require('async-retry');
+const rpn = require('request-promise-native');
 
 const archivingApi = require('./archiving-api');
 const environment = require('./environment');
@@ -6,6 +7,40 @@ const log = require('./log');
 const url = require('url');
 
 const cache = new Map();
+const sessionCookieName = 'AuthSession';
+
+// Helper function to create request headers with session token (if available)
+const withSessionCookie = (...args) => {
+  const options = typeof args[0] === 'object' ? Object.assign({}, args[0]) : { url: args[0] };
+
+  if (args.length > 1) {
+    // Merge remaining arguments
+    Object.assign(options, ...args.slice(1));
+  }
+
+  const sessionToken = environment.sessionToken;
+  if (sessionToken || options.headers) {
+    options.headers = Object.assign(
+      {}, 
+      options.headers || {}, 
+      sessionToken ? { Cookie: `${sessionCookieName}=${sessionToken}` } : {}
+    );
+  }
+
+  return options;
+};
+
+const _request = (method) => (...args) => {
+  const requestOptions = withSessionCookie(...args);
+  return retry(() => rpn[method](requestOptions), { retries: 5, randomize: false, factor: 1.5 });
+};
+
+const request = {
+  get: _request('get'),
+  post: _request('post'),
+  put: _request('put'),
+  delete: _request('delete'),
+};
 
 const logDeprecatedTransitions = (settings) => {
   const appSettings = JSON.parse(settings);
@@ -15,7 +50,7 @@ const logDeprecatedTransitions = (settings) => {
   }
 
   const uri = `${environment.instanceUrl}/api/v1/settings/deprecated-transitions`;
-  return request({ uri, method: 'GET', json: true })
+  return request.get({ uri, json: true })
     .then(transitions => {
       (transitions || []).forEach(transition => {
         const transitionSetting = appSettings.transitions[transition.name];
@@ -34,8 +69,7 @@ const logDeprecatedTransitions = (settings) => {
 };
 
 const updateAppSettings = (settings) => {
-  return request({
-    method: 'PUT',
+  return request.put({
     url: `${environment.apiUrl}/_design/medic/_rewrite/update_settings/medic?replace=1`,
     headers: {'Content-Type': 'application/json'},
     body: settings,
@@ -45,7 +79,7 @@ const updateAppSettings = (settings) => {
 const api = {
   getAppSettings: () => {
     const url = `${environment.apiUrl}/_design/medic/_rewrite/app_settings/medic`;
-    return request({ url, json: true })
+    return request.get({ url, json: true })
       .catch(err => {
         if(err.statusCode === 404) {
           throw new Error(`Failed to fetch existing app_settings from ${url}.\n` +
@@ -65,10 +99,32 @@ const api = {
       .then(() => updateAppSettings(content));
   },
 
+  async getUsersAtPlace(facilityId) {
+    const result = await request.get({
+      uri: `${environment.instanceUrl}/api/v2/users?facility_id=${facilityId}`,
+      json: true,
+    });
+
+    return result || [];
+  },
+
+  disableUser(username) {
+    return request.delete({
+      uri: `${environment.instanceUrl}/api/v1/users/${username}`,
+    });
+  },
+
+  updateUser(userDoc) {
+    return request.post({
+      uri: `${environment.instanceUrl}/api/v1/users/${userDoc.username}`,
+      json: true,
+      body: userDoc,
+    });
+  },
+
   createUser(userData) {
-    return request({
+    return request.post({
       uri: `${environment.instanceUrl}/api/v1/users`,
-      method: 'POST',
       json: true,
       body: userData,
     });
@@ -79,9 +135,8 @@ const api = {
   },
 
   uploadSms(messages) {
-    return request({
+    return request.post({
       uri: `${environment.instanceUrl}/api/sms`,
-      method: 'POST',
       json: true,
       body: { messages },
     });
@@ -116,7 +171,7 @@ const api = {
   },
 
   version() {
-    return request({ uri: `${environment.instanceUrl}/api/deploy-info`, method: 'GET', json: true }) // endpoint added in 3.5
+    return request.get({ uri: `${environment.instanceUrl}/api/deploy-info`, json: true }) // endpoint added in 3.5
       .then(deploy_info => deploy_info && deploy_info.version);
   },
 
@@ -150,34 +205,33 @@ const api = {
       // (old version), so we assume form is valid but return special result
       return Promise.resolve({ok: true, formsValidateEndpointFound: false});
     }
-    return request({
-      method: 'POST',
+    return request.post({
       uri: `${environment.instanceUrl}/api/v1/forms/validate`,
       headers: { 'Content-Type': 'application/xml' },
       body: formXml,
     })
-    .then(resp => {
-      try {
-        return JSON.parse(resp);
-      } catch (e) {
-        throw new Error('Invalid JSON response validating XForm against the API: ' + resp);
-      }
-    })
-    .catch(err => {
-      if (err.statusCode === 404) {
-        // The endpoint doesn't exist in the API (old CHT version), so
-        // we assume the form is valid but return special JSON
-        // highlighting the situation, and remembering the lack
-        // of the endpoint so next call there is no need
-        // to call the missed endpoint again
-        this._formsValidateEndpointFound = false;
-        return {ok: true, formsValidateEndpointFound: false};
-      }
-      if (err.statusCode === 400 && err.error) {
-        throw new Error(JSON.parse(err.error).error);
-      }
-      throw err;
-    });
+      .then(resp => {
+        try {
+          return JSON.parse(resp);
+        } catch (e) {
+          throw new Error('Invalid JSON response validating XForm against the API: ' + resp);
+        }
+      })
+      .catch(err => {
+        if (err.statusCode === 404) {
+          // The endpoint doesn't exist in the API (old CHT version), so
+          // we assume the form is valid but return special JSON
+          // highlighting the situation, and remembering the lack
+          // of the endpoint so next call there is no need
+          // to call the missed endpoint again
+          this._formsValidateEndpointFound = false;
+          return {ok: true, formsValidateEndpointFound: false};
+        }
+        if (err.statusCode === 400 && err.error) {
+          throw new Error(JSON.parse(err.error).error);
+        }
+        throw err;
+      });
   },
 
   async getCompressibleTypes () {

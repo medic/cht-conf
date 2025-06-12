@@ -1,6 +1,6 @@
 const fs = require('../lib/sync-fs');
 
-const SUPPORTED_SHELLS = ['bash'];
+const SUPPORTED_SHELLS = ['bash','zsh'];
 
 module.exports = shell => {
   if (SUPPORTED_SHELLS.includes(shell)){

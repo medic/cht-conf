@@ -17,7 +17,10 @@ const jsonDocPath = (directoryPath, docID) => `${directoryPath}/${docID}.doc.jso
 
 // check to see if we should write/overwrite the file
 const overwriteFileCheck = (doc, args, overwriteAllFiles) => {
-  return args.updateOfflineDocs || environment.force || overwriteAllFiles || !fs.exists(jsonDocPath(args.docDirectoryPath, doc._id));
+  return args.updateOfflineDocs
+    || environment.force
+    || overwriteAllFiles
+    || !fs.exists(jsonDocPath(args.docDirectoryPath, doc._id));
 };
 
 const saveJsonDoc = (doc, args) => {
@@ -62,19 +65,19 @@ const execute = () => {
     .filter(name => name.endsWith('.csv'))
     .reduce((promiseChain, csv) =>
       promiseChain
-      .then(() => {
-        info('Processing CSV file:', csv, '…');
+        .then(() => {
+          info('Processing CSV file:', csv, '…');
 
-        const nameParts = fs.path.basename(csv).split('.');
-        const prefix = nameParts[0];
-        switch(prefix) {
+          const nameParts = fs.path.basename(csv).split('.');
+          const prefix = nameParts[0];
+          switch(prefix) {
           case 'contact':  return processDocuments('contact', csv, getIDs(csv, prefix), db, args);
           case 'users': return processDocuments('user', csv, getIDs(csv, prefix), db, args);
           default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
-        }
-      })
-      .then(docs => addToModel(csv, docs)),
-      Promise.resolve())
+          }
+        })
+        .then(docs => addToModel(csv, docs)),
+    Promise.resolve())
 
     .then(() => model.exclusions.forEach(toDocs.removeExcludedField))
     .then(() => writeDocs(model.docs, args));
@@ -98,76 +101,96 @@ function getIDs(csv, docType) {
   const { rows, cols } = fs.readCsv(csv);
   const index = cols.indexOf(DOCUMENT_ID);
   if (index === -1){
-   throw Error('missing "documentID" column.');
+    throw Error('missing "documentID" column.');
   }
 
   const idPrefix =  docType === 'contact' ? '' : 'org.couchdb.user:';
   return rows.map((item) => idPrefix + item[index]);
 }
 
-function processDocs(docType, csv, documentDocs, args) {
-  const { rows, cols } = fs.readCsv(csv);
-  const uuidIndex = cols.indexOf(DOCUMENT_ID);
-  const colNames = args.colNames;
-  let toIncludeColumns, toIncludeIndex;
-  if (!colNames.length) {
-    warn(' No columns specified, the script will add all the columns in the CSV!');
-    toIncludeColumns = cols;
-    toIncludeIndex = [];
-
-  } else {
-    if (!columnsAreValid(cols,colNames)) {
-      throw Error('The column name(s) specified do not exist.');
-    }
-
-    toIncludeColumns = cols.filter(column => colNames.includes(column.split(':')[0]));
-    toIncludeIndex = toIncludeColumns.map(column => cols.indexOf(column));
-
-    if (toIncludeColumns.includes(DOCUMENT_ID)) {
-      toIncludeIndex.splice(toIncludeColumns.indexOf(DOCUMENT_ID),1);
-    }
-  }
-
-  if (toIncludeColumns.includes(DOCUMENT_ID)) {
-    toIncludeColumns.splice(toIncludeColumns.indexOf(DOCUMENT_ID),1);
-  }
-  return rows
-    .map(r => processCsv(docType, toIncludeColumns, r, uuidIndex, toIncludeIndex, documentDocs));
-}
-
 function columnsAreValid(csvColumns, toIncludeColumns) {
   const splitCsvColumns = csvColumns.map(column => column && column.split(':')[0]);
   return toIncludeColumns.every(column => splitCsvColumns.includes(column));    
 }
+const parseColName = colName => colName.split(':')[0];
+const getColNamesToInclude = (csvColNames, targetColNames) => {
+  const filteredCsvColNames = csvColNames.filter(colName => colName !== DOCUMENT_ID);
+  if (!targetColNames.length) {
+    warn(' No columns specified, the script will add all the columns in the CSV!');
+    return filteredCsvColNames;
+  }
+  
+  if (!columnsAreValid(filteredCsvColNames, targetColNames)) {
+    throw Error('The column name(s) specified do not exist.');
+  }
 
-function processCsv(docType, cols, row, uuidIndex, toIncludeIndex, documentDocs) {
+  return filteredCsvColNames.filter(column => targetColNames.includes(parseColName(column)));
+};
+
+const getCsvColNameIndex = csvColNames => colName => csvColNames.indexOf(colName);
+const mapColNamesToCsvIndex = (csvColNames, toIncludeColumns) => toIncludeColumns.map(getCsvColNameIndex(csvColNames));
+
+
+const getDocIdForCsvRow = (docType, uuidIndex) => row => {
   const documentId = row[uuidIndex];
   const idPrefix =  docType === 'contact' ? '' : 'org.couchdb.user:';
-  const doc = documentDocs[idPrefix + documentId];
+  return `${idPrefix}${documentId}`;
+};
 
+const getCsvRowFilterFn = (uuidIndex, toIncludeIndex) => {
   if (toIncludeIndex.length > 0) {
-    row = toIncludeIndex.map(index => row[index]);
-  } else {
-    row.splice(uuidIndex,1);
+    return row => toIncludeIndex.map(index => row[index]);
   }
 
-  for(let i=0; i<cols.length; ++i) {
-    const { col, val, excluded } = toDocs.parseColumn(cols[i], row[i]);
+  return row => {
+    const updatedRow = [...row];
+    updatedRow.splice(uuidIndex, 1);
+    return updatedRow;
+  };
+};
+
+const isColNameProtected = col => EDIT_RESERVED_COL_NAMES.includes(col.split('.')[0]);
+const processCsvColumn = (doc, row) => (colName, index) => {
+  const { col, val, excluded } = toDocs.parseColumn(colName, row[index]);
     
-    if (EDIT_RESERVED_COL_NAMES.includes(col.split('.')[0])) {
-      throw new Error(`Cannot set property defined by column '${col}' - this property name is protected.`);
-    }
-
-    toDocs.setCol(doc, col, val);
-    if (excluded) { 
-      model.exclusions.push({
-        doc: doc,
-        propertyName: col,
-      });
-    }
+  if (isColNameProtected(col)) {
+    throw new Error(`Cannot set property defined by column '${col}' - this property name is protected.`);
   }
-  return doc;
-}
+
+  toDocs.setCol(doc, col, val);
+  if (excluded) { 
+    model.exclusions.push({
+      doc,
+      propertyName: col,
+    });
+  }
+};
+const processCsvRow = colNames => ([doc, row]) => colNames.forEach(processCsvColumn(doc, row));
+
+const getColIndexesToInclude = (colNames, cols, toIncludeColumns) => {
+  if(colNames.length) {
+    return mapColNamesToCsvIndex(cols, toIncludeColumns);
+  } 
+  return [];
+};
+
+const processDocs = (docType, csv, documentDocs, args) => {
+  const { rows, cols } = fs.readCsv(csv);
+  const uuidIndex = cols.indexOf(DOCUMENT_ID);
+  const colNamesToInclude = getColNamesToInclude(cols, args.colNames);
+  const colIndexesToInclude = getColIndexesToInclude(args.colNames, cols, colNamesToInclude);
+  const getFilteredCsvRow = getCsvRowFilterFn(uuidIndex, colIndexesToInclude);
+
+  const rowDocs = rows
+    .map(getDocIdForCsvRow(docType, uuidIndex))
+    .map(id => documentDocs[id]);
+
+  rows
+    .map(getFilteredCsvRow)
+    .map((row, index) => [rowDocs[index], row])
+    .map(processCsvRow(colNamesToInclude));
+  return rowDocs;
+};
 
 const processDocuments =  async (docType, csv, ids, db, args) => {
   const documentDocs = await fetchDocumentList(db, ids, args);

@@ -14,7 +14,10 @@ module.exports = (projectDir) => {
   const purgingExists = fs.exists(purgingPath);
 
   if (purgeExists && purgingExists) {
-    throwError(`Purge is defined at both ${purgePath} and ${purgingPath}. Using 'purging.js' is deprecated. Create a 'purge.js' file instead.`);
+    throwError(
+      `Purge is defined at both ${purgePath} and ${purgingPath}. `
+      + `Using 'purging.js' is deprecated. Create a 'purge.js' file instead.`
+    );
   }
 
   let purgeConfig;
@@ -50,9 +53,8 @@ module.exports = (projectDir) => {
     }
 
     if (typeof purgeFn !== 'function') {
-      throwError('Configured purging.js does not contain a function');
+      throwError('Configured purge file does not contain a function');
     }
-
     const appSettings = fs.readJson(path.join(projectDir, 'app_settings.json'));
     purgeConfig = appSettings.purging || {};
     purgeConfig.fn = purgeFnString;

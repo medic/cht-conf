@@ -1,4 +1,4 @@
-const { assert } = require('chai');
+const { expect } = require('chai');
 const sinon = require('sinon');
 
 const csvToDocs = require('../../src/fn/csv-to-docs');
@@ -17,6 +17,7 @@ describe('csv-to-docs', function() {
 
   afterEach(function () {
     clock.restore();
+    sinon.restore();
   });
 
   const testDir = `data/csv-to-docs`;
@@ -28,6 +29,9 @@ describe('csv-to-docs', function() {
         // given
         dir = `${testDir}/${dir}`;
         sinon.stub(environment, 'pathToProject').get(() => dir);
+        const warnIfDirectoryIsNotEmptySpy = sinon.spy(fs, 'warnIfDirectoryIsNotEmpty');
+        const warningMsg = `There are already docs in ${dir}.
+          New json files will be created along side these existing docs.`;
 
         // when
         csvToDocs.execute()
@@ -36,9 +40,10 @@ describe('csv-to-docs', function() {
             const expectedDocsDir  = `${dir}/expected-json_docs`;
 
             // then
-            assert.equal(countFilesInDir(generatedDocsDir),
-                         countFilesInDir(expectedDocsDir ),
-                         `Different number of files in ${generatedDocsDir} and ${expectedDocsDir}.`);
+            expect(countFilesInDir(generatedDocsDir)).to.equal(
+              countFilesInDir(expectedDocsDir ),
+              `Different number of files in ${generatedDocsDir} and ${expectedDocsDir}.`
+            );
 
             fs.recurseFiles(expectedDocsDir)
               .map(file => fs.path.basename(file))
@@ -47,15 +52,17 @@ describe('csv-to-docs', function() {
                 const generated = fs.read(`${generatedDocsDir}/${file}`);
 
                 // and
-                assert.equal(generated, expected, `Different contents for "${file}"`);
+                expect(generated).to.equal(expected, `Different contents for "${file}"`);
               });
           })
           .then(done)
           .catch(done);
 
+        expect(warnIfDirectoryIsNotEmptySpy.calledOnceWith(dir, warningMsg));
+        expect(warnIfDirectoryIsNotEmptySpy.threw('User aborted execution.')).to.be.false;
       });
 
-  });
+    });
 
 });
 

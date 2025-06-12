@@ -1,25 +1,29 @@
 const minimist = require('minimist');
 const path = require('path');
-const compileContactSummary = require('../lib/compile-contact-summary');
-const compileNoolsRules = require('../lib/compile-nools-rules');
+
+const compilation = require('../lib/compilation');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
+const parsePurge = require('../lib/parse-purge');
 const parseTargets = require('../lib/parse-targets');
 const { warn } = require('../lib/log');
-const parsePurge = require('../lib/parse-purge');
 const validateAppSettings = require('../lib/validate-app-settings');
 const { APP_SETTINGS_DIR_PATH, APP_SETTINGS_JSON_PATH } = require('../lib/project-paths');
 
-// we can't used named capture groups yet
+// we can't use named capture groups yet
 const JS_FILE_MATCHER = /^(.+)(\.js)$/; // 2 groups get the file name and extension
 const JSON_FILE_MATCHER = /^(.+)(\.json)$/;
 const configFileMatcher = (fileName) => {
   const jsFileMatchResult = fileName.match(JS_FILE_MATCHER);
   // the first element is always the whole matched string, then our first file name group
-  if (jsFileMatchResult) return jsFileMatchResult[1];
+  if (jsFileMatchResult) {
+    return jsFileMatchResult[1];
+  }
 
   const jsonFileMatchResult = fileName.match(JSON_FILE_MATCHER);
-  if (jsonFileMatchResult) return jsonFileMatchResult[1];
+  if (jsonFileMatchResult) {
+    return jsonFileMatchResult[1];
+  }
 
   return null;
 };
@@ -48,7 +52,9 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   const oldTaskSchedulesPath = path.join(projectDir, 'tasks.json');
   if (fs.exists(oldTaskSchedulesPath)) {
     if (fs.exists(taskSchedulesPath)) {
-      throw new Error(`You have both ${taskSchedulesPath} and ${oldTaskSchedulesPath}.  Please remove one to continue!`);
+      throw new Error(
+        `You have both ${taskSchedulesPath} and ${oldTaskSchedulesPath}.  Please remove one to continue!`
+      );
     }
     warn(`tasks.json file is deprecated.  Please rename ${oldTaskSchedulesPath} to ${taskSchedulesPath}`);
     taskSchedulesPath = oldTaskSchedulesPath;
@@ -66,7 +72,10 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   }
 
   if (!fs.exists(baseSettingsPath) && !fs.exists(appSettingsPath)) {
-    throw new Error('No configuration defined please create a base_settings.json file in app_settings folder with the desired configuration');
+    throw new Error(
+      'No configuration defined please create a base_settings.json file in app_settings folder ' +
+      'with the desired configuration'
+    );
   }
   if (fs.exists(baseSettingsPath)) {
     // using modular config so should override anything already defined in app_settings.json
@@ -95,14 +104,28 @@ const compileAppSettingsForProject = async (projectDir, options) => {
       }
       appSettings.schedules = scheduleSettings;
     }
+
+    const assetlinks = readOptionalJson(path.join(projectDir, 'app_settings/assetlinks.json'));
+    if (assetlinks) {
+      const validate = validateAppSettings.validateAssetlinks(assetlinks);
+      if (!validate.valid) {
+        throw new Error(`Invalid assetlinks: ${validate.error}`);
+      }
+      appSettings.assetlinks = assetlinks;
+    }
   } else {
-    warn(`app_settings.json file should not be edited directly.
-    Please create a base_settings.json file in app_settings folder and move any manually defined configurations there.`);
+    warn(
+      `app_settings.json file should not be edited directly.
+    Please create a base_settings.json file in app_settings folder and move any manually defined configurations there.`
+    );
     appSettings = fs.readJson(appSettingsPath);
   }
-  appSettings.contact_summary = await compileContactSummary(projectDir, options);
+
+  appSettings.contact_summary = await compilation.compileContactSummary(projectDir, options);
+  const compiledTasksAndTargets = await compilation.compileTasksAndTargets(projectDir, options);
   appSettings.tasks = {
-    rules: await compileNoolsRules(projectDir, options),
+    rules: compiledTasksAndTargets.rules,
+    isDeclarative: compiledTasksAndTargets.isDeclarative,
     schedules: readOptionalJson(taskSchedulesPath),
     targets: parseTargets(projectDir),
   };
@@ -111,13 +134,18 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   if (purgeConfig) {
     appSettings.purge = purgeConfig;
   }
-
+  else{
+    warn('Setting purge configuration to empty object as purge.js and purging.js files were not found.');
+    appSettings.purge = {};
+  }
   return appSettings;
 };
 
 function applyTransforms(app_settings, inherited) {
   function doDelete(target, rules) {
-    if (!Array.isArray(rules)) throw new Error('.delete should be an array');
+    if (!Array.isArray(rules)) {
+      throw new Error('.delete should be an array');
+    }
 
     rules.forEach(k => {
       const parts = k.split('.');
@@ -131,7 +159,9 @@ function applyTransforms(app_settings, inherited) {
   }
 
   function doReplace(target, rules) {
-    if (typeof rules !== 'object') throw new Error('.replace should be an object');
+    if (typeof rules !== 'object') {
+      throw new Error('.replace should be an object');
+    }
 
     Object.keys(rules)
       .forEach(k => {
@@ -148,14 +178,22 @@ function applyTransforms(app_settings, inherited) {
   function doMerge(target, source) {
     Object.keys(target)
       .forEach(k => {
-        if (Array.isArray(source[k])) target[k] = target[k].concat(source[k]);
-        else if (typeof source[k] === 'object') doMerge(target[k], source[k]);
-        else source[k] = target[k];
+        if (Array.isArray(source[k])) {
+          target[k] = target[k].concat(source[k]);
+        }
+        else if (typeof source[k] === 'object') {
+          doMerge(target[k], source[k]);
+        }
+        else {
+          source[k] = target[k];
+        }
       });
   }
 
   function doFilter(target, rules) {
-    if (typeof rules !== 'object') throw new Error('.filter should be an object');
+    if (typeof rules !== 'object') {
+      throw new Error('.filter should be an object');
+    }
 
     Object.keys(rules)
       .forEach(k => {
@@ -166,11 +204,15 @@ function applyTransforms(app_settings, inherited) {
           parts.shift();
         }
 
-        if (!Array.isArray(rules[k])) throw new Error('.filter values must be arrays!');
+        if (!Array.isArray(rules[k])) {
+          throw new Error('.filter values must be arrays!');
+        }
 
         Object.keys(t[parts[0]])
           .forEach(tK => {
-            if (!rules[k].includes(tK)) delete t[parts[0]][tK];
+            if (!rules[k].includes(tK)) {
+              delete t[parts[0]][tK];
+            }
           });
       });
   }

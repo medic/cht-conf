@@ -1,3 +1,219 @@
+# [4.9.0](https://github.com/medic/cht-conf/compare/v4.8.1...v4.9.0) (2025-06-02)
+
+
+### Features
+
+* **#692:** update the priority function to accept additional parameters ([#699](https://github.com/medic/cht-conf/issues/699)) ([ad28242](https://github.com/medic/cht-conf/commit/ad28242603d5d2d89bb48324e93e60b55052ce3d)), closes [#692](https://github.com/medic/cht-conf/issues/692) [#692](https://github.com/medic/cht-conf/issues/692)
+
+## [4.8.1](https://github.com/medic/cht-conf/compare/v4.8.0...v4.8.1) (2025-05-07)
+
+
+### Bug Fixes
+
+* **#680:** add command for uploading db indexes ([#681](https://github.com/medic/cht-conf/issues/681)) ([6170b57](https://github.com/medic/cht-conf/commit/6170b576faa4cc72d09350ba72eaedb57155d6c4)), closes [#680](https://github.com/medic/cht-conf/issues/680)
+
+# [4.8.0](https://github.com/medic/cht-conf/compare/v4.7.0...v4.8.0) (2025-04-25)
+
+
+### Features
+
+* **#685:** added PR title linting workflow in GitHub CI ([#686](https://github.com/medic/cht-conf/issues/686)) ([c2d42f6](https://github.com/medic/cht-conf/commit/c2d42f60adb39584ee5c7eb861aa38d7d8df8498)), closes [#685](https://github.com/medic/cht-conf/issues/685)
+
+# [4.7.0](https://github.com/medic/cht-conf/compare/v4.6.0...v4.7.0) (2025-04-25)
+
+
+### Features
+
+* **#683:** add autocompletion feature for zsh  ([#684](https://github.com/medic/cht-conf/issues/684)) ([356f2e8](https://github.com/medic/cht-conf/commit/356f2e8c25fa42e26d53e2d6df3be85da1bda704)), closes [#683](https://github.com/medic/cht-conf/issues/683)
+
+# [4.6.0](https://github.com/medic/cht-conf/compare/v4.5.0...v4.6.0) (2025-04-23)
+
+
+### Features
+
+* **#502:** warn when using deprecated `db-object` appearance ([#682](https://github.com/medic/cht-conf/issues/682)) ([ca6691b](https://github.com/medic/cht-conf/commit/ca6691b1f3285d1a59093fc3a6bb2c980dcb78e0)), closes [#502](https://github.com/medic/cht-conf/issues/502)
+
+# [4.5.0](https://github.com/medic/cht-conf/compare/v4.4.1...v4.5.0) (2025-04-15)
+
+
+### Features
+
+* **#675:** support `duplicate_check` contact form property ([#677](https://github.com/medic/cht-conf/issues/677)) ([503bb7d](https://github.com/medic/cht-conf/commit/503bb7d94dc9ee87078f183e43e5d1141123a05c)), closes [#675](https://github.com/medic/cht-conf/issues/675)
+
+## [4.4.1](https://github.com/medic/cht-conf/compare/v4.4.0...v4.4.1) (2025-02-03)
+
+
+### Bug Fixes
+
+* remove typo from .eslintrc file created by initialize-project-layout ([#658](https://github.com/medic/cht-conf/issues/658)) ([1aaad4c](https://github.com/medic/cht-conf/commit/1aaad4c336843bd85db8ca7d0373a0f87d629827))
+
+# [4.4.0](https://github.com/medic/cht-conf/compare/v4.3.0...v4.4.0) (2024-12-16)
+
+
+### Features
+
+* **#650:** delete-contacts action ([#652](https://github.com/medic/cht-conf/issues/652)) ([129f38f](https://github.com/medic/cht-conf/commit/129f38fca83fa84717c7ba16857b315c25d33b9e)), closes [#650](https://github.com/medic/cht-conf/issues/650)
+
+# [4.3.0](https://github.com/medic/cht-conf/compare/v4.2.0...v4.3.0) (2024-12-16)
+
+
+### Features
+
+* **#648:** add --disable-users command for merge-contacts action ([#649](https://github.com/medic/cht-conf/issues/649)) ([c78d3fd](https://github.com/medic/cht-conf/commit/c78d3fd1ed1588cfefdf21384840743f5faea62d)), closes [#648](https://github.com/medic/cht-conf/issues/648)
+
+# [4.2.0](https://github.com/medic/cht-conf/compare/v4.1.3...v4.2.0) (2024-12-11)
+
+
+### Features
+
+* **#373:** merge-contacts action ([#647](https://github.com/medic/cht-conf/issues/647)) ([006554c](https://github.com/medic/cht-conf/commit/006554cf3a414d9577e05c6dfaef3bbd59849403)), closes [#373](https://github.com/medic/cht-conf/issues/373)
+
+## [4.1.3](https://github.com/medic/cht-conf/compare/v4.1.2...v4.1.3) (2024-11-13)
+
+
+### Bug Fixes
+
+* **#644:** support node 22 ([d8ece55](https://github.com/medic/cht-conf/commit/d8ece55cd601ae8f4f1a98cd496394f14c5ded0d)), closes [#644](https://github.com/medic/cht-conf/issues/644)
+
+## [4.1.2](https://github.com/medic/cht-conf/compare/v4.1.1...v4.1.2) (2024-10-09)
+
+
+### Bug Fixes
+
+* **#635:** update upload-artifact GH action to version 4 ([#636](https://github.com/medic/cht-conf/issues/636)) ([bafd6e3](https://github.com/medic/cht-conf/commit/bafd6e35607a481daaa911b16af4899bb1a00f7a)), closes [#635](https://github.com/medic/cht-conf/issues/635) [#635](https://github.com/medic/cht-conf/issues/635)
+
+## [4.1.1](https://github.com/medic/cht-conf/compare/v4.1.0...v4.1.1) (2024-08-21)
+
+
+### Bug Fixes
+
+* **#632:** replace cht-conf with cht in readme.md ([fc5b7f3](https://github.com/medic/cht-conf/commit/fc5b7f3ee5e1b8ae381b3182efbeedd4b6631418)), closes [#632](https://github.com/medic/cht-conf/issues/632)
+
+# [4.1.0](https://github.com/medic/cht-conf/compare/v4.0.0...v4.1.0) (2024-07-15)
+
+
+### Features
+
+* **#425:** E2E test actions ([#620](https://github.com/medic/cht-conf/issues/620)) ([ba54d49](https://github.com/medic/cht-conf/commit/ba54d49730b73c6d77b219a45b8ba3d98b909227)), closes [#425](https://github.com/medic/cht-conf/issues/425) [#425](https://github.com/medic/cht-conf/issues/425)
+
+# [4.0.0](https://github.com/medic/cht-conf/compare/v3.23.0...v4.0.0) (2024-07-01)
+
+
+### Performance Improvements
+
+* **#600:** drop support for Node versions < 18 ([#619](https://github.com/medic/cht-conf/issues/619)) ([496d074](https://github.com/medic/cht-conf/commit/496d0742890f1347557caecc1241bdd590c774c0)), closes [#600](https://github.com/medic/cht-conf/issues/600)
+
+
+### BREAKING CHANGES
+
+* **#600:** Dropping support for NodeJS versions < 18
+
+# [3.23.0](https://github.com/medic/cht-conf/compare/v3.22.0...v3.23.0) (2024-06-20)
+
+
+### Features
+
+*  session token authentication ([efbc9cf](https://github.com/medic/cht-conf/commit/efbc9cfc5dc972f355fa07b3a394c63d84b352de))
+
+# [3.22.0](https://github.com/medic/cht-conf/compare/v3.21.5...v3.22.0) (2024-04-29)
+
+
+### Features
+
+* **#615:** add support for `assetlinks.json` when compiling app settings ([#616](https://github.com/medic/cht-conf/issues/616)) ([f39d22a](https://github.com/medic/cht-conf/commit/f39d22a59816a18e9b2777067330193ce336b7a0)), closes [#615](https://github.com/medic/cht-conf/issues/615)
+
+## [3.21.5](https://github.com/medic/cht-conf/compare/v3.21.4...v3.21.5) (2024-02-05)
+
+
+### Bug Fixes
+
+* **#26:** add warning if jsonDir contains file when running csv-to-doc command ([#603](https://github.com/medic/cht-conf/issues/603)) ([e445c9b](https://github.com/medic/cht-conf/commit/e445c9b44be94b3a7492a471c5c709857509076e)), closes [#26](https://github.com/medic/cht-conf/issues/26)
+
+## [3.21.4](https://github.com/medic/cht-conf/compare/v3.21.3...v3.21.4) (2024-01-31)
+
+
+### Bug Fixes
+
+* **#602:**  fix errors with validate function ([24f66bf](https://github.com/medic/cht-conf/commit/24f66bf1d67564406c9710bb627e959abd9a651c))
+
+## [3.21.3](https://github.com/medic/cht-conf/compare/v3.21.2...v3.21.3) (2024-01-26)
+
+
+### Bug Fixes
+
+* **#599:** support node 20 ([ddd3064](https://github.com/medic/cht-conf/commit/ddd3064c9fba4f0f21f4e65fb1ed14dffc96f33f)), closes [#599](https://github.com/medic/cht-conf/issues/599)
+
+## [3.21.2](https://github.com/medic/cht-conf/compare/v3.21.1...v3.21.2) (2024-01-10)
+
+
+### Bug Fixes
+
+* **#596:** fix issue with semver in latest cht versions ([86a9954](https://github.com/medic/cht-conf/commit/86a9954c861dd4ea57bcd37361c85d8dfe7edad6))
+
+## [3.21.1](https://github.com/medic/cht-conf/compare/v3.21.0...v3.21.1) (2023-12-14)
+
+
+### Bug Fixes
+
+* **#593:** properly resolve the path to webpack loaders ([0c015f9](https://github.com/medic/cht-conf/commit/0c015f93afbb2042b9e137156173a24085f488c1))
+
+# [3.21.0](https://github.com/medic/cht-conf/compare/v3.20.0...v3.21.0) (2023-12-06)
+
+
+### Features
+
+* **#575:** retry failed HTTP requests ([#583](https://github.com/medic/cht-conf/issues/583)) ([bc5b0bc](https://github.com/medic/cht-conf/commit/bc5b0bc702e43faf93c495b7fb1197b495c5f66d)), closes [#575](https://github.com/medic/cht-conf/issues/575)
+
+# [3.20.0](https://github.com/medic/cht-conf/compare/v3.19.0...v3.20.0) (2023-10-25)
+
+
+### Features
+
+* **#578:** additional start_from test ([39f6948](https://github.com/medic/cht-conf/commit/39f69487923e35750d8070b9f548d3b0fc582eab)), closes [#578](https://github.com/medic/cht-conf/issues/578)
+
+# [3.19.0](https://github.com/medic/cht-conf/compare/v3.18.3...v3.19.0) (2023-10-17)
+
+
+### Features
+
+* **#580:** publish recent commits to npm ([db734e1](https://github.com/medic/cht-conf/commit/db734e1818f8501988a5457237dc32c5667b368c)), closes [#580](https://github.com/medic/cht-conf/issues/580)
+
+## [3.18.3](https://github.com/medic/cht-conf/compare/v3.18.2...v3.18.3) (2023-04-27)
+
+
+### Bug Fixes
+
+* **#554:** revert change to docker creds after fixing Hub perms ([#559](https://github.com/medic/cht-conf/issues/559)) ([f0ea5ea](https://github.com/medic/cht-conf/commit/f0ea5ea7330d5c5cd9e1516da1f2b60ec85bfc24)), closes [#554](https://github.com/medic/cht-conf/issues/554)
+
+## [3.18.2](https://github.com/medic/cht-conf/compare/v3.18.1...v3.18.2) (2023-04-27)
+
+
+### Bug Fixes
+
+* **#554:** update docker creds used to push cht-app-ide image ([#558](https://github.com/medic/cht-conf/issues/558)) ([59c1b53](https://github.com/medic/cht-conf/commit/59c1b530a2a2dc80b4ba4941283ba38635e97d51)), closes [#554](https://github.com/medic/cht-conf/issues/554)
+
+## [3.18.1](https://github.com/medic/cht-conf/compare/v3.18.0...v3.18.1) (2023-04-24)
+
+
+### Bug Fixes
+
+* **#555:** handle non-existent directory in update-extension-libs ([#557](https://github.com/medic/cht-conf/issues/557)) ([20ea03e](https://github.com/medic/cht-conf/commit/20ea03e27df266b43536addc795e842a47d37f07)), closes [#555](https://github.com/medic/cht-conf/issues/555)
+
+# [3.18.0](https://github.com/medic/cht-conf/compare/v3.17.0...v3.18.0) (2023-04-11)
+
+
+### Features
+
+* **#545:** publish cht-app-ide docker image ([#552](https://github.com/medic/cht-conf/issues/552)) ([77fb697](https://github.com/medic/cht-conf/commit/77fb69753dd155bb5fd8eda7a458d628f9397d73)), closes [#545](https://github.com/medic/cht-conf/issues/545)
+
+# [3.17.0](https://github.com/medic/cht-conf/compare/v3.16.2...v3.17.0) (2023-04-04)
+
+
+### Features
+
+* **#545:** publish cht-app-ide docker image ([#550](https://github.com/medic/cht-conf/issues/550)) ([8b5e62e](https://github.com/medic/cht-conf/commit/8b5e62e8f2191c4457433d30024266aa27ae1129)), closes [#545](https://github.com/medic/cht-conf/issues/545)
+* **#547:** add command for uploading extension libs ([3b13e40](https://github.com/medic/cht-conf/commit/3b13e40e276d37e554cb5863974cea1090ed4585)), closes [#547](https://github.com/medic/cht-conf/issues/547)
+
 ## [3.16.2](https://github.com/medic/cht-conf/compare/v3.16.1...v3.16.2) (2023-03-18)
 
 

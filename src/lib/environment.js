@@ -13,14 +13,15 @@ const initialize = (
   apiUrl,
   force,
   skipTranslationCheck,
-  skipValidate
+  skipValidate,
+  sessionToken
 ) => {
   if (state.initialized) {
     throw Error('environment is already initialized');
   }
 
   Object.assign(state, {
-    apiUrl,
+    apiUrl: apiUrl && apiUrl.toString(),
     archiveDestination,
     extraArgs,
     initialized: true,
@@ -28,7 +29,8 @@ const initialize = (
     pathToProject,
     force,
     skipTranslationCheck,
-    skipValidate
+    skipValidate,
+    sessionToken
   });
 };
 
@@ -54,6 +56,7 @@ module.exports = {
   get force() { return getState('force'); },
   get skipTranslationCheck() { return getState('skipTranslationCheck'); },
   get skipValidate() { return getState('skipValidate'); },
+  get sessionToken() { return getState('sessionToken'); },
 
   /**
    * Return `true` if the environment **seems** to be production.

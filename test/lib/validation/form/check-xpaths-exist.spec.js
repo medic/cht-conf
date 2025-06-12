@@ -60,7 +60,8 @@ const assertEmpty = (output) => {
   expect(output.errors, output.errors).is.empty;
 };
 
-const ERROR_HEADER = `Form at ${xformPath} contains invalid XPath expressions (absolute or relative paths that refer to a non-existant node):`;
+const ERROR_HEADER = `Form at ${xformPath} contains invalid XPath expressions `
+  + '(absolute or relative paths that refer to a non-existant node):';
 
 describe('check-xpaths-exist', () => {
   [
@@ -110,12 +111,14 @@ describe('check-xpaths-exist', () => {
     '../../address/../../data',
     `concat(/data/name, 'ebmarah', ../../name)`,
     '0 and explode(/data) + explode(explode(explode(1, 2, 3, explode(), ../../name)))',
+    /* eslint-disable max-len */
     `format-date-time(
       if(selected(../summary_title, 'method_lmp'), ../../address/street-nbr,
       if(selected(../summary_title, 'approx_weeks'), date-time(floor(decimal-date-time(today())) - (../../address/street-nbr * 7)),
       if(selected(../summary_title, 'approx_months'), date-time(floor(decimal-date-time(today())) - round(../../address/street-nbr * 30.5)),
       if(selected(/data/summary/summary_title, 'method_edd'), date-time(decimal-date-time(/data/name) - 280), '')
       ))), &quot;%Y-%m-%d&quot;)`
+    /* eslint-enable max-len */
   ].forEach(xpath => {
     it(`resolves OK for valid XPath(s) [${xpath}]`, () => {
       const fields = [{ name: '/data/summary/details', type: 'string', calculate: xpath }];
@@ -186,31 +189,41 @@ describe('check-xpaths-exist', () => {
       invalidXPaths: ['/invalid']
     },
     {
+      /* eslint-disable max-len */
       expression: `format-date-time(
           if(selected(../invalid, 'method_lmp'), ../../address/street-nbr,
           if(selected(../invalid, 'approx_weeks'), date-time(floor(decimal-date-time(today())) - (../../address/street-nbr * 7)),
           if(selected(../invalid, 'approx_months'), date-time(floor(decimal-date-time(today())) - round(../../address/street-nbr * 30.5)),
           if(selected(/data/summary/invalid, 'method_edd'), date-time(decimal-date-time(/data/name) - 280), '')
           ))), &quot;%Y-%m-%d&quot;)`,
+      /* eslint-enable max-len */
       invalidXPaths: ['../invalid', '../invalid', '../invalid', '/data/summary/invalid']
     },
     { expression: 'concat(&quot;hello&quot;, /invalid, &quot;world&quot;)', invalidXPaths: ['/invalid'] },
     { expression: `concat('hello', /invalid, 'world')`, invalidXPaths: ['/invalid'] },
     { expression: `concat('hello', /invalid, &quot;world&quot;)`, invalidXPaths: ['/invalid'] },
     { expression: `instance()/context/pregnancy_uuid`, invalidXPaths: ['/context/pregnancy_uuid'] },
-    // The following two are the only known "false-positive" cases where an error is reported when it should not be. They
-    // are sufficiently rare edge cases that it should not be a problem. Additionally, the only thing needed to fix these
-    // cases is for the string literal containing the XPath to be quoted with the same quote character as the other
-    // string literal that follows. So, even if a form hits this case, it can be mitigated easily.
-    { expression: `concat(&quot;/Users/joe/Desktop/myfile.txt&quot;, 'Joe&quot;s File')`, invalidXPaths: ['/Users/joe/Desktop/myfile.txt'] },
-    { expression: `concat('/Users/joe/Desktop/myfile.txt', &quot;Joe's File&quot;)`, invalidXPaths: ['/Users/joe/Desktop/myfile.txt'] },
+    // The following two are the only known "false-positive" cases where an error is reported when it should not be.
+    // They are sufficiently rare edge cases that it should not be a problem. Additionally, the only thing needed to
+    // fix these cases is for the string literal containing the XPath to be quoted with the same quote character as
+    // the other string literal that follows. So, even if a form hits this case, it can be mitigated easily.
+    {
+      expression: `concat(&quot;/Users/joe/Desktop/myfile.txt&quot;, 'Joe&quot;s File')`,
+      invalidXPaths: ['/Users/joe/Desktop/myfile.txt']
+    },
+    {
+      expression: `concat('/Users/joe/Desktop/myfile.txt', &quot;Joe's File&quot;)`,
+      invalidXPaths: ['/Users/joe/Desktop/myfile.txt']
+    },
   ].forEach(({ expression, invalidXPaths }) => {
     it(`returns error(s) for invalid simple XPath(s) [${expression}]`, () => {
       const fields = [{ name: '/data/summary/details', type: 'string', calculate: expression }];
       return checkXPathsExist.execute({ xformPath, xmlDoc: getXmlDoc(fields) })
         .then(output => {
           expect(output.warnings).is.empty;
-          const expectedErrors = [ERROR_HEADER, `  - calculate for /data/summary/details contains [${invalidXPaths.join(', ')}]`];
+          const expectedErrors = [
+            ERROR_HEADER, `  - calculate for /data/summary/details contains [${invalidXPaths.join(', ')}]`
+          ];
           expect(output.errors).to.deep.equal(expectedErrors);
         });
     });
@@ -278,7 +291,9 @@ describe('check-xpaths-exist', () => {
     return checkXPathsExist.execute({ xformPath, xmlDoc: getXmlDoc([], 'not-instance') })
       .then(output => {
         expect(output.warnings).is.empty;
-        const expectedErrors = [`Error encountered while validating XPaths in form at ${xformPath}: No instance found in form XML.`];
+        const expectedErrors = [
+          `Error encountered while validating XPaths in form at ${xformPath}: No instance found in form XML.`
+        ];
         expect(output.errors).to.deep.equal(expectedErrors);
       });
   });
@@ -288,7 +303,10 @@ describe('check-xpaths-exist', () => {
     return checkXPathsExist.execute({ xformPath, xmlDoc: getXmlDoc(fields) })
       .then(output => {
         expect(output.warnings).is.empty;
-        const expectedErrors = [`Error encountered while validating XPaths in form at ${xformPath}: Could not find model node referenced by bind nodeset: /data/summary/invalid`];
+        const expectedErrors = [
+          `Error encountered while validating XPaths in form at ${xformPath}: `
+          + 'Could not find model node referenced by bind nodeset: /data/summary/invalid'
+        ];
         expect(output.errors).to.deep.equal(expectedErrors);
       });
   });

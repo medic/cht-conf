@@ -9,23 +9,23 @@ const LAYOUT = {
   fields: [],
   cards: [],
   context: {}
-};`,
+};\n`,
   'privacy-policies.json': {},
   'privacy-policies': {},
   'resources.json': {},
   'harness.defaults.json': {},
   resources: {},
-  'targets.js': 'module.exports = [];',
-  'tasks.js': 'module.exports = [];',
+  'targets.js': 'module.exports = [];\n',
+  'tasks.js': 'module.exports = [];\n',
   '.eslintrc': `{
   "env": {
     "node": true,
-    "es6": true
+    "es2022": true
   },
   "parserOptions": {
-    "ecmaVersion": 6
+    "ecmaVersion": 2022
   }
-}`,
+}\n`,
   forms: {
     app: {},
     collect: {},
@@ -48,7 +48,7 @@ const LAYOUT = {
 function createRecursively(dir, layout) {
   fs.mkdir(dir);
 
-  for (const k in layout) {
+  for (const k of Object.keys(layout)) {
     const path = `${dir}/${k}`;
 
     const val = layout[k];
@@ -58,14 +58,20 @@ function createRecursively(dir, layout) {
       } else {
         createRecursively(path, val);
       }
-    } else fs.write(path, val);
+    } else {
+      fs.write(path, val);
+    }
   }
 }
 
 function execute() {
   const { extraArgs } = environment;
-  if(extraArgs && extraArgs.length) extraArgs.forEach(createProject);
-  else createProject('.');
+  if(extraArgs?.length) {
+    extraArgs.forEach(createProject);
+  }
+  else {
+    createProject('.');
+  }
 
   function createProject(root) {
     const dir = path.join(environment.pathToProject, root);
