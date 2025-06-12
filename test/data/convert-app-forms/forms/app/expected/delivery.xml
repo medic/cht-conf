@@ -741,6 +741,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
         </delivery>
       </instance>
       <instance id="contact-summary"/>
+      <instance id="user-contact-summary"/>
       <bind nodeset="/delivery/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/delivery/inputs/source" type="string"/>
       <bind nodeset="/delivery/inputs/source_id" type="string"/>
