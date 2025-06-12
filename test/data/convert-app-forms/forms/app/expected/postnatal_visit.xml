@@ -1216,6 +1216,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
         </postnatal_visit>
       </instance>
       <instance id="contact-summary"/>
+      <instance id="user-contact-summary"/>
       <bind nodeset="/postnatal_visit/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/postnatal_visit/inputs/source" type="string"/>
       <bind nodeset="/postnatal_visit/inputs/source_id" type="string"/>
