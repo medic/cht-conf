@@ -254,7 +254,8 @@ const api = {
       }
       return [];
     }
-  }
+  },
+  request
 };
 
 Object.entries(api)
