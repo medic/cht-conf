@@ -1,3 +1,10 @@
+# [4.10.0](https://github.com/medic/cht-conf/compare/v4.9.0...v4.10.0) (2025-06-16)
+
+
+### Features
+
+* **#704:** add user-contact-summary instance to app form xml ([#705](https://github.com/medic/cht-conf/issues/705)) ([9013250](https://github.com/medic/cht-conf/commit/9013250dca39bcf23f985f6902cadc4e64ca5646)), closes [#704](https://github.com/medic/cht-conf/issues/704) [#704](https://github.com/medic/cht-conf/issues/704)
+
 # [4.9.0](https://github.com/medic/cht-conf/compare/v4.8.1...v4.9.0) (2025-06-02)
 
 
