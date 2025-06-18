@@ -60,7 +60,7 @@ const execute = async (projectDir, subDirectory, options) => {
     const targetPath = `${fs.withoutExtension(originalSourcePath)}.xml`;
 
     info('Converting form', originalSourcePath, '…');
-  
+
     await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(targetPath));
     const hiddenFields = await getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`);
     await fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
@@ -75,7 +75,7 @@ module.exports = {
 };
 
 const xls2xform = (sourcePath, targetPath) =>
-  exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
+  exec([XLS2XFORM, '--skip_validate', '--pretty_print', sourcePath, targetPath])
     .catch(e => {
       if (executableAvailable()) {
         if (e.includes('unrecognized arguments: --skip_validate')) {
