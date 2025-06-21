@@ -92,7 +92,7 @@
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
     "pouchdb-adapter-memory": "^9.0.0",
-    "rewire": "^7.0.0",
+    "rewire": "^8.0.0",
     "semantic-release": "^24.2.4",
     "sinon": "^19.0.2"
   }
