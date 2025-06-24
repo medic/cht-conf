@@ -1,3 +1,13 @@
+# [5.0.0](https://github.com/medic/cht-conf/compare/v4.10.0...v5.0.0) (2025-06-24)
+
+
+* feat([#712](https://github.com/medic/cht-conf/issues/712))!: update targeted NodeJS versions ([#713](https://github.com/medic/cht-conf/issues/713)) ([40575ec](https://github.com/medic/cht-conf/commit/40575ece74da38a583238ed54a4b13cd892a14a4))
+
+
+### BREAKING CHANGES
+
+* remove support for NodeJS 18
+
 # [4.10.0](https://github.com/medic/cht-conf/compare/v4.9.0...v4.10.0) (2025-06-16)
 
 

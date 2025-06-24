@@ -1,10 +1,10 @@
 {
   "name": "cht-conf",
-  "version": "4.10.0",
+  "version": "5.0.0",
   "description": "Configure CHT deployments",
   "main": "./src/lib/main.js",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "clean": "rm -rf ./build/",
