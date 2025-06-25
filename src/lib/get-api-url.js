@@ -55,7 +55,7 @@ const parseLocalUrl = (couchUrl) => {
   const doParse = (unparsed) => {
     const parsed = new url.URL(unparsed);
     parsed.path = parsed.pathname = '';
-    parsed.host = `${parsed.hostname}:5988`;
+    parsed.host = parsed.hostname.includes('localhost')? `127.0.0.1:5988`: `${parsed.hostname}:5988`;
     return new url.URL(url.format(parsed));
   };
   
