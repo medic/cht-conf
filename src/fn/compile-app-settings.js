@@ -65,6 +65,12 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   const baseSettingsPath = path.join(projectDir, `${APP_SETTINGS_DIR_PATH}/base_settings.json`);
   const appSettingsPath = path.join(projectDir, APP_SETTINGS_JSON_PATH);
   const esLintFilePath = path.join(projectDir, '.eslintrc');
+  const parseMaxTaskNotifications = (maxTaskNotifications) => {
+    if (typeof maxTaskNotifications !== 'number' || !Number.isInteger(maxTaskNotifications)) {
+      throw new Error('max_task_notifications should be a number');
+    }
+    return maxTaskNotifications;
+  };
 
   // Fail if no eslintrc file is found
   if (!fs.exists(esLintFilePath)) {
@@ -129,6 +135,11 @@ const compileAppSettingsForProject = async (projectDir, options) => {
     schedules: readOptionalJson(taskSchedulesPath),
     targets: parseTargets(projectDir),
   };
+
+  if (appSettings.max_task_notifications) {
+    appSettings.tasks.max_task_notifications = parseMaxTaskNotifications(appSettings.max_task_notifications);
+    delete appSettings.max_task_notifications;
+  }
 
   const purgeConfig = parsePurge(projectDir);
   if (purgeConfig) {
