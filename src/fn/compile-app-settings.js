@@ -66,8 +66,9 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   const appSettingsPath = path.join(projectDir, APP_SETTINGS_JSON_PATH);
   const esLintFilePath = path.join(projectDir, '.eslintrc');
   const parseMaxTaskNotifications = (maxTaskNotifications) => {
-    if (typeof maxTaskNotifications !== 'number' || !Number.isInteger(maxTaskNotifications)) {
-      throw new Error('max_task_notifications should be a number');
+    if (typeof maxTaskNotifications !== 'number' || !Number.isInteger(maxTaskNotifications) ||
+      maxTaskNotifications < 0) {
+      throw new Error('max_task_notifications should be a positive integer number');
     }
     return maxTaskNotifications;
   };
