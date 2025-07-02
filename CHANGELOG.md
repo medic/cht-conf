@@ -1,3 +1,10 @@
+# [5.1.0](https://github.com/medic/cht-conf/compare/v5.0.0...v5.1.0) (2025-07-02)
+
+
+### Features
+
+* compile max_task_notifications ([#717](https://github.com/medic/cht-conf/issues/717)) ([3c68ea2](https://github.com/medic/cht-conf/commit/3c68ea251c73ecfca5a910060c28e68f932c9963))
+
 # [5.0.0](https://github.com/medic/cht-conf/compare/v4.10.0...v5.0.0) (2025-06-24)
 
 
