@@ -14,7 +14,7 @@ function prepare(definition) {
 function bindAllFunctionsToContext(obj, context) {
   const keys = Object.keys(obj);
   for (const i in keys) {
-    if (!Object.prototype.hasOwnProperty.call(obj, keys[i])) {
+    if (!Object.hasOwn(obj, keys[i])) {
       continue;
     }
     const key = keys[i];
@@ -33,7 +33,7 @@ function deepCopy(obj) {
   const copy = Object.assign({}, obj);
   const keys = Object.keys(copy);
   for (const i in keys) {
-    if (!Object.prototype.hasOwnProperty.call(obj, keys[i])) {
+    if (!Object.hasOwn(obj, keys[i])) {
       continue;
     }
     const key = keys[i];
