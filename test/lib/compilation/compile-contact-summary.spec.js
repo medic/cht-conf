@@ -18,13 +18,11 @@ const genMocks = () => ({
 
 describe('compile-contact-summary', () => {
   describe('mocked scenarios', () => {
-    it('no contact-summary files yields exception', () =>
-      compileContactSummary(`${BASE_DIR}/empty`)
-        .then(() => assert.fail('Expected compilation error'))
-        .catch(err => {
-          expect(err.message).to.include('Could not find contact-summary');
-        })
-    );
+    it('no contact-summary files yields exception', () => compileContactSummary(`${BASE_DIR}/empty`)
+      .then(() => assert.fail('Expected compilation error'))
+      .catch(err => {
+        expect(err.message).to.include('Could not find contact-summary');
+      }));
 
     it('multiple contact-summary files yields exception', () => {
       const mocks = genMocks();

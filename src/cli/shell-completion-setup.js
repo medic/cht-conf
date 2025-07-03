@@ -1,6 +1,7 @@
+/* eslint-disable no-console */
 const fs = require('../lib/sync-fs');
 
-const SUPPORTED_SHELLS = ['bash','zsh'];
+const SUPPORTED_SHELLS = ['bash', 'zsh'];
 
 module.exports = shell => {
   if (SUPPORTED_SHELLS.includes(shell)){

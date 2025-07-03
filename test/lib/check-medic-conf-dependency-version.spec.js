@@ -59,7 +59,7 @@ describe('check-cht-conf-dependency-version', () => {
   });
 
   it('devDependencies', () => {
-    fs.readJson.returns({devDependencies:   {'cht-conf': '3.1.2'}});
+    fs.readJson.returns({devDependencies: {'cht-conf': '3.1.2'}});
     const actual = checkChtConfVersion();
     expect(actual).to.be.undefined;
     expect(warn.called).to.eq(false);

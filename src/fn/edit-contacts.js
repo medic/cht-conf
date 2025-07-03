@@ -63,20 +63,19 @@ const execute = () => {
 
   return csvFiles.map(fileName => `${csvDir}/${fileName}`)
     .filter(name => name.endsWith('.csv'))
-    .reduce((promiseChain, csv) =>
-      promiseChain
-        .then(() => {
-          info('Processing CSV file:', csv, '…');
+    .reduce((promiseChain, csv) => promiseChain
+      .then(() => {
+        info('Processing CSV file:', csv, '…');
 
-          const nameParts = fs.path.basename(csv).split('.');
-          const prefix = nameParts[0];
-          switch(prefix) {
-          case 'contact':  return processDocuments('contact', csv, getIDs(csv, prefix), db, args);
-          case 'users': return processDocuments('user', csv, getIDs(csv, prefix), db, args);
-          default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
-          }
-        })
-        .then(docs => addToModel(csv, docs)),
+        const nameParts = fs.path.basename(csv).split('.');
+        const prefix = nameParts[0];
+        switch (prefix) {
+        case 'contact':  return processDocuments('contact', csv, getIDs(csv, prefix), db, args);
+        case 'users': return processDocuments('user', csv, getIDs(csv, prefix), db, args);
+        default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
+        }
+      })
+      .then(docs => addToModel(csv, docs)),
     Promise.resolve())
 
     .then(() => model.exclusions.forEach(toDocs.removeExcludedField))
@@ -90,7 +89,7 @@ const model = {
 };
 
 const addToModel = (csvFile, docs) => {
-  csvFile = csvFile.match(/^(?:.*[\/\\])?csv[\/\\](.*)\.csv$/)[1]; // eslint-disable-line no-useless-escape
+  csvFile = csvFile.match(/^(?:.*[\/\\])?csv[\/\\](.*)\.csv$/)[1];  
   model.csvFiles[csvFile] = docs;
   docs.forEach(doc => {
     model.docs[doc._id] = doc;
@@ -168,7 +167,7 @@ const processCsvColumn = (doc, row) => (colName, index) => {
 const processCsvRow = colNames => ([doc, row]) => colNames.forEach(processCsvColumn(doc, row));
 
 const getColIndexesToInclude = (colNames, cols, toIncludeColumns) => {
-  if(colNames.length) {
+  if (colNames.length) {
     return mapColNamesToCsvIndex(cols, toIncludeColumns);
   } 
   return [];

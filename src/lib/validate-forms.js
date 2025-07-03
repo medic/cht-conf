@@ -16,20 +16,20 @@ const validations = fs.readdir(VALIDATIONS_PATH)
   .map(validationName => {
     const validation = require(fs.path.join(VALIDATIONS_PATH, validationName));
     validation.name = validationName;
-    if(!Object.hasOwnProperty.call(validation, 'requiresInstance')) {
+    if (!Object.hasOwnProperty.call(validation, 'requiresInstance')) {
       validation.requiresInstance = true;
     }
-    if(!Object.hasOwnProperty.call(validation, 'skipFurtherValidation')) {
+    if (!Object.hasOwnProperty.call(validation, 'skipFurtherValidation')) {
       validation.skipFurtherValidation = false;
     }
 
     return validation;
   })
   .sort((a, b) => {
-    if(a.skipFurtherValidation && !b.skipFurtherValidation) {
+    if (a.skipFurtherValidation && !b.skipFurtherValidation) {
       return -1;
     }
-    if(!a.skipFurtherValidation && b.skipFurtherValidation) {
+    if (!a.skipFurtherValidation && b.skipFurtherValidation) {
       return 1;
     }
     return a.name.localeCompare(b.name);
@@ -38,7 +38,7 @@ const validations = fs.readdir(VALIDATIONS_PATH)
 module.exports = async (projectDir, subDirectory, options={}) => {
 
   const formsDir = getFormDir(projectDir, subDirectory);
-  if(!formsDir) {
+  if (!formsDir) {
     log.info(`Forms dir not found: ${projectDir}/forms/${subDirectory}`);
     return;
   }
@@ -50,7 +50,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
   const fileNames = argsFormFilter(formsDir, '.xml', options);
 
   let errorFound = false;
-  for(const fileName of fileNames) {
+  for (const fileName of fileNames) {
     log.info(`Validating form: ${fileName}…`);
 
     const { xformPath } = getFormFilePaths(formsDir, fileName);
@@ -62,30 +62,30 @@ module.exports = async (projectDir, subDirectory, options={}) => {
       xmlDoc: domParser.parseFromString(xml),
       apiVersion,
     };
-    for(const validation of validations) {
-      if(validation.requiresInstance && !instanceProvided) {
+    for (const validation of validations) {
+      if (validation.requiresInstance && !instanceProvided) {
         validationSkipped = true;
         continue;
       }
 
       const output = await validation.execute(valParams);
-      if(output.warnings) {
+      if (output.warnings) {
         output.warnings.forEach(warnMsg => log.warn(warnMsg));
       }
-      if(output.errors && output.errors.length) {
+      if (output.errors && output.errors.length) {
         output.errors.forEach(errorMsg => log.error(errorMsg));
         errorFound = true;
-        if(validation.skipFurtherValidation) {
+        if (validation.skipFurtherValidation) {
           break;
         }
       }
     }
   }
 
-  if(validationSkipped) {
+  if (validationSkipped) {
     log.warn('Some validations have been skipped because they require a CHT instance.');
   }
-  if(errorFound) {
+  if (errorFound) {
     throw new Error('One or more forms have failed validation.');
   }
 };

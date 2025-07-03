@@ -19,10 +19,10 @@ const standardizePartialFilterContent = (partialFilter) => {
   const isRootAndOnly = (
     Object.keys(partialFilter).length === 1 &&
     Object.hasOwn(partialFilter, '$and') &&
-    Array.isArray(partialFilter['$and'])
+    Array.isArray(partialFilter.$and)
   );
 
-  return isRootAndOnly ? Object.assign({}, ...partialFilter['$and']) : partialFilter;
+  return isRootAndOnly ? Object.assign({}, ...partialFilter.$and) : partialFilter;
 };
 
 const hasDefinitionDiff = (dbIndex, configDefinition) => {
@@ -43,9 +43,8 @@ const cleanUpIndexes = async (db, storedIndexes, indexConfig) => {
     // Delete the index if it is no longer in the config
     if (!(key in indexConfig)) {
       await db.deleteIndex(value);
-    }
-    // We probably don't want to unnecessarily delete/recreate indexes
-    else if (key in indexConfig && hasDefinitionDiff(value, indexConfig[key])) {
+    } else if (key in indexConfig && hasDefinitionDiff(value, indexConfig[key])) {
+      // We probably don't want to unnecessarily delete/recreate indexes
       await db.deleteIndex(value);
       log.warn(`The "${value.name}" index config differs from what is saved and has been deleted for recreation.`);
     }
@@ -70,8 +69,7 @@ const manageIndexes = async (db, indexMapping = {}) => {
   const indexes = Object.fromEntries((result.indexes || [])
     .filter(obj => obj.type !== BUILT_IN_INDEX_TYPE)
     // We're using the "name" here as the "ddoc" loaded from db will have a "_design/" prefix
-    .map(doc => [doc.name, doc])
-  );
+    .map(doc => [doc.name, doc]));
 
   await cleanUpIndexes(db, indexes, indexMapping);
   await createIndexes(db, indexMapping);

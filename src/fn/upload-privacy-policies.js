@@ -11,7 +11,7 @@ module.exports = {
   execute: async () => {
     const privacyPoliciesPath = fs.path.resolve(`${environment.pathToProject}/privacy-policies.json`);
 
-    if(!fs.exists(privacyPoliciesPath)) {
+    if (!fs.exists(privacyPoliciesPath)) {
       log.warn(`No policies language mapping file found at path: ${privacyPoliciesPath}`);
       return Promise.resolve();
     }

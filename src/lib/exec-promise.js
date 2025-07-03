@@ -19,20 +19,20 @@ module.exports = (args, logLevel=log.level) => new Promise((resolve, reject) => 
 
   const sub = exec(
     args.join(' '),
-    { stdio:stdio },
+    { stdio: stdio },
     (err, stdout, stderr) => {
-      if(err) {
+      if (err) {
         reject(stderr);
-      }
-      else {
+      } else {
         resolve(stdout);
       }
-    });
+    }
+  );
 
-  if(logLevel >= log.LEVEL_WARN)  {
+  if (logLevel >= log.LEVEL_WARN)  {
     sub.stdout.pipe(process.stdout);
   }
-  if(logLevel >= log.LEVEL_ERROR) {
+  if (logLevel >= log.LEVEL_ERROR) {
     sub.stderr.pipe(process.stderr);
   }
 

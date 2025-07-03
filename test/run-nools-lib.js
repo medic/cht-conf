@@ -21,7 +21,9 @@ const runNoolsLib = ({ c, targets, tasks, utilsMock }) => {
           return d;
         },
         now: () => new Date(TEST_DATE),
-        isTimely: function () { return true; },
+        isTimely: function () {
+          return true; 
+        },
       };
     },
     Target: function (props) {

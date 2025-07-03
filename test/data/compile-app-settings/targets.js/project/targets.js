@@ -8,7 +8,9 @@ module.exports = [
     translation_key: 'targets.active_pregnancies.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
 
-    appliesIf: function(c, r) { return r.form === 'D'; },
+    appliesIf: function(c, r) {
+      return r.form === 'D'; 
+    },
     date: 'now',
   },
   {
@@ -22,8 +24,12 @@ module.exports = [
     subtitle_translation_key: 'targets.this_month.subtitle',
     context: 'user.parent.use_cases.split(" ").indexOf("imm") !== -1',
 
-    appliesIf: function(c) { return c.age_in_months <= 60; },
-    date: function(c) { return c.contact.reported_date; },
+    appliesIf: function(c) {
+      return c.age_in_months <= 60; 
+    },
+    date: function(c) {
+      return c.contact.reported_date; 
+    },
   },
   {
     id: 'dhis-target',
@@ -34,7 +40,9 @@ module.exports = [
     subtitle_translation_key: 'targets.all_time.subtitle',
     appliesTo: 'contacts',
     appliesToType: ['person'],
-    appliesIf: function (c) { return c.reported_date > 100; },
+    appliesIf: function (c) {
+      return c.reported_date > 100; 
+    },
     date: 'now',
     idType: 'contact',
     visible: false,

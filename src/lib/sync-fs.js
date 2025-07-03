@@ -9,8 +9,8 @@ const warn = require('../lib/log').warn;
 
 function read(path) {
   try {
-    return fs.readFileSync(path, { encoding:'utf8' });
-  } catch(e) {
+    return fs.readFileSync(path, { encoding: 'utf8' });
+  } catch (e) {
     warn(`Error reading file: ${path}`);
     throw e;
   }
@@ -18,8 +18,8 @@ function read(path) {
 
 function readCsv(path) {
   const raw = csvParse(read(path));
-  if(!raw.length) {
-    return { cols:[], rows:[] };
+  if (!raw.length) {
+    return { cols: [], rows: [] };
   }
   return {
     cols: raw[0],
@@ -30,7 +30,7 @@ function readCsv(path) {
 function readJson(path) {
   try {
     return JSON.parse(read(path));
-  } catch(e) {
+  } catch (e) {
     warn(`Error parsing JSON in: ${path}`);
     throw e;
   }
@@ -45,7 +45,7 @@ function dirs(dir) {
 }
 
 function recurseFiles(dir, files) {
-  if(!files) {
+  if (!files) {
     files = [];
   }
 
@@ -56,17 +56,15 @@ function recurseFiles(dir, files) {
       try {
         const stat = fs.statSync(f);
 
-        if(stat.isDirectory()) {
+        if (stat.isDirectory()) {
           recurseFiles(f, files);
-        }
-        else {
+        } else {
           files.push(f);
         }
-      } catch(e) {
-        if(e.code === 'ENOENT') {
+      } catch (e) {
+        if (e.code === 'ENOENT') {
           trace('Ignoring file (err ENOENT - may be a symlink):', f);
-        }
-        else {
+        } else {
           throw e;
         }
       }
@@ -114,7 +112,13 @@ module.exports = {
   extension,
   fs,
   isDirectoryEmpty,
-  mkdir: path => { try { mkdirp(path); } catch(e) { warn(e); } },
+  mkdir: path => {
+    try {
+      mkdirp(path); 
+    } catch (e) {
+      warn(e); 
+    } 
+  },
   mkdtemp: () => fs.mkdtempSync(`${os.tmpdir()}/cht-conf`),
   path,
   posixPath: p => p.split(path.sep).join('/'),

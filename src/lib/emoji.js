@@ -3,7 +3,7 @@ const EMOJIS = {
 };
 
 // Don't support emojis in Windows
-if(process.platform === 'win32') {
+if (process.platform === 'win32') {
   Object.keys(EMOJIS).forEach(key => EMOJIS[key] = `:${key}:`);
 }
 

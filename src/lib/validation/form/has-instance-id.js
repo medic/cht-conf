@@ -5,7 +5,7 @@ module.exports = {
   skipFurtherValidation: true,
   execute: async({ xformPath, xmlDoc }) => {
     const errors = [];
-    if(!formHasInstanceId(xmlDoc)) {
+    if (!formHasInstanceId(xmlDoc)) {
       errors.push(
         `Form at ${xformPath} appears to be missing <meta><instanceID/></meta> node. `
         + 'This form will not work on CHT webapp.'

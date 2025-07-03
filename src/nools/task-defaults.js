@@ -5,9 +5,8 @@ module.exports = {
     if (!_utils) {
       _utils = Utils;
     }
-    var start;
-    var end;
-    var resolvingForm = getDefaultResolvingForm(this.definition);
+    let start;
+    const resolvingForm = getDefaultResolvingForm(this.definition);
     if (!resolvingForm) {
       throw new Error('Could not find the default resolving form!');
     }
@@ -15,13 +14,12 @@ module.exports = {
     if (report) {//Report based task
       //Getting the latest date between start of the task's window and just after the report's reported date.
       start = Math.max(_utils.addDate(dueDate, -event.start).getTime(), report.reported_date + 1);
-    }
-    else {
+    } else {
       start = _utils
         .addDate(dueDate, -event.start)
         .getTime();
     }
-    end = _utils
+    const end = _utils
       .addDate(dueDate, event.end + 1)
       .getTime();
     return _utils.isFormSubmittedInWindow(
@@ -34,13 +32,12 @@ module.exports = {
 };
 
 function getDefaultResolvingForm(taskDefinition) {
-  var resolvingAction;
 
   if (!taskDefinition || !taskDefinition.actions) {
     return;
   }
 
-  resolvingAction = taskDefinition.actions.find(
+  const resolvingAction = taskDefinition.actions.find(
     function (action) {
       return !action.type || action.type === 'report';
     }

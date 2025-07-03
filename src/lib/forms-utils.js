@@ -3,11 +3,13 @@ const fs = require('./sync-fs');
 
 const XPATH_MODEL = '/h:html/h:head/model';
 
-const getNode = (currentNode, path) =>
-  xpath.parse(path).select1({ node: currentNode, allowAnyNamespaceForNoPrefix: true });
+const getNode = (currentNode, path) => xpath
+  .parse(path)
+  .select1({ node: currentNode, allowAnyNamespaceForNoPrefix: true });
 
-const getNodes = (currentNode, path) =>
-  xpath.parse(path).select({ node: currentNode, allowAnyNamespaceForNoPrefix: true });
+const getNodes = (currentNode, path) => xpath
+  .parse(path)
+  .select({ node: currentNode, allowAnyNamespaceForNoPrefix: true });
 
 module.exports = {
   /**
@@ -16,7 +18,7 @@ module.exports = {
    */
   getFormDir: (projectDir, subDirectory) => {
     const formsDir = `${projectDir}/forms/${subDirectory}`;
-    if(fs.exists(formsDir)) {
+    if (fs.exists(formsDir)) {
       return formsDir;
     }
     return null;
@@ -83,18 +85,16 @@ module.exports = {
    * @param {string} xml the XML string
    * @returns {string}
    */
-  readTitleFrom: xml =>
-    xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>')),
+  readTitleFrom: xml => xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>')),
 
   /**
    * Get the ID of the form
    * @param {string} xml the XML string
    * @returns {string}
    */
-  readIdFrom: xml =>
-    xml.match(/<model>[^]*<\/model>/)[0]
-      .match(/<instance>[^]*<\/instance>/)[0]
-      .match(/id="([^"]*)"/)[1],
+  readIdFrom: xml => xml.match(/<model>[^]*<\/model>/)[0]
+    .match(/<instance>[^]*<\/instance>/)[0]
+    .match(/id="([^"]*)"/)[1],
 
   /**
    * Escape whitespaces in a path.

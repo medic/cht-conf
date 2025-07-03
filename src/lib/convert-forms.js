@@ -74,21 +74,20 @@ module.exports = {
   execute
 };
 
-const xls2xform = (sourcePath, targetPath) =>
-  exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
-    .catch(e => {
-      if (executableAvailable()) {
-        if (e.includes('unrecognized arguments: --skip_validate')) {
-          throw new Error('Your xls2xform installation appears to be out of date.' + UPDATE_INSTRUCTIONS);
-        } else {
-          throw e;
-        }
+const xls2xform = (sourcePath, targetPath) => exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
+  .catch(e => {
+    if (executableAvailable()) {
+      if (e.includes('unrecognized arguments: --skip_validate')) {
+        throw new Error('Your xls2xform installation appears to be out of date.' + UPDATE_INSTRUCTIONS);
       } else {
-        throw new Error(
-          'There was a problem executing xls2xform.  It may not be installed.' + INSTALLATION_INSTRUCTIONS
-        );
+        throw e;
       }
-    });
+    } else {
+      throw new Error(
+        'There was a problem executing xls2xform.  It may not be installed.' + INSTALLATION_INSTRUCTIONS
+      );
+    }
+  });
 
 // here we fix the form content in arcane ways.  Seeing as we have out own fork
 // of pyxform, we should probably be doing this fixing there.
@@ -108,8 +107,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
     .replace(/NO_LABEL/g, '')
 
     // No comment.
-    .replace(/.*DELETE_THIS_LINE.*(\r|\n)/g, '')
-    ;
+    .replace(/.*DELETE_THIS_LINE.*(\r|\n)/g, '');
 
   // Enketo _may_ not work with forms which define a default language - see
   // https://github.com/medic/cht-core/issues/3174
@@ -139,9 +137,9 @@ function getHiddenFields(propsJson) {
   if (!fs.exists(propsJson)) {
     return [];
   }
-  else {
-    return fs.readJson(propsJson).hidden_fields;
-  }
+  
+  return fs.readJson(propsJson).hidden_fields;
+  
 }
 
 function executableAvailable() {

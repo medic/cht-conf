@@ -59,7 +59,7 @@ describe('upload-custom-translations', () => {
         .then(() => expectTranslationDocs(apiStub, 'en'))
         .then(() => getTranslationDoc(apiStub, 'en'))
         .then(messagesEn => {
-          assert.deepEqual(messagesEn.values, { a:'first', b:'second', c:'third' });
+          assert.deepEqual(messagesEn.values, { a: 'first', b: 'second', c: 'third' });
           assert(!messagesEn.generic);
           assert(!messagesEn.custom);
         });
@@ -106,8 +106,8 @@ describe('upload-custom-translations', () => {
         .then(() => getTranslationDoc(apiStub, 'en'))
         .then(messagesEn => {
           assert.deepEqual(messagesEn.values, {
-            'some.words':'one equals one',
-            'some.maths':'1 + 1 = 2',
+            'some.words': 'one equals one',
+            'some.maths': '1 + 1 = 2',
           });
           assert(!messagesEn.generic);
           assert(!messagesEn.custom);
@@ -133,7 +133,7 @@ describe('upload-custom-translations', () => {
         .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
         .then(() => getTranslationDoc(apiStub, 'en'))
         .then(messagesEn => {
-          assert.deepEqual(messagesEn.values, { a:'first' });
+          assert.deepEqual(messagesEn.values, { a: 'first' });
           assert(!messagesEn.generic);
           assert(!messagesEn.custom);
         })
@@ -185,7 +185,7 @@ describe('upload-custom-translations', () => {
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
-            assert.deepEqual(messagesEn.values, { a:'first', b:'second', c:'third' });
+            assert.deepEqual(messagesEn.values, { a: 'first', b: 'second', c: 'third' });
             assert(!messagesEn.generic);
             assert(!messagesEn.custom);
           });
@@ -226,8 +226,8 @@ describe('upload-custom-translations', () => {
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.values, {
-              'some.words':'one equals one',
-              'some.maths':'1 + 1 = 2',
+              'some.words': 'one equals one',
+              'some.maths': '1 + 1 = 2',
             });
             assert(!messagesEn.generic);
             assert(!messagesEn.custom);
@@ -242,13 +242,13 @@ describe('upload-custom-translations', () => {
             code: 'en',
             name: 'English',
             type: 'translations',
-            values: { a:'first', from_custom:'third' }
+            values: { a: 'first', from_custom: 'third' }
           })
           .then(() => uploadCustomTranslations.execute())
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
-            assert.deepEqual(messagesEn.values, { a:'first', from_custom: 'overwritten', from_custom_new: 'new' });
+            assert.deepEqual(messagesEn.values, { a: 'first', from_custom: 'overwritten', from_custom_new: 'new' });
             assert(!messagesEn.generic);
             assert(!messagesEn.custom);
           });
@@ -297,7 +297,7 @@ describe('upload-custom-translations', () => {
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
-            assert.deepEqual(messagesEn.custom, { a:'first', b:'second', c:'third' });
+            assert.deepEqual(messagesEn.custom, { a: 'first', b: 'second', c: 'third' });
             assert.deepEqual(messagesEn.generic, {});
             assert(!messagesEn.values);
           });
@@ -338,8 +338,8 @@ describe('upload-custom-translations', () => {
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, {
-              'some.words':'one equals one',
-              'some.maths':'1 + 1 = 2',
+              'some.words': 'one equals one',
+              'some.maths': '1 + 1 = 2',
             });
             assert.deepEqual(messagesEn.generic, {});
             assert(!messagesEn.values);
@@ -412,7 +412,7 @@ describe('upload-custom-translations', () => {
           .then(() => expectTranslationDocs(apiStub, 'en', 'fr'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
-            assert.deepEqual(messagesEn.generic, { a:'first' });
+            assert.deepEqual(messagesEn.generic, { a: 'first' });
             assert(!messagesEn.custom);
             assert(!messagesEn.values);
           })
@@ -451,7 +451,7 @@ describe('upload-custom-translations', () => {
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
-            assert.deepEqual(messagesEn.custom, { a:'first', b:'second', c:'third' });
+            assert.deepEqual(messagesEn.custom, { a: 'first', b: 'second', c: 'third' });
             assert.deepEqual(messagesEn.generic, {});
             assert(!messagesEn.values);
           });
@@ -490,8 +490,8 @@ describe('upload-custom-translations', () => {
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, {
-              'some.words':'one equals one',
-              'some.maths':'1 + 1 = 2',
+              'some.words': 'one equals one',
+              'some.maths': '1 + 1 = 2',
             });
             assert.deepEqual(messagesEn.generic, {});
             assert(!messagesEn.values);
@@ -519,8 +519,8 @@ describe('upload-custom-translations', () => {
           .then(() => getTranslationDoc(apiStub, 'en'))
           .then(messagesEn => {
             assert.deepEqual(messagesEn.custom, {
-              'one.escaped.exclamation':'one equals one!',
-              'two.escaped.exclamation':'one equals one!!',
+              'one.escaped.exclamation': 'one equals one!',
+              'two.escaped.exclamation': 'one equals one!!',
             });
             assert.deepEqual(messagesEn.generic, {});
             assert(!messagesEn.values);
@@ -535,8 +535,7 @@ describe('upload-custom-translations', () => {
         return uploadCustomTranslations.execute()
           .then(() => expectTranslationDocs(apiStub, 'en'))
           .then(() => {
-            assert(log.warn.lastCall.calledWithMatch(
-              '1 empty messages trying to compile translations'));
+            assert(log.warn.lastCall.calledWithMatch('1 empty messages trying to compile translations'));
           });
       });
 

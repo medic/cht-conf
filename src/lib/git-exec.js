@@ -51,7 +51,7 @@ module.exports.getDefaultRemote = async () => {
   if (result) {
     const lines = result.split('\n');
     if (lines.length > 1) {
-      const upstream = lines.find(r=> r === 'origin');
+      const upstream = lines.find(r => r === 'origin');
       if (upstream) {
         return upstream;
       }

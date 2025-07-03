@@ -219,7 +219,7 @@ function buildActions(cmdArgs, skipValidate) {
     actions = actions.filter(a => a !== 'check-git');
   }
 
-  if(skipValidate) {
+  if (skipValidate) {
     warn('Skipping all form validation.');
     const validateActions = [
       'validate-app-forms',

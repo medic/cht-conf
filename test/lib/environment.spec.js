@@ -17,9 +17,9 @@ describe('environment', () => {
     });
   });
 
-  describe('apiUrl initialize empty', ()=>{
-    it('false apiUrl remains false', ()=>{
-      environment.initialize('','','','',false,'force','true','true');
+  describe('apiUrl initialize empty', () => {
+    it('false apiUrl remains false', () => {
+      environment.initialize('', '', '', '', false, 'force', 'true', 'true');
       expect(environment.apiUrl).to.be.false;
     });
   });

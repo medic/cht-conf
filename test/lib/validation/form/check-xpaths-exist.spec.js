@@ -40,17 +40,16 @@ const getXml = (bindData = '', instanceTag = 'instance') => `
   </h:body>
 </h:html>`;
 
-const createBindData = fields =>
-  fields
-    .map(({ name, type, calculate, constraint, readonly, relevant, required }) => {
-      const calc = calculate ? `calculate="${calculate}"` : '';
-      const cons = constraint ? `constraint="${constraint}"` : '';
-      const read = readonly ? `readonly="${readonly}"` : '';
-      const rel = relevant ? `relevant="${relevant}"` : '';
-      const req = required ? `required="${required}"` : '';
-      return `<bind nodeset="${name}" type="${type}" ${calc} ${cons} ${read} ${rel} ${req}/>`;
-    })
-    .join('');
+const createBindData = fields => fields
+  .map(({ name, type, calculate, constraint, readonly, relevant, required }) => {
+    const calc = calculate ? `calculate="${calculate}"` : '';
+    const cons = constraint ? `constraint="${constraint}"` : '';
+    const read = readonly ? `readonly="${readonly}"` : '';
+    const rel = relevant ? `relevant="${relevant}"` : '';
+    const req = required ? `required="${required}"` : '';
+    return `<bind nodeset="${name}" type="${type}" ${calc} ${cons} ${read} ${rel} ${req}/>`;
+  })
+  .join('');
 
 const getXmlDoc = (fields, instance) => domParser.parseFromString(getXml(createBindData(fields), instance));
 const xformPath = '/my/form/path/form.xml';

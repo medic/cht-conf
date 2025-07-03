@@ -21,10 +21,10 @@ module.exports = {
           const valueOf = column => row[raw.cols.indexOf(column)];
 
           return {
-            id:           uuid(),
-            from:         valueOf('from'),
-            content:      valueOf('message'),
-            sms_sent:     valueOf('sent_timestamp') || Date.now(),
+            id: uuid(),
+            from: valueOf('from'),
+            content: valueOf('message'),
+            sms_sent: valueOf('sent_timestamp') || Date.now(),
             sms_received: Date.now(),
           };
         });

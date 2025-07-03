@@ -8,8 +8,7 @@ const getApiVersion = async () => {
 
   try {
     version = await api().version();
-  }
-  catch (err) {
+  } catch (err) {
     const ddoc = await db().get('_design/medic-client');
     version = ddoc.deploy_info && ddoc.deploy_info.version;
   }

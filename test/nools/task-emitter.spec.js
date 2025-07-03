@@ -36,7 +36,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithoutReports(),
           targets: [],
-          tasks: [ aPersonBasedTask() ],
+          tasks: [aPersonBasedTask()],
         };
 
         // when
@@ -48,7 +48,7 @@ describe('task-emitter', () => {
             _type: 'task',
             date: TEST_DAY,
             resolved: false,
-            actions:[ { form:'example-form' } ]
+            actions: [{ form: 'example-form' }]
           },
         ]);
       });
@@ -58,7 +58,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReport()),
           targets: [],
-          tasks: [ aPersonBasedTask() ],
+          tasks: [aPersonBasedTask()],
         };
         config.tasks[0].appliesToType = ['dne'];
 
@@ -74,7 +74,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReport()),
           targets: [],
-          tasks: [ aPersonBasedTask() ],
+          tasks: [aPersonBasedTask()],
         };
         delete config.tasks[0].appliesToType;
 
@@ -95,16 +95,16 @@ describe('task-emitter', () => {
         const config = {
           c: contact,
           targets: [],
-          tasks: [ task ],
+          tasks: [task],
         };
         delete config.tasks[0].priority;
-        
+
         // when
         const { emitted } = runNoolsLib(config);
 
         const tasks = emitted.filter(e => e._type === 'task');
         const emittedTask = tasks[0];
-        
+
         // then
         expect(tasks).to.have.length(1);
         expect(emittedTask).to.not.have.property('priority');
@@ -142,18 +142,18 @@ describe('task-emitter', () => {
         const config = {
           c: contact,
           targets: [],
-          tasks: [ aPersonBasedTask() ]
+          tasks: [aPersonBasedTask()]
         };
         config.tasks[0].priority = {
           level: 'high',
           label: [{ locale: 'en', label: 'High Priority' }]
         };
-        
+
         // when
         const { emitted } = runNoolsLib(config);
         const tasks = emitted.filter(e => e._type === 'task');
         const emittedTask = tasks[0];
-        
+
         // then
         expect(tasks).to.have.length(1);
         expect(emittedTask).to.be.deep.equals({
@@ -192,18 +192,18 @@ describe('task-emitter', () => {
         const config = {
           c: contact,
           targets: [],
-          tasks: [ aReportBasedTask() ],
+          tasks: [aReportBasedTask()],
         };
         config.tasks[0].priority = sinon.stub().returns({
           level: 'high',
-          label: [ { locale:'en', label: 'High Priority' } ]
+          label: [{ locale: 'en', label: 'High Priority' }]
         });
-        
+
         // when
         const { emitted } = runNoolsLib(config);
         const tasks = emitted.filter(e => e._type === 'task');
         const emittedTask = tasks[0];
-        
+
         // then
         expect(tasks).to.have.length(1);
         expect(config.tasks[0].priority.called).to.be.true;
@@ -243,8 +243,8 @@ describe('task-emitter', () => {
       it('task priority is a number score set from callback function', () => {
         // given
         const contact = aHighRiskContact();
-        const report  = contact.reports[0];
-        
+        const report = contact.reports[0];
+
         const task = aReportBasedTask();
         task.priority = (c, r, e, d) => {
           expect(c).to.be.deep.equals(contact);
@@ -259,7 +259,7 @@ describe('task-emitter', () => {
         const { emitted } = runNoolsLib({
           c: contact,
           targets: [],
-          tasks: [ task ]
+          tasks: [task]
         });
         const tasks = emitted.filter(e => e._type === 'task');
         const emittedTask = tasks[0];
@@ -298,13 +298,13 @@ describe('task-emitter', () => {
           _type: 'task'
         });
       });
-      
+
       it('appliesToType should filter configurable hierarchy contact', () => {
         // given
         const config = {
           c: configurableHierarchyPersonWithReports(),
           targets: [],
-          tasks: [ aPersonBasedTask() ],
+          tasks: [aPersonBasedTask()],
         };
 
         // when
@@ -312,7 +312,7 @@ describe('task-emitter', () => {
 
         // then
         assert.shallowDeepEqual(emitted, [
-          { _type:'_complete', _id: true },
+          { _type: '_complete', _id: true },
         ]);
       });
 
@@ -321,7 +321,7 @@ describe('task-emitter', () => {
         const config = {
           c: configurableHierarchyPersonWithReports(),
           targets: [],
-          tasks: [ aPersonBasedTask() ],
+          tasks: [aPersonBasedTask()],
         };
         config.tasks[0].appliesToType = 'custom';
 
@@ -334,9 +334,9 @@ describe('task-emitter', () => {
             _type: 'task',
             date: TEST_DAY,
             resolved: false,
-            actions:[ { form: 'example-form' } ]
+            actions: [{ form: 'example-form' }]
           },
-          { _type:'_complete', _id: true },
+          { _type: '_complete', _id: true },
         ]);
       });
 
@@ -353,16 +353,16 @@ describe('task-emitter', () => {
           if (e.id === 'event2') {
             return { level: 20 };
           }
-          return { level: 0 }; 
+          return { level: 0 };
         };
         const config = {
           c: personWithReports(aReport()),
           targets: [],
           tasks: [task],
         };
-        const { emitted } = runNoolsLib(config); 
+        const { emitted } = runNoolsLib(config);
         const tasks = emitted.filter(e => e._type === 'task');
-        
+
         expect(tasks).to.have.length(2);
         expect(tasks[0]).to.have.property('priority', 10);
         expect(tasks[1]).to.have.property('priority', 20);
@@ -391,7 +391,7 @@ describe('task-emitter', () => {
         const config = {
           c: placeWithoutReports(),
           targets: [],
-          tasks: [ aPlaceBasedTask() ],
+          tasks: [aPlaceBasedTask()],
         };
 
         // when
@@ -399,8 +399,8 @@ describe('task-emitter', () => {
 
         // then
         assert.shallowDeepEqual(emitted, [
-          { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id: true },
+          { _type: 'task', date: TEST_DAY },
+          { _type: '_complete', _id: true },
         ]);
       });
     });
@@ -412,19 +412,19 @@ describe('task-emitter', () => {
         const config = {
           c: personWithoutReports(),
           targets: [],
-          tasks: [ aReportBasedTask() ],
+          tasks: [aReportBasedTask()],
         };
         config.tasks[0].priority = sinon.stub().returns({
           level: 'high',
-          label: [ { locale:'en', label: 'High Priority' } ]
+          label: [{ locale: 'en', label: 'High Priority' }]
         });
 
         // when
         const { emitted } = runNoolsLib(config);
-        
+
         // then
         assert.deepEqual(emitted, [
-          { _type:'_complete', _id: true },
+          { _type: '_complete', _id: true },
         ]);
       });
 
@@ -433,12 +433,12 @@ describe('task-emitter', () => {
         const config = {
           c: unknownContactWithReports(aReport()),
           targets: [],
-          tasks: [ aReportBasedTask() ],
+          tasks: [aReportBasedTask()],
         };
         config.tasks[0].appliesToType = 'custom';
         config.tasks[0].priority = sinon.stub().returns({
           level: 'high',
-          label: [ { locale:'en', label: 'High Priority' } ]
+          label: [{ locale: 'en', label: 'High Priority' }]
         });
 
         // when
@@ -446,7 +446,7 @@ describe('task-emitter', () => {
 
         // then
         assert.deepEqual(emitted, [
-          { _type:'_complete', _id: true },
+          { _type: '_complete', _id: true },
         ]);
       });
 
@@ -484,7 +484,7 @@ describe('task-emitter', () => {
             const config = {
               c: personWithReports(aReport()),
               targets: [],
-              tasks: [ aReportBasedTask() ],
+              tasks: [aReportBasedTask()],
             };
             config.tasks[0].contactLabel = scenario.contactValue;
 
@@ -506,7 +506,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReport()),
           targets: [],
-          tasks: [ aReportBasedTask() ],
+          tasks: [aReportBasedTask()],
         };
 
         // when
@@ -514,8 +514,8 @@ describe('task-emitter', () => {
 
         // then
         assert.shallowDeepEqual(emitted, [
-          { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id: true },
+          { _type: 'task', date: TEST_DAY },
+          { _type: '_complete', _id: true },
         ]);
       });
 
@@ -559,7 +559,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReport()),
           targets: [],
-          tasks: [ aReportBasedTask() ],
+          tasks: [aReportBasedTask()],
         };
         config.tasks[0].appliesToType = ['dne'];
 
@@ -575,7 +575,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReport()),
           targets: [],
-          tasks: [ aReportBasedTask() ],
+          tasks: [aReportBasedTask()],
         };
         delete config.tasks[0].appliesToType;
 
@@ -589,13 +589,13 @@ describe('task-emitter', () => {
         });
       });
 
-      
+
       it('should emit once per report', () => {
         // given
         const config = {
           c: personWithReports(aReport(), aReport(), aReport()),
           targets: [],
-          tasks: [ aReportBasedTask() ],
+          tasks: [aReportBasedTask()],
         };
 
         // when
@@ -603,10 +603,10 @@ describe('task-emitter', () => {
 
         // then
         assert.shallowDeepEqual(emitted, [
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id: true },
+          { _type: 'task', date: TEST_DAY },
+          { _type: 'task', date: TEST_DAY },
+          { _type: 'task', date: TEST_DAY },
+          { _type: '_complete', _id: true },
         ]);
 
         expectAllToHaveUniqueIds(emitted);
@@ -617,7 +617,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReport(), aReport(), aReport()),
           targets: [],
-          tasks: [ aReportBasedTask(), aReportBasedTask() ],
+          tasks: [aReportBasedTask(), aReportBasedTask()],
         };
 
         // when
@@ -625,13 +625,13 @@ describe('task-emitter', () => {
 
         // then
         assert.shallowDeepEqual(emitted, [
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id: true },
+          { _type: 'task', date: TEST_DAY },
+          { _type: 'task', date: TEST_DAY },
+          { _type: 'task', date: TEST_DAY },
+          { _type: 'task', date: TEST_DAY },
+          { _type: 'task', date: TEST_DAY },
+          { _type: 'task', date: TEST_DAY },
+          { _type: '_complete', _id: true },
         ]);
 
         expectAllToHaveUniqueIds(emitted); // even with undefined name, the resulting ids are unique
@@ -642,7 +642,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReport()),
           targets: [],
-          tasks: [ aReportBasedTask(), aReportBasedTask() ],
+          tasks: [aReportBasedTask(), aReportBasedTask()],
         };
 
         config.tasks.forEach(task => delete task.name);
@@ -666,7 +666,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReport()),
           targets: [],
-          tasks: [ aPersonBasedTask() ],
+          tasks: [aPersonBasedTask()],
         };
         delete config.c.contact.reported_date;
 
@@ -686,7 +686,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReport()),
           targets: [],
-          tasks: [ aReportBasedTask() ],
+          tasks: [aReportBasedTask()],
         };
 
         const [event] = config.tasks[0].events;
@@ -718,7 +718,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReport()),
           targets: [],
-          tasks: [ task ],
+          tasks: [task],
         };
 
         // when
@@ -727,7 +727,7 @@ describe('task-emitter', () => {
         // then
         assert.shallowDeepEqual(emitted, [
           {
-            actions:[
+            actions: [
               {
                 type: 'report',
                 form: 'example-form',
@@ -750,12 +750,14 @@ describe('task-emitter', () => {
       it('modifyContent for appliesTo contacts', () => {
         // given
         const task = aPersonBasedTask();
-        task.actions[0].modifyContent = (content, c) => { content.report_id = c.contact._id; };
+        task.actions[0].modifyContent = (content, c) => {
+          content.report_id = c.contact._id; 
+        };
         // and
         const config = {
           c: personWithReports(aReport()),
           targets: [],
-          tasks: [ task ],
+          tasks: [task],
         };
 
         // when
@@ -764,7 +766,7 @@ describe('task-emitter', () => {
         // then
         assert.shallowDeepEqual(emitted, [
           {
-            actions:[
+            actions: [
               {
                 type: 'report',
                 form: 'example-form',
@@ -787,27 +789,29 @@ describe('task-emitter', () => {
         const task = {
           appliesTo: 'reports',
           name: `task-1`,
-          title: [ { locale:'en', content:`Task 1` } ],
-          actions: [ {
-            form:'example-form',
+          title: [{ locale: 'en', content: `Task 1` }],
+          actions: [{
+            form: 'example-form',
             modifyContent: (content, c, r, e) => {
               content.contact_id = c.contact._id;
               content.report_id = r._id;
               content.event = e;
             },
-          } ],
+          }],
           events: [
-            { id: `task1`, days:1, start:1, end:2 },
-            { id: `task2`, days:1, start:3, end:4 },
-            { id: `task3`, days:1, start:5, end:6 },
+            { id: `task1`, days: 1, start: 1, end: 2 },
+            { id: `task2`, days: 1, start: 3, end: 4 },
+            { id: `task3`, days: 1, start: 5, end: 6 },
           ],
-          resolvedIf: function() { return false; },
+          resolvedIf: function () {
+            return false; 
+          },
         };
 
         const config = {
           c: personWithReports(aReport()),
           targets: [],
-          tasks: [ task ],
+          tasks: [task],
         };
 
         // when
@@ -825,7 +829,7 @@ describe('task-emitter', () => {
                   source_id: 'r-1',
                   contact: { _id: 'c-2' },
                   report_id: 'r-1',
-                  event: { id: `task1`, days:1, start:1, end:2 },
+                  event: { id: `task1`, days: 1, start: 1, end: 2 },
                 },
               },
             ]
@@ -840,7 +844,7 @@ describe('task-emitter', () => {
                   source_id: 'r-1',
                   contact: { _id: 'c-2' },
                   report_id: 'r-1',
-                  event: { id: `task2`, days:1, start:3, end:4 },
+                  event: { id: `task2`, days: 1, start: 3, end: 4 },
                 },
               },
             ]
@@ -855,7 +859,7 @@ describe('task-emitter', () => {
                   source_id: 'r-1',
                   contact: { _id: 'c-2' },
                   report_id: 'r-1',
-                  event: { id: `task3`, days:1, start:5, end:6 },
+                  event: { id: `task3`, days: 1, start: 5, end: 6 },
                 },
               },
             ]
@@ -870,11 +874,11 @@ describe('task-emitter', () => {
       const config = {
         c: personWithReports(aReport()),
         targets: [],
-        tasks: [ aReportBasedTask() ],
+        tasks: [aReportBasedTask()],
       };
 
       let invoked = false;
-      config.tasks[0].appliesIf = function() {
+      config.tasks[0].appliesIf = function () {
         expect(this).to.nested.include({
           'definition.appliesTo': 'reports',
           'definition.name': 'task-3',
@@ -897,11 +901,11 @@ describe('task-emitter', () => {
       const config = {
         c: personWithReports(aReport()),
         targets: [],
-        tasks: [ aReportBasedTask() ],
+        tasks: [aReportBasedTask()],
       };
 
       let invoked = false;
-      config.tasks[0].appliesIf = function(isFirst) {
+      config.tasks[0].appliesIf = function (isFirst) {
         if (isFirst) {
           return this.definition.appliesIf();
         }
@@ -928,7 +932,7 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReportWithScheduledTasks(5)),
           targets: [],
-          tasks: [ aScheduledTaskBasedTask() ],
+          tasks: [aScheduledTaskBasedTask()],
         };
 
         // when
@@ -936,12 +940,12 @@ describe('task-emitter', () => {
 
         // then
         assert.shallowDeepEqual(emitted, [
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'task', date:TEST_DAY },
-          { _type:'_complete', _id: true },
+          { _type: 'task', date: TEST_DAY },
+          { _type: 'task', date: TEST_DAY },
+          { _type: 'task', date: TEST_DAY },
+          { _type: 'task', date: TEST_DAY },
+          { _type: 'task', date: TEST_DAY },
+          { _type: '_complete', _id: true },
         ]);
       });
     });
@@ -954,11 +958,13 @@ describe('task-emitter', () => {
         const config = {
           c: personWithReports(aReportWithScheduledTasks(5)),
           targets: [],
-          tasks: [ invalidTask ],
+          tasks: [invalidTask],
         };
 
         // should throw error
-        assert.throws(() => { runNoolsLib(config); }, Error, 'Unrecognised task.appliesTo: unknown');
+        assert.throws(() => {
+          runNoolsLib(config); 
+        }, Error, 'Unrecognised task.appliesTo: unknown');
       });
     });
 

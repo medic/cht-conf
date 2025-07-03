@@ -44,7 +44,7 @@ const getStoredHashes = () => {
   if (fs.exists(filePath)) {
     try {
       return JSON.parse(fs.read(filePath).trim());
-    } catch(e) {
+    } catch (e) {
       log.info('Error trying to read bookmark, continuing anyway', e);
     }
   }
@@ -132,11 +132,11 @@ const preUploadDoc = async (db, localDoc) => {
     if (e.status === 404) {
       // The form doesn't exist on the server so we know we're not overwriting anything
       return Promise.resolve(true);
-    } else {
-      // Unexpected error, we report it then quit
-      log.trace('Trying to fetch remote doc', e);
-      throw new Error(`Unable to fetch doc with id ${localDoc._id}, returned status code = ${e.status}`);
-    }
+    } 
+    // Unexpected error, we report it then quit
+    log.trace('Trying to fetch remote doc', e);
+    throw new Error(`Unable to fetch doc with id ${localDoc._id}, returned status code = ${e.status}`);
+    
   }
 
   const remoteHash = await getDocHash(db, remoteDoc);
@@ -194,13 +194,13 @@ const preUploadForm = async (db, localDoc, localXml, properties) => {
     if (e.status === 404) {
       // The form doesn't exist on the server so we know we're not overwriting anything
       return Promise.resolve(true);
-    } else {
-      // Unexpected error, we report it then quit
-      log.trace('Trying to fetch remote xml', e);
-      throw new Error(
-        `Unable to fetch xml attachment of doc with id ${localDoc._id}, returned status code = ${e.status}`
-      );
-    }
+    } 
+    // Unexpected error, we report it then quit
+    log.trace('Trying to fetch remote xml', e);
+    throw new Error(
+      `Unable to fetch xml attachment of doc with id ${localDoc._id}, returned status code = ${e.status}`
+    );
+    
   }
 
   const localHash = getFormHash(localDoc, localXml, properties);

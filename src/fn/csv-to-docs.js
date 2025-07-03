@@ -21,7 +21,7 @@ const execute = () => {
   const couchUrlUuid = uuid5('http://medicmobile.org/configurer/csv-to-docs/permanent-hash', uuid5.URL);
 
   const csvDir = `${environment.pathToProject}/csv`;
-  if(!fs.exists(csvDir)) {
+  if (!fs.exists(csvDir)) {
     warn(`No csv directory found at ${csvDir}.`);
     return Promise.resolve();
   }
@@ -43,7 +43,7 @@ const execute = () => {
     users: []
   };
   const addToModel = (csvFile, docs) => {
-    csvFile = csvFile.match(/^(?:.*[\/\\])?csv[\/\\](.*)\.csv$/)[1]; // eslint-disable-line no-useless-escape
+    csvFile = csvFile.match(/^(?:.*[\/\\])?csv[\/\\](.*)\.csv$/)[1];  
     model.csvFiles[csvFile] = docs;
     docs.forEach(doc => {
       model.docs[doc._id] = doc;
@@ -55,29 +55,28 @@ const execute = () => {
 
   return fs.recurseFiles(csvDir)
     .filter(name => name.endsWith('.csv'))
-    .reduce((promiseChain, csv) =>
-      promiseChain
-        .then(() => {
-          info('Processing CSV file:', csv, '…');
+    .reduce((promiseChain, csv) => promiseChain
+      .then(() => {
+        info('Processing CSV file:', csv, '…');
 
-          const nameParts = fs.path.basename(csv).split('.');
-          const prefix = nameParts[0];
-          switch(prefix) {
-          case 'contact': return processContacts('contact', csv);
-          case 'person':  return processPersons(csv);
-          case 'place':   return processPlaces(csv);
-          case 'report':  return processReports(nameParts[1], csv);
-          case 'users' :  return processUsers(csv);
-          default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
-          }
-        })
-        .then(docs => addToModel(csv, docs)),
+        const nameParts = fs.path.basename(csv).split('.');
+        const prefix = nameParts[0];
+        switch (prefix) {
+        case 'contact': return processContacts('contact', csv);
+        case 'person':  return processPersons(csv);
+        case 'place':   return processPlaces(csv);
+        case 'report':  return processReports(nameParts[1], csv);
+        case 'users' :  return processUsers(csv);
+        default: throw new Error(`Unrecognised CSV type ${prefix} for file ${csv}`);
+        }
+      })
+      .then(docs => addToModel(csv, docs)),
     Promise.resolve())
 
     .then(() => model.references.forEach(updateRef))
     .then(() => model.exclusions.forEach(removeExcludedField))
     .then(() => {
-      if(model.users.length) {
+      if (model.users.length) {
         generateCsv(model.users, environment.pathToProject + '/users.csv');
       }
     })
@@ -91,7 +90,7 @@ const execute = () => {
       return matchesType(type, doc) && matchesWhereClause(where, doc, ref.colVal);
     });
 
-    if(!referencedDoc) {
+    if (!referencedDoc) {
       throw new Error(`Failed to match reference ${pretty(ref)}`);
     }
 
@@ -110,7 +109,7 @@ const execute = () => {
   function processReports(report_type, csv) {
     const { rows, cols } = fs.readCsv(csv);
     return rows
-      .map(r => processCsv('data_record', cols, r, { form:report_type }));
+      .map(r => processCsv('data_record', cols, r, { form: report_type }));
   }
 
   function processContacts(contactType, csv) {
@@ -129,10 +128,10 @@ const execute = () => {
     const doc = baseDoc || {};
     doc.type = docType;
 
-    for(let i=0; i<cols.length; ++i) {
+    for (let i=0; i<cols.length; ++i) {
       const { col, val, reference, excluded } = parseColumn(cols[i], row[i]);
       setCol(doc, col, val);
-      if(reference) {
+      if (reference) {
         model.references.push({
           doc: doc,
           matcher: reference,
@@ -140,7 +139,7 @@ const execute = () => {
           targetProperty: col,
         });
       }
-      if(excluded) {
+      if (excluded) {
         model.exclusions.push({
           doc: doc,
           propertyName: col,
@@ -161,13 +160,13 @@ const execute = () => {
 function setCol(doc, col, val) {
   const colParts = col.split('.');
 
-  if(RESERVED_COL_NAMES.includes(colParts[0])) {
+  if (RESERVED_COL_NAMES.includes(colParts[0])) {
     throw new Error(`Cannot set property defined by column '${col}' - this property name is protected.`);
   }
 
-  while(colParts.length > 1) {
+  while (colParts.length > 1) {
     col = colParts.shift();
-    if(!doc[col]) {
+    if (!doc[col]) {
       doc[col] = {};
     }
     doc = doc[col];
@@ -176,21 +175,21 @@ function setCol(doc, col, val) {
 }
 
 function parseTimestamp(t) {
-  if(isIntegerString(t)) {
+  if (isIntegerString(t)) {
     return int(t);
   }
-  else {
-    return Date.parse(t);
-  }
+  
+  return Date.parse(t);
+  
 }
 
 function parseBool(b) {
-  if(isIntegerString(b)) {
+  if (isIntegerString(b)) {
     return b !== '0';
   }
-  else {
-    return b.toLowerCase() === 'true';
-  }
+  
+  return b.toLowerCase() === 'true';
+  
 }
 
 function calcRelTimestampInDays(b) {
@@ -221,7 +220,7 @@ function matchesType(type, doc) {
 
 function matchesWhereClause(where, doc, colVal) {
   const whereMatch = where.match(/^([\w-]+)=COL_VAL$/);
-  if(!whereMatch) {
+  if (!whereMatch) {
     throw new Error(`Cannot interpret WHERE clause: ${where}`);
   }
 
@@ -242,11 +241,11 @@ function parseColumn(rawCol, rawVal) {
   const parts = rawCol.split(/[:>]/);
   const col = parts[0];
 
-  if(parts.length === 1) {
+  if (parts.length === 1) {
     val = rawVal;
-  } else if(parts.length === 2) {
+  } else if (parts.length === 2) {
     const type = parts[1];
-    switch(type) {
+    switch (type) {
     case 'date': val = new Date(rawVal); break;
     case 'rel-date': val = (new Date(calcRelTimestampInDays(rawVal))).toISOString().substring(0, 10); break;
     case 'timestamp': val = parseTimestamp(rawVal); break;
@@ -257,7 +256,7 @@ function parseColumn(rawCol, rawVal) {
     case 'float': val = Number.parseFloat(rawVal); break;
     case 'excluded': val = rawVal; excluded = true; break;
     default: {
-      if(isReference(type)) {
+      if (isReference(type)) {
         val = rawVal;
         reference = type;
       } else {
@@ -270,7 +269,7 @@ function parseColumn(rawCol, rawVal) {
       `Wrong number of parts in column definition: ${rawCol} (should be 1, 2 or 4, but found ${parts.length}).`
     );
   }
-  return { col:col, val:val, reference:reference, excluded:excluded };
+  return { col: col, val: val, reference: reference, excluded: excluded };
 }
 
 function setNOW(t) {

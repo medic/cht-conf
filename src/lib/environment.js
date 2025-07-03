@@ -47,16 +47,36 @@ const getState = prop => {
 module.exports = {
   initialize,
 
-  get pathToProject() { return getState('pathToProject') || '.'; },
-  get isArchiveMode() { return !!getState('isArchiveMode'); },
-  get archiveDestination() { return getState('archiveDestination'); },
-  get instanceUrl() { return this.apiUrl && this.apiUrl.replace(/\/medic$/, ''); },
-  get extraArgs() { return getState('extraArgs'); },
-  get apiUrl() { return getState('apiUrl'); },
-  get force() { return getState('force'); },
-  get skipTranslationCheck() { return getState('skipTranslationCheck'); },
-  get skipValidate() { return getState('skipValidate'); },
-  get sessionToken() { return getState('sessionToken'); },
+  get pathToProject() {
+    return getState('pathToProject') || '.'; 
+  },
+  get isArchiveMode() {
+    return !!getState('isArchiveMode'); 
+  },
+  get archiveDestination() {
+    return getState('archiveDestination'); 
+  },
+  get instanceUrl() {
+    return this.apiUrl && this.apiUrl.replace(/\/medic$/, ''); 
+  },
+  get extraArgs() {
+    return getState('extraArgs'); 
+  },
+  get apiUrl() {
+    return getState('apiUrl'); 
+  },
+  get force() {
+    return getState('force'); 
+  },
+  get skipTranslationCheck() {
+    return getState('skipTranslationCheck'); 
+  },
+  get skipValidate() {
+    return getState('skipValidate'); 
+  },
+  get sessionToken() {
+    return getState('sessionToken'); 
+  },
 
   /**
    * Return `true` if the environment **seems** to be production.

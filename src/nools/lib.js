@@ -1,10 +1,11 @@
+/* eslint-disable n/no-missing-require */
 /* global c, emit, Task, Target */
 
-var tasks = require('tasks.js');
-var targets = require('targets.js');
+const tasks = require('tasks.js');
+const targets = require('targets.js');
 
-var taskEmitter = require('./task-emitter'); 
-var targetEmitter = require('./target-emitter');
+const taskEmitter = require('./task-emitter'); 
+const targetEmitter = require('./target-emitter');
 
 targetEmitter(targets, c, Utils, Target, emit);
 taskEmitter(tasks, c, Utils, Task, emit);

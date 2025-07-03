@@ -1,11 +1,14 @@
-var prepareDefinition = require('./definition-preparation');
-var taskDefaults = require('./task-defaults');
+const prepareDefinition = require('./definition-preparation');
+const taskDefaults = require('./task-defaults');
 
 function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
-  if (!taskDefinitions) return;
+  if (!taskDefinitions) {
+    return;
+  }
 
-  var taskDefinition, r;
-  for (var idx1 = 0; idx1 < taskDefinitions.length; ++idx1) {
+  let taskDefinition; let 
+    r;
+  for (let idx1 = 0; idx1 < taskDefinitions.length; ++idx1) {
     taskDefinition = Object.assign({}, taskDefinitions[idx1], taskDefaults);
     if (typeof taskDefinition.resolvedIf !== 'function') {
       taskDefinition.resolvedIf = function (contact, report, event, dueDate) {
@@ -15,29 +18,29 @@ function taskEmitter(taskDefinitions, c, Utils, Task, emit) {
     prepareDefinition(taskDefinition);
 
     switch (taskDefinition.appliesTo) {
-      case 'reports':
-      case 'scheduled_tasks':
-        for (var idx2=0; idx2<c.reports.length; ++idx2) {
-          r = c.reports[idx2];
-          emitTasks(taskDefinition, Utils, Task, emit, c, r);
-        }
-        break;
-      case 'contacts':
-        if (c.contact) {
-          emitTasks(taskDefinition, Utils, Task, emit, c);
-        }
-        break;
-      default:
-        throw new Error('Unrecognised task.appliesTo: ' + taskDefinition.appliesTo);
+    case 'reports':
+    case 'scheduled_tasks':
+      for (let idx2=0; idx2<c.reports.length; ++idx2) {
+        r = c.reports[idx2];
+        emitTasks(taskDefinition, Utils, Task, emit, c, r);
+      }
+      break;
+    case 'contacts':
+      if (c.contact) {
+        emitTasks(taskDefinition, Utils, Task, emit, c);
+      }
+      break;
+    default:
+      throw new Error('Unrecognised task.appliesTo: ' + taskDefinition.appliesTo);
     }
   }
 }
 
 function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
-  var i;
+  let i;
 
   if (taskDefinition.appliesToType) {
-    var type;
+    let type;
     if (taskDefinition.appliesTo === 'contacts') {
       if (!c.contact) {
         // no assigned contact - does not apply
@@ -78,7 +81,7 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
   }
 
   function obtainContactLabelFromSchedule(taskDefinition, c, r) {
-    var contactLabel;
+    let contactLabel;
     if (typeof taskDefinition.contactLabel === 'function') {
       contactLabel = taskDefinition.contactLabel(c, r);
     } else {
@@ -89,7 +92,8 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
   }
 
   function emitForEvents(scheduledTaskIdx) {
-    var i, dueDate = null, event, priority, task;
+    let i; let dueDate = null; let event; let priority; let 
+      task;
     for (i = 0; i < taskDefinition.events.length; i++) {
       event = taskDefinition.events[i];
 
@@ -105,7 +109,7 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
         if (event.dueDate) {
           dueDate = event.dueDate(event, c);
         } else {
-          var defaultDueDate = c.contact && c.contact.reported_date ? new Date(c.contact.reported_date) : new Date();
+          const defaultDueDate = c.contact && c.contact.reported_date ? new Date(c.contact.reported_date) : new Date();
           dueDate = new Date(Utils.addDate(defaultDueDate, event.days));
         }
       }
@@ -155,8 +159,8 @@ function emitTasks(taskDefinition, Utils, Task, emit, c, r) {
   }
 
   function initAction(action, event) {
-    var appliesToReport = !!r;
-    var content = {
+    const appliesToReport = !!r;
+    const content = {
       source: 'task',
       source_id: appliesToReport ? r._id : c.contact && c.contact._id,
       contact: c.contact,
