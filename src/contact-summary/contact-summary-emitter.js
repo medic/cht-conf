@@ -25,7 +25,7 @@ function emitter(contactSummary, contact, reports) {
   };
 
   cards.forEach(function (card) {
-    let idx1
+    let idx1;
     let r;
     let added;
 
