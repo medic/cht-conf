@@ -7,13 +7,13 @@ function emitter(contactSummary, contact, reports) {
 
   const result = {
     cards: [],
-    fields: fields.filter(function(f) {
+    fields: fields.filter(function (f) {
       const appliesToType = convertToArray(f.appliesToType);
-      const appliesToNotType = appliesToType.filter(function(type) {
+      const appliesToNotType = appliesToType.filter(function (type) {
         return type && type.charAt(0) === '!';
       });
       if (appliesToType.length === 0 || appliesToType.includes(contactType) ||
-          (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
+        (appliesToNotType.length > 0 && !appliesToNotType.includes('!' + contactType))) {
         if (!f.appliesIf || f.appliesIf()) {
           delete f.appliesToType;
           delete f.appliesIf;
@@ -24,9 +24,9 @@ function emitter(contactSummary, contact, reports) {
     }),
   };
 
-  cards.forEach(function(card) {
-    let idx1; 
-    let r; 
+  cards.forEach(function (card) {
+    let idx1
+    let r;
     let added;
 
     const appliesToType = convertToArray(card.appliesToType);
@@ -36,7 +36,7 @@ function emitter(contactSummary, contact, reports) {
     }
 
     if (appliesToType.includes('report')) {
-      for (idx1=0; idx1<reports.length; ++idx1) {
+      for (idx1 = 0; idx1 < reports.length; ++idx1) {
         r = reports[idx1];
         if (!isReportValid(r)) {
           continue;
@@ -81,8 +81,8 @@ function isReportValid(report) {
 function execAppliesIf(prop, report) {
   switch (typeof prop) {
   case 'undefined': return true;
-  case 'function':  return prop(report);
-  default:          return prop;
+  case 'function': return prop(report);
+  default: return prop;
   }
 }
 
@@ -102,10 +102,10 @@ function addCard(card, context, r) {
   const fields = typeof card.fields === 'function' ?
     card.fields(r) :
     card.fields
-      .filter(function(f) {
+      .filter(function (f) {
         return execAppliesIf(f.appliesIf, r);
       })
-      .map(function(f) {
+      .map(function (f) {
         const ret = {};
         addValue(f, ret, 'label');
         addValue(f, ret, 'value');
