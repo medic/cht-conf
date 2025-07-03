@@ -24,11 +24,11 @@ module.exports = {
       const barTotal = process.stdout.columns - fPrefix.length - fSuffix.length - 3;
       const pBarLen = Math.floor(runningTotal * barTotal / target);
 
-      for(i=pBarLen; i>0; --i) {
+      for (i=pBarLen; i>0; --i) {
         bar += '█';
       }
 
-      for(i=barTotal-pBarLen; i>0; --i) {
+      for (i=barTotal-pBarLen; i>0; --i) {
         bar += ' ';
       }
 
@@ -38,30 +38,35 @@ module.exports = {
     print();
 
     return {
-      increment: d => { runningTotal += d; print(); },
-      done: () => { runningTotal = target; print(); console.log(); },
-      cancel: () => { console.log(); },
+      increment: d => {
+        runningTotal += d; print(); 
+      },
+      done: () => {
+        runningTotal = target; print(); console.log(); 
+      },
+      cancel: () => {
+        console.log(); 
+      },
     };
   },
 };
 
 function roundAndPad(n, digits, padWith) {
-  if(typeof digits === 'undefined') {
+  if (typeof digits === 'undefined') {
     digits = 2;
   }
-  if(typeof padWith === 'undefined') {
+  if (typeof padWith === 'undefined') {
     padWith = '0';
   }
   n = Math.round(n);
   let s;
-  if(Number.isFinite(n)) {
+  if (Number.isFinite(n)) {
     s = n.toString();
-  }
-  else {
+  } else {
     padWith = '?';
     s = '';
   }
-  while(s.length < digits) {
+  while (s.length < digits) {
     s = padWith + s;
   }
   return s;

@@ -7,6 +7,7 @@ module.exports = {
     await fetchFilesFromGoogleDrive(
       `${environment.pathToProject}/forms-on-google-drive.json`,
       `${environment.pathToProject}/forms`,
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
   }
 };

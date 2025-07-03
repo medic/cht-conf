@@ -145,8 +145,7 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   const purgeConfig = parsePurge(projectDir);
   if (purgeConfig) {
     appSettings.purge = purgeConfig;
-  }
-  else{
+  } else {
     warn('Setting purge configuration to empty object as purge.js and purging.js files were not found.');
     appSettings.purge = {};
   }
@@ -192,11 +191,9 @@ function applyTransforms(app_settings, inherited) {
       .forEach(k => {
         if (Array.isArray(source[k])) {
           target[k] = target[k].concat(source[k]);
-        }
-        else if (typeof source[k] === 'object') {
+        } else if (typeof source[k] === 'object') {
           doMerge(target[k], source[k]);
-        }
-        else {
+        } else {
           source[k] = target[k];
         }
       });

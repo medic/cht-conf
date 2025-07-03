@@ -189,7 +189,7 @@ describe('create-users', () => {
   it('force should create users without interaction', () => {
     sinon.stub(environment, 'force').get(() => true);
     mockTestDir(`data/create-users/existing-place`);
-    apiStub.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } },{ body: {} });
+    apiStub.giveResponses({ body: { total_docs: 12000, warn: true, limit: 10000 } }, { body: {} });
     const todd = {
       username: 'todd',
       password: 'Secret_1',
@@ -390,12 +390,10 @@ describe('create-users', () => {
     return assertDbEmpty()
       .then(() => /* when */ createUsers.execute())
 
-      .then(() =>
-        assert.deepEqual(apiStub.requestLog(), [
-          { method: 'POST', url: '/api/v1/users', body: alice },
-          { method: 'POST', url: '/api/v1/users', body: bob }
-        ])
-      );
+      .then(() => assert.deepEqual(apiStub.requestLog(), [
+        { method: 'POST', url: '/api/v1/users', body: alice },
+        { method: 'POST', url: '/api/v1/users', body: bob }
+      ]));
   });
 });
 

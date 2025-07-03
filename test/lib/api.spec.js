@@ -41,7 +41,8 @@ describe('api', () => {
           assert.fail('Expected assertion');
         } catch (e) {
           expect(e.message).to.eq(
-            'Invalid JSON response validating XForm against the API: --NOT JSON--');
+            'Invalid JSON response validating XForm against the API: --NOT JSON--'
+          );
         }
       });
 
@@ -105,7 +106,7 @@ describe('api', () => {
         mockRequest.put.onCall(0).resolves({ ok: true });
         try {
           await api().updateAppSettings(JSON.stringify({}));
-        } catch(err) {
+        } catch (err) {
           expect(err.error).to.equal('random');
           expect(mockRequest.get.callCount).to.equal(0);
           expect(mockRequest.put.callCount).to.equal(1);
@@ -146,7 +147,7 @@ describe('api', () => {
       it('call the API and parse types from string correctly', async () => {
         sinon.stub(environment, 'isArchiveMode').get(() => false);
         sinon.stub(environment, 'force').get(() => false);
-        mockRequest.get.resolves({'compressible_types':'text/*, application/*', 'compression_level':'8'});
+        mockRequest.get.resolves({'compressible_types': 'text/*, application/*', 'compression_level': '8'});
         const cacheSpy = new Map();
         const cacheGetSpy = sinon.spy(cacheSpy, 'get');
         api.__set__('cache', cacheSpy);
@@ -165,7 +166,7 @@ describe('api', () => {
       it('returns empty if API returns 404', async () => {
         sinon.stub(environment, 'isArchiveMode').get(() => false);
         sinon.stub(environment, 'force').get(() => false);
-        mockRequest.get.rejects({statusCode:404});
+        mockRequest.get.rejects({statusCode: 404});
         const cacheSpy = new Map();
         const cacheGetSpy = sinon.spy(cacheSpy, 'get');
         api.__set__('cache', cacheSpy);
@@ -186,7 +187,7 @@ describe('api', () => {
         sinon.stub(environment, 'force').get(() => false);
         const getReqStub = mockRequest.get;
         getReqStub.onCall(0).rejects('The error');
-        getReqStub.onCall(1).resolves({'compressible_types':'text/*, application/*', 'compression_level':'8'});
+        getReqStub.onCall(1).resolves({'compressible_types': 'text/*, application/*', 'compression_level': '8'});
         const cacheSpy = new Map();
         const cacheGetSpy = sinon.spy(cacheSpy, 'get');
         api.__set__('cache', cacheSpy);
@@ -213,7 +214,7 @@ describe('api', () => {
         try {
           await api().available();
           assert.fail('Expected error to be thrown');
-        } catch(e) {
+        } catch (e) {
           expect(e.message).to.eq(expected);
         }
       }

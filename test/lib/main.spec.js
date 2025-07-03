@@ -52,7 +52,7 @@ describe('main', () => {
     try {
       await main([], {});
       expect.fail('Expected error to be thrown');
-    } catch(e) {
+    } catch (e) {
       expect(mocks.usage.calledOnce).to.be.true;
       expect(e.message).to.equal('Invalid number of arguments.');
     }
@@ -62,7 +62,7 @@ describe('main', () => {
     try {
       await main([...normalArgv], {});
       expect.fail('Expected error to be thrown');
-    } catch(e) {
+    } catch (e) {
       expect(mocks.usage.calledOnce).to.be.true;
       expect(e.message).to.equal('Invalid number of arguments.');
     }
@@ -154,7 +154,7 @@ describe('main', () => {
     try {
       await main([...normalArgv, '--local', 'not-an-action'], {});
       expect.fail('Expected error to be thrown');
-    } catch(e) {
+    } catch (e) {
       expect(mocks.executeAction.called).to.be.false;
       expect(mocks.usage.calledOnce).to.be.true;
       expect(e.message).to.equal('Unsupported action(s): not-an-action');
@@ -250,7 +250,7 @@ describe('main', () => {
       try {
         await main([...normalArgv, '--archive', 'upload-app-settings'], {});
         expect.fail('Expected error to be thrown');
-      } catch(e) {
+      } catch (e) {
         expect(mocks.executeAction.called).to.be.false;
         expect(e.message).to.equal('--destination=<path to save files> is required with --archive.');
       }
@@ -270,7 +270,7 @@ describe('main', () => {
     try {
       await main([...normalArgv, '---url=https://admin:pwd@url.app.medicmobile.org/']);
       expect.fail('Expected error to be thrown');
-    } catch(e) {
+    } catch (e) {
       expect(userPrompt.keyInYN.callCount).to.eq(1);
       expect(e.message).to.equal('User aborted execution.');
     }
@@ -288,7 +288,7 @@ describe('main', () => {
     try {
       await main([...normalArgv, 'upload-app-forms']);
       expect.fail('Expected error to be thrown');
-    } catch(e) {
+    } catch (e) {
       expect(apiAvailable.callCount).to.eq(1);
       expect(e.message).to.equal('Failed to get a response');
     }

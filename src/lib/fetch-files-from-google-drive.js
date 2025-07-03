@@ -7,7 +7,7 @@ const info = require('./log').info;
 module.exports = async (filesJson, targetDir, mimeType) => {
   return googleAuth()
     .then(auth => {
-      const drive = google.drive({ auth, version:'v3' });
+      const drive = google.drive({ auth, version: 'v3' });
 
       const files = fs.readJson(filesJson);
 
@@ -36,7 +36,7 @@ module.exports = async (filesJson, targetDir, mimeType) => {
 
             info(`Exporting ${remoteName} from google drive to ${target}…`);
 
-            drive.files.export(fetchOpts, { responseType:'stream' })
+            drive.files.export(fetchOpts, { responseType: 'stream' })
               .then(res => {
                 res.data
                   .on('end', () => {

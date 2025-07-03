@@ -42,8 +42,7 @@ describe('upload database indexes', () => {
     try {
       await getDoc();
       chai.assert.fail('doc should not exist');
-    }
-    catch (err) {
+    } catch (err) {
       chai.expect(err.status).to.equal(404);
     }
   });

@@ -122,7 +122,7 @@ describe('edit-contacts', function() {
 
     sinon
       .stub(environment, 'extraArgs')
-      .get(() => ['--files=contact.nested.csv','--columns=is_pilot.rbf.place,weird_property,another_property']);
+      .get(() => ['--files=contact.nested.csv', '--columns=is_pilot.rbf.place,weird_property,another_property']);
 
     await editContactsModule.execute();
 
@@ -218,7 +218,7 @@ describe('edit-contacts', function() {
   it('should load documents from provided directory if relevant argument is passed', async () => {
     const db = sinon.stub(pouch, 'allDocs');
     sinon
-      .stub(environment,'extraArgs')
+      .stub(environment, 'extraArgs')
       .get(() => [
         '--column=type', '--files=contact.type.csv', '--updateOfflineDocs', `--docDirectoryPath=${editedJsonDocs}`
       ]);
@@ -262,7 +262,7 @@ describe('edit-contacts', function() {
         ]
       });
     sinon
-      .stub(environment,'extraArgs')
+      .stub(environment, 'extraArgs')
       .get(() => [
         '--columns=is_in_emnch,rbf',
         '--files=contact.csv',
@@ -334,7 +334,7 @@ describe('edit-contacts', function() {
       .stub(userPrompt, 'keyInSelect')
       .returns(2);
     sinon
-      .stub(environment,'extraArgs')
+      .stub(environment, 'extraArgs')
       .get(() => ['--columns=type', '--files=contact.type.csv', `--docDirectoryPath=${editedJsonDocs}`]);
     try {
       await editContactsModule.execute();
@@ -362,7 +362,7 @@ describe('edit-contacts', function() {
       .stub(pouch, 'allDocs')
       .throws(new Error('db fetching failed'));
     sinon
-      .stub(environment,'extraArgs')
+      .stub(environment, 'extraArgs')
       .get(() => [
         '--columns=is_in_emnch,rbf',
         '--files=contact.fail.fetch.csv',
@@ -382,7 +382,7 @@ describe('edit-contacts', function() {
       .stub(fs, 'write')
       .throws(new Error('failed to write file'));
     sinon
-      .stub(environment,'extraArgs')
+      .stub(environment, 'extraArgs')
       .get(() => [
         '--columns=is_in_emnch,rbf',
         '--files=contact.csv',

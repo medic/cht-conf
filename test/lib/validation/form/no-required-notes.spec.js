@@ -40,15 +40,14 @@ const getXml = (bindData = '') => `
   </h:body>
 </h:html>`;
 
-const createBindData = fields =>
-  fields
-    .map(({ name, type, calculate, readonly, required }) => {
-      const calc = calculate ? `calculate="${calculate}"` : '';
-      const read = readonly ? `readonly="${readonly}"` : '';
-      const req = required ? `required="${required}"` : '';
-      return `<bind nodeset="${name}" type="${type}" ${calc} ${read} ${req}/>`;
-    })
-    .join('');
+const createBindData = fields => fields
+  .map(({ name, type, calculate, readonly, required }) => {
+    const calc = calculate ? `calculate="${calculate}"` : '';
+    const read = readonly ? `readonly="${readonly}"` : '';
+    const req = required ? `required="${required}"` : '';
+    return `<bind nodeset="${name}" type="${type}" ${calc} ${read} ${req}/>`;
+  })
+  .join('');
 
 const getXmlDoc = (fields, instance) => domParser.parseFromString(getXml(createBindData(fields), instance));
 const xformPath = '/my/form/path/form.xml';
@@ -58,8 +57,10 @@ const assertEmpty = (output) => {
   expect(output.errors, output.errors).is.empty;
 };
 
-const getExpectedErrorMsg = requiredNotes =>
-  `Form at ${xformPath} contains the following note fields with 'required' expressions: [${requiredNotes.join(', ')}]`;
+const getExpectedErrorMsg = requiredNotes => {
+  return `Form at ${xformPath} contains the following note fields with 'required' ` + 
+    `expressions: [${requiredNotes.join(', ')}]`;
+};
 
 describe('no-required-notes', () => {
   it('resolves OK for form with no notes', () => {
@@ -73,7 +74,7 @@ describe('no-required-notes', () => {
       type: 'string',
       readonly: 'true()',
       required: 'false()'
-    },{
+    }, {
       name: '/data/address/street-nbr',
       type: 'string',
       readonly: 'true()'
@@ -100,7 +101,7 @@ describe('no-required-notes', () => {
       type: 'string',
       readonly: 'false()',
       required: 'true()'
-    },{
+    }, {
       name: '/data/address/street-nbr',
       type: 'string',
       readonly: 'false()'
@@ -126,7 +127,7 @@ describe('no-required-notes', () => {
       type: 'string',
       readonly: 'true()',
       required: 'true()'
-    },{
+    }, {
       name: '/data/address/street-nbr',
       type: 'string',
       readonly: 'true()',

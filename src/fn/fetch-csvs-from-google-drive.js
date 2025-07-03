@@ -7,6 +7,7 @@ module.exports = {
     await fetchFilesFromGoogleDrive(
       `${environment.pathToProject}/csvs-on-google-drive.json`,
       `${environment.pathToProject}/csv`,
-      'text/csv');
+      'text/csv'
+    );
   }
 };

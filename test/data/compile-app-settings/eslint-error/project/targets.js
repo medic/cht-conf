@@ -1,4 +1,4 @@
-var id = 'active-pregnancies' // missing semicolon
+const id = 'active-pregnancies' // missing semicolon
 
 module.exports = [
   {
@@ -10,7 +10,9 @@ module.exports = [
     translation_key: 'targets.active_pregnancies.title',
     subtitle_translation_key: 'targets.all_time.subtitle',
 
-    appliesIf: function(c, r) { return r.form === 'D'; },
+    appliesIf: function(c, r) {
+      return r.form === 'D'
+    },
     date: 'now',
   }
 ];

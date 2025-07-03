@@ -103,8 +103,7 @@ const execute = async () => {
     } catch (e) {
       if (e.status === 404) {
         doc = await newDocFor(fileName, db, languageName, languageCode);
-      }
-      else {
+      } else {
         throw e;
       }
     }

@@ -46,10 +46,12 @@ describe('upload-forms', () => {
         'DEPRECATED: data/lib/upload-forms/merge-properties/forms/./example.properties.json. ' +
         'Please do not manually set internalId in .properties.json for new projects. ' +
         'Support for configuring this value will be dropped. ' +
-        'Please see https://github.com/medic/cht-core/issues/3342.');
+        'Please see https://github.com/medic/cht-core/issues/3342.'
+      );
       expect(logWarn.args[1][0]).to.equal(
         'Ignoring unknown properties in ' +
-        'data/lib/upload-forms/merge-properties/forms/./example.properties.json: unknown');
+        'data/lib/upload-forms/merge-properties/forms/./example.properties.json: unknown'
+      );
       const form = await api.db.get('form:example');
       expect(form.type).to.equal('form');
       expect(form.internalId).to.equal('different');

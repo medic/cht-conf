@@ -81,7 +81,7 @@ const api = {
     const url = `${environment.apiUrl}/_design/medic/_rewrite/app_settings/medic`;
     return request.get({ url, json: true })
       .catch(err => {
-        if(err.statusCode === 404) {
+        if (err.statusCode === 404) {
           throw new Error(`Failed to fetch existing app_settings from ${url}.\n` +
               `      Check that CHT API is running and that you're connecting on the correct port!`);
         } else {
@@ -243,7 +243,7 @@ const api = {
         return cache.get('compressibleTypes');
       }
       const resp = await request.get({ url: configUrl, json: true });
-      const compressibleTypes = resp.compressible_types.split(',').map(s=>s.trim());
+      const compressibleTypes = resp.compressible_types.split(',').map(s => s.trim());
       cache.set('compressibleTypes', compressibleTypes);
       return compressibleTypes;
     } catch (e) {

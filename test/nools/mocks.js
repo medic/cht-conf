@@ -53,15 +53,13 @@ const calculatePriorityScore = (t, c, r, e, d) => {
 
   if (score >= 8 && score <= 10) {
     label = 'High Priority';
-  } 
-  else if (score >= 5 && score < 8) {
+  } else if (score >= 5 && score < 8) {
     label = 'Medium Priority';
-  }
-  else if (score > 0 && score < 5) {
+  } else if (score > 0 && score < 5) {
     label = 'Low Priority';
   }
   
-  return { level: score, label: [ { locale:'en', label: (label || '') } ] };
+  return { level: score, label: [ { locale: 'en', label: (label || '') } ] };
 };
 
 const highRiskContactDefaults = {
@@ -124,13 +122,15 @@ function aTask(type) {
   return {
     appliesTo: type,
     name: `task-${idCounter}`,
-    title: [ { locale:'en', content:`Task ${idCounter}` } ],
+    title: [ { locale: 'en', content: `Task ${idCounter}` } ],
     actions: [{ form: 'example-form' }],
     events: [ {
       id: `task`,
-      days:0, start:0, end:1,
+      days: 0, start: 0, end: 1,
     } ],
-    resolvedIf: function() { return false; },
+    resolvedIf: function() {
+      return false; 
+    },
   };
 }
 
@@ -139,14 +139,18 @@ function aScheduledTaskBasedTask() {
   return {
     appliesTo: 'scheduled_tasks',
     name: `task-${idCounter}`,
-    title: [ { locale:'en', content:`Task ${idCounter}` } ],
+    title: [ { locale: 'en', content: `Task ${idCounter}` } ],
     actions: [],
     events: [ {
       id: `task-${idCounter}`,
-      days:0, start:0, end:1,
+      days: 0, start: 0, end: 1,
     } ],
-    resolvedIf: function() { return false; },
-    appliesIf: function() { return true; },
+    resolvedIf: function() {
+      return false; 
+    },
+    appliesIf: function() {
+      return true; 
+    },
   };
 }
 
@@ -178,18 +182,18 @@ function aReportBasedTarget() {
 
 function aReport() {
   ++idCounter;
-  return { _id:`r-${idCounter}`, form:'F', reported_date:TEST_DATE };
+  return { _id: `r-${idCounter}`, form: 'F', reported_date: TEST_DATE };
 }
 
 function aReportWithScheduledTasks(scheduledTaskCount) {
   ++idCounter;
 
   const scheduled_tasks = [];
-  while(scheduledTaskCount--) {
-    scheduled_tasks.push({ due:TEST_DATE });
+  while (scheduledTaskCount--) {
+    scheduled_tasks.push({ due: TEST_DATE });
   }
 
-  return { _id:`r-${idCounter}`, form:'F', scheduled_tasks };
+  return { _id: `r-${idCounter}`, form: 'F', scheduled_tasks };
 }
 
 function personWithoutReports() {
@@ -198,12 +202,15 @@ function personWithoutReports() {
 
 function personWithReports(...reports) {
   ++idCounter;
-  return { contact:{ _id:`c-${idCounter}`, type:'person', reported_date:TEST_DATE }, reports };
+  return { contact: { _id: `c-${idCounter}`, type: 'person', reported_date: TEST_DATE }, reports };
 }
 
 function configurableHierarchyPersonWithReports(...reports) {
   ++idCounter;
-  return { contact: { _id:`c-${idCounter}`, type:`contact`, contact_type:`custom`, reported_date:TEST_DATE }, reports };
+  return { 
+    contact: { _id: `c-${idCounter}`, type: `contact`, contact_type: `custom`, reported_date: TEST_DATE },
+    reports 
+  };
 }
 
 function placeWithoutReports() {
@@ -212,7 +219,7 @@ function placeWithoutReports() {
 
 function placeWithReports(...reports) {
   ++idCounter;
-  return { contact:{ _id:`c-${idCounter}`, type:'clinic', reported_date:TEST_DATE }, reports };
+  return { contact: { _id: `c-${idCounter}`, type: 'clinic', reported_date: TEST_DATE }, reports };
 }
 
 function unknownContactWithReports(...reports) {
@@ -224,7 +231,9 @@ function aRandomTimestamp() {
 }
 
 module.exports = {
-  reset: () => { idCounter = 0; },
+  reset: () => {
+    idCounter = 0; 
+  },
   TEST_DATE,
   TEST_DAY,
   aReportBasedTask,

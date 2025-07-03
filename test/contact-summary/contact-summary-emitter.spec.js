@@ -97,7 +97,7 @@ describe('contact-summary-emitter', function() {
       try {
         emitter({ cards }, { type: 'a' }, [report]);
         throw new Error('Ensures it throws');
-      } catch(e) {
+      } catch (e) {
         expect(e.message).to.include('You cannot set appliesToType');
       }
     });
@@ -239,11 +239,11 @@ describe('contact-summary-emitter', function() {
     });
 
     it('should return true if report has empty errors array (as for JSON forms)', function() {
-      assert.isTrue(isReportValid({ errors:[] }));
+      assert.isTrue(isReportValid({ errors: [] }));
     });
 
     it('should return false if report has errors', function() {
-      assert.isFalse(isReportValid({ errors:['???'] }));
+      assert.isFalse(isReportValid({ errors: ['???'] }));
     });
   });
 });

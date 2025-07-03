@@ -3,13 +3,13 @@ module.exports = function() {
   const responses = [];
 
   function reset() {
-    if(responses.length !== 0) {
+    if (responses.length !== 0) {
       throw new Error(`Unused responses (${responses.length})!`);
     }
   }
 
   function clearRequests(){
-    while(this.requests.length > 0 ){
+    while (this.requests.length > 0 ){
       this.requests.pop();
     }
   }
@@ -19,7 +19,7 @@ module.exports = function() {
 
     const response = responses.shift();
 
-    if(!response) {
+    if (!response) {
       return error(req, res);
     }
 

@@ -25,7 +25,7 @@ describe('target emitter', () => {
   describe('test setup', () => {
     it('should successfully parse the lib', () => {
       // given
-      const emptyConfig = { c:{}, targets:[] };
+      const emptyConfig = { c: {}, targets: [] };
 
       // when
       const lib = runNoolsLib(emptyConfig);
@@ -36,13 +36,13 @@ describe('target emitter', () => {
 
     it('should emit completed signal', () => {
       // given
-      const emptyConfig = { c:{}, targets:[] };
+      const emptyConfig = { c: {}, targets: [] };
 
       // when
       const emitted = runNoolsLib(emptyConfig).emitted;
 
       // then
-      assert.deepEqual(emitted, [ { _type:'_complete', _id: true } ]);
+      assert.deepEqual(emitted, [ { _type: '_complete', _id: true } ]);
     });
   });
 
@@ -61,8 +61,8 @@ describe('target emitter', () => {
 
         // then
         assert.deepEqual(emitted, [
-          { _id: 'c-1~pT-2', _type:'target', date: TEST_DATE },
-          { _type:'_complete', _id: true },
+          { _id: 'c-1~pT-2', _type: 'target', date: TEST_DATE },
+          { _type: '_complete', _id: true },
         ]);
       });
 
@@ -79,8 +79,8 @@ describe('target emitter', () => {
 
         // then
         assert.deepEqual(emitted, [
-          {_id: 'c-2~pT-3', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id: true },
+          {_id: 'c-2~pT-3', _type: 'target', date: TEST_DATE },
+          { _type: '_complete', _id: true },
         ]);
       });
 
@@ -97,8 +97,8 @@ describe('target emitter', () => {
 
         // then
         assert.deepEqual(emitted, [
-          { _id: 'c-4~pT-5', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id: true },
+          { _id: 'c-4~pT-5', _type: 'target', date: TEST_DATE },
+          { _type: '_complete', _id: true },
         ]);
       });
 
@@ -123,8 +123,8 @@ describe('target emitter', () => {
 
         // then
         assert.deepEqual(emitted, [
-          { _id: 'c-2~pT-1', _type:'target', date: reportedDate },
-          { _type:'_complete', _id: true },
+          { _id: 'c-2~pT-1', _type: 'target', date: reportedDate },
+          { _type: '_complete', _id: true },
         ]);
       });
 
@@ -144,15 +144,15 @@ describe('target emitter', () => {
 
         // then
         assert.deepEqual(emitted, [
-          { _id: 'c-2~pT-1', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id: true },
+          { _id: 'c-2~pT-1', _type: 'target', date: TEST_DATE },
+          { _type: '_complete', _id: true },
         ]);
       });
 
       it('should default to "now" if target date is a function returning null', () => {
         // given
         const target = aPersonBasedTarget();
-        target.date = () => null ;
+        target.date = () => null;
         // and
         const config = {
           c: personWithoutReports(),
@@ -319,8 +319,8 @@ describe('target emitter', () => {
 
         // then
         assert.deepEqual(emitted, [
-          { _id: 'c-1~plT-2', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id: true },
+          { _id: 'c-1~plT-2', _type: 'target', date: TEST_DATE },
+          { _type: '_complete', _id: true },
         ]);
       });
 
@@ -337,8 +337,8 @@ describe('target emitter', () => {
 
         // then
         assert.deepEqual(emitted, [
-          { _id: 'c-2~plT-3', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id: true },
+          { _id: 'c-2~plT-3', _type: 'target', date: TEST_DATE },
+          { _type: '_complete', _id: true },
         ]);
       });
 
@@ -355,8 +355,8 @@ describe('target emitter', () => {
 
         // then
         assert.deepEqual(emitted, [
-          { _id: 'c-4~plT-5', _type:'target', date:TEST_DATE },
-          { _type:'_complete', _id: true },
+          { _id: 'c-4~plT-5', _type: 'target', date: TEST_DATE },
+          { _type: '_complete', _id: true },
         ]);
       });
     });
@@ -376,7 +376,7 @@ describe('target emitter', () => {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'_complete', _id: true },
+            { _type: '_complete', _id: true },
           ]);
         });
 
@@ -393,8 +393,8 @@ describe('target emitter', () => {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', _id:'c-2~rT-3', date: TEST_DATE },
-            { _type:'_complete', _id: true },
+            { _type: 'target', _id: 'c-2~rT-3', date: TEST_DATE },
+            { _type: '_complete', _id: true },
           ]);
         });
 
@@ -411,10 +411,10 @@ describe('target emitter', () => {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', _id:'c-4~rT-5', date: TEST_DATE },
-            { _type:'target', _id:'c-4~rT-5', date: TEST_DATE },
-            { _type:'target', _id:'c-4~rT-5', date: TEST_DATE },
-            { _type:'_complete', _id: true },
+            { _type: 'target', _id: 'c-4~rT-5', date: TEST_DATE },
+            { _type: 'target', _id: 'c-4~rT-5', date: TEST_DATE },
+            { _type: 'target', _id: 'c-4~rT-5', date: TEST_DATE },
+            { _type: '_complete', _id: true },
           ]);
         });
 
@@ -451,7 +451,7 @@ describe('target emitter', () => {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'_complete', _id: true },
+            { _type: '_complete', _id: true },
           ]);
         });
         it('should emit once per report for person with one report', () => {
@@ -467,9 +467,9 @@ describe('target emitter', () => {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', _id:'c-2~rT-3', date: TEST_DATE },
-            { _type:'target', _id:'c-2~rT-4', date: TEST_DATE },
-            { _type:'_complete', _id: true },
+            { _type: 'target', _id: 'c-2~rT-3', date: TEST_DATE },
+            { _type: 'target', _id: 'c-2~rT-4', date: TEST_DATE },
+            { _type: '_complete', _id: true },
           ]);
         });
         it('should emit once per report for person with multiple reports', () => {
@@ -485,13 +485,13 @@ describe('target emitter', () => {
 
           // then
           assert.deepEqual(emitted, [
-            { _type:'target', _id:'c-4~rT-5', date: TEST_DATE },
-            { _type:'target', _id:'c-4~rT-5', date: TEST_DATE },
-            { _type:'target', _id:'c-4~rT-5', date: TEST_DATE },
-            { _type:'target', _id:'c-4~rT-6', date: TEST_DATE },
-            { _type:'target', _id:'c-4~rT-6', date: TEST_DATE },
-            { _type:'target', _id:'c-4~rT-6', date: TEST_DATE },
-            { _type:'_complete', _id: true },
+            { _type: 'target', _id: 'c-4~rT-5', date: TEST_DATE },
+            { _type: 'target', _id: 'c-4~rT-5', date: TEST_DATE },
+            { _type: 'target', _id: 'c-4~rT-5', date: TEST_DATE },
+            { _type: 'target', _id: 'c-4~rT-6', date: TEST_DATE },
+            { _type: 'target', _id: 'c-4~rT-6', date: TEST_DATE },
+            { _type: 'target', _id: 'c-4~rT-6', date: TEST_DATE },
+            { _type: '_complete', _id: true },
           ]);
         });
       });
@@ -513,8 +513,8 @@ describe('target emitter', () => {
 
       // then
       assert.deepEqual(emitted, [
-        { _id: 'c-3~pT-1', _type:'target', date: TEST_DATE },
-        { _type:'_complete', _id: true },
+        { _id: 'c-3~pT-1', _type: 'target', date: TEST_DATE },
+        { _type: '_complete', _id: true },
       ]);
     });
 
@@ -548,8 +548,8 @@ describe('target emitter', () => {
 
       // then
       assert.deepEqual(emitted, [
-        { _id: 'c-3~pT-1', _type:'target', date: TEST_DATE },
-        { _type:'_complete', _id: true },
+        { _id: 'c-3~pT-1', _type: 'target', date: TEST_DATE },
+        { _type: '_complete', _id: true },
       ]);
     });
 
@@ -569,8 +569,8 @@ describe('target emitter', () => {
 
       // then
       assert.deepEqual(emitted, [
-        { _id: 'c-3~pT-1', _type:'target', date: TEST_DATE },
-        { _type:'_complete', _id: true },
+        { _id: 'c-3~pT-1', _type: 'target', date: TEST_DATE },
+        { _type: '_complete', _id: true },
       ]);
     });
 
@@ -590,7 +590,7 @@ describe('target emitter', () => {
 
       // then
       assert.deepEqual(emitted, [
-        { _type:'_complete', _id: true },
+        { _type: '_complete', _id: true },
       ]);
     });
 
@@ -610,8 +610,8 @@ describe('target emitter', () => {
 
       // then
       assert.deepEqual(emitted, [
-        { _id: 'c-3~pT-1', _type:'target', date: TEST_DATE },
-        { _type:'_complete', _id: true },
+        { _id: 'c-3~pT-1', _type: 'target', date: TEST_DATE },
+        { _type: '_complete', _id: true },
       ]);
     });
   });

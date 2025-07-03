@@ -1,22 +1,22 @@
-var prepareDefinition = require('./definition-preparation');
+const prepareDefinition = require('./definition-preparation');
 
 function targetEmitter(targets, c, Utils, Target, emit) {
-  for (var idx1 = 0; idx1 < targets.length; ++idx1) {
-    var target = targets[idx1];
+  for (let idx1 = 0; idx1 < targets.length; ++idx1) {
+    const target = targets[idx1];
     prepareDefinition(target);
 
     switch (target.appliesTo) {
-      case 'contacts':
-        emitTargetFor(target, Target, Utils, emit, c);
-        break;
-      case 'reports':
-        for (var idx2 = 0; idx2 < c.reports.length; ++idx2) {
-          var r = c.reports[idx2];
-          emitTargetFor(target, Target, Utils, emit, c, r);
-        }
-        break;
-      default:
-        throw new Error('Unrecognised target.appliesTo: ' + target.appliesTo);
+    case 'contacts':
+      emitTargetFor(target, Target, Utils, emit, c);
+      break;
+    case 'reports':
+      for (let idx2 = 0; idx2 < c.reports.length; ++idx2) {
+        const r = c.reports[idx2];
+        emitTargetFor(target, Target, Utils, emit, c, r);
+      }
+      break;
+    default:
+      throw new Error('Unrecognised target.appliesTo: ' + target.appliesTo);
     }
   }
 }
@@ -38,7 +38,7 @@ function determineDate(targetConfig, Utils, c, r) {
 }
 
 function determineInstanceIds(targetConfig, c, r) {
-  var instanceIds;
+  let instanceIds;
   if (typeof targetConfig.idType === 'function') {
     instanceIds = targetConfig.idType(c, r);
   } else if (targetConfig.idType === 'report') {
@@ -55,25 +55,31 @@ function determineInstanceIds(targetConfig, c, r) {
 }
 
 function emitTargetFor(targetConfig, Target, Utils, emit, c, r) {
-  var isEmittingForReport = !!r;
-  if (!c.contact) return;
-  var contactType = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
-  var appliesToKey = isEmittingForReport ? r.form : contactType;
-  if (targetConfig.appliesToType && targetConfig.appliesToType.indexOf(appliesToKey) < 0) return;
-  if (targetConfig.appliesIf && !targetConfig.appliesIf (c, r)) return;
+  const isEmittingForReport = !!r;
+  if (!c.contact) {
+    return;
+  }
+  const contactType = c.contact.type === 'contact' ? c.contact.contact_type : c.contact.type;
+  const appliesToKey = isEmittingForReport ? r.form : contactType;
+  if (targetConfig.appliesToType && targetConfig.appliesToType.indexOf(appliesToKey) < 0) {
+    return;
+  }
+  if (targetConfig.appliesIf && !targetConfig.appliesIf(c, r)) {
+    return;
+  }
 
-  var instanceDoc = isEmittingForReport ? r : c.contact;
-  var instanceIds = determineInstanceIds(targetConfig, c, r);
-  var pass = !targetConfig.passesIf || !!targetConfig.passesIf(c, r);
-  var date = determineDate(targetConfig, Utils, c, r);
-  var groupBy = targetConfig.groupBy && targetConfig.groupBy(c, r);
+  const instanceDoc = isEmittingForReport ? r : c.contact;
+  const instanceIds = determineInstanceIds(targetConfig, c, r);
+  const pass = !targetConfig.passesIf || !!targetConfig.passesIf(c, r);
+  const date = determineDate(targetConfig, Utils, c, r);
+  const groupBy = targetConfig.groupBy && targetConfig.groupBy(c, r);
 
   function emitTargetInstance(i) {
     emit('target', i);
   }
 
-  for (var i = 0; i < instanceIds.length; ++i) {
-    var instance = new Target({
+  for (let i = 0; i < instanceIds.length; ++i) {
+    const instance = new Target({
       _id: instanceIds[i] + '~' + targetConfig.id,
       contact: c.contact,
       deleted: !!instanceDoc.deleted,

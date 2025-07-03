@@ -43,13 +43,13 @@ const extractSimpleXpaths = (expression) => {
 };
 
 const isValidXpath = (nodeset, xpathToValidate, instance) => {
-  if(xpathToValidate.startsWith('/')) {
+  if (xpathToValidate.startsWith('/')) {
     // Absolute XPath. Evaluate it relative to the instance
     return getNode(instance, xpathToValidate.substring(1));
   }
   // Relative XPath. Evaluate it relative to the current node
   const currentNode = getNode(instance, nodeset.substring(1));
-  if(!currentNode) {
+  if (!currentNode) {
     throw new Error(`Could not find model node referenced by bind nodeset: ${nodeset}`);
   }
   return getNode(currentNode, xpathToValidate);
@@ -83,7 +83,7 @@ const keepFieldsWithXPaths = (field) => {
 
 const getFieldsWithInvalidXPaths = (xmlDoc) => {
   const instance = getPrimaryInstanceNode(xmlDoc);
-  if(!instance) {
+  if (!instance) {
     throw new Error('No instance found in form XML.');
   }
   return getBindNodes(xmlDoc)
@@ -98,7 +98,7 @@ module.exports = {
     const errors = [];
     try {
       const fields = getFieldsWithInvalidXPaths(xmlDoc);
-      if(fields.length) {
+      if (fields.length) {
         errors.push(
           `Form at ${xformPath} contains invalid XPath expressions `
           + '(absolute or relative paths that refer to a non-existant node):'
@@ -107,7 +107,7 @@ module.exports = {
         fields.forEach(field => {
           const recordError = (expressionName) => {
             const xpaths = field[expressionName];
-            if(xpaths.length) {
+            if (xpaths.length) {
               errors.push(`  - ${expressionName} for ${field.nodeset} contains [${xpaths.join(', ')}]`);
             }
           };
@@ -118,7 +118,7 @@ module.exports = {
           recordError('required');
         });
       }
-    } catch(e) {
+    } catch (e) {
       errors.push(`Error encountered while validating XPaths in form at ${xformPath}: ${e.message}`);
     }
     return { errors, warnings: [] };

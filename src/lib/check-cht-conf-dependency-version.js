@@ -11,7 +11,7 @@ const runningVersion = require('../../package.json').version;
 
 module.exports = projectDir => {
   const projectVersion = readRequestedVersion(projectDir);
-  if(!projectVersion) {
+  if (!projectVersion) {
     warn('Project has no dependency on cht-conf.');
     return;
   }
@@ -22,14 +22,12 @@ module.exports = projectDir => {
   const satisfiesLessThanMajorRunningVersion = semver.satisfies(projectVersion, `<${majorRunningVersion}.x`);
   const satisifiesGreaterThanRunningVersion = semver.satisfies(projectVersion, `>${runningVersion}`);
 
-  if(satisfiesLessThanMajorRunningVersion || satisifiesGreaterThanRunningVersion) {
+  if (satisfiesLessThanMajorRunningVersion || satisifiesGreaterThanRunningVersion) {
 
-    if(satisfiesLessThanMajorRunningVersion) {
+    if (satisfiesLessThanMajorRunningVersion) {
       upgradeDowngradeLocalMsg = 'Downgrade';
       upgradeDowngradeProjectMsg = 'update';
-    }
-    else if(satisifiesGreaterThanRunningVersion)
-    {
+    } else if (satisifiesGreaterThanRunningVersion) {
       upgradeDowngradeLocalMsg = 'Upgrade';
       upgradeDowngradeProjectMsg = 'downgrade';
     }
@@ -53,7 +51,7 @@ module.exports = projectDir => {
 function readRequestedVersion(projectDir) {
   const path = `${projectDir}/package.json`;
 
-  if(!fs.exists(path)) {
+  if (!fs.exists(path)) {
     warn(`No project package.json file found at ${path}`);
     return;
   }

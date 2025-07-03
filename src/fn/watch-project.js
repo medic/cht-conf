@@ -32,7 +32,7 @@ const watcherEvents = {
 };
 
 const runValidation = (validation, forms) => {
-  if(environment.skipValidate) {
+  if (environment.skipValidate) {
     return;
   }
   return validation(forms);
@@ -189,7 +189,7 @@ const processFormMedia = (formMediaDir, fileName, commandContext) => {
   const form = uploadForms.formMediaMatcher(formMediaDir);
   if (form) {
     eventQueue.enqueue(async () => {
-      await runValidation(commandContext.validateForms,[form]);
+      await runValidation(commandContext.validateForms, [form]);
       await commandContext.uploadForms([form]);
       return fileName;
     });
