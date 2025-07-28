@@ -255,7 +255,22 @@ const api = {
       return [];
     }
   },
-  request
+
+  async getReportsByCreatedByIds (createdByIds, limit, skip) {
+    const queryString = createdByIds.map(id => `exact_match:"contact:${id}"`).join(' OR ');
+    const res = await request.get(`${environment.apiUrl}/_design/medic/_nouveau/reports_by_freetext`, {
+      qs: {
+        // sorting by this field ensures that the output are same with the clouseau views
+        // https://github.com/medic/cht-core/pull/9541
+        sort: '"reported_date"',
+        q: queryString,
+        include_docs: true,
+        limit,
+        skip
+      }, json: true
+    });
+    return res.hits.map(item => item.doc);
+  }
 };
 
 Object.entries(api)

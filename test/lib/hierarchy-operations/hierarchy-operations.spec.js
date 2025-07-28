@@ -171,10 +171,10 @@ describe('hierarchy-operations', () => {
       });
     });
 
-    it('move health_center_1 to district_2 in CHT version 4.99.0', async () => {
+    it('move health_center_1 to district_2 in CHT version 5.0.0', async () => {
       apiStub.giveResponses({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       }, {
         body: {
@@ -294,10 +294,10 @@ describe('hierarchy-operations', () => {
       ]);
     });
 
-    it('move health_center_1 to root in CHT version 4.99.0', async () => {
+    it('move health_center_1 to root in CHT version 5.0.0', async () => {
       apiStub.giveResponses({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       }, {
         body: {
@@ -411,10 +411,10 @@ describe('hierarchy-operations', () => {
       });
     });
 
-    it('move district_1 from root in CHT version 4.99.0', async () => {
+    it('move district_1 from root in CHT version 5.0.0', async () => {
       apiStub.giveResponses({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       }, {
         body: {
@@ -526,10 +526,10 @@ describe('hierarchy-operations', () => {
       });
     });
 
-    it('move district_1 to flexible hierarchy parent in CHT version 4.99.0', async () => {
+    it('move district_1 to flexible hierarchy parent in CHT version 5.0.0', async () => {
       apiStub.giveResponses({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       }, {
         body: {
@@ -631,10 +631,10 @@ describe('hierarchy-operations', () => {
       });
     });
 
-    it('moves flexible hierarchy contact to flexible hierarchy parent in CHT version 4.99.0', async () => {
+    it('moves flexible hierarchy contact to flexible hierarchy parent in CHT version 5.0.0', async () => {
       apiStub.giveResponses({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       }, {
         body: {
@@ -730,10 +730,10 @@ describe('hierarchy-operations', () => {
       expectWrittenDocs(['t_patient_1', 't_district_1', 't_health_center_1']);
     });
 
-    it('moving primary contact updates parents in CHT version 4.99.0', async () => {
+    it('moving primary contact updates parents in CHT version 5.0.0', async () => {
       apiStub.giveResponses({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       }, {
         body: {
@@ -802,10 +802,10 @@ describe('hierarchy-operations', () => {
       });
     });
 
-    it('district_hospital with empty string parent is not preserved in CHT version 4.99.0', async () => {
+    it('district_hospital with empty string parent is not preserved in CHT version 5.0.0', async () => {
       apiStub.giveResponses({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       }, {
         body: {
@@ -863,10 +863,10 @@ describe('hierarchy-operations', () => {
       });
     });
 
-    it('documents should be minified in CHT version 4.99.0', async () => {
+    it('documents should be minified in CHT version 5.0.0', async () => {
       apiStub.giveResponses({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       }, {
         body: {
@@ -1097,13 +1097,13 @@ describe('hierarchy-operations', () => {
         ]);
       });
 
-      it('move health_center_1 to district_2 in batches of 1 in CHT version in 4.99.0', async () => {
+      it('move health_center_1 to district_2 in batches of 1 in CHT version in 5.0.0', async () => {
         DataSource.__set__('BATCH_SIZE', 1);
         DataSource.BATCH_SIZE = 1;
         sinon.spy(pouchDb, 'query');
         apiStub.giveResponses({
           body: {
-            version: '4.99.0'
+            version: '5.0.0'
           }
         }, {
           body: {
@@ -1114,7 +1114,7 @@ describe('hierarchy-operations', () => {
           }
         }, {
           body: {
-            version: '4.99.0'
+            version: '5.0.0'
           }
         }, {
           body: {
@@ -1125,7 +1125,7 @@ describe('hierarchy-operations', () => {
           }
         }, {
           body: {
-            version: '4.99.0'
+            version: '5.0.0'
           }
         }, {
           body: {
@@ -1136,7 +1136,7 @@ describe('hierarchy-operations', () => {
           }
         }, {
           body: {
-            version: '4.99.0'
+            version: '5.0.0'
           }
         }, {
           body: {
@@ -1147,7 +1147,7 @@ describe('hierarchy-operations', () => {
           }
         }, {
           body: {
-            version: '4.99.0'
+            version: '5.0.0'
           }
         }, {
           body: {
@@ -1320,13 +1320,13 @@ describe('hierarchy-operations', () => {
         ]);
       });
 
-      it('should health_center_1 to district_1 in batches of 2 in CHT version 4.99.0', async () => {
+      it('should health_center_1 to district_1 in batches of 2 in CHT version 5.0.0', async () => {
         DataSource.__set__('BATCH_SIZE', 2);
         DataSource.BATCH_SIZE = 2;
         sinon.spy(pouchDb, 'query');
         apiStub.giveResponses({
           body: {
-            version: '4.99.0'
+            version: '5.0.0'
           }
         }, {
           body: {
@@ -1335,7 +1335,7 @@ describe('hierarchy-operations', () => {
           }
         }, {
           body: {
-            version: '4.99.0'
+            version: '5.0.0'
           }
         }, {
           body: {
@@ -1344,7 +1344,7 @@ describe('hierarchy-operations', () => {
           }
         }, {
           body: {
-            version: '4.99.0'
+            version: '5.0.0'
           }
         }, {
           body: {
@@ -1516,11 +1516,11 @@ describe('hierarchy-operations', () => {
       });
     });
 
-    it('merge district_2 into district_1 in CHT version 4.99.0', async () => {
+    it('merge district_2 into district_1 in CHT version 5.0.0', async () => {
       // setup
       apiStub.giveResponses({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       }, {
         body: {
@@ -1659,11 +1659,11 @@ describe('hierarchy-operations', () => {
       });
     });
 
-    it('merge two patients in CHT version 4.99.0', async () => {
+    it('merge two patients in CHT version 5.0.0', async () => {
       // setup
       apiStub.giveResponses({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       }, {
         body: {
@@ -1756,11 +1756,11 @@ describe('hierarchy-operations', () => {
       deletedNonPeople.forEach(id => expectDeleted(id, false));
     });
 
-    it('delete district_2 in CHT version 4.99.0', async () => {
+    it('delete district_2 in CHT version 5.0.0', async () => {
       // setup
       apiStub.giveCommonResponse({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       });
       await mockReport(pouchDb, {
@@ -1807,10 +1807,10 @@ describe('hierarchy-operations', () => {
       expectDeleted('district_2', false);
     });
 
-    it('users at are not disabled when disableUsers: false in CHT version 4.99.0', async () => {
+    it('users at are not disabled when disableUsers: false in CHT version 5.0.0', async () => {
       apiStub.giveCommonResponse({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       });
       await HierarchyOperations(pouchDb, { disableUsers: false }).delete(['district_2']);
@@ -1837,11 +1837,11 @@ describe('hierarchy-operations', () => {
       expect(writtenIds).to.not.include(['other_report']);
     });
 
-    it('reports created by deleted contacts are not deleted in CHT version 4.99.0', async () => {
+    it('reports created by deleted contacts are not deleted in CHT version 5.0.0', async () => {
       // setup
       apiStub.giveCommonResponse({
         body: {
-          version: '4.99.0'
+          version: '5.0.0'
         }
       });
       await mockReport(pouchDb, {

@@ -2,7 +2,6 @@ const lineageManipulation = require('./lineage-manipulation');
 const {getValidApiVersion} = require('../get-api-version');
 const semver = require('semver');
 const api = require('../api');
-const environment = require('../environment');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
@@ -61,23 +60,6 @@ async function getContactWithDescendants(db, contactId) {
     .filter(doc => doc && doc.type !== 'tombstone');
 }
 
-const getReportsFromNouveauByCreatedByIds = async (createdByIds, skip) => {
-  const queryString = createdByIds.map(id => `contact:"${id}"`).join(' OR ');
-  const api_ = api();
-  const res = await api_.request.get(`${environment.apiUrl}/_design/medic/_nouveau/reports_by_freetext`, {
-    qs: {
-      // sorting by this field ensures that the output are same with the clouseau views
-      // https://github.com/medic/cht-core/pull/9541
-      sort: '"reported_date"',
-      q: queryString,
-      include_docs: true,
-      limit: BATCH_SIZE,
-      skip
-    }, json: true
-  });
-  return res.hits.map(item => item.doc);
-};
-
 const getFromDbView = async (db, view, keys, skip) => {
   const res = await db.query(view, {
     keys,
@@ -94,8 +76,8 @@ const fetchReportsByCreator = async (db, createdByIds, skip) => {
   }
 
   const coreVersion = await getValidApiVersion();
-  if (coreVersion && semver.gt(coreVersion, NOUVEAU_MIN_VERSION)) {
-    return await getReportsFromNouveauByCreatedByIds(createdByIds, skip);
+  if (coreVersion && semver.gte(coreVersion, NOUVEAU_MIN_VERSION)) {
+    return await api().getReportsByCreatedByIds(createdByIds, BATCH_SIZE, skip);
   }
 
   const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
