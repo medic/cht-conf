@@ -6,10 +6,7 @@ const environment = require('../environment');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
-// NOTE: this is the latest version at the time of writing this code
-// probably need to change this with the actual version in which the
-// nouveau code got shipped
-const NOUVEAU_MIN_VERSION = '4.16.0';
+const NOUVEAU_MIN_VERSION = '5.0.0';
 
 /*
 Fetches all of the documents associated with the "contactIds" and confirms they exist.
