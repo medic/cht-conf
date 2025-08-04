@@ -92,8 +92,10 @@ const fetchReportsBySubject = async (db, createdAtId, skip) => {
 };
 
 const getReportsForContacts = async (db, createdByIds, createdAtId, skip) => {
-  const creatorReports = await fetchReportsByCreator(db, createdByIds, skip);
-  const subjectReports = await fetchReportsBySubject(db, createdAtId, skip);
+  const [creatorReports, subjectReports] = await Promise.all([
+    fetchReportsByCreator(db, createdByIds, skip),
+    fetchReportsBySubject(db, createdAtId, skip)
+  ]);
 
   const allRows = [...creatorReports, ...subjectReports];
 
