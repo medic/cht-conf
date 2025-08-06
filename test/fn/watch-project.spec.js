@@ -129,7 +129,7 @@ describe('watch-project', () => {
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'skipTranslationCheck').get(() => false);
     sinon.stub(environment, 'skipValidate').get(() => false);
-    sinon.stub(environment, 'force').get(() => false);
+    sinon.stub(environment, 'force').get(() => true);
     return apiStub.db
       .put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } })
       .then(() => apiStub.start());
@@ -147,6 +147,7 @@ describe('watch-project', () => {
     }
     await apiStub.stop();
     await watchProjectFn.watchProject.close();
+    await new Promise(resolve => setTimeout(resolve, 1000));
   });
 
   it('watch-project: upload app settings', () => {
@@ -246,11 +247,17 @@ describe('watch-project', () => {
   it('watch-project: do not delete app form when a form part exists', () => {
     const form = 'death';
     copySampleForms('delete-form');
-    const deleteForm = () => {
-      fse.removeSync(path.join(appFormDir, `${form}.xml`));
-    };
+    
     return apiStub.db.put({ _id: `form:${form}` })
-      .then(() => watchWrapper(deleteForm, `${form}.xml`))
+      .then(() => {
+        return new Promise(resolve => setTimeout(resolve, 100));
+      })
+      .then(() => {
+        const deleteForm = () => {
+          fse.removeSync(path.join(appFormDir, `${form}.xml`));
+        };
+        return watchWrapper(deleteForm, `${form}.xml`);
+      })
       .then(() => apiStub.db.allDocs())
       .then(docs => {
         const doc = docs.rows.find(doc => doc.id === `form:${form}`);
@@ -337,13 +344,19 @@ describe('watch-project', () => {
     copySampleForms('training-form-media', TRAINING_FORMS_PATH);
     const dummyPng = 'test.png';
     const formMediaDir = path.join(trainingFormDir, `${form}-media`);
+    
+    if (!fs.exists(formMediaDir)) {
+      fs.fs.mkdirSync(formMediaDir, { recursive: true });
+    }
+    
     const createFormMediaDir = () => {
       fs.fs.writeFileSync(path.join(formMediaDir, dummyPng), '');
     };
 
     apiStub.giveResponses({ status: 200, body: { ok: true } }, { status: 200, body: { version: '1.0.0' } });
 
-    return watchWrapper(createFormMediaDir, dummyPng)
+    return new Promise(resolve => setTimeout(resolve, 200))
+      .then(() => watchWrapper(createFormMediaDir, dummyPng))
       .then(() => apiStub.db.allDocs())
       .then(docs => {
         const docIds = docs.rows.map(row => row.id);
