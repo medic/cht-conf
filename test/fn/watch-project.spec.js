@@ -100,11 +100,14 @@ function deleteFormFromFolder(folderPath, formFileName) {
 
 function watchWrapper(action, file) {
   return new Promise((resolve,) => {
-    watchProjectFn.watchProject.watch(mockApi, action, async (path) => {
-      if (path === file) {
-        resolve();
-      }
-    });
+    //Add a small delay before starting to watch to allow side effects to occur
+    setTimeout(() => {
+      watchProjectFn.watchProject.watch(mockApi, action, async (path) => {
+        if (path === file) {
+          resolve();
+        }
+      });
+    }, 100); // 100ms delay before starting to watch
   });
 }
 
@@ -129,7 +132,7 @@ describe('watch-project', () => {
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'skipTranslationCheck').get(() => false);
     sinon.stub(environment, 'skipValidate').get(() => false);
-    sinon.stub(environment, 'force').get(() => false);
+    sinon.stub(environment, 'force').get(() => true);
     return apiStub.db
       .put({ _id: '_design/medic-client', deploy_info: { version: '3.5.0' } })
       .then(() => apiStub.start());
