@@ -263,6 +263,135 @@ describe('api', () => {
         expect(mockRequest.get.callCount).to.eq(0);   // api is not called
       });
     });
+
+    describe('getReportsByCreatedByIds', async () => {
+      beforeEach(() => {
+        sinon.stub(environment, 'isArchiveMode').get(() => false);
+      });
+
+      describe('successful requests', () => {
+        it('should make correct API call and return mapped documents', async () => {
+          // Arrange
+          const createdByIds = ['user1', 'user2'];
+          const limit = 10;
+          const skip = 5;
+          const mockResponse = {
+            hits: [
+              {doc: {_id: 'report1', content: 'data1'}},
+              {doc: {_id: 'report2', content: 'data2'}}
+            ]
+          };
+
+          mockRequest.get.resolves(mockResponse);
+
+          // Act
+          const result = await api().getReportsByCreatedByIds(createdByIds, limit, skip);
+
+          // Assert - Check API call details
+          expect(mockRequest.get.callCount).to.equal(1);
+          const [url, options] = mockRequest.get.getCall(0).args;
+          expect(url).to.equal('http://example.com/db-name/_design/medic/_nouveau/reports_by_freetext');
+          expect(options.qs).to.deep.equal({
+            sort: '"reported_date"',
+            q: 'exact_match:"contact:user1" OR exact_match:"contact:user2"',
+            include_docs: true,
+            limit: 10,
+            skip: 5
+          });
+          expect(options.json).to.be.true;
+
+          // Assert - Check return value
+          expect(result).to.deep.equal([
+            {_id: 'report1', content: 'data1'},
+            {_id: 'report2', content: 'data2'}
+          ]);
+        });
+
+        it('should handle single ID and empty results', async () => {
+          // Arrange
+          const createdByIds = ['user1'];
+          const mockResponse = { hits: [] };
+
+          mockRequest.get.resolves(mockResponse);
+
+          // Act
+          const result = await api().getReportsByCreatedByIds(createdByIds, undefined, null);
+
+          // Assert
+          const [, options] = mockRequest.get.getCall(0).args;
+          expect(options.qs.q).to.equal('exact_match:"contact:user1"');
+          expect(options.qs.limit).to.be.undefined;
+          expect(options.qs.skip).to.be.null;
+          expect(result).to.deep.equal([]);
+        });
+      });
+
+      describe('edge cases', () => {
+        it('should handle various edge case inputs', async () => {
+          const mockResponse = { hits: [] };
+          mockRequest.get.resolves(mockResponse);
+
+          // Test empty array
+          await api().getReportsByCreatedByIds([], 10, 0);
+          expect(mockRequest.get.getCall(0).args[1].qs.q).to.equal('');
+
+          // Test special characters in IDs
+          await api().getReportsByCreatedByIds(['user@domain.com', 'user-with-dashes'], 10, 0);
+          expect(
+            mockRequest.get.getCall(1).args[1].qs.q
+          ).to.equal('exact_match:"contact:user@domain.com" OR exact_match:"contact:user-with-dashes"');
+
+          // Test zero values
+          await api().getReportsByCreatedByIds(['user1'], 0, 0);
+          const options = mockRequest.get.getCall(2).args[1];
+          expect(options.qs.limit).to.equal(0);
+          expect(options.qs.skip).to.equal(0);
+        });
+      });
+
+      describe('error handling', () => {
+        it('should propagate request errors', async () => {
+          // Arrange
+          const expectedError = new Error('Network error');
+          mockRequest.get.rejects(expectedError);
+
+          // Act & Assert
+          try {
+            await api().getReportsByCreatedByIds(['user1'], 10, 0);
+            expect.fail('Should have thrown an error');
+          } catch (error) {
+            expect(error).to.equal(expectedError);
+          }
+        });
+
+        it('should handle malformed responses', async () => {
+          // Test missing hits property
+          mockRequest.get.resolves({});
+
+          try {
+            await api().getReportsByCreatedByIds(['user1'], 10, 0);
+            expect.fail('Should have thrown an error');
+          } catch (error) {
+            expect(error).to.be.instanceOf(TypeError);
+          }
+
+          // Test hits with missing doc properties
+          mockRequest.get.resolves({
+            hits: [
+              { doc: { _id: 'report1' } },
+              {}, // Missing doc property
+              { doc: { _id: 'report3' } }
+            ]
+          });
+
+          const result = await api().getReportsByCreatedByIds(['user1'], 10, 0);
+          expect(result).to.have.length(3);
+          expect(result[0]).to.deep.equal({ _id: 'report1' });
+          expect(result[1]).to.be.undefined;
+          expect(result[2]).to.deep.equal({ _id: 'report3' });
+        });
+      });
+    });
   });
 
   describe('retry mechanism', function () {
