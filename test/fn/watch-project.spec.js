@@ -252,7 +252,6 @@ describe('watch-project', () => {
     const deleteForm = () => {
       fse.removeSync(path.join(appFormDir, `${form}.xml`));
     };
-    
     return apiStub.db.put({ _id: `form:${form}` })
       .then(() => watchWrapper(deleteForm, `${form}.xml`))
       .then(() => apiStub.db.allDocs())
@@ -341,7 +340,6 @@ describe('watch-project', () => {
     copySampleForms('training-form-media', TRAINING_FORMS_PATH);
     const dummyPng = 'test.png';
     const formMediaDir = path.join(trainingFormDir, `${form}-media`);
-    
     const createFormMediaDir = () => {
       fs.fs.writeFileSync(path.join(formMediaDir, dummyPng), '');
     };
