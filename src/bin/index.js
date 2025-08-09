@@ -9,7 +9,7 @@ try {
   error(e.message);
   process.exitCode = 1;
 }
-
+const { notifyOfNewVersion } = require('../lib/version-check');
 const main = require('../lib/main');
 (async () => {
   try {
@@ -19,4 +19,5 @@ const main = require('../lib/main');
     error(e.message); // error the message to make it clear
     process.exitCode = 1; // emit a non-zero exit code for scripting
   }
+  notifyOfNewVersion();
 })();
