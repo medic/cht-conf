@@ -148,4 +148,37 @@ describe('forms with large attachments', () => {
     const [, , retryRev] = fakeDb.putAttachment.secondCall.args;
     expect(retryRev).to.equal('2-updated');
   });
+
+  it('creates a new document when it does not exist', async () => {
+    const doc = {
+      _id: 'new-doc',
+      someField: 'test data',
+      // no _rev
+    };
+
+    const fakeDb = {
+      get: sinon.stub()
+        .rejects({ status: 404 }), // Document does not exist
+      put: sinon.stub()
+        .resolves({ id: 'new-doc', rev: '1-newrev', ok: true }),
+    };
+
+    const uploadFn = require('../../src/lib/insert-or-replace');
+    const result = await uploadFn(fakeDb, doc);
+
+    // get() called once to check existence
+    expect(fakeDb.get.calledOnce).to.be.true;
+    expect(fakeDb.get.firstCall.args[0]).to.equal('new-doc');
+
+    // put() called once to create new doc
+    expect(fakeDb.put.calledOnce).to.be.true;
+    const putArg = fakeDb.put.firstCall.args[0];
+
+    expect(putArg._id).to.equal('new-doc');
+    expect(putArg._rev).to.be.undefined; // _rev should be removed for new docs
+    expect(putArg.someField).to.equal('test data');
+
+    // Result matches put() return value
+    expect(result).to.deep.equal({ id: 'new-doc', rev: '1-newrev', ok: true });
+  });
 });
