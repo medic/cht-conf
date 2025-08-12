@@ -100,14 +100,15 @@ function deleteFormFromFolder(folderPath, formFileName) {
 
 function watchWrapper(action, file) {
   return new Promise((resolve,) => {
-    //Add a small delay before starting to watch to allow side effects to occur
+    // Add a small delay so macOS file watchers don’t pick up side-effect files
+    // See: https://github.com/medic/cht-conf/issues/727 for background.
     setTimeout(() => {
       watchProjectFn.watchProject.watch(mockApi, action, async (path) => {
         if (path === file) {
           resolve();
         }
       });
-    }, 100); // 100ms delay before starting to watch
+    }, 100);
   });
 }
 
