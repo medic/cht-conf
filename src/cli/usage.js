@@ -8,8 +8,13 @@ ${bold('NAME')}
 
 ${bold('SYNOPSIS')}
   cht <--local|--instance=instance-name|--url=url>
+  
 Or:
+
   cht <--local|--instance=instance-name|--url=url|--archive> <actions> <options> -- <params>
+
+${underscore('Note')}: If no <actions>,<options> or <params> are NOT passed but --local or --instance or --url IS passed, 
+   all supported actions are called.
 
 ${bold('DESCRIPTION')}
   This script updates and uploads a project's configuration.
@@ -74,3 +79,4 @@ ${bold('OPTIONS')}
 };
 
 const bold = text => `\x1b[1m${text}\x1b[0m`;
+const underscore = text => `\x1b[4m${text}\x1b[0m`
