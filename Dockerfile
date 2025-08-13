@@ -21,9 +21,11 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv "$VIRTUAL_ENV"
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-RUN python3 -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+#RUN python3 -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+RUN python3 -m pip install git+https://github.com/Omswastik-11/pyxform.git@948385671b3e3e0a7cfddb3b429d242df1e04ee5#egg=pyxform-medic
+#RUN python3 -m pip install git+https://github.com/XLSForm/pyxform.git@master#egg=pyxform
 
-RUN npm install -g cht-conf
+RUN npm install -g git+https://github.com/medic/cht-conf.git#474cf517ca2a2a6c388431e83fd8179318623291
 
 # Using the 1000:1000 user is recommended for VSCode dev containers
 # https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user
