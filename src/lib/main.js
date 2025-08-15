@@ -187,11 +187,6 @@ module.exports = async (argv, env) => {
   info(`Processing config in ${projectName}.`);
   info('Actions:\n     -', actions.map(({name}) => name).join('\n     - '));
 
-  const skipCheckForUpdates = cmdArgs.check === false;
-  if (actions.some(action => action.name === 'check-for-updates') && !skipCheckForUpdates) {
-    await checkForUpdates({ nonFatal: true });
-  }
-
   for (const action of actions) {
     info(`Starting action: ${action.name}…`);
     await executeAction(action);
@@ -200,6 +195,9 @@ module.exports = async (argv, env) => {
 
   if (actions.length > 1) {
     await info('All actions completed.');
+  }
+  if (!actions.some(action => action.name === 'check-for-updates') && !cmdArgs['skip-version-check']) {
+    await checkForUpdates({ nonFatal: true });
   }
 };
 
