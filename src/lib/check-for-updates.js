@@ -1,39 +1,35 @@
-const info = require('../lib/log').info;
 const request = require('request-promise-native');
-const warn = require('../lib/log').warn;
+const { warn, info } = require('../lib/log');
+const current = require('../../package.json').version;
 
-module.exports = (options) => {
-  const current = require('../../package').version;
-  info(`Current version: ${current}.  Checking NPM for updates…`);
-
-  if (!options) {
-    options = {};
-  }
-
+module.exports = (options = {}) => {
   return request
     .get('https://registry.npmjs.org/cht-conf')
     .then(res => {
       const json = JSON.parse(res);
-      const latest = json['dist-tags'].latest;
-
-      if (latest === current) {
-        info('You are already on the latest version :¬)');
-      } else {
-        warn(`New version available!
-
-        ${current} -> ${latest}
-
-     To install:
-
-       npm install -g cht-conf
-  `);
-      }
+      return json['dist-tags'].latest;
     })
     .catch(err => {
-      if (options.nonFatal && err.cause && err.cause.code === 'ENOTFOUND') {
-        warn('Could not check NPM for updates.  You may be offline.');
-      } else {
-        warn(`Could not check NPM for updates. Error: ${err.message}`);
+      warn(`Could not check NPM for updates: ${err.message}`);
+      if (!options.nonFatal) {
+        throw err;
+      }
+    })
+    .then(latest => {
+      if (latest && latest !== current) {
+        warn(`New version available!
+
+      ${current} -> ${latest}
+
+   To install:
+
+     npm install -g cht-conf
+    `);
+        if (!options.nonFatal) {
+          throw new Error('You are not running the latest version of cht-conf!');
+        }
+      } else if (!options.nonFatal) {
+        info('You are already on the latest version :¬)');
       }
     });
 };

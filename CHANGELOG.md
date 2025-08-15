@@ -1,3 +1,10 @@
+# [5.2.0](https://github.com/medic/cht-conf/compare/v5.1.0...v5.2.0) (2025-08-07)
+
+
+### Features
+
+* refactor requests from freetexts views to other similar views ([#660](https://github.com/medic/cht-conf/issues/660)) ([292565d](https://github.com/medic/cht-conf/commit/292565de488e05e630a21d5046215fa19910a1fb))
+
 # [5.1.0](https://github.com/medic/cht-conf/compare/v5.0.0...v5.1.0) (2025-07-02)
 
 
