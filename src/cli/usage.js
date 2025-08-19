@@ -59,7 +59,7 @@ ${bold('OPTIONS')}
     Skips checking the version running is set to the same version in the package.json
 
   --skip-version-check       
-    Skip the automatic check for new cht-conf versions.
+    Skips the automatic check for new cht-conf versions
     
   --skip-git-check
     Skips checking the status of the current repository that holds the configuration
