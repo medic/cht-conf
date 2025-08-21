@@ -11,7 +11,8 @@ const {
 
 const domParser = new DOMParser();
 const VALIDATIONS_PATH = fs.path.resolve(__dirname, './validation/form');
-const validations = fs.readdir(VALIDATIONS_PATH)
+const validationFileNames = fs.readdir(VALIDATIONS_PATH);
+const validations = validationFileNames
   .filter(name => name.endsWith('.js'))
   .map(validationName => {
     const validation = require(fs.path.join(VALIDATIONS_PATH, validationName));
@@ -57,7 +58,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     const xml = fs.read(xformPath);
 
     const valParams = {
-      xformPath,
+      DOMParser: domParser,
       xmlStr: xml,
       xmlDoc: domParser.parseFromString(xml),
       apiVersion,
