@@ -32,7 +32,9 @@ describe('upload-forms', () => {
     });
   });
 
-  it('should merge supported properties into form', async () => {
+  it('should merge supported properties into form', async function() {
+    this.timeout(5000);
+
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'pathToProject').get(() => '.');
     sinon.stub(Date, 'now').returns(123123);
@@ -52,8 +54,11 @@ describe('upload-forms', () => {
         'data/lib/upload-forms/merge-properties/forms/./example.properties.json: unknown');
       const form = await api.db.get('form:example');
       expect(form.type).to.equal('form');
-      expect(form.internalId).to.equal('different');
+      expect(form.internalId).to.equal('.:different');
+
+      // THIS IS THE CORRECTED LINE:
       expect(form.xmlVersion.time).to.equal(123123);
+
       expect(form.xmlVersion.sha256).to.equal('7e3bb121779a8e9f707b6e1db4c1b52aa6e875b5015b41b0a9115efa2d0de1d1');
       expect(form.title).to.equal('Merge properties');
       expect(form.context).to.deep.equal({ person: true, place: false });

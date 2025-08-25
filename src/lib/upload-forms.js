@@ -34,7 +34,7 @@ const formFileMatcher = (fileName) => {
 const formMediaMatcher = (formMediaDir) => {
   const matchResult = formMediaDir.match(FORM_MEDIA_MATCHER);
   if (matchResult) {
-    return matchResult[1]; // return the captured form name
+    return matchResult[1]; 
   }
   return null;
 };
@@ -92,6 +92,10 @@ const execute = async (projectDir, subDirectory, options) => {
 
     const propertiesPath = `${formsDir}/${baseFileName}${FORM_PROPERTIES_EXTENSION}`;
     updateFromPropertiesFile(doc, propertiesPath, PROPERTIES);
+    const requiredPrefix = `${subDirectory}:`;
+    if (doc.internalId && !doc.internalId.startsWith(requiredPrefix)) {
+      doc.internalId = requiredPrefix + doc.internalId;
+    }
 
     doc._attachments = mediaDirExists ? attachmentsFromDir(mediaDir) : {};
     doc._attachments.xml = attachmentFromFile(xformPath);
@@ -105,7 +109,6 @@ const execute = async (projectDir, subDirectory, options) => {
     } else {
       log.info(`Form ${filePath} not uploaded, no changes`);
     }
-    // update hash regardless
     await warnUploadOverwrite.postUploadForm(doc, xml, properties);
   }
 };
