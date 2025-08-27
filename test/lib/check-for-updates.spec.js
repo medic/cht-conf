@@ -54,7 +54,6 @@ describe('check-for-updates', () => {
     });
   });
 
-  // THIS IS THE NEW TEST CASE YOU ARE ADDING
   it('should warn but not throw an error on a network failure during a default (non-fatal) check', () => {
     requestStub.rejects(new Error('Network Error'));
 
