@@ -1,3 +1,10 @@
+## [5.2.1](https://github.com/medic/cht-conf/compare/v5.2.0...v5.2.1) (2025-08-27)
+
+
+### Bug Fixes
+
+* **#390:** notify user of new cht-conf versions ([#730](https://github.com/medic/cht-conf/issues/730)) ([9d36c21](https://github.com/medic/cht-conf/commit/9d36c215f5b6406233b856b6348fe949757ab0b8)), closes [#390](https://github.com/medic/cht-conf/issues/390)
+
 # [5.2.0](https://github.com/medic/cht-conf/compare/v5.1.0...v5.2.0) (2025-08-07)
 
 
