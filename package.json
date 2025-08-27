@@ -16,8 +16,6 @@
   "bin": {
     "medic-conf": "src/bin/index.js",
     "cht": "src/bin/index.js",
-    "medic-logs": "src/bin/cht-logs.bash",
-    "cht-logs": "src/bin/cht-logs.bash",
     "shell-completion-for-medic-conf": "src/bin/shell-completion.js",
     "shell-completion-for-cht": "src/bin/shell-completion.js",
     "pngout-medic": "bin/pngout",
