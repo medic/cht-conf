@@ -14,7 +14,20 @@ const dockerHelperScript = path.resolve(dockerHelperDirectory, './cht-docker-com
 const downloadDockerHelperScript = () => new Promise((resolve, reject) => {
   const file = fs.createWriteStream(dockerHelperScript, { mode: 0o755 });
   https
-    .get('https://raw.githubusercontent.com/medic/cht-core/master/scripts/docker-helper-4.x/cht-docker-compose.sh', (response) => {
+    .get('https://raw.githubusercontent.com/medic/cht-core/master/scripts/docker-helper/cht-docker-compose.sh', (response) => {
+      const { statusCode, statusMessage } = response;
+      if (statusCode !== 200) {
+        // drain response and clean up
+        response.resume();
+        const rejectPromise = () => {
+          reject(new Error(
+            `Failed to download CHT Docker Helper script "cht-docker-compose.sh": ${statusCode} ${statusMessage}`
+          ));
+        };
+        file.close(() => fs.unlink(dockerHelperScript, rejectPromise));
+        return;
+      }
+
       response.pipe(file);
       file.on('finish', () => file.close(resolve));
       file.on('error', () => file.close(reject));
