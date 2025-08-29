@@ -1,5 +1,6 @@
 const { DOMParser } = require('@xmldom/xmldom');
 const argsFormFilter = require('./args-form-filter');
+// CORRECTED REQUIRE:
 const { getValidApiVersion } = require('./get-api-version');
 const environment = require('./environment');
 const fs = require('./sync-fs');
@@ -11,8 +12,7 @@ const {
 
 const domParser = new DOMParser();
 const VALIDATIONS_PATH = fs.path.resolve(__dirname, './validation/form');
-const validationFileNames = fs.readdir(VALIDATIONS_PATH);
-const validations = validationFileNames
+const validations = fs.readdir(VALIDATIONS_PATH)
   .filter(name => name.endsWith('.js'))
   .map(validationName => {
     const validation = require(fs.path.join(VALIDATIONS_PATH, validationName));
@@ -45,6 +45,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
   }
 
   const instanceProvided = environment.apiUrl;
+  // CORRECTED FUNCTION CALL:
   const apiVersion = instanceProvided ? await getValidApiVersion() : null;
   let validationSkipped = false;
 
@@ -58,7 +59,6 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     const xml = fs.read(xformPath);
 
     const valParams = {
-      DOMParser: domParser,
       xmlStr: xml,
       xmlDoc: domParser.parseFromString(xml),
       apiVersion,
