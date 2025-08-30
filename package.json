@@ -92,6 +92,6 @@
     "pouchdb-adapter-memory": "^9.0.0",
     "rewire": "^8.0.0",
     "semantic-release": "^24.2.4",
-    "sinon": "^19.0.2"
+    "sinon": "^21.0.0"
   }
 }
