@@ -258,42 +258,44 @@ describe('forms with large attachments', () => {
     logWarnSpy.restore();
   });
 
-  it('removes empty _attachments property when no functional attachments exist', async () => {
+  it('keeps original _attachments property when no functional attachments exist', async () => {
     const attachment = { data: Buffer.alloc(1024), content_type: 'image/png' };
-
+  
     const doc = {
       _id: 'form:no-functional',
       _attachments: { 'image.png': attachment }
     };
-
+  
     const fakeDb = {
       get: sinon.stub()
         .onCall(0).resolves({ _id: 'form:no-functional', _rev: '1-abc' }) // upsertDoc
         .onCall(1).resolves({ _id: 'form:no-functional', _rev: '1-abc' }) // handleLargeDocument
         .onCall(2).resolves({ _id: 'form:no-functional', _rev: '2-def' }), // addDocAttachment
-
+    
       put: sinon.stub()
         .onFirstCall().rejects({ status: 413 })
-        .onSecondCall().resolves({ id: 'form:no-functional', rev: '2-def', ok: true }),
-
-      putAttachment: sinon.stub()
-        .resolves({ id: 'form:no-functional', rev: '3-ghi', ok: true })
+        .onSecondCall().resolves({ id: 'form:invalid-attach', rev: '2-def', ok: true }),
+  
+      putAttachment: sinon.stub().resolves({ id: 'form:no-functional', rev: '3-ghi', ok: true })
     };
-
+    
     const uploadFn = require('../../src/lib/insert-or-replace');
     await uploadFn(fakeDb, doc);
-
+  
     expect(fakeDb.get.callCount).to.equal(3);
     expect(fakeDb.put.calledTwice).to.be.true;
     expect(fakeDb.putAttachment.calledOnce).to.be.true;
-
-    // Verify second put() call removed _attachments
+  
+    // Verify second put() call still contains original _attachments
     const secondPutCall = fakeDb.put.secondCall.args[0];
-    expect(secondPutCall._attachments).to.be.undefined;
-
+    expect(secondPutCall._id).to.equal('form:no-functional');
+    expect(secondPutCall._rev).to.equal('1-abc');
+    expect(secondPutCall._attachments).to.deep.equal({ 'image.png': attachment });
+  
     // Verify attachment was processed
     const putAttachmentArgs = fakeDb.putAttachment.firstCall.args;
     expect(putAttachmentArgs[1]).to.equal('image.png');
     expect(putAttachmentArgs[2]).to.equal('2-def');
   });
+  
 });

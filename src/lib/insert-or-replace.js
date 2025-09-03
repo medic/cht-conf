@@ -39,11 +39,10 @@ const addDocAttachment = async (db, docId, attachmentName, attachment, currentRe
   try {
     const contentType = attachment.content_type || mime.lookup(attachmentName) || 'application/octet-stream';
     const result = await db.putAttachment(docId, attachmentName, revToUse, attachment.data, contentType);
-    log.info(`Added attachment ${attachmentName} to ${docId}`);
     return result;
   } catch (err) {
     if (err.status === 409) {
-      log.info(`Attachment conflict for ${attachmentName} in ${docId}, retrying`);
+      log.warn(`Attachment conflict for ${attachmentName} in ${docId}, retrying`);
       return addDocAttachment(db, docId, attachmentName, attachment, revToUse, retries - 1);
     }
     throw err;
@@ -66,9 +65,8 @@ const handleLargeDocument = async (db, doc, retries = MAX_RETRY) => {
 
   try {
     const attachments = doc._attachments || {};
-    // Regex for specific functional files: form.xml, model.xml, form.html
-    const functionalRegex = /^(form|model)\.xml$|^form\.html$/i;
-
+    // Regex for specific functional files: form.xml, model.xml, form.html, xml
+    const functionalRegex = /^(form|model)\.xml$|^form\.html$|^xml$/i;
     // Separate functional vs media attachments
     const functionalAttachments = {};
     const mediaAttachments = {};
@@ -85,35 +83,26 @@ const handleLargeDocument = async (db, doc, retries = MAX_RETRY) => {
     }
 
     // Prepare doc with only functional attachments
-    const docToSave = { ...doc, _attachments: functionalAttachments };
-    if (Object.keys(docToSave._attachments).length === 0) {
-      delete docToSave._attachments; 
-    }
+    const docToSave = {
+      ...doc,
+      ...(Object.keys(functionalAttachments).length > 0 && { _attachments: functionalAttachments })
+    };
 
     const existingDoc = await getDoc(db, doc._id);
-    log.info(
-      existingDoc
-        ? `Got latest rev for ${doc._id}: ${existingDoc._rev}`
-        : `Document ${doc._id} does not exist, creating new`
-    );
-
-    log.info(`Attempting to save ${doc._id}`);
     const res = await putDoc(db, docToSave, existingDoc ? existingDoc._rev : null);
     log.info(`Successfully saved ${doc._id}, new rev: ${res.rev}`);
 
     // Upload media attachments separately
     if (Object.keys(mediaAttachments).length > 0) {
-      log.info(`Processing ${Object.keys(mediaAttachments).length} media attachments for ${doc._id}`);
       await handleAttachments(db, doc._id, mediaAttachments, res.rev);
     }
 
     return res;
   } catch (err) {
     if (err.status === 409) {
-      log.info(`Large document conflict detected for ${doc._id}, retrying`);
+      log.warn(`Large document conflict detected for ${doc._id}, retrying`);
       return handleLargeDocument(db, doc, retries - 1);
     }
-    log.error(`Non-conflict error for ${doc._id}: ${err.message}`);
     throw err;
   }
 };
@@ -130,7 +119,6 @@ const upsertDoc = async (db, doc, retries = MAX_RETRY) => {
     return result;
   } catch (err) {
     if (err.status === 409) {
-      log.info(`Conflict detected for ${doc._id}, retrying`);
       return upsertDoc(db, doc, retries - 1);
     } else if (err.status === 413) {
       return handleLargeDocument(db, doc);
