@@ -73,9 +73,7 @@ describe('compile-contact-summary', () => {
       'contact', 'reports', 'lineage', js
     )(contact, reports, lineage);
 
-    it('pack a simple file', async function () {
-      this.timeout(10000); // allow bundling time
-
+    it('pack a simple file', async () => {
       // when
       const compiled = await compileContactSummary(`${BASE_DIR}/verbatim`, options);
 
@@ -83,9 +81,7 @@ describe('compile-contact-summary', () => {
       expect(compiled).to.include('contact.x=\'a string\'');
     });
 
-    it('legacy script', async function () {
-      this.timeout(10000); // allow bundling + eval
-
+    it('legacy script', async () => {
       // when
       const compiled = await compileContactSummary(`${BASE_DIR}/legacy`, options);
 
@@ -111,9 +107,7 @@ describe('compile-contact-summary', () => {
       expect(reports.y).to.eq('from included');
     });
 
-    it('templated script', async function () {
-      this.timeout(10000); // allow bundling + eval
-
+    it('templated script', async () => {
       // when
       const compiled = await compileContactSummary(`${BASE_DIR}/templated`, options);
 
@@ -175,9 +169,7 @@ describe('compile-contact-summary', () => {
 
     });
 
-    it('configurable hierarchies', async function () {
-      this.timeout(10000); // allow bundling + eval
-
+    it('configurable hierarchies', async () => {
       // when
       const compiled = await compileContactSummary(`${BASE_DIR}/configurable-hierarchies`, options);
 

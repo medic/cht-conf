@@ -1,6 +1,5 @@
 const { DOMParser } = require('@xmldom/xmldom');
 const argsFormFilter = require('./args-form-filter');
-// CORRECTED REQUIRE:
 const { getValidApiVersion } = require('./get-api-version');
 const environment = require('./environment');
 const fs = require('./sync-fs');
@@ -45,7 +44,6 @@ module.exports = async (projectDir, subDirectory, options={}) => {
   }
 
   const instanceProvided = environment.apiUrl;
-  // CORRECTED FUNCTION CALL:
   const apiVersion = instanceProvided ? await getValidApiVersion() : null;
   let validationSkipped = false;
 
@@ -59,6 +57,7 @@ module.exports = async (projectDir, subDirectory, options={}) => {
     const xml = fs.read(xformPath);
 
     const valParams = {
+      xformPath,
       xmlStr: xml,
       xmlDoc: domParser.parseFromString(xml),
       apiVersion,

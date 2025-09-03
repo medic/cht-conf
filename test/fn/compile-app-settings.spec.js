@@ -11,7 +11,6 @@ chai.use(require('chai-as-promised'));
 
 let writeJson;
 let environment;
-
 const scenarios = [
   {
     description: 'should handle simple config',
@@ -148,32 +147,26 @@ describe('compile-app-settings', () => {
     };
     compileAppSettings.__set__('environment', environment);
   });
-
   afterEach(() => {
     sinon.restore();
   });
 
   for (const scenario of scenarios) {
-    it(scenario.description, async function () {
-      this.timeout(10000); // Increase timeout for slow compilation
-
+    it(scenario.description, async () => {
       const pathToTestProject = path.join(__dirname, '../data/compile-app-settings', scenario.folder);
       sinon.stub(environment, 'pathToProject').get(() => pathToTestProject);
       sinon.stub(environment, 'extraArgs').get(() => scenario.extraArgs);
 
       const promiseToExecute = compileAppSettings.execute({ skipEslintIgnore: true });
-
       if (scenario.error) {
         await expect(promiseToExecute).to.be.rejectedWith(Error, scenario.error);
       } else {
         await promiseToExecute;
         const actual = JSON.parse(JSON.stringify(writeJson.args[0][1]));
         const expected = JSON.parse(fs.read(`${pathToTestProject}/../app_settings.expected.json`));
-
-        // More lenient comparison to prevent "extra key" errors
         expect(actual)
           .excludingEvery(['rules', 'contact_summary'])
-          .to.deep.include(expected);
+          .to.deep.eq(expected);
       }
     });
   }

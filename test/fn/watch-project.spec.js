@@ -159,23 +159,15 @@ describe('watch-project', () => {
       .then((settings) => JSON.parse(settings.content))
       .then((settings) => expect(settings.locale).equal('es'));
   });
-  // Temporarily skipped on CI: flaky test (see issue #727)
-  // TODO: Re-enable once stability is confirmed
-  it('watch-project: convert app settings', function() {
-    this.skip(); // Skip only when running in CI
 
+  it('watch-project: convert app settings', () => {
     const appSettingsPath = path.join(testDir, 'app_settings.json');
-
-    if (fs.fs.existsSync(appSettingsPath)) {
-      fs.fs.unlinkSync(appSettingsPath);
-    }
+    fs.fs.unlinkSync(appSettingsPath);
     expect(fs.fs.existsSync(appSettingsPath)).to.be.false;
-
     return watchWrapper(editBaseSettings, 'base_settings.json')
       .then(() => fs.readJson(appSettingsPath))
       .then((settings) => expect(settings.locale).equal('es'));
   });
-
 
   it('watch-project: upload custom translations', () => {
     apiStub.giveResponses(
@@ -242,16 +234,17 @@ describe('watch-project', () => {
       });
   });
 
-  it('watch-project: delete app forms', async function(){
-    this.timeout(5000);
+  it('watch-project: delete app forms', () => {
     const form = 'death';
     copySampleForms('upload-app-form');
     const deleteForm = () => deleteFormFromFolder(appFormDir, form);
-    await apiStub.db.put({ _id: `form:${form}` });
-    await watchWrapper(deleteForm, `${form}.xml`);
-    const docs = await apiStub.db.allDocs();
-    const doc = docs.rows.find(d => d.id === `form:${form}`);
-    expect(doc).to.be.undefined;
+    return apiStub.db.put({ _id: `form:${form}` })
+      .then(() => watchWrapper(deleteForm, `${form}.xml`))
+      .then(() => apiStub.db.allDocs())
+      .then(docs => {
+        const doc = docs.rows.find(doc => doc.id === `form:${form}`);
+        expect(doc).to.be.undefined;
+      });
   });
 
   it('watch-project: do not delete app form when a form part exists', () => {
@@ -299,9 +292,7 @@ describe('watch-project', () => {
       });
   });
 
-  // ✅ FIXED: changed arrow fn to function() so this.timeout works
-  it('watch-project: upload app form on form-media change', function() {
-    this.timeout(10000);
+  it('watch-project: upload app form on form-media change', () => {
     const form = 'death';
     copySampleForms('form-media');
     const dummyPng = 'test.png';
