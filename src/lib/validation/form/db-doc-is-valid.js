@@ -1,36 +1,27 @@
-const { getPrimaryInstanceNode, getNodes } = require('../../forms-utils');
+const { getPrimaryInstanceNode, getNodes, getPrimaryInstanceNodeChildPath } = require('../../forms-utils');
 
 module.exports = {
   name: 'db-doc-is-valid.js',
+  requiresInstance: false,
   execute: async ({ xmlDoc, xformPath }) => {
     const errors = [];
-    const header = `Form at ${xformPath} contains invalid db-doc configuration:`;
-
     const primaryInstance = getPrimaryInstanceNode(xmlDoc);
-    if (!primaryInstance) {
-      return { errors: [] };
-    }
-
     const dbDocNodes = getNodes(xmlDoc, '//*[@db-doc="true"]', primaryInstance);
-
     dbDocNodes.forEach(node => {
-      if (node.nodeName !== 'group') {
-        errors.push(`instance::db-doc is only supported on group fields. Found on: <${node.nodeName}>.`);
-      } else {
-        const childNodes = Array.from(node.childNodes).filter(n => n.nodeType === 1);
-        const hasTypeField = childNodes.some(
-          child => child.tagName === 'type' || child.getAttribute('name') === 'type'
-        );
-        if (!hasTypeField) {
-          errors.push(`instance::db-doc groups must contain a field with name="type".`);
-        }
+      const childNodes = node.childNodes.filter(n => n.nodeType === 1);
+      if (!childNodes.length) {
+        const nodeName = getPrimaryInstanceNodeChildPath(node);
+        errors.push(`  - ${nodeName}: the db-doc attribute must only be set on groups.`);
+        return;
+      }
+      const hasTypeField = childNodes.some(child => child.nodeName === 'type');
+      if (!hasTypeField) {
+        const nodeName = getPrimaryInstanceNodeChildPath(node);
+        errors.push(`  - ${nodeName}: groups configured with the db-doc attribute must contain a valid type field.`);
       }
     });
 
-    if (errors.length > 0) {
-      return { errors: [header, ...errors] };
-    }
-
-    return { errors: [], warnings: [] };
+    const header = `Form at ${xformPath} contains invalid db-doc configuration:`;
+    return { errors: errors.length ? [header, ...errors]: errors };
   }
 };

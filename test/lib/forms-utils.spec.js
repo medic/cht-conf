@@ -171,6 +171,37 @@ describe('form-utils', () => {
     });
   });
 
+  describe('getPrimaryInstanceNodeChildPath', () => {
+    const xmlDoc = getXmlDoc();
+
+    it('returns the correct path for a direct child of the primary instance node', () => {
+      const nameNode = formUtils.getNode(xmlDoc, '/h:html/h:head/model/instance/data/name');
+      const path = formUtils.getPrimaryInstanceNodeChildPath(nameNode);
+      expect(path).to.equal('/data/name');
+    });
+
+    it('returns the correct path for a nested child', () => {
+      const nestedXml = getXml();
+      const nestedDoc = domParser.parseFromString(nestedXml.replace('<age/>', '<age><child/></age>'));
+      const childNode = formUtils.getNode(nestedDoc, '/h:html/h:head/model/instance/data/age/child');
+      const path = formUtils.getPrimaryInstanceNodeChildPath(childNode);
+      expect(path).to.equal('/data/age/child');
+    });
+
+    it('returns an empty string for the primary instance node itself', () => {
+      const primaryInstanceNode = formUtils.getPrimaryInstanceNode(xmlDoc);
+      const path = formUtils.getPrimaryInstanceNodeChildPath(primaryInstanceNode);
+      expect(path).to.equal('');
+    });
+
+    it('returns an empty string for a non-element node', () => {
+      const nameNode = formUtils.getNode(xmlDoc, '/h:html/h:head/model/instance/data/name');
+      const textNode = nameNode.firstChild;
+      const path = formUtils.getPrimaryInstanceNodeChildPath(textNode);
+      expect(path).to.equal('');
+    });
+  });
+
   describe('readTitleFrom', () => {
     it('returns the title when the form has a title', () => {
       const title = formUtils.readTitleFrom(getXml());

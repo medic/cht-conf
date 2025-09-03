@@ -2,9 +2,12 @@ const { expect } = require('chai');
 const { DOMParser } = require('@xmldom/xmldom');
 const validation = require('../../../../src/lib/validation/form/db-doc-is-valid.js');
 
+const XFORM_PATH = '/path/to/form.xml';
+const ERROR_HEADER = `Form at ${XFORM_PATH} contains invalid db-doc configuration:`;
+
 const runValidation = (xmlString) => {
   const xmlDoc = new DOMParser().parseFromString(xmlString, 'text/xml');
-  return validation.execute({ xmlDoc, xformPath: '/path/to/form.xml' });
+  return validation.execute({ xmlDoc, xformPath: XFORM_PATH });
 };
 
 describe('db-doc-is-valid', () => {
@@ -24,11 +27,13 @@ describe('db-doc-is-valid', () => {
         </h:head>
       </h:html>`;
 
-    const { errors } = await runValidation(form);
-    expect(errors.length).to.equal(3);
-    expect(errors[0]).to.include('invalid db-doc configuration');
-    expect(errors[1]).to.include('Found on: <name>');
-    expect(errors[2]).to.include('Found on: <age>');
+    const result = await runValidation(form);
+
+    expect(result).to.deep.equal({ errors: [
+      ERROR_HEADER,
+      '  - /data/name: the db-doc attribute must only be set on groups.',
+      '  - /data/age: the db-doc attribute must only be set on groups.'
+    ] });
   });
 
   it('should return error when db-doc group is missing type field', async () => {
@@ -48,9 +53,12 @@ describe('db-doc-is-valid', () => {
         </h:head>
       </h:html>`;
 
-    const { errors } = await runValidation(form);
-    expect(errors.length).to.equal(2);
-    expect(errors[1]).to.include('groups must contain a field with name="type"');
+    const result = await runValidation(form);
+
+    expect(result).to.deep.equal({ errors: [
+      ERROR_HEADER,
+      '  - /data/group: groups configured with the db-doc attribute must contain a valid type field.',
+    ] });
   });
 
   it('should return empty errors array for a valid form', async () => {
@@ -62,7 +70,7 @@ describe('db-doc-is-valid', () => {
             <instance>
               <data id="ABC">
                 <group db-doc="true">
-                  <field name="type">person</field>
+                  <type tag="hidden"/>
                 </group>
               </data>
             </instance>
@@ -70,7 +78,8 @@ describe('db-doc-is-valid', () => {
         </h:head>
       </h:html>`;
 
-    const { errors } = await runValidation(form);
-    expect(errors).to.be.empty;
+    const result = await runValidation(form);
+
+    expect(result).to.deep.equal({ errors: [] });
   });
 });
