@@ -1,3 +1,10 @@
+# [5.3.0](https://github.com/medic/cht-conf/compare/v5.2.1...v5.3.0) (2025-09-04)
+
+
+### Features
+
+* **#512:** add form validation for instance::db-doc ([#737](https://github.com/medic/cht-conf/issues/737)) ([0db687e](https://github.com/medic/cht-conf/commit/0db687eb8f2c5dbb6a2d2e387857af50af81a917)), closes [#512](https://github.com/medic/cht-conf/issues/512)
+
 ## [5.2.1](https://github.com/medic/cht-conf/compare/v5.2.0...v5.2.1) (2025-08-27)
 
 
