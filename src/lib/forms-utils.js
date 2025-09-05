@@ -109,7 +109,7 @@ module.exports = {
    * @returns {string}
    */
   readIdFrom: xml =>
-    xml.match(/<model>[^]*<\/model>/)[0]
+    xml.match(/<model.*>[^]*<\/model>/)[0]
       .match(/<instance>[^]*<\/instance>/)[0]
       .match(/id="([^"]*)"/)[1],
 
@@ -119,5 +119,5 @@ module.exports = {
    * @returns {string}
    */
   escapeWhitespacesInPath: path => path.replace(/(\s+)/g, '\\$1'),
-  
+
 };

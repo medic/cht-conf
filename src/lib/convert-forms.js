@@ -1,24 +1,11 @@
-const { execSync } = require('child_process');
-
 const argsFormFilter = require('./args-form-filter');
 const exec = require('./exec-promise');
 const fs = require('./sync-fs');
 const { getFormDir, escapeWhitespacesInPath } = require('./forms-utils');
 const { info, trace, warn } = require('./log');
+const path = require('path');
 
-const XLS2XFORM = 'xls2xform-medic';
-const INSTALLATION_INSTRUCTIONS = `\nE To install the latest pyxform, try one of the following:
-E
-E Ubuntu
-E	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-E OSX
-E	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-E Windows (as Administrator)
-E	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic --upgrade`;
-const UPDATE_INSTRUCTIONS = `\nE To remove the old version of pyxform:
-E
-E	pip uninstall pyxform-medic
-E` + INSTALLATION_INSTRUCTIONS;
+const XLS2XFORM = path.join(__dirname, '..', 'bin', 'xls2xform-medic');
 
 const FORM_EXTENSION = '.xlsx';
 const formFileMatcher = (fileName) => {
@@ -60,7 +47,7 @@ const execute = async (projectDir, subDirectory, options) => {
     const targetPath = `${fs.withoutExtension(originalSourcePath)}.xml`;
 
     info('Converting form', originalSourcePath, '…');
-  
+
     await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(targetPath));
     const hiddenFields = await getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`);
     await fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
@@ -75,19 +62,9 @@ module.exports = {
 };
 
 const xls2xform = (sourcePath, targetPath) =>
-  exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
-    .catch(e => {
-      if (executableAvailable()) {
-        if (e.includes('unrecognized arguments: --skip_validate')) {
-          throw new Error('Your xls2xform installation appears to be out of date.' + UPDATE_INSTRUCTIONS);
-        } else {
-          throw e;
-        }
-      } else {
-        throw new Error(
-          'There was a problem executing xls2xform.  It may not be installed.' + INSTALLATION_INSTRUCTIONS
-        );
-      }
+  exec([XLS2XFORM, '--skip_validate', '--pretty_print', sourcePath, targetPath])
+    .catch(() => {
+      throw new Error('There was a problem executing xls2xform.  Make sure you have Python 3.10+ installed.');
     });
 
 // here we fix the form content in arcane ways.  Seeing as we have out own fork
@@ -141,17 +118,6 @@ function getHiddenFields(propsJson) {
   }
   else {
     return fs.readJson(propsJson).hidden_fields;
-  }
-}
-
-function executableAvailable() {
-  try {
-    execSync(`${XLS2XFORM} -h`, {
-      stdio: ['ignore', 'ignore', 'ignore'],
-    });
-    return true;
-  } catch (e) {
-    return false;
   }
 }
 
