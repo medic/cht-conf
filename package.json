@@ -83,7 +83,6 @@
     "chai-as-promised": "^7.1.2",
     "chai-exclude": "^2.1.1",
     "chai-shallow-deep-equal": "^1.4.6",
-    "chai-xml": "^0.4.1",
     "eslint-plugin-n": "^17.15.1",
     "express": "^4.21.2",
     "express-pouchdb": "^4.2.0",

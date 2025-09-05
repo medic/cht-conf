@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>Edit Person</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <instance>
-        <data delimiter="#" id="person" prefix="J1!person!" version="2016-04-06">
+        <data id="person" version="2016-04-06" prefix="J1!person!" delimiter="#">
           <person>
             <type>person</type>
             <parent/>
@@ -21,25 +21,69 @@
           </meta>
         </data>
       </instance>
+      <instance id="yes_no">
+        <root>
+          <item>
+            <name>true</name>
+            <label>Yes</label>
+          </item>
+          <item>
+            <name>false</name>
+            <label>No</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="male_female">
+        <root>
+          <item>
+            <name>female</name>
+            <label>Female</label>
+          </item>
+          <item>
+            <name>male</name>
+            <label>Male</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="boy_girl">
+        <root>
+          <item>
+            <name>female</name>
+            <label>Girl</label>
+          </item>
+          <item>
+            <name>male</name>
+            <label>Boy</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_dob_method">
+        <root>
+          <item>
+            <name>approx</name>
+            <label>Date unknown</label>
+          </item>
+        </root>
+      </instance>
       <bind nodeset="/data/person/type" type="string"/>
       <bind nodeset="/data/person/parent" type="string"/>
-      <bind nodeset="/data/person/name" required="true()" type="string"/>
+      <bind nodeset="/data/person/name" type="string" required="true()"/>
       <bind nodeset="/data/person/date_of_birth" type="date"/>
-      <bind nodeset="/data/person/date_of_birth_method" type="select1"/>
-      <bind nodeset="/data/person/sex" type="select1"/>
+      <bind nodeset="/data/person/date_of_birth_method" type="string"/>
+      <bind nodeset="/data/person/sex" type="string"/>
       <bind nodeset="/data/person/notes" type="string"/>
       <bind nodeset="/data/person/phone" type="tel"/>
       <bind nodeset="/data/person/alternate_phone" type="tel"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body>
     <group ref="/data/person">
-      <input appearance="hidden" ref="/data/person/type">
+      <input ref="/data/person/type" appearance="hidden">
         <label>Person Type</label>
         <hint>mandatory</hint>
       </input>
-      <input appearance="db-object bind-id-only hidden" ref="/data/person/parent">
+      <input ref="/data/person/parent" appearance="db-object bind-id-only hidden">
         <label>Parent</label>
       </input>
       <input ref="/data/person/name">
@@ -48,31 +92,27 @@
       <input ref="/data/person/date_of_birth">
         <label>Date of Birth</label>
       </input>
-      <select1 appearance="hidden" ref="/data/person/date_of_birth_method">
+      <select1 ref="/data/person/date_of_birth_method" appearance="hidden">
         <label>Method to select date of birth</label>
-        <item>
-          <label>Date unknown</label>
-          <value>approx</value>
-        </item>
+        <itemset nodeset="instance('select_dob_method')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
       </select1>
-      <select1 appearance="horizontal" ref="/data/person/sex">
+      <select1 ref="/data/person/sex" appearance="horizontal">
         <label>Gender</label>
-        <item>
-          <label>Female</label>
-          <value>female</value>
-        </item>
-        <item>
-          <label>Male</label>
-          <value>male</value>
-        </item>
+        <itemset nodeset="instance('male_female')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
       </select1>
       <input ref="/data/person/notes">
         <label>Notes (optional)</label>
       </input>
-      <input appearance="numbers" ref="/data/person/phone">
+      <input ref="/data/person/phone" appearance="numbers">
         <label>Primary Mobile Number</label>
       </input>
-      <input appearance="numbers" ref="/data/person/alternate_phone">
+      <input ref="/data/person/alternate_phone" appearance="numbers">
         <label>Secondary Mobile Number</label>
       </input>
     </group>

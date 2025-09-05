@@ -4,15 +4,20 @@ const rewire = require('rewire');
 
 const convertForms = rewire('./../../src/lib/convert-forms');
 const fs = require('./../../src/lib/sync-fs');
+const path = require('path');
+const chai = require('chai');
+
+chai.use(require('chai-as-promised'));
+const XLS2XFORM = path.join(__dirname, '..', '..', 'src', 'bin', 'xls2xform-medic');
 
 describe('convert-forms', () => {
 
-  let mockXls2xform;
+  let mockExec;
   let withMocks;
   beforeEach(() => {
-    mockXls2xform = sinon.stub().resolves();
+    mockExec = sinon.stub();
     withMocks = cb => convertForms.__with__({
-      xls2xform: mockXls2xform,
+      exec: mockExec,
       fixXml: sinon.stub(),
       getHiddenFields: sinon.stub(),
     })(cb);
@@ -23,33 +28,62 @@ describe('convert-forms', () => {
   });
   afterEach(sinon.restore);
 
+  it('fails if xls2xform cannot be executed', () => withMocks(async () => {
+    mockExec.rejects(new Error('Python is not installed.'));
+
+    await expect(convertForms.execute('./path', 'app')).to.eventually.be.rejectedWith(
+      'There was a problem executing xls2xform.  Make sure you have Python 3.10+ installed.'
+    );
+  }));
+
   describe('filtering', () => {
+    beforeEach(() => mockExec.resolves());
+
     it('convert one form', () => withMocks(async () => {
       await convertForms.execute('./path', 'app');
-      expect(mockXls2xform.callCount).to.eq(2);
-      expect(mockXls2xform.args[0]).to.deep.eq(['./path/forms/app/b.xlsx', './path/forms/app/b.xml']);
+      expect(mockExec.args).to.deep.equal([
+        [[XLS2XFORM, '--skip_validate', '--pretty_print', './path/forms/app/b.xlsx', './path/forms/app/b.xml']],
+        [[XLS2XFORM, '--skip_validate', '--pretty_print', './path/forms/app/c.xlsx', './path/forms/app/c.xml']]
+      ]);
     }));
 
     it('filter matches one form only', () => withMocks(async () => {
       await convertForms.execute('./path', 'app', { forms: ['c'] });
-      expect(mockXls2xform.callCount).to.eq(1);
+      expect(mockExec.calledOnceWithExactly(
+        [XLS2XFORM, '--skip_validate', '--pretty_print', './path/forms/app/c.xlsx', './path/forms/app/c.xml']
+      )).to.be.true;
     }));
 
     it('filter matches no forms', () => withMocks(async () => {
       await convertForms.execute('./path', 'app', { forms: ['z'] });
-      expect(mockXls2xform.callCount).to.eq(0);
+      expect(mockExec.notCalled).to.be.true;
     }));
 
     it('--debug does not filter', () => withMocks(async () => {
       await convertForms.execute('./path', 'app', { forms: ['--debug'] });
-      expect(mockXls2xform.callCount).to.eq(2);
+      expect(mockExec.args).to.deep.equal([
+        [[XLS2XFORM, '--skip_validate', '--pretty_print', './path/forms/app/b.xlsx', './path/forms/app/b.xml']],
+        [[XLS2XFORM, '--skip_validate', '--pretty_print', './path/forms/app/c.xlsx', './path/forms/app/c.xml']]
+      ]);
     }));
 
     it('escape whitespaces in path and convert forms', () => withMocks(async () => {
       await convertForms.execute('./path with space', 'app');
-      expect(mockXls2xform.callCount).to.eq(2);
-      expect(mockXls2xform.args[0])
-        .to.deep.eq(['./path\\ with\\ space/forms/app/b.xlsx', './path\\ with\\ space/forms/app/b.xml']);
+      expect(mockExec.args).to.deep.equal([
+        [[
+          XLS2XFORM,
+          '--skip_validate',
+          '--pretty_print',
+          './path\\ with\\ space/forms/app/b.xlsx', './path\\ with\\ space/forms/app/b.xml'
+        ]],
+        [[
+          XLS2XFORM,
+          '--skip_validate',
+          '--pretty_print',
+          './path\\ with\\ space/forms/app/c.xlsx',
+          './path\\ with\\ space/forms/app/c.xml'
+        ]]
+      ]);
     }));
   });
 });

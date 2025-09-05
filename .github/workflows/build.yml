@@ -20,8 +20,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Install pyxform
-      run: pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
     - run: npm ci
     - run: npm run eslint
     - run: npm test
@@ -44,9 +42,7 @@ jobs:
       with:
         node-version: 18.x
     - name: Install dependencies
-      run: |
-        pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-        npm ci
+      run: npm ci
     - name: Hard code local-ip IP in /etc/hosts per https://github.com/medic/medic-infrastructure/issues/571#issuecomment-2209120441
       run: |
         echo "15.188.129.97 local-ip.medicmobile.org" | sudo tee -a /etc/hosts
