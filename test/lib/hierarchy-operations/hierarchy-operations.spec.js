@@ -1,5 +1,3 @@
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
@@ -11,11 +9,10 @@ const PouchDB = require('pouchdb-core');
 const environment = require('../../../src/lib/environment');
 const apiStub = require('../../api-stub');
 
-chai.use(chaiAsPromised);
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 
-const { expect } = chai;
+const { expect } = require('chai');
 
 const HierarchyOperations = rewire('../../../src/lib/hierarchy-operations');
 const deleteHierarchy = rewire('../../../src/lib/hierarchy-operations/delete-hierarchy');

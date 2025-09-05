@@ -5,9 +5,7 @@ const rewire = require('rewire');
 const convertForms = rewire('./../../src/lib/convert-forms');
 const fs = require('./../../src/lib/sync-fs');
 const path = require('path');
-const chai = require('chai');
 
-chai.use(require('chai-as-promised'));
 const XLS2XFORM = path.join(__dirname, '..', '..', 'src', 'bin', 'xls2xform-medic');
 
 describe('convert-forms', () => {
