@@ -130,6 +130,10 @@ const scenarios = [
     folder: 'android-app-links/invalid-file',
     error: 'Invalid assetlinks: ValidationError: "[0].target.sha256_cert_fingerprints" is required',
   },
+  {
+    description: 'should compile max_task_notifications to tasks.max_task_notifications',
+    folder: 'task-notifications/project',
+  }
 ];
 
 describe('compile-app-settings', () => {

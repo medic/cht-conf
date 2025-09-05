@@ -1,3 +1,41 @@
+# [5.3.0](https://github.com/medic/cht-conf/compare/v5.2.1...v5.3.0) (2025-09-04)
+
+
+### Features
+
+* **#512:** add form validation for instance::db-doc ([#737](https://github.com/medic/cht-conf/issues/737)) ([0db687e](https://github.com/medic/cht-conf/commit/0db687eb8f2c5dbb6a2d2e387857af50af81a917)), closes [#512](https://github.com/medic/cht-conf/issues/512)
+
+## [5.2.1](https://github.com/medic/cht-conf/compare/v5.2.0...v5.2.1) (2025-08-27)
+
+
+### Bug Fixes
+
+* **#390:** notify user of new cht-conf versions ([#730](https://github.com/medic/cht-conf/issues/730)) ([9d36c21](https://github.com/medic/cht-conf/commit/9d36c215f5b6406233b856b6348fe949757ab0b8)), closes [#390](https://github.com/medic/cht-conf/issues/390)
+
+# [5.2.0](https://github.com/medic/cht-conf/compare/v5.1.0...v5.2.0) (2025-08-07)
+
+
+### Features
+
+* refactor requests from freetexts views to other similar views ([#660](https://github.com/medic/cht-conf/issues/660)) ([292565d](https://github.com/medic/cht-conf/commit/292565de488e05e630a21d5046215fa19910a1fb))
+
+# [5.1.0](https://github.com/medic/cht-conf/compare/v5.0.0...v5.1.0) (2025-07-02)
+
+
+### Features
+
+* compile max_task_notifications ([#717](https://github.com/medic/cht-conf/issues/717)) ([3c68ea2](https://github.com/medic/cht-conf/commit/3c68ea251c73ecfca5a910060c28e68f932c9963))
+
+# [5.0.0](https://github.com/medic/cht-conf/compare/v4.10.0...v5.0.0) (2025-06-24)
+
+
+* feat([#712](https://github.com/medic/cht-conf/issues/712))!: update targeted NodeJS versions ([#713](https://github.com/medic/cht-conf/issues/713)) ([40575ec](https://github.com/medic/cht-conf/commit/40575ece74da38a583238ed54a4b13cd892a14a4))
+
+
+### BREAKING CHANGES
+
+* remove support for NodeJS 18
+
 # [4.10.0](https://github.com/medic/cht-conf/compare/v4.9.0...v4.10.0) (2025-06-16)
 
 

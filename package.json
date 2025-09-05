@@ -1,10 +1,10 @@
 {
   "name": "cht-conf",
-  "version": "4.10.0",
+  "version": "5.3.0",
   "description": "Configure CHT deployments",
   "main": "./src/lib/main.js",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "clean": "rm -rf ./build/",
@@ -16,8 +16,6 @@
   "bin": {
     "medic-conf": "src/bin/index.js",
     "cht": "src/bin/index.js",
-    "medic-logs": "src/bin/cht-logs.bash",
-    "cht-logs": "src/bin/cht-logs.bash",
     "shell-completion-for-medic-conf": "src/bin/shell-completion.js",
     "shell-completion-for-cht": "src/bin/shell-completion.js",
     "pngout-medic": "bin/pngout",
@@ -49,7 +47,7 @@
     "json-diff": "^1.0.6",
     "json-stringify-safe": "^5.0.1",
     "json2csv": "^5.0.7",
-    "mime-types": "^2.1.35",
+    "mime-types": "^3.0.1",
     "minimist": "^1.2.8",
     "mkdirp": "^3.0.1",
     "open": "^8.4.2",
@@ -92,8 +90,8 @@
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
     "pouchdb-adapter-memory": "^9.0.0",
-    "rewire": "^7.0.0",
+    "rewire": "^8.0.0",
     "semantic-release": "^24.2.4",
-    "sinon": "^19.0.2"
+    "sinon": "^21.0.0"
   }
 }

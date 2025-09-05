@@ -290,24 +290,6 @@ To achieve this, create a file called `settings.inherit.json` in your project's 
 		}
 	}
 
-# Fetching logs
-
-Fetch logs from a CHT v2.x production server.
-
-This is a standalone command installed alongside `cht-conf`.  For usage information, run `cht-logs --help`.
-
-## Usage
-
-	cht-logs <instance-name> <log-types...>
-
-Accepted log types:
-
-	api
-	couchdb
-	gardener
-	nginx
-	sentinel
-
 # Development
 
 To develop a new action or improve an existing one, check the ["Actions" doc](src/fn/README.md).

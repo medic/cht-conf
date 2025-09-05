@@ -1,0 +1,11 @@
+{
+  "locale": "en",
+  "forms": {},
+  "contact_summary": "",
+  "tasks": {
+    "rules": "",
+    "targets": {},
+    "max_task_notifications": 25
+  },
+  "purge": {}
+}

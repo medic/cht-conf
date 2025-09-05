@@ -9,6 +9,14 @@ const getNode = (currentNode, path) =>
 const getNodes = (currentNode, path) =>
   xpath.parse(path).select({ node: currentNode, allowAnyNamespaceForNoPrefix: true });
 
+const getFullNodePath = (childNode) => {
+  if (childNode.nodeType !== 1) {
+    return '';
+  }
+  const parentPath = getFullNodePath(childNode.parentNode);
+  return parentPath + '/' + childNode.nodeName;
+};
+
 module.exports = {
   /**
    * Get the full path of the form, or null if the path doesn't exist.
@@ -67,6 +75,15 @@ module.exports = {
    * @returns {Element}
    */
   getPrimaryInstanceNode: xmlDoc => getNode(xmlDoc, `${XPATH_MODEL}/instance`),
+
+  /**
+   * Returns the path to the given child node relative to the primary instance node.
+   * This is useful for identifying the node in error/warning messages.
+   * @param childNode the child node
+   * @returns {string}
+   */
+  getPrimaryInstanceNodeChildPath: (childNode) => getFullNodePath(childNode)
+    .replace(`${XPATH_MODEL}/instance`, ''),
 
   /**
    * Check whether the XForm has the <instanceID/> tag.
