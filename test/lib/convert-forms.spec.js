@@ -29,7 +29,7 @@ describe('convert-forms', () => {
   it('fails if xls2xform cannot be executed', () => withMocks(async () => {
     mockExec.rejects(new Error('Python is not installed.'));
 
-    await expect(convertForms.execute('./path', 'app')).to.eventually.be.rejectedWith(
+    await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
       'There was a problem executing xls2xform.  Make sure you have Python 3.10+ installed.'
     );
   }));
@@ -47,14 +47,14 @@ describe('convert-forms', () => {
 
     it('filter matches one form only', () => withMocks(async () => {
       await convertForms.execute('./path', 'app', { forms: ['c'] });
-      expect(mockExec.calledOnceWithExactly(
+      expect(mockExec).calledOnceWithExactly(
         [XLS2XFORM, '--skip_validate', '--pretty_print', './path/forms/app/c.xlsx', './path/forms/app/c.xml']
-      )).to.be.true;
+      );
     }));
 
     it('filter matches no forms', () => withMocks(async () => {
       await convertForms.execute('./path', 'app', { forms: ['z'] });
-      expect(mockExec.notCalled).to.be.true;
+      expect(mockExec).to.not.have.been.called;
     }));
 
     it('--debug does not filter', () => withMocks(async () => {

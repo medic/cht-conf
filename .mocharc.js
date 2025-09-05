@@ -2,6 +2,7 @@ const chai = require('chai');
 chai.use(require('chai-as-promised'));
 chai.use(require('chai-exclude'));
 chai.use(require('chai-shallow-deep-equal'));
+chai.use(require('sinon-chai'));
 
 module.exports = {
   allowUncaught: false,
