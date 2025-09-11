@@ -57,6 +57,11 @@ describe('validate-forms', () => {
     expect(ddocValid.requiresInstance).to.equal(false);
     expect(ddocValid.skipFurtherValidation).to.equal(false);
 
+    const ddocRefValid = validations.shift();
+    expect(ddocRefValid.name).to.equal('db-doc-ref-is-valid.js');
+    expect(ddocRefValid.requiresInstance).to.equal(false);
+    expect(ddocRefValid.skipFurtherValidation).to.equal(false);
+
     const deprecatedAppearance = validations.shift();
     expect(deprecatedAppearance.name).to.equal('deprecated-appearance.js');
     expect(deprecatedAppearance.requiresInstance).to.equal(true);
