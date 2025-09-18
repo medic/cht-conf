@@ -1,12 +1,9 @@
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 const rewire = require('rewire');
 
-chai.use(chaiAsPromised);
-const { expect } = chai;
+const { expect } = require('chai');
 
 const { mockHierarchy } = require('../../mock-hierarchies');
 

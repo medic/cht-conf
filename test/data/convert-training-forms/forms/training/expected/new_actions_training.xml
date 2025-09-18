@@ -1,29 +1,38 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>new_actions_training</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/new_actions_training/action_icons/action_icons_note_1:label">
-            <value>The "New Action" icon at the bottom of your app has changed to a big blue plus icon.</value>
+          <text id="/data/intro:label">
+            <value></value>
           </text>
-          <text id="/new_actions_training/ending/ending_note_1:label">
-            <value>If you do not understand these changes, please contact your supervisor.</value>
-          </text>
-          <text id="/new_actions_training/ending/ending_note_2:label">
-            <value>When you're ready, go ahead and start using your app.</value>
-          </text>
-          <text id="/new_actions_training/intro/intro_note_1:label">
+          <text id="/data/intro/intro_note_1:label">
             <value>There have been some changes to icons in your app. The next few screens will show you the difference.</value>
           </text>
-          <text id="/new_actions_training/intro/intro_note_2:label">
+          <text id="/data/intro/intro_note_2:label">
             <value>Read each screen carefully and tap "Next" if you understand. If you need extra support, please contact your supervisor.</value>
+          </text>
+          <text id="/data/action_icons:label">
+            <value></value>
+          </text>
+          <text id="/data/action_icons/action_icons_note_1:label">
+            <value>The "New Action" icon at the bottom of your app has changed to a big blue plus icon.</value>
+          </text>
+          <text id="/data/ending:label">
+            <value></value>
+          </text>
+          <text id="/data/ending/ending_note_1:label">
+            <value>If you do not understand these changes, please contact your supervisor.</value>
+          </text>
+          <text id="/data/ending/ending_note_2:label">
+            <value>When you're ready, go ahead and start using your app.</value>
           </text>
         </translation>
       </itext>
       <instance>
-        <new_actions_training id="new_actions_training" prefix="J1!new_actions_training!" delimiter="#" version="2023-01-18 04:35:53">
+        <data id="new_actions_training" version="2023-01-18 04:35:52.512000" prefix="J1!new_actions_training!" delimiter="#">
           <intro tag="hidden">
             <intro_note_1 tag="hidden"/>
             <intro_note_2 tag="hidden"/>
@@ -38,36 +47,39 @@
           <meta tag="hidden">
             <instanceID/>
           </meta>
-        </new_actions_training>
+        </data>
       </instance>
-      <bind nodeset="/new_actions_training/intro/intro_note_1" readonly="true()" type="string"/>
-      <bind nodeset="/new_actions_training/intro/intro_note_2" readonly="true()" type="string"/>
-      <bind nodeset="/new_actions_training/action_icons/action_icons_note_1" readonly="true()" type="string"/>
-      <bind nodeset="/new_actions_training/ending/ending_note_1" readonly="true()" type="string"/>
-      <bind nodeset="/new_actions_training/ending/ending_note_2" readonly="true()" type="string"/>
-      <bind nodeset="/new_actions_training/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+      <bind nodeset="/data/intro/intro_note_1" readonly="true()" type="string"/>
+      <bind nodeset="/data/intro/intro_note_2" readonly="true()" type="string"/>
+      <bind nodeset="/data/action_icons/action_icons_note_1" readonly="true()" type="string"/>
+      <bind nodeset="/data/ending/ending_note_1" readonly="true()" type="string"/>
+      <bind nodeset="/data/ending/ending_note_2" readonly="true()" type="string"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
-    <group appearance="field-list" ref="/new_actions_training/intro">
-      <input ref="/new_actions_training/intro/intro_note_1">
-        <label ref="jr:itext('/new_actions_training/intro/intro_note_1:label')"/>
+    <group appearance="field-list" ref="/data/intro">
+      <label ref="jr:itext('/data/intro:label')"/>
+      <input ref="/data/intro/intro_note_1">
+        <label ref="jr:itext('/data/intro/intro_note_1:label')"/>
       </input>
-      <input ref="/new_actions_training/intro/intro_note_2">
-        <label ref="jr:itext('/new_actions_training/intro/intro_note_2:label')"/>
-      </input>
-    </group>
-    <group appearance="field-list" ref="/new_actions_training/action_icons">
-      <input ref="/new_actions_training/action_icons/action_icons_note_1">
-        <label ref="jr:itext('/new_actions_training/action_icons/action_icons_note_1:label')"/>
+      <input ref="/data/intro/intro_note_2">
+        <label ref="jr:itext('/data/intro/intro_note_2:label')"/>
       </input>
     </group>
-    <group appearance="field-list" ref="/new_actions_training/ending">
-      <input ref="/new_actions_training/ending/ending_note_1">
-        <label ref="jr:itext('/new_actions_training/ending/ending_note_1:label')"/>
+    <group appearance="field-list" ref="/data/action_icons">
+      <label ref="jr:itext('/data/action_icons:label')"/>
+      <input ref="/data/action_icons/action_icons_note_1">
+        <label ref="jr:itext('/data/action_icons/action_icons_note_1:label')"/>
       </input>
-      <input ref="/new_actions_training/ending/ending_note_2">
-        <label ref="jr:itext('/new_actions_training/ending/ending_note_2:label')"/>
+    </group>
+    <group appearance="field-list" ref="/data/ending">
+      <label ref="jr:itext('/data/ending:label')"/>
+      <input ref="/data/ending/ending_note_1">
+        <label ref="jr:itext('/data/ending/ending_note_1:label')"/>
+      </input>
+      <input ref="/data/ending/ending_note_2">
+        <label ref="jr:itext('/data/ending/ending_note_2:label')"/>
       </input>
     </group>
   </h:body>

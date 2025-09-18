@@ -9,7 +9,7 @@
   "scripts": {
     "clean": "rm -rf ./build/",
     "eslint": "eslint 'src/**/*.js' test/*.js 'test/**/*.js'",
-    "test": "npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha \"../../test/**/*.spec.js\" --exclude \"../../test/e2e/**/*.spec.js\"",
+    "test": "npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha",
     "test-e2e": "mocha --config test/e2e/.mocharc.js",
     "semantic-release": "semantic-release"
   },
@@ -92,6 +92,7 @@
     "pouchdb-adapter-memory": "^9.0.0",
     "rewire": "^8.0.0",
     "semantic-release": "^24.2.4",
-    "sinon": "^21.0.0"
+    "sinon": "^21.0.0",
+    "sinon-chai": "^3.7.0"
   }
 }
