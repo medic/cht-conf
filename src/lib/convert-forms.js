@@ -1,9 +1,19 @@
 const argsFormFilter = require('./args-form-filter');
 const exec = require('./exec-promise');
 const fs = require('./sync-fs');
-const { getFormDir, escapeWhitespacesInPath } = require('./forms-utils');
+const {
+  getFormDir,
+  escapeWhitespacesInPath,
+  getBodyNode,
+  getNodes,
+  getInstanceNode,
+  getPrimaryInstanceNode,
+  getModelNode,
+  getNode
+} = require('./forms-utils');
 const { info, trace, warn } = require('./log');
 const path = require('path');
+const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
 
 const XLS2XFORM = path.join(__dirname, '..', 'bin', 'xls2xform-medic');
 
@@ -109,7 +119,110 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
     warn('From webapp version 2.14.0, repeat-relevant is no longer required.  See https://github.com/medic/cht-core/issues/3449 for more info.');
   }
 
-  fs.write(path, xml);
+  const domParser = new DOMParser();
+  const xmlDoc = domParser.parseFromString(xml);
+  const serializer = new XMLSerializer();
+
+  // TODO Make sure we log cht-core issues to address these properly
+  replaceItemSetsWithMedia(xmlDoc);
+  replaceBase64ImageDynamicDefaults(xmlDoc);
+
+  // TODO Still need to pretty-print this
+  // https://stackoverflow.com/questions/376373/pretty-printing-xml-with-javascript/
+  // https://www.npmjs.com/package/xml-formatter
+  fs.write(path, serializer.serializeToString(xmlDoc));
+};
+
+const getDynamicDefaultNode = (modelNode) => (ref) => {
+  const setValueNode = getNode(modelNode, `setvalue[@ref='${ref}']`);
+  if (setValueNode && setValueNode.getAttribute('value')) {
+    return setValueNode;
+  }
+  return null;
+};
+
+/**
+ * When setting a base64 image string as a default value in a form, pyxform thinks it is "dynamic". This causes the
+ * value to not be displayed properly. So, in cases were a default value is being used for a display-base64-image
+ * field, this function will move the default value into the instance node where it will be treated as a static value.
+ * https://github.com/XLSForm/pyxform/issues/495
+ */
+const replaceBase64ImageDynamicDefaults = (xmlDoc) => {
+  const body = getBodyNode(xmlDoc);
+  const primaryInstance = getPrimaryInstanceNode(xmlDoc);
+  const model = getModelNode(xmlDoc);
+  const base64ImageFieldRefs = getNodes(body, `//input[contains(@appearance, 'display-base64-image')]`)
+    .map(node => node.getAttribute('ref'));
+  const dynamicDefaultNodes = base64ImageFieldRefs
+    .map(getDynamicDefaultNode(model))
+    .filter(node => node);
+  dynamicDefaultNodes.forEach((setValueNode) => {
+    const ref = setValueNode
+      .getAttribute('ref')
+      .replace(/^\//, '');
+    const value = setValueNode.getAttribute('value');
+    const instanceNode = getNode(primaryInstance, ref);
+    if (!instanceNode) {
+      return;
+    }
+
+    instanceNode.textContent = value;
+    model.removeChild(setValueNode);
+  });
+};
+
+const createItemForInstanceNode = (xmlDoc, parentNode) => (itemNode) => {
+  const children = Array.from(itemNode.childNodes);
+  const itextIdNode = children.find(n => n.nodeName === 'itextId');
+  const nameNode = children.find(n => n.nodeName === 'name');
+  if (!itextIdNode || !nameNode) {
+    return;
+  }
+
+  const itemElem = xmlDoc.createElement('item');
+
+  const labelElem = xmlDoc.createElement('label');
+  labelElem.setAttribute('ref', `jr:itext('${itextIdNode.textContent}')`);
+  itemElem.appendChild(labelElem);
+
+  const valueElem = xmlDoc.createElement('value');
+  valueElem.textContent = nameNode.textContent;
+  itemElem.appendChild(valueElem);
+
+  parentNode.appendChild(itemElem);
+};
+
+const insertSelectItemsWithMedia = (xmlDoc) => (itemSetNode) => {
+  const { parentNode } = itemSetNode;
+  const instanceId = itemSetNode
+    .getAttribute('nodeset')
+    .match(/^instance\('([^']+)'\)/)[1];
+  if (!instanceId) {
+    return;
+  }
+
+  const instanceNode = getInstanceNode(xmlDoc, instanceId);
+  const instanceNodes = getNodes(instanceNode, 'root/item');
+  instanceNodes.forEach(createItemForInstanceNode(xmlDoc, parentNode));
+  parentNode.removeChild(itemSetNode);
+};
+
+/**
+ * Selects no longer include all item elements in the body, but instead the choices data is stored centrally as an
+ * instance and referenced in the body as an itemset. Unfortunately, this approach breaks the CHT logic for properly
+ * updating the media src urls associated with the choices. So, for these selects, we replace the itemset with the
+ * actual item elements, which the CHT logic can then handle as before.
+ *
+ * This is a temporary workaround until we can update the CHT logic to properly handle itemsets with media.
+ * https://github.com/XLSForm/pyxform/pull/614
+ * @param xmlDoc
+ */
+const replaceItemSetsWithMedia = (xmlDoc) => {
+  const body = getBodyNode(xmlDoc);
+  const itemSetsToReplace = getNodes(body, '//itemset[label[@ref="jr:itext(itextId)"]]');
+  Array
+    .from(itemSetsToReplace)
+    .forEach(insertSelectItemsWithMedia(xmlDoc));
 };
 
 function getHiddenFields(propsJson) {

@@ -2,6 +2,7 @@ const xpath = require('xpath');
 const fs = require('./sync-fs');
 
 const XPATH_MODEL = '/h:html/h:head/model';
+const XPATH_BODY = '/h:html/h:body';
 
 const getNode = (currentNode, path) =>
   xpath.parse(path).select1({ node: currentNode, allowAnyNamespaceForNoPrefix: true });
@@ -68,6 +69,12 @@ module.exports = {
    * @returns {Element}
    */
   getBindNodes: xmlDoc => getNodes(xmlDoc, `${XPATH_MODEL}/bind`),
+
+  getModelNode: xmlDoc => getNode(xmlDoc, XPATH_MODEL),
+
+  getBodyNode: xmlDoc => getNode(xmlDoc, XPATH_BODY),
+
+  getInstanceNode: (xmlDoc, instanceId) => getNode(xmlDoc, `${XPATH_MODEL}/instance[@id='${instanceId}']`),
 
   /**
    * Returns the primary (first) `instance` node for the given form XML.
