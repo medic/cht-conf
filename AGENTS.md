@@ -11,7 +11,7 @@
 ### Environment
 
 - Docker (required for E2E tests via CHT Docker Helper)
-- Internet connection (for downloading dependencies and connecting to CHT instances)
+- Internet connection (for downloading dependencies)
 
 ### Installation
 
@@ -25,19 +25,9 @@ pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform
 # For local development
 git clone https://github.com/medic/cht-conf.git
 cd cht-conf
-npm install
+npm ci
 ```
 
-### Docker Alternative
-
-```bash
-# Run using Docker (example: run tests)
-docker run -it --rm -v "$PWD":/workdir medicmobile/cht-app-ide npm test
-# Or run end-to-end tests
-docker run -it --rm -v "$PWD":/workdir medicmobile/cht-app-ide npm run test-e2e
-# For more available commands, see the documentation at https://github.com/medic/cht-conf#usage or run:
-docker run -it --rm -v "$PWD":/workdir medicmobile/cht-app-ide --help
-```
 
 ## Build & Test
 
@@ -51,7 +41,6 @@ npm run test-e2e              # Run end-to-end tests (requires Docker)
 
 # Build and Maintenance
 npm run clean                 # Clean build directory
-npm run semantic-release      # Release new version (for maintainers)
 
 # Development
 node src/bin/index.js <actions>  # Run locally for development
@@ -155,6 +144,7 @@ GitHub Actions workflow runs:
 
 - Lint checks (`npm run eslint`)
 - Unit tests (`npm test`)
+- E2E tests (`npm run test-e2e`)
 - Tests across multiple Node.js versions (20.x, 22.x, 24.x)
 
 ### Semantic Versioning
