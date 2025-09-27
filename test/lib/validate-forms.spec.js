@@ -67,6 +67,11 @@ describe('validate-forms', () => {
     expect(deprecatedAppearance.requiresInstance).to.equal(true);
     expect(deprecatedAppearance.skipFurtherValidation).to.equal(false);
 
+    const deprecatedTelType = validations.shift();
+    expect(deprecatedTelType.name).to.equal('deprecated-tel-type.js');
+    expect(deprecatedTelType.requiresInstance).to.equal(true);
+    expect(deprecatedTelType.skipFurtherValidation).to.equal(false);
+
     const noRequiredNotes = validations.shift();
     expect(noRequiredNotes.name).to.equal('no-required-notes.js');
     expect(noRequiredNotes.requiresInstance).to.equal(false);
