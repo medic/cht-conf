@@ -43,7 +43,7 @@ const xformPath = '/my/form/path/form.xml';
 
 const assertEmpty = (output) => {
   expect(output.warnings).is.empty;
-  expect(output.errors, output.errors).is.empty;
+  expect(output.errors).is.empty;
 };
 
 describe('deprecated-tel-type', () => {
