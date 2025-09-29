@@ -16,19 +16,16 @@ CHT Conf is a command-line interface tool to manage and configure your apps buil
 ### Ubuntu
 
 	npm install -g cht-conf
-	sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
 ### OSX
 
 	npm install -g cht-conf
-	pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
 
 ### Windows
 
 As Administrator:
 
 	npm install -g cht-conf
-	python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic --upgrade
 
 ### Docker
 
