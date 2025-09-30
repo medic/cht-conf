@@ -33,22 +33,16 @@ const getDoc = async (db, docId) => {
 
 async function addDocAttachment(db, options, retries = MAX_RETRY) {
   const { docId, attachmentName, attachment, currentRev } = options;
-
   const contentType = getContentType(attachmentName, attachment);
 
   try {
     return await db.putAttachment(docId, attachmentName, currentRev, attachment.data, contentType);
   } catch (err) {
-    if (retries < 0 || err.status !== 409) {
-      const errorMessage = retries < 0 
-        ? `Failed to add attachment ${attachmentName} to ${docId} after retries`
-        : err.message || `Error adding attachment ${attachmentName} to ${docId}`;
-      throw new Error(errorMessage);
+    if (err.status === 409 && retries >= 0) {
+      const latestDoc = await getDoc(db, docId);
+      return addDocAttachment(db, { ...options, currentRev: latestDoc._rev }, retries - 1);
     }
-    const latestDoc = await getDoc(db, docId);
-    // Retry with latest revision
-    options.currentRev = latestDoc._rev;
-    return addDocAttachment(db, options, retries - 1);
+    throw new Error(`Failed to add attachment ${attachmentName} to ${docId}: ${err.message}`);
   }
 }
 
