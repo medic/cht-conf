@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const log = require('../../src/lib/log'); // Import the log module directly
 
-describe.only('forms with large attachments', () => {
+describe('forms with large attachments', () => {
   afterEach(() => {
     sinon.restore();
   });
