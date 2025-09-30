@@ -13,7 +13,6 @@ const getContentType = (attachmentName, attachment) => {
 };
 
 const getDoc = async (db, docId) => {
-  if (!db || !docId) {throw new Error('Valid input is required');}
   try {
     return await db.get(docId);
   } catch (e) {
@@ -25,7 +24,6 @@ const getDoc = async (db, docId) => {
 };
 
 const putDoc = async (db, doc, existingRev = null) => {
-  if (!db || !doc) {throw new Error('Valid input is required');}
   if (existingRev) {
     doc._rev = existingRev;
   } else {
@@ -34,10 +32,7 @@ const putDoc = async (db, doc, existingRev = null) => {
   return await db.put(doc);
 };
 
-const addDocAttachment = async (db, options, retries = MAX_RETRY) => {
-  if (!db || !options || !options.docId || !options.attachmentName || !options.attachment) {
-    throw new Error('Valid input is required');
-  }
+async function addDocAttachment(db, options, retries = MAX_RETRY) {
   const { docId, attachmentName, attachment, currentRev } = options;
 
   if (retries < 0) {
@@ -46,22 +41,16 @@ const addDocAttachment = async (db, options, retries = MAX_RETRY) => {
 
   try {
     const contentType = getContentType(attachmentName, attachment);
-    const result = await db.putAttachment(docId, attachmentName, currentRev, attachment.data, contentType);
-    return result;
+    return await db.putAttachment(docId, attachmentName, currentRev, attachment.data, contentType);
   } catch (err) {
-    if (err.status === 409) {
-      const latestDoc = await getDoc(db, docId);
-      if (!latestDoc) {
-        throw new Error(`Document ${docId} not found before adding attachment ${attachmentName}`);
-      }
-      return addDocAttachment(db, { docId, attachmentName, attachment, currentRev: latestDoc._rev }, retries - 1);
-    }
-    throw err;
+    if (err.status !== 409) {throw err;}
+    const latestDoc = await getDoc(db, docId);
+    if (!latestDoc) {throw new Error(`Document ${docId} not found before adding attachment ${attachmentName}`);}
+    return addDocAttachment(db, { ...options, currentRev: latestDoc._rev }, retries - 1);
   }
-};
+}
 
 const handleAttachments = async (db, docId, attachments, initialRev) => {
-  if (!db || !docId || !attachments) {throw new Error('Valid input is required');}
   let currentRev = initialRev;
   const latestDoc = await getDoc(db, docId);
   if (!latestDoc) {
@@ -103,7 +92,6 @@ const splitAttachments = (attachments, docId) => {
 };
 
 const saveFunctionalDoc = async (db, doc, functionalAttachments, existingRev) => {
-  if (!db || !doc || !doc._id) {throw new Error('Valid input is required');}
   const docToSave = {
     ...doc,
     ...(Object.keys(functionalAttachments).length > 0 && { _attachments: functionalAttachments })
@@ -118,7 +106,6 @@ const saveMediaAttachments = async (db, docId, mediaAttachments, rev) => {
 };
 
 const handleLargeDocument = async (db, doc, retries = MAX_RETRY) => {
-  if (!db || !doc || !doc._id) {throw new Error('Valid input is required');}
   if (retries < 0) {
     throw new Error(`Large document update failed for ${doc._id} after retries`);
   }
@@ -152,7 +139,6 @@ const handleUpsertError = async (db, doc, err, retries) => {
 };
 
 const upsertDoc = async (db, doc, retries = MAX_RETRY) => {
-  if (!db || !doc || !doc._id) {throw new Error('Valid input is required');}
   if (retries < 0) {
     throw new Error(`Document update failed for ${doc._id} after retries due to conflicts`);
   }
