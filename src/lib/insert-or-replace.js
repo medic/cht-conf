@@ -12,16 +12,6 @@ const getContentType = (attachmentName, attachment) => {
   return contentType;
 };
 
-const getDoc = async (db, docId) => {
-  try {
-    return await db.get(docId);
-  } catch (e) {
-    if (e.status === 404) {
-      return null;
-    }
-    throw e;
-  }
-};
 
 const putDoc = async (db, doc, existingRev = null) => {
   if (existingRev) {
@@ -32,23 +22,30 @@ const putDoc = async (db, doc, existingRev = null) => {
   return await db.put(doc);
 };
 
+const getDoc = async (db, docId) => {
+  try {
+    return await db.get(docId);
+  } catch (e) {
+    if (e.status === 404) {return null;}
+    throw e instanceof Error ? e : new Error(JSON.stringify(e));
+  }
+};
+
 async function addDocAttachment(db, options, retries = MAX_RETRY) {
   const { docId, attachmentName, attachment, currentRev } = options;
-
-  if (retries < 0) {
-    throw new Error(`Failed to add attachment ${attachmentName} to ${docId} after retries`);
-  }
 
   const contentType = getContentType(attachmentName, attachment);
 
   try {
     return await db.putAttachment(docId, attachmentName, currentRev, attachment.data, contentType);
   } catch (err) {
-    if (err.status !== 409) {throw err;}
-
+    if (retries < 0 || err.status !== 409) {
+      const errorMessage = retries < 0 
+        ? `Failed to add attachment ${attachmentName} to ${docId} after retries`
+        : err.message || `Error adding attachment ${attachmentName} to ${docId}`;
+      throw new Error(errorMessage);
+    }
     const latestDoc = await getDoc(db, docId);
-    if (!latestDoc) {throw new Error(`Document ${docId} not found before adding attachment ${attachmentName}`);}
-
     // Retry with latest revision
     options.currentRev = latestDoc._rev;
     return addDocAttachment(db, options, retries - 1);
@@ -77,21 +74,20 @@ const handleAttachments = async (db, docId, attachments, initialRev) => {
 };
 
 const splitAttachments = (attachments, docId) => {
-  if (!attachments) {return { functionalAttachments: {}, mediaAttachments: {} };}
-
   const functionalRegex = /^(form|model)\.xml$|^form\.html$|^xml$/i;
-  const result = { functionalAttachments: {}, mediaAttachments: {} };
+  const functionalAttachments = {};
+  const mediaAttachments = {};
 
-  Object.entries(attachments).forEach(([name, value]) => {
-    if (!value?.data) {return log.warn(`Skipping invalid attachment ${name} for ${docId}: missing data`);}
-    
-    const key = functionalRegex.test(name) ? 'functionalAttachments' : 'mediaAttachments';
-    result[key][name] = value;
-  });
+  for (const [name, value] of Object.entries(attachments || {})) {
+    if (!value?.data) {
+      log.warn(`Skipping invalid attachment ${name} for ${docId}: missing data`);
+      continue;
+    }
+    (functionalRegex.test(name) ? functionalAttachments : mediaAttachments)[name] = value;
+  }
 
-  return result;
+  return { functionalAttachments, mediaAttachments };
 };
-
 
 const saveFunctionalDoc = async (db, doc, functionalAttachments, existingRev) => {
   const docToSave = {
