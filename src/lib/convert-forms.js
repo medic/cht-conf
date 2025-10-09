@@ -192,20 +192,47 @@ const createItemForInstanceNode = (xmlDoc, parentNode) => (itemNode) => {
   parentNode.appendChild(itemElem);
 };
 
-const insertSelectItemsWithMedia = (xmlDoc) => (itemSetNode) => {
+const getInstanceId = (itemsetNode) => itemsetNode
+  .getAttribute('nodeset')
+  .match(/^instance\('([^']+)'\)/)[1];
+
+// const insertSelectItemsWithMedia = (xmlDoc) => (itemSetNode) => {
+//   const { parentNode } = itemSetNode;
+//   const instanceId = getInstanceId(itemSetNode);
+//   if (!instanceId) {
+//     return;
+//   }
+//
+//   const instanceNode = getInstanceNode(xmlDoc, instanceId);
+//   getNodes(instanceNode, 'root/item')
+//     .forEach(createItemForInstanceNode(xmlDoc, parentNode));
+//   parentNode.removeChild(itemSetNode);
+// };
+const insertSelectItemsWithMedia = (xmlDoc, instanceNode) => (itemSetNode) => {
   const { parentNode } = itemSetNode;
-  const instanceId = itemSetNode
-    .getAttribute('nodeset')
-    .match(/^instance\('([^']+)'\)/)[1];
+  const instanceId = getInstanceId(itemSetNode);
   if (!instanceId) {
     return;
   }
 
-  const instanceNode = getInstanceNode(xmlDoc, instanceId);
-  const instanceNodes = getNodes(instanceNode, 'root/item');
-  instanceNodes.forEach(createItemForInstanceNode(xmlDoc, parentNode));
+  getNodes(instanceNode, 'root/item')
+    .forEach(createItemForInstanceNode(xmlDoc, parentNode));
   parentNode.removeChild(itemSetNode);
 };
+
+// const doesItemsetHaveMedia = (xmlDoc, itemsetNode) => {
+//   const instanceId = getInstanceId(itemsetNode);
+//   if (!instanceId) {
+//     return false;
+//   }
+//
+//   const instanceNode = getInstanceNode(xmlDoc, instanceId);
+//   const itextIds = getNodes(instanceNode, 'root/item')
+//     .map(itemNode => itemNode.getAttribute('itextId'))
+//     .filter(itextId => itextId);
+//
+//
+// };
 
 /**
  * Selects no longer include all item elements in the body, but instead the choices data is stored centrally as an
@@ -218,11 +245,31 @@ const insertSelectItemsWithMedia = (xmlDoc) => (itemSetNode) => {
  * @param xmlDoc
  */
 const replaceItemSetsWithMedia = (xmlDoc) => {
+  const model = getModelNode(xmlDoc);
+  const allInstanceIdsWithMedia = getNodes(model, 'itext//text[value[@form="image" or @form="audio" or @form="video"]]')
+    .map(textNode => textNode.getAttribute('id'))
+    .map(id => id.match(/^(.+)-\d+$/))
+    .filter(match => match)
+    .map(match => match[1]);
+  const instanceNodes = Array
+    .from(new Set(allInstanceIdsWithMedia))
+    .map(instanceId => getInstanceNode(xmlDoc, instanceId))
+    .filter(node => node);
+
   const body = getBodyNode(xmlDoc);
-  const itemSetsToReplace = getNodes(body, '//itemset[label[@ref="jr:itext(itextId)"]]');
-  Array
-    .from(itemSetsToReplace)
-    .forEach(insertSelectItemsWithMedia(xmlDoc));
+  instanceNodes.forEach(instanceNode => {
+    const instanceId = instanceNode.getAttribute('id');
+    const itemSetsToReplace = getNodes(body, `//itemset[@nodeset="instance('${instanceId}')/root/item"]`);
+    Array
+      .from(itemSetsToReplace)
+      .forEach(insertSelectItemsWithMedia(xmlDoc, instanceNode));
+  });
+
+  //
+  // const itemSetsToReplace = getNodes(body, '//itemset[label[@ref="jr:itext(itextId)"]]');
+  // Array
+  //   .from(itemSetsToReplace)
+  //   .forEach(insertSelectItemsWithMedia(xmlDoc));
 };
 
 function getHiddenFields(propsJson) {
