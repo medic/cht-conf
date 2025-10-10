@@ -68,6 +68,7 @@
     "terser-webpack-plugin": "^5.3.11",
     "uuid": "^11.1.0",
     "webpack": "^5.98.0",
+    "xml-formatter": "^3.6.7",
     "xpath": "0.0.34"
   },
   "devDependencies": {

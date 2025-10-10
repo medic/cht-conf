@@ -9,11 +9,12 @@ const {
   getInstanceNode,
   getPrimaryInstanceNode,
   getModelNode,
-  getNode
+  getNode, XPATH_MODEL
 } = require('./forms-utils');
 const { info, trace, warn } = require('./log');
 const path = require('path');
 const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
+const xmlFormat = require('xml-formatter');
 
 const XLS2XFORM = path.join(__dirname, '..', 'bin', 'xls2xform-medic');
 
@@ -90,10 +91,6 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
     // merge the two instead.
     .replace(/<inputs>/, META_XML_SECTION)
 
-    // XLSForm does not allow converting a field without a label, so we use
-    // the placeholder NO_LABEL.
-    .replace(/NO_LABEL/g, '')
-
     // No comment.
     .replace(/.*DELETE_THIS_LINE.*(\r|\n)/g, '')
     ;
@@ -126,11 +123,21 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
   // TODO Make sure we log cht-core issues to address these properly
   replaceItemSetsWithMedia(xmlDoc);
   replaceBase64ImageDynamicDefaults(xmlDoc);
+  removeNoLabels(xmlDoc);
+  removeExtraRepeatInstance(xmlDoc);
 
-  // TODO Still need to pretty-print this
-  // https://stackoverflow.com/questions/376373/pretty-printing-xml-with-javascript/
-  // https://www.npmjs.com/package/xml-formatter
-  fs.write(path, serializer.serializeToString(xmlDoc));
+  const xmlString = serializer.serializeToString(xmlDoc);
+  const formattedXmlString = xmlFormat(xmlString, {
+    collapseContent: true,
+    forceSelfClosingEmptyTag: true,
+    indentation: '  ',
+    ignoredPaths: [
+      'value'
+    ]
+  }).replaceAll(/\s+<\/value>/g, '</value>'); // Ignoring the 'value' path results in extra trailing whitespace
+  fs.write(path, formattedXmlString);
+
+  // fs.write(path, xml);
 };
 
 const getDynamicDefaultNode = (modelNode) => (ref) => {
@@ -196,18 +203,6 @@ const getInstanceId = (itemsetNode) => itemsetNode
   .getAttribute('nodeset')
   .match(/^instance\('([^']+)'\)/)[1];
 
-// const insertSelectItemsWithMedia = (xmlDoc) => (itemSetNode) => {
-//   const { parentNode } = itemSetNode;
-//   const instanceId = getInstanceId(itemSetNode);
-//   if (!instanceId) {
-//     return;
-//   }
-//
-//   const instanceNode = getInstanceNode(xmlDoc, instanceId);
-//   getNodes(instanceNode, 'root/item')
-//     .forEach(createItemForInstanceNode(xmlDoc, parentNode));
-//   parentNode.removeChild(itemSetNode);
-// };
 const insertSelectItemsWithMedia = (xmlDoc, instanceNode) => (itemSetNode) => {
   const { parentNode } = itemSetNode;
   const instanceId = getInstanceId(itemSetNode);
@@ -220,19 +215,30 @@ const insertSelectItemsWithMedia = (xmlDoc, instanceNode) => (itemSetNode) => {
   parentNode.removeChild(itemSetNode);
 };
 
-// const doesItemsetHaveMedia = (xmlDoc, itemsetNode) => {
-//   const instanceId = getInstanceId(itemsetNode);
-//   if (!instanceId) {
-//     return false;
-//   }
-//
-//   const instanceNode = getInstanceNode(xmlDoc, instanceId);
-//   const itextIds = getNodes(instanceNode, 'root/item')
-//     .map(itemNode => itemNode.getAttribute('itextId'))
-//     .filter(itextId => itextId);
-//
-//
-// };
+
+// XLSForm does not allow converting a field without a label, so we use
+// the placeholder NO_LABEL.
+const removeNoLabels = (xmlDoc) => {
+  const model = getModelNode(xmlDoc);
+  const noLabelItextNodes = getNodes(model, 'itext//text[value="NO_LABEL"]');
+  const noLabelNodeIds = Array.from(new Set(noLabelItextNodes.map(textNode => textNode.getAttribute('id'))));
+
+  noLabelItextNodes.forEach(node => node.parentNode.removeChild(node));
+
+  const body = getBodyNode(xmlDoc);
+  noLabelNodeIds.forEach(id => {
+    const labelNodes = getNodes(body, `//label[@ref="jr:itext('${id}')"]`);
+    labelNodes.forEach(node => node.parentNode.removeChild(node));
+  });
+};
+
+const removeExtraRepeatInstance = (xmlDoc) => {
+  const repeatTemplateNodes = getNodes(xmlDoc, `${XPATH_MODEL}/instance//*[@jr:template=""]`);
+  const extraRepeatNodes = repeatTemplateNodes
+    .map(templateNode => getNode(templateNode.parentNode, `./${templateNode.nodeName}[not(@jr:template="")]`))
+    .filter(node => node);
+  extraRepeatNodes.forEach(node => node.parentNode.removeChild(node));
+};
 
 /**
  * Selects no longer include all item elements in the body, but instead the choices data is stored centrally as an
@@ -264,12 +270,6 @@ const replaceItemSetsWithMedia = (xmlDoc) => {
       .from(itemSetsToReplace)
       .forEach(insertSelectItemsWithMedia(xmlDoc, instanceNode));
   });
-
-  //
-  // const itemSetsToReplace = getNodes(body, '//itemset[label[@ref="jr:itext(itextId)"]]');
-  // Array
-  //   .from(itemSetsToReplace)
-  //   .forEach(insertSelectItemsWithMedia(xmlDoc));
 };
 
 function getHiddenFields(propsJson) {

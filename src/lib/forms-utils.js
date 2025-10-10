@@ -19,6 +19,9 @@ const getFullNodePath = (childNode) => {
 };
 
 module.exports = {
+  XPATH_MODEL,
+  XPATH_BODY,
+
   /**
    * Get the full path of the form, or null if the path doesn't exist.
    * @returns {string|null}
