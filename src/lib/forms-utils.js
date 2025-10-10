@@ -73,10 +73,6 @@ module.exports = {
    */
   getBindNodes: xmlDoc => getNodes(xmlDoc, `${XPATH_MODEL}/bind`),
 
-  getModelNode: xmlDoc => getNode(xmlDoc, XPATH_MODEL),
-
-  getBodyNode: xmlDoc => getNode(xmlDoc, XPATH_BODY),
-
   getInstanceNode: (xmlDoc, instanceId) => getNode(xmlDoc, `${XPATH_MODEL}/instance[@id='${instanceId}']`),
 
   /**

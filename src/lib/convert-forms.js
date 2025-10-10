@@ -4,12 +4,11 @@ const fs = require('./sync-fs');
 const {
   getFormDir,
   escapeWhitespacesInPath,
-  getBodyNode,
   getNodes,
   getInstanceNode,
-  getPrimaryInstanceNode,
-  getModelNode,
-  getNode, XPATH_MODEL
+  getNode,
+  XPATH_MODEL,
+  XPATH_BODY
 } = require('./forms-utils');
 const { info, trace, warn } = require('./log');
 const path = require('path');
@@ -140,12 +139,24 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
   // fs.write(path, xml);
 };
 
-const getDynamicDefaultNode = (modelNode) => (ref) => {
-  const setValueNode = getNode(modelNode, `setvalue[@ref='${ref}']`);
-  if (setValueNode && setValueNode.getAttribute('value')) {
-    return setValueNode;
+const getDynamicDefaultNode = (xmlDoc) => (ref) => {
+  return getNode(
+    xmlDoc,
+    `${XPATH_MODEL}/setvalue[@ref='${ref}' and string-length(@value) > 0]`
+  );
+};
+
+const moveDynamicDefaultValueToInstance = (xmlDoc) => (setValueNode) => {
+  const ref = setValueNode
+    .getAttribute('ref')
+    .substring(1);
+  const instanceNode = getNode(xmlDoc, `${XPATH_MODEL}/instance[1]/${ref}`);
+  if (!instanceNode) {
+    return;
   }
-  return null;
+
+  instanceNode.textContent = setValueNode.getAttribute('value');
+  removeXmlNode(setValueNode);
 };
 
 /**
@@ -155,27 +166,11 @@ const getDynamicDefaultNode = (modelNode) => (ref) => {
  * https://github.com/XLSForm/pyxform/issues/495
  */
 const replaceBase64ImageDynamicDefaults = (xmlDoc) => {
-  const body = getBodyNode(xmlDoc);
-  const primaryInstance = getPrimaryInstanceNode(xmlDoc);
-  const model = getModelNode(xmlDoc);
-  const base64ImageFieldRefs = getNodes(body, `//input[contains(@appearance, 'display-base64-image')]`)
-    .map(node => node.getAttribute('ref'));
-  const dynamicDefaultNodes = base64ImageFieldRefs
-    .map(getDynamicDefaultNode(model))
-    .filter(node => node);
-  dynamicDefaultNodes.forEach((setValueNode) => {
-    const ref = setValueNode
-      .getAttribute('ref')
-      .replace(/^\//, '');
-    const value = setValueNode.getAttribute('value');
-    const instanceNode = getNode(primaryInstance, ref);
-    if (!instanceNode) {
-      return;
-    }
-
-    instanceNode.textContent = value;
-    model.removeChild(setValueNode);
-  });
+  getNodes(xmlDoc, `${XPATH_BODY}//input[contains(@appearance, 'display-base64-image')]`)
+    .map(node => node.getAttribute('ref'))
+    .map(getDynamicDefaultNode(xmlDoc))
+    .filter(Boolean)
+    .forEach(moveDynamicDefaultValueToInstance(xmlDoc));
 };
 
 const createItemForInstanceNode = (xmlDoc, parentNode) => (itemNode) => {
@@ -187,57 +182,63 @@ const createItemForInstanceNode = (xmlDoc, parentNode) => (itemNode) => {
   }
 
   const itemElem = xmlDoc.createElement('item');
-
   const labelElem = xmlDoc.createElement('label');
   labelElem.setAttribute('ref', `jr:itext('${itextIdNode.textContent}')`);
   itemElem.appendChild(labelElem);
-
   const valueElem = xmlDoc.createElement('value');
   valueElem.textContent = nameNode.textContent;
   itemElem.appendChild(valueElem);
-
   parentNode.appendChild(itemElem);
 };
 
-const getInstanceId = (itemsetNode) => itemsetNode
-  .getAttribute('nodeset')
-  .match(/^instance\('([^']+)'\)/)[1];
+const getInstanceIdFromNodeset = (itemsetNode) => {
+  return itemsetNode
+    .getAttribute('nodeset')
+    .match(/^instance\('([^']+)'\)/)[1];
+};
 
 const insertSelectItemsWithMedia = (xmlDoc, instanceNode) => (itemSetNode) => {
   const { parentNode } = itemSetNode;
-  const instanceId = getInstanceId(itemSetNode);
+  const instanceId = getInstanceIdFromNodeset(itemSetNode);
   if (!instanceId) {
     return;
   }
 
   getNodes(instanceNode, 'root/item')
     .forEach(createItemForInstanceNode(xmlDoc, parentNode));
-  parentNode.removeChild(itemSetNode);
+  removeXmlNode(itemSetNode);
 };
 
+const removeXmlNode = node => node.parentNode.removeChild(node);
 
-// XLSForm does not allow converting a field without a label, so we use
-// the placeholder NO_LABEL.
+/**
+ * Removes the "NO_LABEL" labels placeholder. XLSForm does not allow converting a field without a label, so the CHT
+ * convention is to use a "NO_LABEL" placeholder value.
+ */
 const removeNoLabels = (xmlDoc) => {
-  const model = getModelNode(xmlDoc);
-  const noLabelItextNodes = getNodes(model, 'itext//text[value="NO_LABEL"]');
+  const noLabelItextNodes = getNodes(xmlDoc, `${XPATH_MODEL}/itext/translation//text[count(*)=1 and value="NO_LABEL"]`);
   const noLabelNodeIds = Array.from(new Set(noLabelItextNodes.map(textNode => textNode.getAttribute('id'))));
+  noLabelNodeIds
+    .flatMap(id => getNodes(xmlDoc, `${XPATH_BODY}//label[@ref="jr:itext('${id}')"]`))
+    .forEach(removeXmlNode);
+  noLabelItextNodes.forEach(removeXmlNode);
 
-  noLabelItextNodes.forEach(node => node.parentNode.removeChild(node));
-
-  const body = getBodyNode(xmlDoc);
-  noLabelNodeIds.forEach(id => {
-    const labelNodes = getNodes(body, `//label[@ref="jr:itext('${id}')"]`);
-    labelNodes.forEach(node => node.parentNode.removeChild(node));
-  });
+  // Remove any additional NO_LABEL values from translation nodes that have other (multimedia) values
+  getNodes(xmlDoc, `${XPATH_MODEL}/itext/translation//value[text()="NO_LABEL"]`)
+    .forEach(removeXmlNode);
 };
 
 const removeExtraRepeatInstance = (xmlDoc) => {
-  const repeatTemplateNodes = getNodes(xmlDoc, `${XPATH_MODEL}/instance//*[@jr:template=""]`);
-  const extraRepeatNodes = repeatTemplateNodes
-    .map(templateNode => getNode(templateNode.parentNode, `./${templateNode.nodeName}[not(@jr:template="")]`))
-    .filter(node => node);
-  extraRepeatNodes.forEach(node => node.parentNode.removeChild(node));
+  getNodes(xmlDoc, `${XPATH_MODEL}/instance//*[@jr:template=""]`)
+    .map(({ parentNode, nodeName }) => getNode(parentNode, `./${nodeName}[not(@jr:template="")]`))
+    .filter(Boolean)
+    .forEach(removeXmlNode);
+};
+
+const insertMediaSelectItemsForInstance = (xmlDoc) => (instanceNode) => {
+  const instanceId = instanceNode.getAttribute('id');
+  getNodes(xmlDoc, `${XPATH_BODY}//itemset[@nodeset="instance('${instanceId}')/root/item"]`)
+    .forEach(insertSelectItemsWithMedia(xmlDoc, instanceNode));
 };
 
 /**
@@ -251,25 +252,17 @@ const removeExtraRepeatInstance = (xmlDoc) => {
  * @param xmlDoc
  */
 const replaceItemSetsWithMedia = (xmlDoc) => {
-  const model = getModelNode(xmlDoc);
-  const allInstanceIdsWithMedia = getNodes(model, 'itext//text[value[@form="image" or @form="audio" or @form="video"]]')
+  const mediaXpath = `${XPATH_MODEL}/itext/translation/text[value[@form="image" or @form="audio" or @form="video"]]`;
+  const allInstanceIdsWithMedia = getNodes(xmlDoc, mediaXpath)
     .map(textNode => textNode.getAttribute('id'))
     .map(id => id.match(/^(.+)-\d+$/))
-    .filter(match => match)
-    .map(match => match[1]);
+    .filter(Boolean)
+    .map(([,match]) => match);
   const instanceNodes = Array
     .from(new Set(allInstanceIdsWithMedia))
     .map(instanceId => getInstanceNode(xmlDoc, instanceId))
-    .filter(node => node);
-
-  const body = getBodyNode(xmlDoc);
-  instanceNodes.forEach(instanceNode => {
-    const instanceId = instanceNode.getAttribute('id');
-    const itemSetsToReplace = getNodes(body, `//itemset[@nodeset="instance('${instanceId}')/root/item"]`);
-    Array
-      .from(itemSetsToReplace)
-      .forEach(insertSelectItemsWithMedia(xmlDoc, instanceNode));
-  });
+    .filter(Boolean);
+  instanceNodes.forEach(insertMediaSelectItemsForInstance(xmlDoc));
 };
 
 function getHiddenFields(propsJson) {
