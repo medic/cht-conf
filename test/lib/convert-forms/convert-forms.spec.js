@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 
 const convertForms = rewire('./../../src/lib/convert-forms');
-const fs = require('./../../src/lib/sync-fs');
+const fs = require('../../../src/lib/sync-fs');
 const path = require('path');
 
 const XLS2XFORM = path.join(__dirname, '..', '..', 'src', 'bin', 'xls2xform-medic');

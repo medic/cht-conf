@@ -1,6 +1,6 @@
-const argsFormFilter = require('./args-form-filter');
-const exec = require('./exec-promise');
-const fs = require('./sync-fs');
+const argsFormFilter = require('../args-form-filter');
+const exec = require('../exec-promise');
+const fs = require('../sync-fs');
 const {
   getFormDir,
   escapeWhitespacesInPath,
@@ -9,8 +9,8 @@ const {
   getNode,
   XPATH_MODEL,
   XPATH_BODY
-} = require('./forms-utils');
-const { info, trace, warn } = require('./log');
+} = require('../forms-utils');
+const { info, trace, warn } = require('../log');
 const path = require('path');
 const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
 const xmlFormat = require('xml-formatter');
