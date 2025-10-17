@@ -1,4 +1,4 @@
-const convertForms = require('../lib/convert-forms/convert-forms').execute;
+const convertForms = require('../lib/convert-forms').execute;
 const environment = require('../lib/environment');
 const { COLLECT_FORMS_PATH } = require('../lib/project-paths');
 

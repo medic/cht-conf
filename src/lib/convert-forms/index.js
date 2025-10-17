@@ -15,7 +15,7 @@ const path = require('path');
 const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
 const xmlFormat = require('xml-formatter');
 
-const XLS2XFORM = path.join(__dirname, '..', 'bin', 'xls2xform-medic');
+const XLS2XFORM = path.join(__dirname, '..', '..', 'bin', 'xls2xform-medic');
 
 const FORM_EXTENSION = '.xlsx';
 const formFileMatcher = (fileName) => {

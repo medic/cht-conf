@@ -2,11 +2,11 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const convertForms = rewire('./../../src/lib/convert-forms');
+const convertForms = rewire('./../../../src/lib/convert-forms');
 const fs = require('../../../src/lib/sync-fs');
 const path = require('path');
 
-const XLS2XFORM = path.join(__dirname, '..', '..', 'src', 'bin', 'xls2xform-medic');
+const XLS2XFORM = path.join(__dirname, '..', '..', '..', 'src', 'bin', 'xls2xform-medic');
 
 describe('convert-forms', () => {
 
