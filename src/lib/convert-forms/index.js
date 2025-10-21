@@ -9,8 +9,7 @@ const { info, trace, warn } = require('../log');
 const path = require('path');
 const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
 const xmlFormat = require('xml-formatter');
-const { replaceItemSetsWithMedia } = require('./handle-choices-with-media');
-const { replaceBase64ImageDynamicDefaults } = require('./handle-default-base64-images');
+const { replaceBase64ImageDynamicDefaults, replaceItemSetsWithMedia } = require('./handle-media');
 const { removeNoLabelNodes } = require('./handle-no-label-placeholders');
 const { removeExtraRepeatInstance, addRepeatCount } = require('./handle-repeat');
 
