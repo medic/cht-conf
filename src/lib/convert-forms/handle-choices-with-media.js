@@ -18,21 +18,10 @@ const createItemForInstanceNode = (xmlDoc, parentNode) => (itemNode) => {
   parentNode.appendChild(itemElem);
 };
 
-const getInstanceIdFromNodeset = (itemsetNode) => {
-  return itemsetNode
-    .getAttribute('nodeset')
-    .match(/^instance\('([^']+)'\)/)[1];
-};
-
 const removeXmlNode = node => node.parentNode.removeChild(node);
 
 const insertSelectItemsWithMedia = (xmlDoc, instanceNode) => (itemSetNode) => {
   const { parentNode } = itemSetNode;
-  const instanceId = getInstanceIdFromNodeset(itemSetNode);
-  if (!instanceId) {
-    return;
-  }
-
   getNodes(instanceNode, 'root/item')
     .forEach(createItemForInstanceNode(xmlDoc, parentNode));
   removeXmlNode(itemSetNode);
