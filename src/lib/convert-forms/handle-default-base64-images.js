@@ -5,15 +5,13 @@ const removeXmlNode = node => node.parentNode.removeChild(node);
 const getDynamicDefaultNode = (xmlDoc) => (ref) => {
   return getNode(
     xmlDoc,
-    `${XPATH_MODEL}/setvalue[@ref='${ref}' and string-length(@value) > 0]`
+    `${XPATH_MODEL}/setvalue[@ref='${ref}' and string-length(@value) > 0 and @event="odk-instance-first-load"]`
   );
 };
 
 const moveDynamicDefaultValueToInstance = (xmlDoc) => (setValueNode) => {
-  const ref = setValueNode
-    .getAttribute('ref')
-    .substring(1);
-  const instanceNode = getNode(xmlDoc, `${XPATH_MODEL}/instance[1]/${ref}`);
+  const ref = setValueNode.getAttribute('ref');
+  const instanceNode = getNode(xmlDoc, `${XPATH_MODEL}/instance[1]${ref}`);
   if (!instanceNode) {
     return;
   }
