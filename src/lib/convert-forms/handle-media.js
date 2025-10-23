@@ -1,6 +1,7 @@
 const { getNodes, XPATH_MODEL, XPATH_BODY, getNode, getInstanceNode } = require('../forms-utils');
 
-const removeXmlNode = node => node.parentNode.removeChild(node);
+// xmldom does not support node.remove(), so we use parentNode.removeChild(node) instead
+const removeXmlNode = node => node.parentNode.removeChild(node); // NOSONAR
 
 const getDynamicDefaultNode = (xmlDoc) => (ref) => {
   return getNode(

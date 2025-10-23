@@ -6,7 +6,7 @@ const {
   escapeWhitespacesInPath,
 } = require('../forms-utils');
 const { info, trace, warn } = require('../log');
-const path = require('path');
+const path = require('node:path');
 const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
 const xmlFormat = require('xml-formatter');
 const { replaceBase64ImageDynamicDefaults, replaceItemSetsWithMedia } = require('./handle-media');
@@ -35,7 +35,7 @@ const execute = async (projectDir, subDirectory, options) => {
 
   if (!fs.exists(formsDir)) {
     warn(`Forms dir not found: ${formsDir}`);
-    return Promise.resolve();
+    return;
   }
 
   const filesToConvert = argsFormFilter(formsDir, FORM_EXTENSION, options)
@@ -59,7 +59,7 @@ const execute = async (projectDir, subDirectory, options) => {
 
     await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(targetPath));
     const hiddenFields = await getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`);
-    await fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
+    fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
     trace('Converted form', originalSourcePath);
   }
 };

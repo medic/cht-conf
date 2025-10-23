@@ -1,7 +1,8 @@
 const { getNode, getNodes, XPATH_MODEL, XPATH_BODY } = require('../forms-utils');
 
 const SIMPLE_XPATH_PATTERN = /^[/\w.-]+$/;
-const removeXmlNode = node => node.parentNode.removeChild(node);
+// xmldom does not support node.remove(), so we use parentNode.removeChild(node) instead
+const removeXmlNode = node => node.parentNode.removeChild(node); // NOSONAR
 const repeatCountPath = (nodeset) => `${nodeset}_count`;
 
 const repeatBodyNodeNeedsCountField = (bodyNode) => {
