@@ -1,3 +1,17 @@
+# [5.5.0](https://github.com/medic/cht-conf/compare/v5.4.0...v5.5.0) (2025-10-08)
+
+
+### Features
+
+* **#753:** add deprecated `tel` type form validation ([#754](https://github.com/medic/cht-conf/issues/754)) ([e701b69](https://github.com/medic/cht-conf/commit/e701b691823e535d71e460f0300624642dafe270)), closes [#753](https://github.com/medic/cht-conf/issues/753)
+
+# [5.4.0](https://github.com/medic/cht-conf/compare/v5.3.0...v5.4.0) (2025-09-11)
+
+
+### Features
+
+* **#561:** add form validation for `instance::db-doc-ref` ([#738](https://github.com/medic/cht-conf/issues/738)) ([941a6f5](https://github.com/medic/cht-conf/commit/941a6f5b7504d6ff8c1682845d6e38efd6ea017b)), closes [#561](https://github.com/medic/cht-conf/issues/561)
+
 # [5.3.0](https://github.com/medic/cht-conf/compare/v5.2.1...v5.3.0) (2025-09-04)
 
 

@@ -1,7 +1,6 @@
 const { getPrimaryInstanceNode, getNodes, getPrimaryInstanceNodeChildPath } = require('../../forms-utils');
 
 module.exports = {
-  name: 'db-doc-is-valid.js',
   requiresInstance: false,
   execute: async ({ xmlDoc, xformPath }) => {
     const errors = [];
