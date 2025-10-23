@@ -93,8 +93,11 @@
     <group appearance="field-list" ref="/data/contact">
       <label>Primary Contact</label>
       <input ref="/data/contact/debug_note">
-        <label> DEBUG
-User's facility ID: <output value=" /data/inputs/user/facility_id "/> </label>
+        <label>
+          DEBUG
+User's facility ID:
+          <output value=" /data/inputs/user/facility_id "/>
+        </label>
       </input>
       <input ref="/data/contact/name">
         <label>Names</label>

@@ -216,10 +216,10 @@
             <value>None</value>
           </text>
           <text id="select_chw_sms-0">
-            <value> Nice work, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) attended their immunizations visit at the health facility. Keep up the good work. Thank you! </value>
+            <value> Nice work, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) attended their immunizations visit at the health facility. Keep up the good work. Thank you!</value>
           </text>
           <text id="select_chw_sms-1">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) did not attend their immunizations visit. We will send you a message when they are due for their next visit. Thank you! </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) did not attend their immunizations visit. We will send you a message when they are due for their next visit. Thank you!</value>
           </text>
           <text id="/data/inputs:label">
             <value>Patient</value>
@@ -399,14 +399,14 @@
             <value>Missing Visit Report</value>
           </text>
           <text id="/data/group_chw_info/chw_information:label">
-            <value> The immunization visit for <output value=" /data/patient_name "/> has not been recorded. </value>
+            <value> The immunization visit for <output value=" /data/patient_name "/> has not been recorded.</value>
           </text>
           <text id="/data/group_chw_info/call_button:label">
             <value> **Please follow up with <output value=" /data/chw_name "/> to see if <output value=" /data/patient_name "/> attended their immunization visit.**
-Call: <output value=" /data/chw_phone "/> </value>
+Call: <output value=" /data/chw_phone "/></value>
           </text>
           <text id="/data/group_chw_info/attended_imm:label">
-            <value> Did <output value=" /data/patient_name "/> attend their immunization visit? </value>
+            <value> Did <output value=" /data/patient_name "/> attend their immunization visit?</value>
           </text>
           <text id="/data/group_select_vaccines:label">
             <value>Select Vaccines</value>
@@ -421,7 +421,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>BCG</value>
           </text>
           <text id="/data/group_bcg/g_bcg:label">
-            <value> Did <output value=" /data/patient_name "/> receive the BCG vaccine? </value>
+            <value> Did <output value=" /data/patient_name "/> receive the BCG vaccine?</value>
           </text>
           <text id="/data/group_cholera:label">
             <value>Cholera</value>
@@ -430,7 +430,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>Cannot select none if another dose is selected.</value>
           </text>
           <text id="/data/group_cholera/g_cholera:label">
-            <value> Which dose of Cholera did <output value=" /data/patient_name "/> receive? </value>
+            <value> Which dose of Cholera did <output value=" /data/patient_name "/> receive?</value>
           </text>
           <text id="/data/group_hep_a:label">
             <value>Hepatitis A</value>
@@ -439,7 +439,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>Cannot select none if another dose is selected.</value>
           </text>
           <text id="/data/group_hep_a/g_hep_a:label">
-            <value> Which dose of Hepatitis A did <output value=" /data/patient_name "/> receive? </value>
+            <value> Which dose of Hepatitis A did <output value=" /data/patient_name "/> receive?</value>
           </text>
           <text id="/data/group_hpv:label">
             <value>HPV (Human Papillomavirus)</value>
@@ -448,19 +448,19 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>Cannot select none if another dose is selected.</value>
           </text>
           <text id="/data/group_hpv/g_hpv:label">
-            <value> Which dose of HPV did <output value=" /data/patient_name "/> receive? </value>
+            <value> Which dose of HPV did <output value=" /data/patient_name "/> receive?</value>
           </text>
           <text id="/data/group_flu:label">
             <value>Influenza</value>
           </text>
           <text id="/data/group_flu/g_flu:label">
-            <value> Did <output value=" /data/patient_name "/> receive the flu vaccine? </value>
+            <value> Did <output value=" /data/patient_name "/> receive the flu vaccine?</value>
           </text>
           <text id="/data/group_jap_enc:label">
             <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/group_jap_enc/g_jap_enc:label">
-            <value> Did <output value=" /data/patient_name "/> receive the Japanese Encephalitis vaccine? </value>
+            <value> Did <output value=" /data/patient_name "/> receive the Japanese Encephalitis vaccine?</value>
           </text>
           <text id="/data/group_meningococcal:label">
             <value>Meningococcal</value>
@@ -469,7 +469,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>Cannot select none if another dose is selected.</value>
           </text>
           <text id="/data/group_meningococcal/g_meningococcal:label">
-            <value> Which dose of Meningococcal did <output value=" /data/patient_name "/> receive? </value>
+            <value> Which dose of Meningococcal did <output value=" /data/patient_name "/> receive?</value>
           </text>
           <text id="/data/group_mmr:label">
             <value>MMR (Measles, Mumps, Rubella)</value>
@@ -478,7 +478,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>Cannot select none if another dose is selected.</value>
           </text>
           <text id="/data/group_mmr/g_mmr:label">
-            <value> Which dose of MMR did <output value=" /data/patient_name "/> receive? </value>
+            <value> Which dose of MMR did <output value=" /data/patient_name "/> receive?</value>
           </text>
           <text id="/data/group_mmrv:label">
             <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
@@ -487,7 +487,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>Cannot select none if another dose is selected.</value>
           </text>
           <text id="/data/group_mmrv/g_mmrv:label">
-            <value> Which dose of MMRV did <output value=" /data/patient_name "/> receive? </value>
+            <value> Which dose of MMRV did <output value=" /data/patient_name "/> receive?</value>
           </text>
           <text id="/data/group_polio:label">
             <value>Polio</value>
@@ -496,7 +496,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>Cannot select none if another dose is selected.</value>
           </text>
           <text id="/data/group_polio/g_polio:label">
-            <value> Which dose of Polio did <output value=" /data/patient_name "/> receive? </value>
+            <value> Which dose of Polio did <output value=" /data/patient_name "/> receive?</value>
           </text>
           <text id="/data/group_pentavalent:label">
             <value>Pentavalent</value>
@@ -505,7 +505,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>Cannot select none if another dose is selected.</value>
           </text>
           <text id="/data/group_pentavalent/g_pentavalent:label">
-            <value> Which dose of Pentavalent did <output value=" /data/patient_name "/> receive? </value>
+            <value> Which dose of Pentavalent did <output value=" /data/patient_name "/> receive?</value>
           </text>
           <text id="/data/group_pneumococcal:label">
             <value>Pneumococcal Pneumonia</value>
@@ -514,7 +514,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>Cannot select none if another dose is selected.</value>
           </text>
           <text id="/data/group_pneumococcal/g_pneumococcal:label">
-            <value> Which dose of Pneumococcal Pneumonia did <output value=" /data/patient_name "/> receive? </value>
+            <value> Which dose of Pneumococcal Pneumonia did <output value=" /data/patient_name "/> receive?</value>
           </text>
           <text id="/data/group_rotavirus:label">
             <value>Rotavirus</value>
@@ -523,7 +523,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>Cannot select none if another dose is selected.</value>
           </text>
           <text id="/data/group_rotavirus/g_rotavirus:label">
-            <value> Which dose of Rotavirus did <output value=" /data/patient_name "/> receive? </value>
+            <value> Which dose of Rotavirus did <output value=" /data/patient_name "/> receive?</value>
           </text>
           <text id="/data/group_typhoid:label">
             <value>Typhoid</value>
@@ -532,19 +532,19 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>Cannot select none if another dose is selected.</value>
           </text>
           <text id="/data/group_typhoid/g_typhoid:label">
-            <value> Which dose of Typhoid did <output value=" /data/patient_name "/> receive? </value>
+            <value> Which dose of Typhoid did <output value=" /data/patient_name "/> receive?</value>
           </text>
           <text id="/data/group_vitamin_a:label">
             <value>Vitamin A</value>
           </text>
           <text id="/data/group_vitamin_a/g_vitamin_a:label">
-            <value> Did <output value=" /data/patient_name "/> receive a Vitamin A vaccine? </value>
+            <value> Did <output value=" /data/patient_name "/> receive a Vitamin A vaccine?</value>
           </text>
           <text id="/data/group_yellow_fever:label">
             <value>Yellow Fever</value>
           </text>
           <text id="/data/group_yellow_fever/g_yellow_fever:label">
-            <value> Did <output value=" /data/patient_name "/> receive the Yellow Fever vaccine? </value>
+            <value> Did <output value=" /data/patient_name "/> receive the Yellow Fever vaccine?</value>
           </text>
           <text id="/data/group_note:label">
             <value>Note to the CHW</value>
@@ -562,7 +562,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>The following message can be sent as is or modified to add a personal note</value>
           </text>
           <text id="/data/group_note/g_chw_sms:hint">
-            <value> Message will be sent to <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Messages are limited in length to avoid high SMS costs. </value>
+            <value> Message will be sent to <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Messages are limited in length to avoid high SMS costs.</value>
           </text>
           <text id="/data/group_review/submit:label">
             <value>**Be sure you Submit to complete this action.**</value>
@@ -572,7 +572,7 @@ Call: <output value=" /data/chw_phone "/> </value>
           </text>
           <text id="/data/group_review/r_pregnancy_details:label">
             <value> **<output value=" /data/patient_name "/>**
-ID: <output value=" /data/group_review/r_patient_id "/> </value>
+ID: <output value=" /data/group_review/r_patient_id "/></value>
           </text>
           <text id="/data/group_review/r_visit:label">
             <value>Visit Information&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
@@ -701,12 +701,10 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>Follow Up Message &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_review/r_followup_note1:label">
-            <value> **The following will be sent as a SMS to <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>** </value>
+            <value> **The following will be sent as a SMS to <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>**</value>
           </text>
           <text id="/data/group_review/r_followup_note2:label">
-            <value>
-              <output value=" /data/group_note/g_chw_sms "/>
-            </value>
+            <value><output value=" /data/group_note/g_chw_sms "/></value>
           </text>
         </translation>
         <translation lang="hi">
@@ -1098,13 +1096,13 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>लापता जांच की रिपोर्टों</value>
           </text>
           <text id="/data/group_chw_info/chw_information:label">
-            <value><output value=" /data/patient_name "/> के जांच की रिपोर्ट दर्ज नहीं की गयी है </value>
+            <value><output value=" /data/patient_name "/> के जांच की रिपोर्ट दर्ज नहीं की गयी है</value>
           </text>
           <text id="/data/group_chw_info/call_button:label">
-            <value> **कृपया <output value=" /data/chw_name "/> के साथ मिल कर देखे के क्या <output value=" /data/patient_name "/> अपने टीकाकरण के लिए आये |** कॉल: <output value=" /data/chw_phone "/> </value>
+            <value> **कृपया <output value=" /data/chw_name "/> के साथ मिल कर देखे के क्या <output value=" /data/patient_name "/> अपने टीकाकरण के लिए आये |** कॉल: <output value=" /data/chw_phone "/></value>
           </text>
           <text id="/data/group_chw_info/attended_imm:label">
-            <value> क्या <output value=" /data/patient_name "/> अपने टीकाकरण के लिए आये ? </value>
+            <value> क्या <output value=" /data/patient_name "/> अपने टीकाकरण के लिए आये ?</value>
           </text>
           <text id="/data/group_select_vaccines:label">
             <value>टीकाकरण चुनें</value>
@@ -1119,7 +1117,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>BCG</value>
           </text>
           <text id="/data/group_bcg/g_bcg:label">
-            <value> क्या <output value=" /data/patient_name "/> को BCG टीकाकरण मिला ? </value>
+            <value> क्या <output value=" /data/patient_name "/> को BCG टीकाकरण मिला ?</value>
           </text>
           <text id="/data/group_cholera:label">
             <value>Cholera</value>
@@ -1128,7 +1126,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/data/group_cholera/g_cholera:label">
-            <value><output value=" /data/patient_name "/> को Cholera का कौनसा डोज़ मिला ? </value>
+            <value><output value=" /data/patient_name "/> को Cholera का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/data/group_hep_a:label">
             <value>Hepatitis A</value>
@@ -1137,7 +1135,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/data/group_hep_a/g_hep_a:label">
-            <value><output value=" /data/patient_name "/> को Hepatitis का कौनसा डोज़ मिला ? </value>
+            <value><output value=" /data/patient_name "/> को Hepatitis का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/data/group_hpv:label">
             <value>HPV (Human Papillomavirus)</value>
@@ -1146,19 +1144,19 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/data/group_hpv/g_hpv:label">
-            <value><output value=" /data/patient_name "/> को HPV का कौनसा डोज़ मिला ? </value>
+            <value><output value=" /data/patient_name "/> को HPV का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/data/group_flu:label">
             <value>Influenza</value>
           </text>
           <text id="/data/group_flu/g_flu:label">
-            <value> क्या <output value=" /data/patient_name "/> को flu का टीकाकरण मिला ? </value>
+            <value> क्या <output value=" /data/patient_name "/> को flu का टीकाकरण मिला ?</value>
           </text>
           <text id="/data/group_jap_enc:label">
             <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/group_jap_enc/g_jap_enc:label">
-            <value> क्या <output value=" /data/patient_name "/> को Japanese Encephalitis टीकाकरण मिला ? </value>
+            <value> क्या <output value=" /data/patient_name "/> को Japanese Encephalitis टीकाकरण मिला ?</value>
           </text>
           <text id="/data/group_meningococcal:label">
             <value>Meningococcal</value>
@@ -1167,7 +1165,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/data/group_meningococcal/g_meningococcal:label">
-            <value><output value=" /data/patient_name "/> को Meningococcal का कौनसा डोज़ मिला ? </value>
+            <value><output value=" /data/patient_name "/> को Meningococcal का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/data/group_mmr:label">
             <value>MMR (Measles, Mumps, Rubella)</value>
@@ -1176,7 +1174,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/data/group_mmr/g_mmr:label">
-            <value><output value=" /data/patient_name "/> को MMR का कौनसा डोज़ मिला ? </value>
+            <value><output value=" /data/patient_name "/> को MMR का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/data/group_mmrv:label">
             <value>MMR (Measles, Mumps, Rubella, Varicella)</value>
@@ -1185,7 +1183,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/data/group_mmrv/g_mmrv:label">
-            <value><output value=" /data/patient_name "/> को MMRV का कौनसा डोज़ मिला ? </value>
+            <value><output value=" /data/patient_name "/> को MMRV का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/data/group_polio:label">
             <value>Polio</value>
@@ -1194,7 +1192,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/data/group_polio/g_polio:label">
-            <value><output value=" /data/patient_name "/> को Polio का कौनसा डोज़ मिला ? </value>
+            <value><output value=" /data/patient_name "/> को Polio का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/data/group_pentavalent:label">
             <value>Pentavalent</value>
@@ -1203,7 +1201,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/data/group_pentavalent/g_pentavalent:label">
-            <value><output value=" /data/patient_name "/> को Pentavalent का कौनसा डोज़ मिला ? </value>
+            <value><output value=" /data/patient_name "/> को Pentavalent का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/data/group_pneumococcal:label">
             <value>Pneumococcal Pneumonia</value>
@@ -1212,7 +1210,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/data/group_pneumococcal/g_pneumococcal:label">
-            <value><output value=" /data/patient_name "/> को Pneumococcal Pneumonia का कौनसा डोज़ मिला ? </value>
+            <value><output value=" /data/patient_name "/> को Pneumococcal Pneumonia का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/data/group_rotavirus:label">
             <value>Rotavirus</value>
@@ -1221,7 +1219,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/data/group_rotavirus/g_rotavirus:label">
-            <value><output value=" /data/patient_name "/> को Rotavirus का कौनसा डोज़ मिला ? </value>
+            <value><output value=" /data/patient_name "/> को Rotavirus का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/data/group_typhoid:label">
             <value>Typhoid</value>
@@ -1230,19 +1228,19 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
           <text id="/data/group_typhoid/g_typhoid:label">
-            <value><output value=" /data/patient_name "/> को Typhoid का कौनसा डोज़ मिला ? </value>
+            <value><output value=" /data/patient_name "/> को Typhoid का कौनसा डोज़ मिला ?</value>
           </text>
           <text id="/data/group_vitamin_a:label">
             <value>Vitamin A</value>
           </text>
           <text id="/data/group_vitamin_a/g_vitamin_a:label">
-            <value> क्या <output value=" /data/patient_name "/> को Vitamin A टीकाकरण मिला ? </value>
+            <value> क्या <output value=" /data/patient_name "/> को Vitamin A टीकाकरण मिला ?</value>
           </text>
           <text id="/data/group_yellow_fever:label">
             <value>Yellow Fever</value>
           </text>
           <text id="/data/group_yellow_fever/g_yellow_fever:label">
-            <value> क्या <output value=" /data/patient_name "/> को Yellow Fever टीकाकरण मिला ? </value>
+            <value> क्या <output value=" /data/patient_name "/> को Yellow Fever टीकाकरण मिला ?</value>
           </text>
           <text id="/data/group_note:label">
             <value>सामुदायिक स्वास्थ्य कर्मी के लिए नोट</value>
@@ -1257,7 +1255,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>यह सन्देश ऐसे ही भेजा जा सकता है या आप इस को बदल कर भी भेज सकते है</value>
           </text>
           <text id="/data/group_note/g_chw_sms:hint">
-            <value> संदेश <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>) को भेजा जाएगा। एसएमएस के लागत से बचने के लिए संदेश छोटा हैं </value>
+            <value> संदेश <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>) को भेजा जाएगा। एसएमएस के लागत से बचने के लिए संदेश छोटा हैं</value>
           </text>
           <text id="/data/group_review/submit:label">
             <value>**सुनिश्चित करें के यह कार्रवाई पूरा करने के लिए आप सबमिट दबाये |**</value>
@@ -1266,7 +1264,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>मरीज़ की जानकारी &lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_review/r_pregnancy_details:label">
-            <value> **<output value=" /data/patient_name "/>** ID : <output value=" /data/group_review/r_patient_id "/> </value>
+            <value> **<output value=" /data/patient_name "/>** ID : <output value=" /data/group_review/r_patient_id "/></value>
           </text>
           <text id="/data/group_review/r_visit:label">
             <value>जांच की जानकारी &lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
@@ -1395,12 +1393,10 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>सुनिश्चित करने के लिए सन्देश &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_review/r_followup_note1:label">
-            <value> ** ये SMS के रूप में <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/> को भेजा जायेगा ** </value>
+            <value> ** ये SMS के रूप में <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/> को भेजा जायेगा **</value>
           </text>
           <text id="/data/group_review/r_followup_note2:label">
-            <value>
-              <output value=" /data/group_note/g_chw_sms "/>
-            </value>
+            <value><output value=" /data/group_note/g_chw_sms "/></value>
           </text>
           <text id="select_chw_sms-0">
             <value>-</value>
@@ -1801,13 +1797,13 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>Laporan Kunjungan Hilang</value>
           </text>
           <text id="/data/group_chw_info/chw_information:label">
-            <value> Kunjungan imunisasi untuk <output value=" /data/patient_name "/> belum terdata. </value>
+            <value> Kunjungan imunisasi untuk <output value=" /data/patient_name "/> belum terdata.</value>
           </text>
           <text id="/data/group_chw_info/call_button:label">
-            <value> **Mohon menghubungi <output value=" /data/chw_name "/> untuk mengetahui apakah <output value=" /data/patient_name "/> data untuk diimunisasi.** Sebut: <output value=" /data/chw_phone "/> </value>
+            <value> **Mohon menghubungi <output value=" /data/chw_name "/> untuk mengetahui apakah <output value=" /data/patient_name "/> data untuk diimunisasi.** Sebut: <output value=" /data/chw_phone "/></value>
           </text>
           <text id="/data/group_chw_info/attended_imm:label">
-            <value> Apakah <output value=" /data/patient_name "/> datang untuk diimunisasi? </value>
+            <value> Apakah <output value=" /data/patient_name "/> datang untuk diimunisasi?</value>
           </text>
           <text id="/data/group_select_vaccines:label">
             <value>Pilih Jenis Vaksin</value>
@@ -1822,7 +1818,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>BCG</value>
           </text>
           <text id="/data/group_bcg/g_bcg:label">
-            <value> Apakah <output value=" /data/patient_name "/> menerima vaksin BCG? </value>
+            <value> Apakah <output value=" /data/patient_name "/> menerima vaksin BCG?</value>
           </text>
           <text id="/data/group_cholera:label">
             <value>Kolera</value>
@@ -1840,7 +1836,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>Tidak dapat memilih 'tak satupun' jika dosis lain dipilih.</value>
           </text>
           <text id="/data/group_hep_a/g_hep_a:label">
-            <value> Yang dosis Hepatitis A <output value=" /data/patient_name "/> terima? </value>
+            <value> Yang dosis Hepatitis A <output value=" /data/patient_name "/> terima?</value>
           </text>
           <text id="/data/group_hpv:label">
             <value>HPV (Human Papillomavirus)</value>
@@ -1855,13 +1851,13 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>Influenza</value>
           </text>
           <text id="/data/group_flu/g_flu:label">
-            <value> Apakah <output value=" /data/patient_name "/> menerima vaksin Influenza? </value>
+            <value> Apakah <output value=" /data/patient_name "/> menerima vaksin Influenza?</value>
           </text>
           <text id="/data/group_jap_enc:label">
             <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/group_jap_enc/g_jap_enc:label">
-            <value> Apakah <output value=" /data/patient_name "/> menerima vaksin Japanese Encephalitis? </value>
+            <value> Apakah <output value=" /data/patient_name "/> menerima vaksin Japanese Encephalitis?</value>
           </text>
           <text id="/data/group_meningococcal:label">
             <value>Meningococcal</value>
@@ -1939,13 +1935,13 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>Vitamin A</value>
           </text>
           <text id="/data/group_vitamin_a/g_vitamin_a:label">
-            <value> Apakah <output value=" /data/patient_name "/> menerima vaksin Vitamin A? </value>
+            <value> Apakah <output value=" /data/patient_name "/> menerima vaksin Vitamin A?</value>
           </text>
           <text id="/data/group_yellow_fever:label">
             <value>Yellow Fever</value>
           </text>
           <text id="/data/group_yellow_fever/g_yellow_fever:label">
-            <value> Apakah <output value=" /data/patient_name "/> menerima vaksin Yellow Fever? </value>
+            <value> Apakah <output value=" /data/patient_name "/> menerima vaksin Yellow Fever?</value>
           </text>
           <text id="/data/group_note:label">
             <value>Catatan ke kader</value>
@@ -1960,7 +1956,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>Pesan berikut dapat dikirim sebagai adalah atau dimodifikasi untuk menambahkan catatan pribadi</value>
           </text>
           <text id="/data/group_note/g_chw_sms:hint">
-            <value> Pesan akan dikirim ke <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Pesan dibatasi panjang untuk menghindari biaya SMS yang tinggi. </value>
+            <value> Pesan akan dikirim ke <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Pesan dibatasi panjang untuk menghindari biaya SMS yang tinggi.</value>
           </text>
           <text id="/data/group_review/submit:label">
             <value>**Pastikan anda sudah mengirim untuk menyelesaikan tindakan ini.**</value>
@@ -1970,7 +1966,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
           </text>
           <text id="/data/group_review/r_pregnancy_details:label">
             <value> "**<output value=" /data/patient_name "/>**
-ID: <output value=" /data/group_review/r_patient_id "/>" </value>
+ID: <output value=" /data/group_review/r_patient_id "/>"</value>
           </text>
           <text id="/data/group_review/r_visit:label">
             <value>Mengunjungi informasi&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
@@ -2099,12 +2095,10 @@ ID: <output value=" /data/group_review/r_patient_id "/>" </value>
             <value>Follow Up Pesan &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_review/r_followup_note1:label">
-            <value> **Berikut ini akan dikirim sebagai SMS ke <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>** </value>
+            <value> **Berikut ini akan dikirim sebagai SMS ke <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>**</value>
           </text>
           <text id="/data/group_review/r_followup_note2:label">
-            <value>
-              <output value=" /data/group_note/g_chw_sms "/>
-            </value>
+            <value><output value=" /data/group_note/g_chw_sms "/></value>
           </text>
           <text id="select_chw_sms-0">
             <value>-</value>

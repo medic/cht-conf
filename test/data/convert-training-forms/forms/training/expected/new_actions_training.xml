@@ -5,23 +5,14 @@
     <model odk:xforms-version="1.0.0">
       <itext>
         <translation lang="en">
-          <text id="/data/intro:label">
-            <value></value>
-          </text>
           <text id="/data/intro/intro_note_1:label">
             <value>There have been some changes to icons in your app. The next few screens will show you the difference.</value>
           </text>
           <text id="/data/intro/intro_note_2:label">
             <value>Read each screen carefully and tap "Next" if you understand. If you need extra support, please contact your supervisor.</value>
           </text>
-          <text id="/data/action_icons:label">
-            <value></value>
-          </text>
           <text id="/data/action_icons/action_icons_note_1:label">
             <value>The "New Action" icon at the bottom of your app has changed to a big blue plus icon.</value>
-          </text>
-          <text id="/data/ending:label">
-            <value></value>
           </text>
           <text id="/data/ending/ending_note_1:label">
             <value>If you do not understand these changes, please contact your supervisor.</value>
@@ -59,7 +50,6 @@
   </h:head>
   <h:body class="pages">
     <group appearance="field-list" ref="/data/intro">
-      <label ref="jr:itext('/data/intro:label')"/>
       <input ref="/data/intro/intro_note_1">
         <label ref="jr:itext('/data/intro/intro_note_1:label')"/>
       </input>
@@ -68,13 +58,11 @@
       </input>
     </group>
     <group appearance="field-list" ref="/data/action_icons">
-      <label ref="jr:itext('/data/action_icons:label')"/>
       <input ref="/data/action_icons/action_icons_note_1">
         <label ref="jr:itext('/data/action_icons/action_icons_note_1:label')"/>
       </input>
     </group>
     <group appearance="field-list" ref="/data/ending">
-      <label ref="jr:itext('/data/ending:label')"/>
       <input ref="/data/ending/ending_note_1">
         <label ref="jr:itext('/data/ending/ending_note_1:label')"/>
       </input>

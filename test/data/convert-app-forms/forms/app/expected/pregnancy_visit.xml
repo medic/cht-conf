@@ -48,13 +48,13 @@
             <value>I'm not sure</value>
           </text>
           <text id="select_chw_sms-0">
-            <value> Nice work, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) has attended ANC at the health facility. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you! </value>
+            <value> Nice work, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) has attended ANC at the health facility. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you!</value>
           </text>
           <text id="select_chw_sms-1">
-            <value> Nice work, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) has attended ANC at the health facility. Please note that <output value=" /data/patient_name "/> has one or more danger signs for a high risk pregnancy. We will send you a message when they are due for their next visit. Thank you! </value>
+            <value> Nice work, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) has attended ANC at the health facility. Please note that <output value=" /data/patient_name "/> has one or more danger signs for a high risk pregnancy. We will send you a message when they are due for their next visit. Thank you!</value>
           </text>
           <text id="select_chw_sms-2">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) did not attend ANC. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you! </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) did not attend ANC. Please continue to monitor them for danger signs. We will send you a message when they are due for their next visit. Thank you!</value>
           </text>
           <text id="/data/inputs:label">
             <value>Patient</value>
@@ -126,20 +126,20 @@
             <value>Missing Visit Report</value>
           </text>
           <text id="/data/group_chw_info/chw_information:label">
-            <value> The pregnancy visit for <output value=" /data/patient_name "/> has not been recorded. </value>
+            <value> The pregnancy visit for <output value=" /data/patient_name "/> has not been recorded.</value>
           </text>
           <text id="/data/group_chw_info/call_button:label">
             <value> **Please follow up with <output value=" /data/chw_name "/> to see if <output value=" /data/patient_name "/> attended her ANC visit.**
-Call: <output value=" /data/chw_phone "/> </value>
+Call: <output value=" /data/chw_phone "/></value>
           </text>
           <text id="/data/group_chw_info/attended_anc:label">
-            <value> Did <output value=" /data/patient_name "/> attend her ANC visit? </value>
+            <value> Did <output value=" /data/patient_name "/> attend her ANC visit?</value>
           </text>
           <text id="/data/group_danger_signs:label">
             <value>Danger Signs</value>
           </text>
           <text id="/data/group_danger_signs/g_danger_signs:label">
-            <value> Confirm with <output value=" /data/chw_name "/> if <output value=" /data/patient_name "/> has any of the following danger signs. </value>
+            <value> Confirm with <output value=" /data/chw_name "/> if <output value=" /data/patient_name "/> has any of the following danger signs.</value>
           </text>
           <text id="/data/group_danger_signs/g_danger_signs:hint">
             <value>Select all that apply</value>
@@ -160,7 +160,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>The following message can be sent as is or modified to add a personal note</value>
           </text>
           <text id="/data/group_note/g_chw_sms:hint">
-            <value> Message will be sent to <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Messages are limited in length to avoid high SMS costs. </value>
+            <value> Message will be sent to <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Messages are limited in length to avoid high SMS costs.</value>
           </text>
           <text id="/data/group_review/submit:label">
             <value>**Be sure you Submit to complete this action.**</value>
@@ -170,7 +170,7 @@ Call: <output value=" /data/chw_phone "/> </value>
           </text>
           <text id="/data/group_review/r_pregnancy_details:label">
             <value> **<output value=" /data/patient_name "/>**
-ID: <output value=" /data/group_review/r_patient_id "/> </value>
+ID: <output value=" /data/group_review/r_patient_id "/></value>
           </text>
           <text id="/data/group_review/r_visit:label">
             <value>Visit Information&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
@@ -221,12 +221,10 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>Follow Up Message &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_review/r_followup_note1:label">
-            <value> **The following will be sent as a SMS to <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>** </value>
+            <value> **The following will be sent as a SMS to <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>**</value>
           </text>
           <text id="/data/group_review/r_followup_note2:label">
-            <value>
-              <output value=" /data/group_note/g_chw_sms "/>
-            </value>
+            <value><output value=" /data/group_note/g_chw_sms "/></value>
           </text>
         </translation>
         <translation lang="hi">
@@ -273,13 +271,13 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>पता नहीं</value>
           </text>
           <text id="select_chw_sms-0">
-            <value> शाबाश, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) अपने गर्भावस्था जांच के लिए स्वास्थ्य केंद्र आ चुकी है | कृपया उनकी देख भाल जारी रखें और खतरे के संकेत पे निगरानी रखें | उनकी अगली जांच से पहले हम आपको संदेश भेजेंगे | धन्यवाद! </value>
+            <value> शाबाश, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) अपने गर्भावस्था जांच के लिए स्वास्थ्य केंद्र आ चुकी है | कृपया उनकी देख भाल जारी रखें और खतरे के संकेत पे निगरानी रखें | उनकी अगली जांच से पहले हम आपको संदेश भेजेंगे | धन्यवाद!</value>
           </text>
           <text id="select_chw_sms-1">
-            <value> शाबाश, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) अपने गर्भावस्था जांच के लिए स्वास्थ्य केंद्र आ चुकी है | कृपया ध्यान दें के <output value=" /data/patient_name "/> को एक या अधिक खतरे के संकेत है एक जोखिम वाला गर्भावस्था के लिए | उनकी अगली जांच से पहले हम आपको संदेश भेजेंगे | धन्यवाद! </value>
+            <value> शाबाश, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) अपने गर्भावस्था जांच के लिए स्वास्थ्य केंद्र आ चुकी है | कृपया ध्यान दें के <output value=" /data/patient_name "/> को एक या अधिक खतरे के संकेत है एक जोखिम वाला गर्भावस्था के लिए | उनकी अगली जांच से पहले हम आपको संदेश भेजेंगे | धन्यवाद!</value>
           </text>
           <text id="select_chw_sms-2">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) अपने गर्भावस्था जांच के लिए स्वास्थ्य केंद्र नहीं आयी | कृपया उनकी देख भाल जारी रखें और खतरे के संकेत पे निगरानी रखें | उनकी अगली जांच से पहले हम आपको संदेश भेजेंगे | धन्यवाद! </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) अपने गर्भावस्था जांच के लिए स्वास्थ्य केंद्र नहीं आयी | कृपया उनकी देख भाल जारी रखें और खतरे के संकेत पे निगरानी रखें | उनकी अगली जांच से पहले हम आपको संदेश भेजेंगे | धन्यवाद!</value>
           </text>
           <text id="/data/inputs:label">
             <value>मरीज़</value>
@@ -351,19 +349,19 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>लापता जांच की रिपोर्टों</value>
           </text>
           <text id="/data/group_chw_info/chw_information:label">
-            <value> गर्भावस्था की जाँच <output value=" /data/patient_name "/> के लिए दर्ज नहीं किया गया है </value>
+            <value> गर्भावस्था की जाँच <output value=" /data/patient_name "/> के लिए दर्ज नहीं किया गया है</value>
           </text>
           <text id="/data/group_chw_info/call_button:label">
-            <value> **कृपया सुनिश्चित करें <output value=" /data/chw_name "/> की <output value=" /data/patient_name "/> एएनसी की जाँच पूरी की गयी.** कॉल: <output value=" /data/chw_phone "/>" </value>
+            <value> **कृपया सुनिश्चित करें <output value=" /data/chw_name "/> की <output value=" /data/patient_name "/> एएनसी की जाँच पूरी की गयी.** कॉल: <output value=" /data/chw_phone "/>"</value>
           </text>
           <text id="/data/group_chw_info/attended_anc:label">
-            <value> क्या <output value=" /data/patient_name "/> एएनसी जाँच पूरी हुई ? </value>
+            <value> क्या <output value=" /data/patient_name "/> एएनसी जाँच पूरी हुई ?</value>
           </text>
           <text id="/data/group_danger_signs:label">
             <value>ख़तरे के संकेत</value>
           </text>
           <text id="/data/group_danger_signs/g_danger_signs:label">
-            <value><output value=" /data/chw_name "/> के साथ पुष्टि करें के क्या <output value=" /data/patient_name "/> को इनमें से कोई खतरा है | </value>
+            <value><output value=" /data/chw_name "/> के साथ पुष्टि करें के क्या <output value=" /data/patient_name "/> को इनमें से कोई खतरा है |</value>
           </text>
           <text id="/data/group_danger_signs/g_danger_signs:hint">
             <value>सभी का चयन करें जो लागू होता हो</value>
@@ -381,7 +379,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>यह सन्देश ऐसे ही भेजा जा सकता है या आप इस को बदल कर भी भेज सकते है</value>
           </text>
           <text id="/data/group_note/g_chw_sms:hint">
-            <value> संदेश <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>) को भेजा जायेगा | संदेश की लंबाई सीमित है ताकी SMS का मूल्य उच्च ना हो| </value>
+            <value> संदेश <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>) को भेजा जायेगा | संदेश की लंबाई सीमित है ताकी SMS का मूल्य उच्च ना हो|</value>
           </text>
           <text id="/data/group_review/submit:label">
             <value>**सुनिश्चित करें के यह कार्रवाई पूरा करने के लिए आप सबमिट दबाये |**</value>
@@ -391,7 +389,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
           </text>
           <text id="/data/group_review/r_pregnancy_details:label">
             <value> **<output value=" /data/patient_name "/>**
-ID: <output value=" /data/group_review/r_patient_id "/> </value>
+ID: <output value=" /data/group_review/r_patient_id "/></value>
           </text>
           <text id="/data/group_review/r_visit:label">
             <value>जाँच की जानकारी&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
@@ -442,12 +440,10 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>सुनिश्चित करने के लिए सन्देश &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_review/r_followup_note1:label">
-            <value> ** ये SMS के रूप में <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/> को भेजा जायेगा ** </value>
+            <value> ** ये SMS के रूप में <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/> को भेजा जायेगा **</value>
           </text>
           <text id="/data/group_review/r_followup_note2:label">
-            <value>
-              <output value=" /data/group_note/g_chw_sms "/>
-            </value>
+            <value><output value=" /data/group_note/g_chw_sms "/></value>
           </text>
           <text id="/data/group_note/default_chw_sms:label">
             <value>-</value>
@@ -497,13 +493,13 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>Tidak yakin</value>
           </text>
           <text id="select_chw_sms-0">
-            <value> Kerja bagus, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) telah menghadiri ANC di fasilitas kesehatan. Silakan terus memantau mereka untuk tanda-tanda bahaya. Kami akan mengirimkan pesan ketika mereka disebabkan untuk kunjungan berikutnya mereka. Terima kasih! </value>
+            <value> Kerja bagus, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) telah menghadiri ANC di fasilitas kesehatan. Silakan terus memantau mereka untuk tanda-tanda bahaya. Kami akan mengirimkan pesan ketika mereka disebabkan untuk kunjungan berikutnya mereka. Terima kasih!</value>
           </text>
           <text id="select_chw_sms-1">
-            <value> Kerja sama yang baik, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) telah melakukan kunjungan  ANC di fasilitas kesehatan. Harap dicatat bahwa Cai Kase memiliki satu atau lebih tanda-tanda bahaya k kehamilan berisiko tinggi. Kami akan mengirimkan pesan peringatan  untuk kunjungan berikutnya. Terima kasih! </value>
+            <value> Kerja sama yang baik, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) telah melakukan kunjungan  ANC di fasilitas kesehatan. Harap dicatat bahwa Cai Kase memiliki satu atau lebih tanda-tanda bahaya k kehamilan berisiko tinggi. Kami akan mengirimkan pesan peringatan  untuk kunjungan berikutnya. Terima kasih!</value>
           </text>
           <text id="select_chw_sms-2">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) tidak hadir ANC. Silakan terus memantau mereka untuk tanda-tanda bahaya. Kami akan mengirimkan pesan ketika mereka disebabkan untuk kunjungan berikutnya mereka. Terima kasih! </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_review/r_patient_id "/>) tidak hadir ANC. Silakan terus memantau mereka untuk tanda-tanda bahaya. Kami akan mengirimkan pesan ketika mereka disebabkan untuk kunjungan berikutnya mereka. Terima kasih!</value>
           </text>
           <text id="/data/inputs:label">
             <value>Pasien</value>
@@ -575,19 +571,19 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>Laporan Kunjungan Hilang</value>
           </text>
           <text id="/data/group_chw_info/chw_information:label">
-            <value> Kunjungan kehamilan untuk <output value=" /data/patient_name "/> belum terdata. </value>
+            <value> Kunjungan kehamilan untuk <output value=" /data/patient_name "/> belum terdata.</value>
           </text>
           <text id="/data/group_chw_info/call_button:label">
-            <value> **Mohon dibicarakan dengan <output value=" /data/chw_name "/> untuk melihat apakah <output value=" /data/patient_name "/> menghadiri kunjungan ANC nya.** Sebut: <output value=" /data/chw_phone "/> </value>
+            <value> **Mohon dibicarakan dengan <output value=" /data/chw_name "/> untuk melihat apakah <output value=" /data/patient_name "/> menghadiri kunjungan ANC nya.** Sebut: <output value=" /data/chw_phone "/></value>
           </text>
           <text id="/data/group_chw_info/attended_anc:label">
-            <value> Apakah <output value=" /data/patient_name "/> menghadiri kunjungan ANC nya? </value>
+            <value> Apakah <output value=" /data/patient_name "/> menghadiri kunjungan ANC nya?</value>
           </text>
           <text id="/data/group_danger_signs:label">
             <value>Tanda-tanda bahaya</value>
           </text>
           <text id="/data/group_danger_signs/g_danger_signs:label">
-            <value> Konfirmasikan dengan <output value=" /data/chw_name "/> jika <output value=" /data/patient_name "/> memiliki tanda-tanda bahaya berikut. </value>
+            <value> Konfirmasikan dengan <output value=" /data/chw_name "/> jika <output value=" /data/patient_name "/> memiliki tanda-tanda bahaya berikut.</value>
           </text>
           <text id="/data/group_danger_signs/g_danger_signs:hint">
             <value>Pilih semua yang berlaku</value>
@@ -605,7 +601,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
             <value>Pesan berikut dapat dikirim sebagai adalah atau dimodifikasi untuk menambahkan catatan pribadi</value>
           </text>
           <text id="/data/group_note/g_chw_sms:hint">
-            <value> Pesan akan dikirim ke <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Pesan dibatasi panjang untuk menghindari biaya SMS yang tinggi. </value>
+            <value> Pesan akan dikirim ke <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Pesan dibatasi panjang untuk menghindari biaya SMS yang tinggi.</value>
           </text>
           <text id="/data/group_review/submit:label">
             <value>**Pastikan anda sudah mengirim untuk menyelesaikan tindakan ini.**</value>
@@ -615,7 +611,7 @@ ID: <output value=" /data/group_review/r_patient_id "/> </value>
           </text>
           <text id="/data/group_review/r_pregnancy_details:label">
             <value> "**<output value=" /data/patient_name "/>**
-ID: <output value=" /data/group_review/r_patient_id "/>" </value>
+ID: <output value=" /data/group_review/r_patient_id "/>"</value>
           </text>
           <text id="/data/group_review/r_visit:label">
             <value>Mengunjungi informasi&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
@@ -666,12 +662,10 @@ ID: <output value=" /data/group_review/r_patient_id "/>" </value>
             <value>Follow Up Pesan &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_review/r_followup_note1:label">
-            <value> **Berikut ini akan dikirim sebagai SMS ke <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>** </value>
+            <value> **Berikut ini akan dikirim sebagai SMS ke <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>**</value>
           </text>
           <text id="/data/group_review/r_followup_note2:label">
-            <value>
-              <output value=" /data/group_note/g_chw_sms "/>
-            </value>
+            <value><output value=" /data/group_note/g_chw_sms "/></value>
           </text>
           <text id="/data/group_note/default_chw_sms:label">
             <value>-</value>

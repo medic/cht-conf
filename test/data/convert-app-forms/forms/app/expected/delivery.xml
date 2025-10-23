@@ -75,49 +75,49 @@
             <value>I'm not sure</value>
           </text>
           <text id="select_chw_sms-0">
-            <value> Good news, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) has delivered at the health facility. We will alert you when it is time to refer them for PNC. Please monitor them for danger signs. Thank you! </value>
+            <value> Good news, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) has delivered at the health facility. We will alert you when it is time to refer them for PNC. Please monitor them for danger signs. Thank you!</value>
           </text>
           <text id="select_chw_sms-1">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) has delivered at home with a skilled attendant. We will alert you when it is time for their PNC visits. Please monitor them for danger signs. Thank you! </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) has delivered at home with a skilled attendant. We will alert you when it is time for their PNC visits. Please monitor them for danger signs. Thank you!</value>
           </text>
           <text id="select_chw_sms-2">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) has delivered at home without a skilled attendant. We will alert you when it is time for their PNC visits. Please monitor them for danger signs. Thank you! </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) has delivered at home without a skilled attendant. We will alert you when it is time for their PNC visits. Please monitor them for danger signs. Thank you!</value>
           </text>
           <text id="select_chw_sms-3">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at the health facility. We will alert you when it is time for their PNC visits. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you. </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at the health facility. We will alert you when it is time for their PNC visits. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you.</value>
           </text>
           <text id="select_chw_sms-4">
-            <value> Hi <output value=" /data/chw_name "/>, we received a report that <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at home with a skilled attendant. We will alert you when it is time for their PNC visits. Please monitor for danger signs and support <output value=" /data/patient_name "/> during this difficult time. Thank you. </value>
+            <value> Hi <output value=" /data/chw_name "/>, we received a report that <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at home with a skilled attendant. We will alert you when it is time for their PNC visits. Please monitor for danger signs and support <output value=" /data/patient_name "/> during this difficult time. Thank you.</value>
           </text>
           <text id="select_chw_sms-5">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at home with no skilled attendant. We will alert you when it is time for their PNC visits. Please monitor for danger signs and support <output value=" /data/patient_name "/> during this difficult time. Thank you. </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at home with no skilled attendant. We will alert you when it is time for their PNC visits. Please monitor for danger signs and support <output value=" /data/patient_name "/> during this difficult time. Thank you.</value>
           </text>
           <text id="select_chw_sms-6">
-            <value> Hi <output value=" /data/chw_name "/>, we received a report from the facility that <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a miscarriage. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you. </value>
+            <value> Hi <output value=" /data/chw_name "/>, we received a report from the facility that <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a miscarriage. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you.</value>
           </text>
           <text id="select_chw_sms-7">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) was seen at the facility for delivery. Thank you. </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) was seen at the facility for delivery. Thank you.</value>
           </text>
           <text id="select_chw_sms-8">
-            <value> Good news, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) delivered at the health facility. Please monitor them for danger signs. Thank you! </value>
+            <value> Good news, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) delivered at the health facility. Please monitor them for danger signs. Thank you!</value>
           </text>
           <text id="select_chw_sms-9">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) delivered at home with a skilled attendant. Please monitor them for danger signs. Thank you! </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) delivered at home with a skilled attendant. Please monitor them for danger signs. Thank you!</value>
           </text>
           <text id="select_chw_sms-10">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) delivered at home without a skilled attendant. Please monitor them for danger signs. Thank you! </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) delivered at home without a skilled attendant. Please monitor them for danger signs. Thank you!</value>
           </text>
           <text id="select_chw_sms-11">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at the health facility. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you. </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at the health facility. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you.</value>
           </text>
           <text id="select_chw_sms-12">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at home with a skilled attendant. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you. </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at home with a skilled attendant. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you.</value>
           </text>
           <text id="select_chw_sms-13">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at home with no skilled attendant. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you. </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a stillbirth at home with no skilled attendant. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you.</value>
           </text>
           <text id="select_chw_sms-14">
-            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a miscarriage at the health facility. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you. </value>
+            <value> Hi <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) had a miscarriage at the health facility. Please support <output value=" /data/patient_name "/> during this difficult time. Thank you.</value>
           </text>
           <text id="select_chw_sms-15">
             <value>{{patient_name}} ({{patient_id}}) was seen at the facility and will deliver soon. Please refer her to the health facility for delivery. Thank you.</value>
@@ -192,17 +192,17 @@
             <value>Missing Birth Report</value>
           </text>
           <text id="/data/group_chw_info/chw_information:label">
-            <value> The birth report for <output value=" /data/patient_name "/> has not been recorded. </value>
+            <value> The birth report for <output value=" /data/patient_name "/> has not been recorded.</value>
           </text>
           <text id="/data/group_chw_info/call_button:label">
             <value> **Please follow up with <output value=" /data/chw_name "/> to see if <output value=" /data/patient_name "/> is still pregnant.**
-Call: <output value=" /data/chw_phone "/> </value>
+Call: <output value=" /data/chw_phone "/></value>
           </text>
           <text id="/data/group_chw_info/still_pregnant:jr:constraintMsg">
             <value>Sorry, the pregnancy must be complete to continue.</value>
           </text>
           <text id="/data/group_chw_info/still_pregnant:label">
-            <value> Is <output value=" /data/patient_name "/> still pregnant? </value>
+            <value> Is <output value=" /data/patient_name "/> still pregnant?</value>
           </text>
           <text id="/data/group_delivery_summary:label">
             <value>Delivery Info</value>
@@ -235,7 +235,7 @@ Call: <output value=" /data/chw_phone "/> </value>
             <value>The following message can be sent as is or modified to add a personal note</value>
           </text>
           <text id="/data/group_note/g_chw_sms:hint">
-            <value> Message will be sent to <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Messages are limited in length to avoid high SMS costs. </value>
+            <value> Message will be sent to <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Messages are limited in length to avoid high SMS costs.</value>
           </text>
           <text id="/data/group_summary/submit:label">
             <value>&lt;h4 style="text-align:center;"&gt;Be sure you Submit to complete this action.&lt;/h4&gt;</value>
@@ -245,24 +245,22 @@ Call: <output value=" /data/chw_phone "/> </value>
           </text>
           <text id="/data/group_summary/r_patient_info:label">
             <value> **<output value=" /data/patient_name "/>**
-ID: <output value=" /data/group_summary/r_patient_id "/> </value>
+ID: <output value=" /data/group_summary/r_patient_id "/></value>
           </text>
           <text id="/data/group_summary/r_pregnancy_outcome:label">
-            <value> Outcome: <output value=" /data/group_delivery_summary/display_delivery_outcome "/> </value>
+            <value> Outcome: <output value=" /data/group_delivery_summary/display_delivery_outcome "/></value>
           </text>
           <text id="/data/group_summary/r_birth_date:label">
-            <value> Delivered <output value=" /data/group_delivery_summary/display_birth_date "/> at <output value=" /data/group_summary/r_delivery_location "/> </value>
+            <value> Delivered <output value=" /data/group_delivery_summary/display_birth_date "/> at <output value=" /data/group_summary/r_delivery_location "/></value>
           </text>
           <text id="/data/group_summary/r_followup:label">
             <value>Follow Up Message &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_summary/r_followup_note1:label">
-            <value> **The following will be sent as a SMS to <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>** </value>
+            <value> **The following will be sent as a SMS to <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>**</value>
           </text>
           <text id="/data/group_summary/r_followup_note2:label">
-            <value>
-              <output value=" /data/group_note/g_chw_sms "/>
-            </value>
+            <value><output value=" /data/group_note/g_chw_sms "/></value>
           </text>
         </translation>
         <translation lang="hi">
@@ -336,49 +334,49 @@ ID: <output value=" /data/group_summary/r_patient_id "/> </value>
             <value>पता नहीं</value>
           </text>
           <text id="select_chw_sms-0">
-            <value> खुशखबरी, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की स्वास्थ्य केंद्र में डिलीवरी हो चुकी है| जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें | धन्यवाद! </value>
+            <value> खुशखबरी, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की स्वास्थ्य केंद्र में डिलीवरी हो चुकी है| जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें | धन्यवाद!</value>
           </text>
           <text id="select_chw_sms-1">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की घर पर, अनुभवी दाई के साथ डिलिवरी हो चुकी है | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें| धन्यवाद! </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की घर पर, अनुभवी दाई के साथ डिलिवरी हो चुकी है | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें| धन्यवाद!</value>
           </text>
           <text id="select_chw_sms-2">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की घर पर, अनुभवी दाई के बिना डिलिवरी हो चुकी है | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें| धन्यवाद! </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की घर पर, अनुभवी दाई के बिना डिलिवरी हो चुकी है | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें| धन्यवाद!</value>
           </text>
           <text id="select_chw_sms-3">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का स्वास्थ्य केंद्र में मृत जन्म हुआ | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें और इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद | </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का स्वास्थ्य केंद्र में मृत जन्म हुआ | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें और इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
           <text id="select_chw_sms-4">
-            <value> नमस्ते <output value=" /data/chw_name "/>, हमें रिपोर्ट मिली है के <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का मृत जन्म हुआ घर पर, अनुभवी दाई के साथ | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें और इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद | </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, हमें रिपोर्ट मिली है के <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का मृत जन्म हुआ घर पर, अनुभवी दाई के साथ | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें और इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
           <text id="select_chw_sms-5">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का मृत जन्म हुआ घर पर, अनुभवी दाई के बिना | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें और इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद | </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का मृत जन्म हुआ घर पर, अनुभवी दाई के बिना | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें और इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
           <text id="select_chw_sms-6">
-            <value> नमस्ते <output value=" /data/chw_name "/>, हमें स्वास्थ्य केंद्र से रिपोर्ट मिली है के <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का गर्भपात हुआ | कृपया इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद | </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, हमें स्वास्थ्य केंद्र से रिपोर्ट मिली है के <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का गर्भपात हुआ | कृपया इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
           <text id="select_chw_sms-7">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की डिलीवरी के लिए जांच स्वास्थ्य केंद्र में हो चुकी है | </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की डिलीवरी के लिए जांच स्वास्थ्य केंद्र में हो चुकी है |</value>
           </text>
           <text id="select_chw_sms-8">
-            <value> खुशखबरी, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की स्वास्थ्य केंद्र में डिलीवरी हो चुकी है| कृपया उनकी खतरे के संकेत पे निगरानी रखें | धन्यवाद! </value>
+            <value> खुशखबरी, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की स्वास्थ्य केंद्र में डिलीवरी हो चुकी है| कृपया उनकी खतरे के संकेत पे निगरानी रखें | धन्यवाद!</value>
           </text>
           <text id="select_chw_sms-9">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की घर पर, अनुभवी दाई के साथ डिलिवरी हो चुकी है | कृपया उनकी खतरे के संकेत पे निगरानी रखें| धन्यवाद! </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की घर पर, अनुभवी दाई के साथ डिलिवरी हो चुकी है | कृपया उनकी खतरे के संकेत पे निगरानी रखें| धन्यवाद!</value>
           </text>
           <text id="select_chw_sms-10">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की घर पर, अनुभवी दाई के बिना डिलिवरी हो चुकी है | कृपया उनकी खतरे के संकेत पे निगरानी रखें| धन्यवाद! </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) की घर पर, अनुभवी दाई के बिना डिलिवरी हो चुकी है | कृपया उनकी खतरे के संकेत पे निगरानी रखें| धन्यवाद!</value>
           </text>
           <text id="select_chw_sms-11">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का स्वास्थ्य केंद्र में मृत जन्म हुआ | कृपया इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद | </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का स्वास्थ्य केंद्र में मृत जन्म हुआ | कृपया इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
           <text id="select_chw_sms-12">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का मृत जन्म हुआ घर पर, अनुभवी दाई के साथ | कृपया इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद | </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का मृत जन्म हुआ घर पर, अनुभवी दाई के साथ | कृपया इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
           <text id="select_chw_sms-13">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का मृत जन्म हुआ घर पर, अनुभवी दाई के बिना | कृपया इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद | </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का बच्चा का मृत जन्म हुआ घर पर, अनुभवी दाई के बिना | कृपया इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
           <text id="select_chw_sms-14">
-            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का स्वास्थ्य केंद्र में गर्भपात हुआ | कृपया इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद | </value>
+            <value> नमस्ते <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) का स्वास्थ्य केंद्र में गर्भपात हुआ | कृपया इस मुश्किल समय में <output value=" /data/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
           <text id="select_chw_sms-15">
             <value>{{patient_name}} ({{patient_id}}) की स्वास्थ्य केंद्र में जांच हुई है और जल्द ही उसकी डिलीवरी होगी | कृपया उसे डिलीवरी के लिए स्वास्थ्य केंद्र भेजें | धन्यवाद |</value>
@@ -450,16 +448,16 @@ ID: <output value=" /data/group_summary/r_patient_id "/> </value>
             <value>लापता जन्म की रिपोर्ट</value>
           </text>
           <text id="/data/group_chw_info/chw_information:label">
-            <value><output value=" /data/patient_name "/> के लिए जन्म की रिपोर्ट दर्ज नहीं की गयी है </value>
+            <value><output value=" /data/patient_name "/> के लिए जन्म की रिपोर्ट दर्ज नहीं की गयी है</value>
           </text>
           <text id="/data/group_chw_info/call_button:label">
-            <value> **कृपया <output value=" /data/chw_name "/> के साथ मिल कर देखे के <output value=" /data/patient_name "/> अभी भी गर्भवती है |** कॉल: <output value=" /data/chw_phone "/> </value>
+            <value> **कृपया <output value=" /data/chw_name "/> के साथ मिल कर देखे के <output value=" /data/patient_name "/> अभी भी गर्भवती है |** कॉल: <output value=" /data/chw_phone "/></value>
           </text>
           <text id="/data/group_chw_info/still_pregnant:jr:constraintMsg">
             <value>माफ़ कीजिये, आगे बढ़ने से पहले गर्भावस्था को पूरा करना होगा</value>
           </text>
           <text id="/data/group_chw_info/still_pregnant:label">
-            <value> क्या <output value=" /data/patient_name "/> अभी भी गर्भवती है? </value>
+            <value> क्या <output value=" /data/patient_name "/> अभी भी गर्भवती है?</value>
           </text>
           <text id="/data/group_delivery_summary:label">
             <value>डिलीवरी की जानकारी</value>
@@ -489,7 +487,7 @@ ID: <output value=" /data/group_summary/r_patient_id "/> </value>
             <value>यह सन्देश ऐसे ही भेजा जा सकता है या आप इस को बदल कर भी भेज सकते है</value>
           </text>
           <text id="/data/group_note/g_chw_sms:hint">
-            <value><output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>) को संदेश भेजा जायेगा | संदेश की लंबाई सीमित है ताकी SMS का मूल्य उच्च ना हो| </value>
+            <value><output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>) को संदेश भेजा जायेगा | संदेश की लंबाई सीमित है ताकी SMS का मूल्य उच्च ना हो|</value>
           </text>
           <text id="/data/group_summary/submit:label">
             <value>&lt;h4 style="text-align:center;"&gt; सुनिश्चित करें के यह कार्रवाई पूरा करने के लिए आप सबमिट दबाये |&lt;/h4&gt;</value>
@@ -498,24 +496,22 @@ ID: <output value=" /data/group_summary/r_patient_id "/> </value>
             <value>डिलीवरी के विवरण&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_summary/r_patient_info:label">
-            <value> **<output value=" /data/patient_name "/>** ID: <output value=" /data/group_summary/r_patient_id "/> </value>
+            <value> **<output value=" /data/patient_name "/>** ID: <output value=" /data/group_summary/r_patient_id "/></value>
           </text>
           <text id="/data/group_summary/r_pregnancy_outcome:label">
-            <value> परिणाम: <output value=" /data/group_delivery_summary/display_delivery_outcome "/> </value>
+            <value> परिणाम: <output value=" /data/group_delivery_summary/display_delivery_outcome "/></value>
           </text>
           <text id="/data/group_summary/r_birth_date:label">
-            <value><output value=" /data/group_summary/r_delivery_location "/> पे डिलिवरी की गयी <output value=" /data/group_delivery_summary/display_birth_date "/> </value>
+            <value><output value=" /data/group_summary/r_delivery_location "/> पे डिलिवरी की गयी <output value=" /data/group_delivery_summary/display_birth_date "/></value>
           </text>
           <text id="/data/group_summary/r_followup:label">
             <value>सुनिश्चित करने के लिए सन्देश &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_summary/r_followup_note1:label">
-            <value> ** ये SMS के रूप में <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/> को भेजा जायेगा ** </value>
+            <value> ** ये SMS के रूप में <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/> को भेजा जायेगा **</value>
           </text>
           <text id="/data/group_summary/r_followup_note2:label">
-            <value>
-              <output value=" /data/group_note/g_chw_sms "/>
-            </value>
+            <value><output value=" /data/group_note/g_chw_sms "/></value>
           </text>
           <text id="/data/inputs/contact/parent/parent/parent/use_cases:label">
             <value>-</value>
@@ -595,49 +591,49 @@ ID: <output value=" /data/group_summary/r_patient_id "/> </value>
             <value>Tidak yakin</value>
           </text>
           <text id="select_chw_sms-0">
-            <value> Berita baik, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di fasilitas kesehatan. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan memantau mereka untuk tanda-tanda bahaya. Terima kasih! </value>
+            <value> Berita baik, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di fasilitas kesehatan. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan memantau mereka untuk tanda-tanda bahaya. Terima kasih!</value>
           </text>
           <text id="select_chw_sms-1">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah dengan dukun bersalin. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan memantau mereka untuk tanda-tanda bahaya. Terima kasih! </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah dengan dukun bersalin. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan memantau mereka untuk tanda-tanda bahaya. Terima kasih!</value>
           </text>
           <text id="select_chw_sms-2">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah tanpa dukun bersalin. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan memantau mereka untuk tanda-tanda bahaya. Terima kasih! </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah tanpa dukun bersalin. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan memantau mereka untuk tanda-tanda bahaya. Terima kasih!</value>
           </text>
           <text id="select_chw_sms-3">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) memiliki kelahiran mati di fasilitas. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan mendukung <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih. </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) memiliki kelahiran mati di fasilitas. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan mendukung <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih.</value>
           </text>
           <text id="select_chw_sms-4">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) memiliki kelahiran mati di rumah dengan dukun bersalin. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan memantau mereka untuk tanda-tanda bahaya dan mendukung <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih. </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) memiliki kelahiran mati di rumah dengan dukun bersalin. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan memantau mereka untuk tanda-tanda bahaya dan mendukung <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih.</value>
           </text>
           <text id="select_chw_sms-5">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) memiliki kelahiran mati di rumah tanpa dukun bersalin. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan memantau mereka untuk tanda-tanda bahaya dan mendukung <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih. </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) memiliki kelahiran mati di rumah tanpa dukun bersalin. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan memantau mereka untuk tanda-tanda bahaya dan mendukung <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih.</value>
           </text>
           <text id="select_chw_sms-6">
-            <value> Halo <output value=" /data/chw_name "/>, kami menerima laporan dari fasilitas yang <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) memiliki keguguran. Silahkan mendukung <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih. </value>
+            <value> Halo <output value=" /data/chw_name "/>, kami menerima laporan dari fasilitas yang <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) memiliki keguguran. Silahkan mendukung <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih.</value>
           </text>
           <text id="select_chw_sms-7">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah datang ke fasilitas untuk persalinan. Terima kasih. </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah datang ke fasilitas untuk persalinan. Terima kasih.</value>
           </text>
           <text id="select_chw_sms-8">
-            <value> Berita baik, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di fasilitas kesehatan. Silahkan kunjungi mereka dalam 40 hari kedepan untuk memantau tanda-tanda bahaya. Terima kasih! </value>
+            <value> Berita baik, <output value=" /data/chw_name "/>! <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di fasilitas kesehatan. Silahkan kunjungi mereka dalam 40 hari kedepan untuk memantau tanda-tanda bahaya. Terima kasih!</value>
           </text>
           <text id="select_chw_sms-9">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah dengan bantuan dukun bersalin. Silahkan kunjungi mereka dalam 40 hari kedepan untuk memantau tanda-tanda bahaya.. Terima kasih! </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah dengan bantuan dukun bersalin. Silahkan kunjungi mereka dalam 40 hari kedepan untuk memantau tanda-tanda bahaya.. Terima kasih!</value>
           </text>
           <text id="select_chw_sms-10">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah tanpa dukun bersalin. Silahkan kunjungi mereka dalam 40 hari kedepan untuk memantau tanda-tanda bahaya. Terima kasih! </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah tanpa dukun bersalin. Silahkan kunjungi mereka dalam 40 hari kedepan untuk memantau tanda-tanda bahaya. Terima kasih!</value>
           </text>
           <text id="select_chw_sms-11">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di fasilitas kesehatan namun anaknya meninggal. Mohon dukungan untuk <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih. </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di fasilitas kesehatan namun anaknya meninggal. Mohon dukungan untuk <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih.</value>
           </text>
           <text id="select_chw_sms-12">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah dengan dukun bersalin tapi anaknya meninggal. Mohon dukungan untuk <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih. </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah dengan dukun bersalin tapi anaknya meninggal. Mohon dukungan untuk <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih.</value>
           </text>
           <text id="select_chw_sms-13">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah tanpa bantuan dukun bersalin tapi naknya meninggal. Mohon dukungan untuk<output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih. </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) telah melahirkan di rumah tanpa bantuan dukun bersalin tapi naknya meninggal. Mohon dukungan untuk<output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih.</value>
           </text>
           <text id="select_chw_sms-14">
-            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) memiliki keguguran di fasilitas kesehatan. Silahkan mendukung <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih. </value>
+            <value> Halo <output value=" /data/chw_name "/>, <output value=" /data/patient_name "/> (<output value=" /data/group_summary/r_patient_id "/>) memiliki keguguran di fasilitas kesehatan. Silahkan mendukung <output value=" /data/patient_name "/> selama masa sulit ini. Terima kasih.</value>
           </text>
           <text id="select_chw_sms-15">
             <value>{{patient_name}} ({{patient_id}}) Telah berkunjung ke fasilitas kesehatan dan diperkirakan akan segera melahirkan. Mohon segera dirujuk ke Puskesmas. Terima kasih.)</value>
@@ -709,16 +705,16 @@ ID: <output value=" /data/group_summary/r_patient_id "/> </value>
             <value>Laporan Kelahiran Hilang</value>
           </text>
           <text id="/data/group_chw_info/chw_information:label">
-            <value> Laporan kelahiran untuk <output value=" /data/patient_name "/> belum terdata. </value>
+            <value> Laporan kelahiran untuk <output value=" /data/patient_name "/> belum terdata.</value>
           </text>
           <text id="/data/group_chw_info/call_button:label">
-            <value> **Ikuti dengan <output value=" /data/chw_name "/> untuk melihat apakah <output value=" /data/patient_name "/> masih hamil.** Sebut: <output value=" /data/chw_phone "/> </value>
+            <value> **Ikuti dengan <output value=" /data/chw_name "/> untuk melihat apakah <output value=" /data/patient_name "/> masih hamil.** Sebut: <output value=" /data/chw_phone "/></value>
           </text>
           <text id="/data/group_chw_info/still_pregnant:jr:constraintMsg">
             <value>Maaf, kehamilan harus diselesaikan sebelum melanjutkan.</value>
           </text>
           <text id="/data/group_chw_info/still_pregnant:label">
-            <value> Apakah <output value=" /data/patient_name "/> masih hamil? </value>
+            <value> Apakah <output value=" /data/patient_name "/> masih hamil?</value>
           </text>
           <text id="/data/group_delivery_summary:label">
             <value>Informasi persalinan</value>
@@ -748,7 +744,7 @@ ID: <output value=" /data/group_summary/r_patient_id "/> </value>
             <value>Pesan berikut dapat dikirim sebagai adalah atau dimodifikasi untuk menambahkan catatan pribadi</value>
           </text>
           <text id="/data/group_note/g_chw_sms:hint">
-            <value> Pesan akan dikirim ke <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Pesan dibatasi panjang untuk menghindari biaya SMS yang tinggi. </value>
+            <value> Pesan akan dikirim ke <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>). Pesan dibatasi panjang untuk menghindari biaya SMS yang tinggi.</value>
           </text>
           <text id="/data/group_summary/submit:label">
             <value>&lt;h4 style="text-align:center;"&gt;Pastikan anda sudah mengirim untuk menyelesaikan tindakan ini.&lt;/h4&gt;</value>
@@ -757,24 +753,22 @@ ID: <output value=" /data/group_summary/r_patient_id "/> </value>
             <value>Rincian kelahiran&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_summary/r_patient_info:label">
-            <value> **<output value=" /data/patient_name "/>** ID : <output value=" /data/group_summary/r_patient_id "/> </value>
+            <value> **<output value=" /data/patient_name "/>** ID : <output value=" /data/group_summary/r_patient_id "/></value>
           </text>
           <text id="/data/group_summary/r_pregnancy_outcome:label">
-            <value> Hasil: <output value=" /data/group_delivery_summary/display_delivery_outcome "/> </value>
+            <value> Hasil: <output value=" /data/group_delivery_summary/display_delivery_outcome "/></value>
           </text>
           <text id="/data/group_summary/r_birth_date:label">
-            <value> Disampaikan <output value=" /data/group_delivery_summary/display_birth_date "/> di <output value=" /data/group_summary/r_delivery_location "/> </value>
+            <value> Disampaikan <output value=" /data/group_delivery_summary/display_birth_date "/> di <output value=" /data/group_summary/r_delivery_location "/></value>
           </text>
           <text id="/data/group_summary/r_followup:label">
             <value>Follow Up Pesan &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/data/group_summary/r_followup_note1:label">
-            <value> **Berikut ini akan dikirim sebagai SMS ke <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>** </value>
+            <value> **Berikut ini akan dikirim sebagai SMS ke <output value=" /data/chw_name "/> <output value=" /data/chw_phone "/>**</value>
           </text>
           <text id="/data/group_summary/r_followup_note2:label">
-            <value>
-              <output value=" /data/group_note/g_chw_sms "/>
-            </value>
+            <value><output value=" /data/group_note/g_chw_sms "/></value>
           </text>
           <text id="/data/inputs/contact/parent/parent/parent/use_cases:label">
             <value>-</value>

@@ -6,7 +6,7 @@ const convertForms = rewire('./../../../src/lib/convert-forms');
 const fs = require('../../../src/lib/sync-fs');
 const path = require('path');
 
-const XLS2XFORM = path.join(__dirname, '..', '..', '..', 'src', 'bin', 'xls2xform-medic');
+const XLS2XFORM = path.join(__dirname, '..', '..', '..', 'bin', 'xls2xform-medic');
 
 describe('convert-forms', () => {
 
@@ -40,15 +40,15 @@ describe('convert-forms', () => {
     it('convert one form', () => withMocks(async () => {
       await convertForms.execute('./path', 'app');
       expect(mockExec.args).to.deep.equal([
-        [[XLS2XFORM, '--skip_validate', '--pretty_print', './path/forms/app/b.xlsx', './path/forms/app/b.xml']],
-        [[XLS2XFORM, '--skip_validate', '--pretty_print', './path/forms/app/c.xlsx', './path/forms/app/c.xml']]
+        [[XLS2XFORM, '--skip_validate', './path/forms/app/b.xlsx', './path/forms/app/b.xml']],
+        [[XLS2XFORM, '--skip_validate', './path/forms/app/c.xlsx', './path/forms/app/c.xml']]
       ]);
     }));
 
     it('filter matches one form only', () => withMocks(async () => {
       await convertForms.execute('./path', 'app', { forms: ['c'] });
       expect(mockExec).calledOnceWithExactly(
-        [XLS2XFORM, '--skip_validate', '--pretty_print', './path/forms/app/c.xlsx', './path/forms/app/c.xml']
+        [XLS2XFORM, '--skip_validate', './path/forms/app/c.xlsx', './path/forms/app/c.xml']
       );
     }));
 
@@ -60,8 +60,8 @@ describe('convert-forms', () => {
     it('--debug does not filter', () => withMocks(async () => {
       await convertForms.execute('./path', 'app', { forms: ['--debug'] });
       expect(mockExec.args).to.deep.equal([
-        [[XLS2XFORM, '--skip_validate', '--pretty_print', './path/forms/app/b.xlsx', './path/forms/app/b.xml']],
-        [[XLS2XFORM, '--skip_validate', '--pretty_print', './path/forms/app/c.xlsx', './path/forms/app/c.xml']]
+        [[XLS2XFORM, '--skip_validate', './path/forms/app/b.xlsx', './path/forms/app/b.xml']],
+        [[XLS2XFORM, '--skip_validate', './path/forms/app/c.xlsx', './path/forms/app/c.xml']]
       ]);
     }));
 
@@ -71,13 +71,11 @@ describe('convert-forms', () => {
         [[
           XLS2XFORM,
           '--skip_validate',
-          '--pretty_print',
           './path\\ with\\ space/forms/app/b.xlsx', './path\\ with\\ space/forms/app/b.xml'
         ]],
         [[
           XLS2XFORM,
           '--skip_validate',
-          '--pretty_print',
           './path\\ with\\ space/forms/app/c.xlsx',
           './path\\ with\\ space/forms/app/c.xml'
         ]]

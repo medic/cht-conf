@@ -276,7 +276,7 @@ heart conditions, asthma, high blood pressure, known diabetes</label>
     <group appearance="field-list" ref="/data/group_note">
       <label>Turning Notifications OFF</label>
       <input ref="/data/group_note/pregnancy_note">
-        <label> An SMS will automatically be sent to <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>) to inform them that reminders are turned OFF for <output value=" /data/patient_name "/> </label>
+        <label> An SMS will automatically be sent to <output value=" /data/chw_name "/> (<output value=" /data/chw_phone "/>) to inform them that reminders are turned OFF for <output value=" /data/patient_name "/></label>
       </input>
       <select1 ref="/data/group_note/send_note">
         <label>Write additional info to send to the CHW?</label>

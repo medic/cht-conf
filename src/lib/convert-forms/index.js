@@ -14,7 +14,7 @@ const { removeNoLabelNodes } = require('./handle-no-label-placeholders');
 const { removeExtraRepeatInstance, addRepeatCount } = require('./handle-repeat');
 const { handleDbDocRefs } = require('./handle-db-doc-ref');
 
-const XLS2XFORM = path.join(__dirname, '..', '..', 'bin', 'xls2xform-medic');
+const XLS2XFORM = path.join(__dirname, '..', '..', '..', 'bin', 'xls2xform-medic');
 
 const FORM_EXTENSION = '.xlsx';
 const formFileMatcher = (fileName) => {
@@ -71,7 +71,7 @@ module.exports = {
 };
 
 const xls2xform = (sourcePath, targetPath) =>
-  exec([XLS2XFORM, '--skip_validate', '--pretty_print', sourcePath, targetPath])
+  exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
     .catch(() => {
       throw new Error('There was a problem executing xls2xform.  Make sure you have Python 3.10+ installed.');
     });
@@ -104,11 +104,6 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
     xml = xml.replace(r, '<$1 tag="hidden"$2>');
   }
 
-  if (transformer) {
-    xml = transformer(xml, path);
-  }
-
-
   // Check for deprecations
   if (xml.includes('repeat-relevant')) {
     warn('From webapp version 2.14.0, repeat-relevant is no longer required.  See https://github.com/medic/cht-core/issues/3449 for more info.');
@@ -127,7 +122,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
   handleDbDocRefs(xmlDoc);
 
   const xmlString = serializer.serializeToString(xmlDoc);
-  const formattedXmlString = xmlFormat(xmlString, {
+  xml = xmlFormat(xmlString, {
     collapseContent: true,
     forceSelfClosingEmptyTag: true,
     indentation: '  ',
@@ -136,9 +131,12 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
     ],
     lineSeparator: '\n'
   }).replaceAll(/\s+<\/value>/g, '</value>'); // Ignoring the 'value' path results in extra trailing whitespace
-  fs.write(path, formattedXmlString);
 
-  // fs.write(path, xml);
+  if (transformer) {
+    xml = transformer(xml, path);
+  }
+
+  fs.write(path, xml);
 };
 
 function getHiddenFields(propsJson) {

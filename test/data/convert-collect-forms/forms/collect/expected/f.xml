@@ -45,7 +45,7 @@
             <value>Notes</value>
           </text>
           <text id="/data/review:label">
-            <value> Submitting danger sign report for ID <output value=" /data/id "/>, with the following notes: <output value=" /data/n "/> </value>
+            <value> Submitting danger sign report for ID <output value=" /data/id "/>, with the following notes: <output value=" /data/n "/></value>
           </text>
         </translation>
         <translation lang="हिन्दी (Hindi)">
@@ -89,7 +89,7 @@
             <value>Notes</value>
           </text>
           <text id="/data/review:label">
-            <value> Submitting danger sign report for ID <output value=" /data/id "/>, with the following notes: <output value=" /data/n "/> </value>
+            <value> Submitting danger sign report for ID <output value=" /data/id "/>, with the following notes: <output value=" /data/n "/></value>
           </text>
         </translation>
         <translation lang="Bahasa Indonesia (Indonesian)">
@@ -133,7 +133,7 @@
             <value>Notes</value>
           </text>
           <text id="/data/review:label">
-            <value> Submitting danger sign report for ID <output value=" /data/id "/>, with the following notes: <output value=" /data/n "/> </value>
+            <value> Submitting danger sign report for ID <output value=" /data/id "/>, with the following notes: <output value=" /data/n "/></value>
           </text>
         </translation>
       </itext>
