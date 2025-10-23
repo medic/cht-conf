@@ -12,6 +12,7 @@ const xmlFormat = require('xml-formatter');
 const { replaceBase64ImageDynamicDefaults, replaceItemSetsWithMedia } = require('./handle-media');
 const { removeNoLabelNodes } = require('./handle-no-label-placeholders');
 const { removeExtraRepeatInstance, addRepeatCount } = require('./handle-repeat');
+const { handleDbDocRefs } = require('./handle-db-doc-ref');
 
 const XLS2XFORM = path.join(__dirname, '..', '..', 'bin', 'xls2xform-medic');
 
@@ -123,6 +124,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
   removeNoLabelNodes(xmlDoc);
   removeExtraRepeatInstance(xmlDoc);
   addRepeatCount(xmlDoc);
+  handleDbDocRefs(xmlDoc);
 
   const xmlString = serializer.serializeToString(xmlDoc);
   const formattedXmlString = xmlFormat(xmlString, {

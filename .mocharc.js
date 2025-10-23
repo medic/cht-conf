@@ -3,6 +3,7 @@ chai.use(require('chai-as-promised'));
 chai.use(require('chai-exclude'));
 chai.use(require('chai-shallow-deep-equal'));
 chai.use(require('sinon-chai'));
+chai.use(require('chai-xml'));
 
 module.exports = {
   allowUncaught: false,
