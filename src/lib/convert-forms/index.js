@@ -88,7 +88,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
     .replace(/<inputs>/, META_XML_SECTION)
 
     // No comment.
-    .replaceAll(/.*DELETE_THIS_LINE.*([\r\n])/, '')
+    .replaceAll(/.*DELETE_THIS_LINE.*([\r\n])/g, '')
     ;
 
   // Enketo _may_ not work with forms which define a default language - see
