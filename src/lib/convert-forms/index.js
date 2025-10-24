@@ -14,6 +14,8 @@ const { removeNoLabelNodes } = require('./handle-no-label-placeholders');
 const { removeExtraRepeatInstance, addRepeatCount } = require('./handle-repeat');
 const { handleDbDocRefs } = require('./handle-db-doc-ref');
 
+const domParser = new DOMParser();
+const serializer = new XMLSerializer();
 const XLS2XFORM = path.join(__dirname, '..', '..', '..', 'bin', 'xls2xform-medic');
 
 const FORM_EXTENSION = '.xlsx';
@@ -26,11 +28,7 @@ const formFileMatcher = (fileName) => {
   return null;
 };
 
-const execute = async (projectDir, subDirectory, options) => {
-  if (!options) {
-    options = {};
-  }
-
+const execute = async (projectDir, subDirectory, options = {}) => {
   const formsDir = getFormDir(projectDir, subDirectory);
 
   if (!fs.exists(formsDir)) {
@@ -90,13 +88,13 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
     .replace(/<inputs>/, META_XML_SECTION)
 
     // No comment.
-    .replace(/.*DELETE_THIS_LINE.*(\r|\n)/g, '')
+    .replaceAll(/.*DELETE_THIS_LINE.*([\r\n])/, '')
     ;
 
   // Enketo _may_ not work with forms which define a default language - see
   // https://github.com/medic/cht-core/issues/3174
   if (enketo) {
-    xml = xml.replace(/ default="true\(\)"/g, '');
+    xml = xml.replaceAll('default="true()"', '');
   }
 
   if (hiddenFields) {
@@ -108,12 +106,8 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
   if (xml.includes('repeat-relevant')) {
     warn('From webapp version 2.14.0, repeat-relevant is no longer required.  See https://github.com/medic/cht-core/issues/3449 for more info.');
   }
-
-  const domParser = new DOMParser();
   const xmlDoc = domParser.parseFromString(xml);
-  const serializer = new XMLSerializer();
 
-  // TODO Make sure we log cht-core issues to address these properly
   replaceItemSetsWithMedia(xmlDoc);
   replaceBase64ImageDynamicDefaults(xmlDoc);
   removeNoLabelNodes(xmlDoc);
@@ -140,12 +134,11 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
 };
 
 function getHiddenFields(propsJson) {
-  if (!fs.exists(propsJson)) {
-    return [];
-  }
-  else {
+  if (fs.exists(propsJson)) {
     return fs.readJson(propsJson).hidden_fields;
   }
+
+  return [];
 }
 
 const META_XML_SECTION = `<inputs>

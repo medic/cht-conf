@@ -158,6 +158,18 @@ describe('form-utils', () => {
     });
   });
 
+  describe('getInstanceNode', () => {
+    it('returns the identified instance node', () => {
+      const node = formUtils.getInstanceNode(getXmlDoc(), 'contact-summary');
+      expect(node.hasChildNodes()).to.not.be.undefined;
+    });
+
+    it('returns undefined when no instance node exists with the given id', () => {
+      const node = formUtils.getInstanceNode(getXmlDoc(), 'non-existent-id');
+      expect(node).to.be.undefined;
+    });
+  });
+
   describe('getPrimaryInstanceNode', () => {
     it('returns the first instance node for the given form', () => {
       const node = formUtils.getPrimaryInstanceNode(getXmlDoc());

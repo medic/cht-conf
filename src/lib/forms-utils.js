@@ -73,6 +73,12 @@ module.exports = {
    */
   getBindNodes: xmlDoc => getNodes(xmlDoc, `${XPATH_MODEL}/bind`),
 
+  /**
+   * Returns the `instance` node with the given ID for the given form XML.
+   * @param {Document} xmlDoc the form XML document
+   * @param instanceId the id of the instance
+   * @returns {Element} the selected node or `undefined` if not found
+   */
   getInstanceNode: (xmlDoc, instanceId) => getNode(xmlDoc, `${XPATH_MODEL}/instance[@id='${instanceId}']`),
 
   /**
@@ -114,10 +120,7 @@ module.exports = {
    * @param {string} xml the XML string
    * @returns {string}
    */
-  readIdFrom: xml =>
-    xml.match(/<model.*>[^]*<\/model>/)[0]
-      .match(/<instance>[^]*<\/instance>/)[0]
-      .match(/id="([^"]*)"/)[1],
+  readIdFrom: xml => /<model.*>[^]*<instance>[^]*id="([^"]*)"[^]*<\/instance>[^]*<\/model>/.exec(xml)?.[1],
 
   /**
    * Escape whitespaces in a path.
@@ -125,5 +128,4 @@ module.exports = {
    * @returns {string}
    */
   escapeWhitespacesInPath: path => path.replace(/(\s+)/g, '\\$1'),
-
 };
