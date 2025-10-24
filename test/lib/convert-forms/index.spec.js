@@ -26,11 +26,28 @@ describe('convert-forms', () => {
   });
   afterEach(sinon.restore);
 
-  it('fails if xls2xform cannot be executed', () => withMocks(async () => {
-    mockExec.rejects(new Error('Python is not installed.'));
+  [
+    new Error('Python is not installed.'),
+    {},
+    '',
+    'Some random error message'
+  ].forEach(error => {
+    it('fails if xls2xform cannot be executed', () => withMocks(async () => {
+      mockExec.returns(Promise.reject(error));
+
+      await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
+        'There was a problem executing xls2xform.  Make sure you have Python 3.10+ installed.'
+      );
+    }));
+  });
+
+  it('fails if xls2xform cannot convert the form', () => withMocks(async () => {
+    const errorMsg = 'There has been a problem trying to replace ${doesNOtExist} with ' +
+      'the XPath to the survey element named \'doesNOtExist\'. There is no survey element with this name.';
+    mockExec.returns(Promise.reject(`pyxform.errors.PyXFormError: ${errorMsg}`));
 
     await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
-      'There was a problem executing xls2xform.  Make sure you have Python 3.10+ installed.'
+      `Could not convert ./path/forms/app/b.xlsx: ${errorMsg}`
     );
   }));
 

@@ -68,9 +68,19 @@ module.exports = {
   execute
 };
 
+const PYXFORM_ERROR_PREFIX = 'pyxform.errors.PyXFormError:';
+const PYXFORM_ERROR_REGEX = new RegExp(`^${PYXFORM_ERROR_PREFIX}(.*)$`, 'm');
+
 const xls2xform = (sourcePath, targetPath) =>
   exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
-    .catch(() => {
+    .catch((e) => {
+      if (typeof e === `string` && e.includes(PYXFORM_ERROR_PREFIX)) {
+        const errorMsg = PYXFORM_ERROR_REGEX.exec(e)?.[1]?.trim();
+        if (errorMsg) {
+          throw new Error(`Could not convert ${sourcePath}: ${errorMsg}`);
+        }
+      }
+
       throw new Error('There was a problem executing xls2xform.  Make sure you have Python 3.10+ installed.');
     });
 
