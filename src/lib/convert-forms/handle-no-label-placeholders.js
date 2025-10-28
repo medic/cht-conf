@@ -11,7 +11,7 @@ module.exports = {
   removeNoLabelNodes: (xmlDoc) => {
     const noLabelItextNodes = getNodes(
       xmlDoc,
-      `${XPATH_MODEL}/itext/translation//text[count(*)=1 and value="NO_LABEL"]`
+      `${XPATH_MODEL}/itext/translation//text[count(*)=1 and (value="NO_LABEL" or value="DELETE_THIS_LINE")]`
     );
     const noLabelNodeIds = Array.from(new Set(noLabelItextNodes.map(textNode => textNode.getAttribute('id'))));
     noLabelNodeIds
@@ -20,7 +20,7 @@ module.exports = {
     noLabelItextNodes.forEach(removeXmlNode);
 
     // Remove any additional NO_LABEL values from translation nodes that have other (multimedia) values
-    getNodes(xmlDoc, `${XPATH_MODEL}/itext/translation//value[text()="NO_LABEL"]`)
+    getNodes(xmlDoc, `${XPATH_MODEL}/itext/translation//value[text()="NO_LABEL" or text()="DELETE_THIS_LINE"]`)
       .forEach(removeXmlNode);
   }
 };

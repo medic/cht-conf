@@ -95,11 +95,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
     // The following copies behaviour from old bash scripts, and will create a
     // second <meta> element if one already existed.  We may want to actually
     // merge the two instead.
-    .replace(/<inputs>/, META_XML_SECTION)
-
-    // No comment.
-    .replaceAll(/.*DELETE_THIS_LINE.*([\r\n])/g, '')
-    ;
+    .replace(/<inputs>/, META_XML_SECTION);
 
   // Enketo _may_ not work with forms which define a default language - see
   // https://github.com/medic/cht-core/issues/3174

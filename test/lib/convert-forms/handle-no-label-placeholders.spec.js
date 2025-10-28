@@ -13,6 +13,9 @@ describe('Handle NO_LABEL placeholders', () => {
           <text id="lbl2">
             <value>Some label</value>
           </text>
+          <text id="lbl3">
+            <value>DELETE_THIS_LINE</value>
+          </text>
         </translation>
       `,
       body: `
@@ -22,6 +25,9 @@ describe('Handle NO_LABEL placeholders', () => {
           </input>
           <input ref="/data/b">
             <label ref="jr:itext('lbl2')"/>
+          </input>
+          <input ref="/data/c">
+            <label ref="jr:itext('lbl3')"/>
           </input>
         </group>
       `
@@ -43,6 +49,7 @@ describe('Handle NO_LABEL placeholders', () => {
           <input ref="/data/b">
             <label ref="jr:itext('lbl2')"/>
           </input>
+          <input ref="/data/c" />
         </group>
       `
     });
@@ -55,6 +62,7 @@ describe('Handle NO_LABEL placeholders', () => {
         <translation lang="en">
           <text id="lbl3">
             <value>NO_LABEL</value>
+            <value>DELETE_THIS_LINE</value>
             <value form="image">jr://images/some.png</value>
           </text>
         </translation>
