@@ -55,7 +55,7 @@ const execute = async (projectDir, subDirectory, options = {}) => {
 
     info('Converting form', originalSourcePath, '…');
 
-    await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(targetPath));
+    await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(targetPath), xls);
     const hiddenFields = await getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`);
     fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
     trace('Converted form', originalSourcePath);
@@ -68,20 +68,29 @@ module.exports = {
   execute
 };
 
-const PYXFORM_ERROR_PREFIX = 'pyxform.errors.PyXFormError:';
-const PYXFORM_ERROR_REGEX = new RegExp(`^${PYXFORM_ERROR_PREFIX}(.*)$`, 'm');
+const PYXFORM_EMPTY_GROUP_ERROR = 'TypeError: \'NoneType\' object is not iterable';
+const PYXFORM_ERROR_REGEX = /^pyxform.errors.PyXFormError:(.*)$/m;
 
-const xls2xform = (sourcePath, targetPath) =>
+const getPyxformErrorMessage = (e) => {
+  if (typeof e === `string`) {
+    if (e.includes(PYXFORM_EMPTY_GROUP_ERROR)) {
+      // Pyxform does not gracefully handle empty groups https://github.com/XLSForm/pyxform/issues/754
+      return `Check the form for an empty group or repeat.`;
+    }
+
+    const pyxformErrorMsg = PYXFORM_ERROR_REGEX.exec(e)?.[1]?.trim();
+    if (pyxformErrorMsg) {
+      return pyxformErrorMsg;
+    }
+  }
+
+  return 'There was a problem executing xls2xform.  Make sure you have Python 3.10+ installed.';
+};
+
+const xls2xform = (sourcePath, targetPath, xlsxFileName) =>
   exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
     .catch((e) => {
-      if (typeof e === `string` && e.includes(PYXFORM_ERROR_PREFIX)) {
-        const errorMsg = PYXFORM_ERROR_REGEX.exec(e)?.[1]?.trim();
-        if (errorMsg) {
-          throw new Error(`Could not convert ${sourcePath}: ${errorMsg}`);
-        }
-      }
-
-      throw new Error('There was a problem executing xls2xform.  Make sure you have Python 3.10+ installed.');
+      throw new Error(`Could not convert ${xlsxFileName}: ${getPyxformErrorMessage(e)}`);
     });
 
 // here we fix the form content in arcane ways.  Seeing as we have out own fork

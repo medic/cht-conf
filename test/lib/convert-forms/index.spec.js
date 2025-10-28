@@ -41,13 +41,21 @@ describe('convert-forms', () => {
     }));
   });
 
-  it('fails if xls2xform cannot convert the form', () => withMocks(async () => {
+  it('fails when xls2xform reports an error', () => withMocks(async () => {
     const errorMsg = 'There has been a problem trying to replace ${doesNOtExist} with ' +
       'the XPath to the survey element named \'doesNOtExist\'. There is no survey element with this name.';
     mockExec.returns(Promise.reject(`pyxform.errors.PyXFormError: ${errorMsg}`));
 
     await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
-      `Could not convert ./path/forms/app/b.xlsx: ${errorMsg}`
+      `Could not convert b.xlsx: ${errorMsg}`
+    );
+  }));
+
+  it('fails when xls2xform crashes because of an empty group', () => withMocks(async () => {
+    mockExec.returns(Promise.reject(`pyxform.errors.PyXFormError: 'TypeError: \'NoneType\' object is not iterable'`));
+
+    await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
+      'Could not convert b.xlsx: Check the form for an empty group or repeat.'
     );
   }));
 
