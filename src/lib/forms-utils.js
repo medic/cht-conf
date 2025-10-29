@@ -120,7 +120,7 @@ module.exports = {
    * @param {string} xml the XML string
    * @returns {string}
    */
-  readIdFrom: xml => /<model.*>[^]*<instance>[^]*id="([^"]*)"[^]*<\/instance>[^]*<\/model>/.exec(xml)?.[1],
+  readIdFrom: xml => /<model.*?>[^]*?<instance>[^]*?id="([^"]*)"[^]*?<\/instance>[^]*?<\/model>/.exec(xml)?.[1],
 
   /**
    * Escape whitespaces in a path.
