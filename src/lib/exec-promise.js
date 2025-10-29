@@ -25,7 +25,7 @@ module.exports = (args, logLevel=log.level) => new Promise((resolve, reject) => 
         reject(stderr);
       }
       else {
-        resolve(stdout);
+        resolve(stdout || stderr);
       }
     });
 

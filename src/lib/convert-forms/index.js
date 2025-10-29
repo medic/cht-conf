@@ -5,7 +5,7 @@ const {
   getFormDir,
   escapeWhitespacesInPath,
 } = require('../forms-utils');
-const { info, trace, warn } = require('../log');
+const { info, trace, warn, LEVEL_NONE } = require('../log');
 const path = require('node:path');
 const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
 const xmlFormat = require('xml-formatter');
@@ -68,30 +68,46 @@ module.exports = {
   execute
 };
 
-const PYXFORM_EMPTY_GROUP_ERROR = 'TypeError: \'NoneType\' object is not iterable';
-const PYXFORM_ERROR_REGEX = /^pyxform.errors.PyXFormError:(.*)$/m;
-
-const getPyxformErrorMessage = (e) => {
-  if (typeof e === `string`) {
-    if (e.includes(PYXFORM_EMPTY_GROUP_ERROR)) {
-      // Pyxform does not gracefully handle empty groups https://github.com/XLSForm/pyxform/issues/754
-      return `Check the form for an empty group or repeat.`;
-    }
-
-    const pyxformErrorMsg = PYXFORM_ERROR_REGEX.exec(e)?.[1]?.trim();
-    if (pyxformErrorMsg) {
-      return pyxformErrorMsg;
-    }
-  }
-
-  return 'There was a problem executing xls2xform.  Make sure you have Python 3.10+ installed.';
+const PYXFORM_EMPTY_GROUP_ERROR = '\'NoneType\' object is not iterable';
+const PYXFORM_CODES = {
+  OK: 100,
+  WARNING: 101,
+  // ERROR: 999
 };
 
-const xls2xform = (sourcePath, targetPath, xlsxFileName) =>
-  exec([XLS2XFORM, '--skip_validate', sourcePath, targetPath])
-    .catch((e) => {
-      throw new Error(`Could not convert ${xlsxFileName}: ${getPyxformErrorMessage(e)}`);
+const pyxformErrorMessage = (e) => {
+  const errorMsg = typeof e === `string` ? e : e.message || JSON.stringify(e);
+  if (PYXFORM_EMPTY_GROUP_ERROR === errorMsg) {
+    // Pyxform does not gracefully handle empty groups https://github.com/XLSForm/pyxform/issues/754
+    return `Check the form for an empty group or repeat.`;
+  }
+  return errorMsg;
+};
+
+const xls2xform = async (sourcePath, targetPath, xlsxFileName) => {
+  const result = await exec([XLS2XFORM, '--skip_validate', '--json', sourcePath, targetPath], LEVEL_NONE)
+    .then(JSON.parse)
+    .catch(e => {
+      throw new Error(`There was a problem executing xls2xform. Make sure you have Python 3.10+ installed.\n${
+        pyxformErrorMessage(e)
+      }`);
     });
+  const {
+    code,
+    warnings = [],
+  } = result;
+
+  switch (code) {
+  case PYXFORM_CODES.OK:
+    break;
+  case PYXFORM_CODES.WARNING:
+    warn(`Converted ${xlsxFileName} with warnings:`);
+    warnings.forEach(w => warn(w));
+    break;
+  default:
+    throw new Error(`Could not convert ${xlsxFileName}: ${pyxformErrorMessage(result)}`);
+  }
+};
 
 // here we fix the form content in arcane ways.  Seeing as we have out own fork
 // of pyxform, we should probably be doing this fixing there.
