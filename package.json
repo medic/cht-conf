@@ -91,7 +91,7 @@
     "nyc": "^17.1.0",
     "pouchdb-adapter-memory": "^9.0.0",
     "rewire": "^8.0.0",
-    "semantic-release": "^24.2.4",
+    "semantic-release": "^24.2.9",
     "sinon": "^21.0.0"
   }
 }
