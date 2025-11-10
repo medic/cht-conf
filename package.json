@@ -76,7 +76,7 @@
     "@medic/eslint-config": "^1.1.0",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "body-parser": "^2.2.0",
+    "body-parser": "^1.20.3",
     "chai": "^4.5.0",
     "chai-as-promised": "^7.1.2",
     "chai-exclude": "^2.1.1",
