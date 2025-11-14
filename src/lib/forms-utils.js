@@ -23,6 +23,12 @@ module.exports = {
   XPATH_BODY,
 
   /**
+   * Matches XPath expressions that are only paths to a node (either absolute or relative) without any
+   * predicates, functions, operators, etc.
+   */
+  SIMPLE_XPATH_PATTERN: /^[/\w.-]+$/,
+
+  /**
    * Get the full path of the form, or null if the path doesn't exist.
    * @returns {string|null}
    */
@@ -49,6 +55,12 @@ module.exports = {
       filePath: `${formsDir}/${fileName}`
     };
   },
+
+  /**
+   * Removes the given XML node from its parent. The xmldom library does not support node.remove(), so we use
+   * parentNode.removeChild(node).
+   */
+  removeNode: node => node.parentNode.removeChild(node), // NOSONAR
 
   /**
    * Returns the node from the form XML specified by the given XPath.

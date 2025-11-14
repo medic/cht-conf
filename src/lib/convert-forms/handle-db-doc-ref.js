@@ -1,11 +1,10 @@
 const {
   getNodes,
   XPATH_MODEL,
+  SIMPLE_XPATH_PATTERN,
   getPrimaryInstanceNodeChildPath,
   getNode
 } = require('../forms-utils');
-
-const SIMPLE_XPATH_PATTERN = /^[/\w.-]+$/;
 
 const getNodesWithDbDocRef = xmlDoc => {
   return getNodes(xmlDoc, `${XPATH_MODEL}/instance//*[@db-doc-ref]`)

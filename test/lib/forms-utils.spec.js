@@ -44,6 +44,27 @@ const emptyXml = `
 const projectDir = path.join(__dirname, '../data/convert-app-forms');
 
 describe('form-utils', () => {
+  [
+    ['hello', true],
+    ['/hello', true],
+    ['./hello', true],
+    ['/hello/world', true],
+    ['../hello/world', true],
+    ['/instance//*[@db-doc-ref]', false],
+    ['/hello[1]', false],
+    ['/hello/world[@attr="value"]', false],
+    ['/hello/world/text()', false],
+    ['/hello/world | /another/path', false],
+    ['/hello/world and /another/path', false],
+    ['/hello/world = "value"', false],
+    ['concat(/hello, "/world")', false],
+  ].forEach(([xpath, expected]) => {
+    it('SIMPLE_XPATH_PATTERN matches paths with no special characters', () => {
+      const result = formUtils.SIMPLE_XPATH_PATTERN.test(xpath);
+      expect(result).to.equal(expected);
+    });
+  });
+
   describe('getFormDir', () => {
     it('returns the form directory path when it exists', () => {
       const formDir = formUtils.getFormDir(projectDir, 'app');
@@ -91,6 +112,17 @@ describe('form-utils', () => {
       const hasInstanceId = formUtils.formHasInstanceId(getXmlDoc({ metaNodes: '' }));
       expect(hasInstanceId).to.equal(false);
     });
+  });
+
+  it('removeNode removes the given node from its parent', () => {
+    const xmlDoc = getXmlDoc();
+    const path = '/h:html/h:head/model/instance/data/name';
+    const nameNode = formUtils.getNode(xmlDoc, path);
+    expect(nameNode).to.not.be.undefined;
+
+    formUtils.removeNode(nameNode);
+
+    expect(formUtils.getNode(xmlDoc, path)).to.be.undefined;
   });
 
   describe('getNode', () => {

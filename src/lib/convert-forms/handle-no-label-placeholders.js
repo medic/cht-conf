@@ -1,7 +1,4 @@
-const { getNodes, XPATH_MODEL, XPATH_BODY } = require('../forms-utils');
-
-// xmldom does not support node.remove(), so we use parentNode.removeChild(node) instead
-const removeXmlNode = node => node.parentNode.removeChild(node); // NOSONAR
+const { getNodes, removeNode, XPATH_MODEL, XPATH_BODY } = require('../forms-utils');
 
 module.exports = {
   /**
@@ -16,11 +13,11 @@ module.exports = {
     const noLabelNodeIds = Array.from(new Set(noLabelItextNodes.map(textNode => textNode.getAttribute('id'))));
     noLabelNodeIds
       .flatMap(id => getNodes(xmlDoc, `${XPATH_BODY}//label[@ref="jr:itext('${id}')"]`))
-      .forEach(removeXmlNode);
-    noLabelItextNodes.forEach(removeXmlNode);
+      .forEach(removeNode);
+    noLabelItextNodes.forEach(removeNode);
 
     // Remove any additional NO_LABEL values from translation nodes that have other (multimedia) values
     getNodes(xmlDoc, `${XPATH_MODEL}/itext/translation//value[text()="NO_LABEL" or text()="DELETE_THIS_LINE"]`)
-      .forEach(removeXmlNode);
+      .forEach(removeNode);
   }
 };

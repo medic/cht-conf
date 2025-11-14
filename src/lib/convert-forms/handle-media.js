@@ -1,7 +1,4 @@
-const { getNodes, XPATH_MODEL, XPATH_BODY, getNode, getInstanceNode } = require('../forms-utils');
-
-// xmldom does not support node.remove(), so we use parentNode.removeChild(node) instead
-const removeXmlNode = node => node.parentNode.removeChild(node); // NOSONAR
+const { getNodes, removeNode, XPATH_MODEL, XPATH_BODY, getNode, getInstanceNode } = require('../forms-utils');
 
 const getDynamicDefaultNode = (xmlDoc) => (ref) => {
   return getNode(
@@ -18,7 +15,7 @@ const moveDynamicDefaultValueToInstance = (xmlDoc) => (setValueNode) => {
   }
 
   instanceNode.textContent = setValueNode.getAttribute('value');
-  removeXmlNode(setValueNode);
+  removeNode(setValueNode);
 };
 
 const createItemForInstanceNode = (xmlDoc, parentNode) => (itemNode) => {
@@ -43,7 +40,7 @@ const insertSelectItemsWithMedia = (xmlDoc, instanceNode) => (itemSetNode) => {
   const { parentNode } = itemSetNode;
   getNodes(instanceNode, 'root/item')
     .forEach(createItemForInstanceNode(xmlDoc, parentNode));
-  removeXmlNode(itemSetNode);
+  removeNode(itemSetNode);
 };
 
 const insertMediaSelectItemsForInstance = (xmlDoc) => (instanceNode) => {
