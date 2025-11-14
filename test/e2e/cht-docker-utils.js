@@ -78,7 +78,7 @@ const execAsync = util.promisify(exec);
 const isProjectReady = async (projectName, attempt = 1) => {
   log.info(`Checking if CHT is ready, attempt ${attempt}.`);
 
-  const { stdout } = await execAsync('docker logs cht_conf_e2e_tests-api-1');
+  const { stdout } = await execAsync('docker logs cht_conf_e2e_tests-couchdb-1');
   log.info(stdout);
 
   const url = await getProjectUrl(projectName);
