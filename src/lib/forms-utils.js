@@ -2,6 +2,7 @@ const xpath = require('xpath');
 const fs = require('./sync-fs');
 
 const XPATH_MODEL = '/h:html/h:head/model';
+const XPATH_BODY = '/h:html/h:body';
 
 const getNode = (currentNode, path) =>
   xpath.parse(path).select1({ node: currentNode, allowAnyNamespaceForNoPrefix: true });
@@ -18,6 +19,15 @@ const getFullNodePath = (childNode) => {
 };
 
 module.exports = {
+  XPATH_MODEL,
+  XPATH_BODY,
+
+  /**
+   * Matches XPath expressions that are only paths to a node (either absolute or relative) without any
+   * predicates, functions, operators, etc.
+   */
+  SIMPLE_XPATH_PATTERN: /^[/\w.-]+$/,
+
   /**
    * Get the full path of the form, or null if the path doesn't exist.
    * @returns {string|null}
@@ -47,6 +57,12 @@ module.exports = {
   },
 
   /**
+   * Removes the given XML node from its parent. The xmldom library does not support node.remove(), so we use
+   * parentNode.removeChild(node).
+   */
+  removeNode: node => node.parentNode.removeChild(node), // NOSONAR
+
+  /**
    * Returns the node from the form XML specified by the given XPath.
    * @param {Element} currentNode the current node in the form XML document
    * @param {string} path the XPath expression
@@ -68,6 +84,14 @@ module.exports = {
    * @returns {Element}
    */
   getBindNodes: xmlDoc => getNodes(xmlDoc, `${XPATH_MODEL}/bind`),
+
+  /**
+   * Returns the `instance` node with the given ID for the given form XML.
+   * @param {Document} xmlDoc the form XML document
+   * @param instanceId the id of the instance
+   * @returns {Element} the selected node or `undefined` if not found
+   */
+  getInstanceNode: (xmlDoc, instanceId) => getNode(xmlDoc, `${XPATH_MODEL}/instance[@id='${instanceId}']`),
 
   /**
    * Returns the primary (first) `instance` node for the given form XML.
@@ -108,10 +132,7 @@ module.exports = {
    * @param {string} xml the XML string
    * @returns {string}
    */
-  readIdFrom: xml =>
-    xml.match(/<model>[^]*<\/model>/)[0]
-      .match(/<instance>[^]*<\/instance>/)[0]
-      .match(/id="([^"]*)"/)[1],
+  readIdFrom: xml => /<model.*?>[^]*?<instance>[^]*?id="([^"]*)"[^]*?<\/instance>[^]*?<\/model>/.exec(xml)?.[1],
 
   /**
    * Escape whitespaces in a path.
@@ -119,5 +140,4 @@ module.exports = {
    * @returns {string}
    */
   escapeWhitespacesInPath: path => path.replace(/(\s+)/g, '\\$1'),
-  
 };

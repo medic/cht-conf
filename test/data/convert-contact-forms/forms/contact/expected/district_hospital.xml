@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>New District</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <instance>
-        <data delimiter="#" id="district" prefix="J1!district!" version="2016-04-25">
+        <data id="district" version="2016-04-25" prefix="J1!district!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -34,14 +34,46 @@
           </meta>
         </data>
       </instance>
+      <instance id="yes_no">
+        <root>
+          <item>
+            <name>true</name>
+            <label>Yes</label>
+          </item>
+          <item>
+            <name>false</name>
+            <label>No</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="male_female">
+        <root>
+          <item>
+            <name>female</name>
+            <label>Female</label>
+          </item>
+          <item>
+            <name>male</name>
+            <label>Male</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="boy_girl">
+        <root>
+          <item>
+            <name>female</name>
+            <label>Girl</label>
+          </item>
+        </root>
+      </instance>
       <bind nodeset="/data/inputs/user" relevant="0"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
-      <bind nodeset="/data/inputs/contact/district_name" required="true()" type="string"/>
-      <bind nodeset="/data/contact/debug_note" readonly="true()" relevant="0" type="string"/>
-      <bind nodeset="/data/contact/name" required="true()" type="string"/>
+      <bind nodeset="/data/inputs/contact/district_name" type="string" required="true()"/>
+      <bind nodeset="/data/contact/debug_note" readonly="true()" type="string" relevant="0"/>
+      <bind nodeset="/data/contact/name" type="string" required="true()"/>
       <bind nodeset="/data/contact_notes" type="string"/>
-      <bind calculate=" /data/inputs/contact/district_name " nodeset="/data/district_hospital/name" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/district_hospital/name" type="string" calculate=" /data/inputs/contact/district_name "/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body>
@@ -61,8 +93,11 @@
     <group appearance="field-list" ref="/data/contact">
       <label>Primary Contact</label>
       <input ref="/data/contact/debug_note">
-        <label>DEBUG
-User's facility ID: <output value=" /data/inputs/user/facility_id "/></label>
+        <label>
+          DEBUG
+User's facility ID:
+          <output value=" /data/inputs/user/facility_id "/>
+        </label>
       </input>
       <input ref="/data/contact/name">
         <label>Names</label>
