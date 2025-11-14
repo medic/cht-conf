@@ -47,20 +47,24 @@ describe('Handle repeats', () => {
       const doc = createXformDoc({
         primaryInstance: `
           <outer>
-            <rep1 jr:template=""/>
-            <rep1/>
+            <rep1 jr:template="">
+              <child/>
+            </rep1>
             <group>
-              <rep2 jr:template=""/>
-              <rep2/>
+              <rep2 jr:template="">
+                <child/>
+              </rep2>
             </group>
           </outer>
           <rep3 jr:template="">
-            <rep4 jr:template=""/>
-            <rep4/>
+            <rep4 jr:template="">
+              <child/>
+            </rep4>
           </rep3>
           <rep3>
-            <rep4 jr:template=""/>
-            <rep4/>
+            <rep4 jr:template="">
+              <child/>
+            </rep4>
           </rep3>
         `
       });
@@ -70,13 +74,19 @@ describe('Handle repeats', () => {
       const expectedDoc = createXformString({
         primaryInstance: `
           <outer>
-            <rep1 jr:template=""/>
+            <rep1 jr:template="">
+              <child/>
+            </rep1>
             <group>
-              <rep2 jr:template=""/>
+              <rep2 jr:template="">
+                <child/>
+              </rep2>
             </group>
           </outer>
           <rep3 jr:template="">
-            <rep4 jr:template=""/>
+            <rep4 jr:template="">
+              <child/>
+            </rep4>
           </rep3>
         `
       });

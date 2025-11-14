@@ -20,8 +20,8 @@ describe('Handle db-doc-ref attributes', () => {
     const doc = createXformDoc({
       primaryInstance: `
         <test db-doc-ref="../group/other"/>
-        <group>
-          <other db-doc-ref="../../test"/>
+        <group db-doc="true">
+          <other db-doc-ref="../../../data"/>
         </group>        
       `,
     });
@@ -31,8 +31,8 @@ describe('Handle db-doc-ref attributes', () => {
     const expectedDoc = createXformString({
       primaryInstance: `
         <test db-doc-ref="/data/group/other"/>
-        <group>
-          <other db-doc-ref="/data/test"/>
+        <group db-doc="true">
+          <other db-doc-ref="/data"/>
         </group>        
       `,
     });
