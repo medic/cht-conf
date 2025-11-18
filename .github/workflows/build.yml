@@ -36,13 +36,15 @@ jobs:
 
   e2e:
     name: E2E tests
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: 24.x
+    - name: Set system ulimit
+      uses: medic/cht-core/.github/actions/bump-system-ulimit
     - name: Install dependencies
       run: |
         pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
