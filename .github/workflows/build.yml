@@ -41,6 +41,8 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: 24.x
+    - name: Set system ulimit
+      uses: medic/cht-core/.github/actions/bump-system-ulimit@476c97b0427e75ebdc1745afb5c73da0574f963a
     - name: Install dependencies
       run: npm ci
     - name: Hard code local-ip IP in /etc/hosts per https://github.com/medic/medic-infrastructure/issues/571#issuecomment-2209120441
