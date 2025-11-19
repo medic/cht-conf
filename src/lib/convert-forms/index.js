@@ -86,7 +86,17 @@ const pyxformErrorMessage = (e) => {
 
 const xls2xform = async (sourcePath, targetPath, xlsxFileName) => {
   const result = await exec([XLS2XFORM, '--skip_validate', '--json', sourcePath, targetPath], LEVEL_NONE)
-    .then(JSON.parse)
+    .then((output) => {
+      const entries = output
+        .split('\n')
+        .map(s => s.trim())
+        .filter(Boolean);
+      // It is possible for pyxform dependencies to log to stdout, so we take the last line
+      entries
+        .slice(0, -1)
+        .forEach(line => warn(line));
+      return JSON.parse(entries.at(-1));
+    })
     .catch(e => {
       throw new Error(`There was a problem executing xls2xform. Make sure you have Python 3.10+ installed.\n${
         pyxformErrorMessage(e)

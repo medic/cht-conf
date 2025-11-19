@@ -110,6 +110,24 @@ describe('convert-forms', () => {
         'Could not convert b.xlsx: Check the form for an empty group or repeat.'
       );
     }));
+
+    it('warns of any additional messages included in log', () => withMocks(async () => {
+      const msg0 = 'UserWarning: Data Validation extension is not supported and will be removed';
+      const msg1 = 'warn(msg)';
+      mockExec.returns(Promise.resolve(`
+        ${msg0}
+        ${msg1}
+        ${JSON.stringify({ code: 100 })}
+      `));
+
+      await convertForms.execute('./path', 'app');
+
+      expect(mockExec.args).to.deep.equal([
+        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/b.xlsx', './path/forms/app/b.xml'], LEVEL_NONE],
+        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml'], LEVEL_NONE]
+      ]);
+      expect(log.warn.args).to.deep.equal([[msg0], [msg1], [msg0], [msg1]]);
+    }));
   });
 
   describe('filtering', () => {
