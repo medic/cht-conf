@@ -19,7 +19,6 @@ const convertContactForm = (forms) => {
 
   return convertForms(environment.pathToProject, 'contact', {
     enketo: true,
-    force_data_node: 'data',
     forms: forms,
     transformer: (xml, path) => {
       const type = path.replace(/.*\/(.*?)(-(create|edit))?\.xml/, '$1');
