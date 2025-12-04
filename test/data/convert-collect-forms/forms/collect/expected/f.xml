@@ -1,65 +1,219 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>Danger Sign</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <itext>
-        <translation lang="Bahasa Indonesia (Indonesian)">
-          <text id="/f/id:label">
-            <value>Pasien ID</value>
+        <translation lang="English" default="true()">
+          <text id="select_yes_no-0">
+            <value>Yes</value>
           </text>
-          <text id="/f/n:label">
-            <value>Notes</value>
+          <text id="select_yes_no-1">
+            <value>No</value>
           </text>
-          <text id="/f/review:label">
-            <value>Submitting danger sign report for ID <output value=" /f/id "/>, with the following notes: <output value=" /f/n "/></value></text>
-        </translation>
-        <translation default="true()" lang="English">
-          <text id="/f/id:label">
+          <text id="select_danger_signs-0">
+            <value>Pain, pressure or cramping in abdomen</value>
+          </text>
+          <text id="select_danger_signs-1">
+            <value>Bleeding or fluid leaking from vagina or vaginal discharge with bad odour</value>
+          </text>
+          <text id="select_danger_signs-2">
+            <value>Severe nausea or vomiting</value>
+          </text>
+          <text id="select_danger_signs-3">
+            <value>Fever of 38 degrees or higher</value>
+          </text>
+          <text id="select_danger_signs-4">
+            <value>Severe headache or new, blurry vision problems</value>
+          </text>
+          <text id="select_danger_signs-5">
+            <value>Sudden weight gain or severe swelling of feet, ankles, face, or hands</value>
+          </text>
+          <text id="select_danger_signs-6">
+            <value>Less movement and kicking from the baby</value>
+          </text>
+          <text id="select_danger_signs-7">
+            <value>Blood in the urine or painful, burning urination</value>
+          </text>
+          <text id="select_danger_signs-8">
+            <value>Diarrhea that doesn't go away</value>
+          </text>
+          <text id="/data/id:label">
             <value>Patient ID</value>
           </text>
-          <text id="/f/n:label">
+          <text id="/data/n:label">
             <value>Notes</value>
           </text>
-          <text id="/f/review:label">
-            <value>Submitting danger sign report for ID <output value=" /f/id "/>, with the following notes: <output value=" /f/n "/></value></text>
+          <text id="/data/review:label">
+            <value> Submitting danger sign report for ID <output value=" /data/id "/>, with the following notes: <output value=" /data/n "/></value>
+          </text>
         </translation>
         <translation lang="हिन्दी (Hindi)">
-          <text id="/f/id:label">
+          <text id="select_yes_no-0">
+            <value>हाँ</value>
+          </text>
+          <text id="select_yes_no-1">
+            <value>नहीं</value>
+          </text>
+          <text id="select_danger_signs-0">
+            <value>पेट में दर्द, दबाव या ऐंठन</value>
+          </text>
+          <text id="select_danger_signs-1">
+            <value>योनि से खून या द्रव पदार्थ का बहाव, या खराब बू के साथ योनि से बहाव</value>
+          </text>
+          <text id="select_danger_signs-2">
+            <value>गंभीर उबकाई या उल्टी</value>
+          </text>
+          <text id="select_danger_signs-3">
+            <value>38 डिग्री या अधिक का बुखार</value>
+          </text>
+          <text id="select_danger_signs-4">
+            <value>गंभीर सिरदर्द या नए, धुंधली दृष्टि की समस्याएं</value>
+          </text>
+          <text id="select_danger_signs-5">
+            <value>अचानक वजन का बढ़ना या पैर, टखनों, चेहरे या हाथों में गंभीर सूजन</value>
+          </text>
+          <text id="select_danger_signs-6">
+            <value>बच्चे का कम हिलना या लात मारना</value>
+          </text>
+          <text id="select_danger_signs-7">
+            <value>पेशाब में खून या दर्दनाक, जलता हुआ पेशाब</value>
+          </text>
+          <text id="select_danger_signs-8">
+            <value>दस्त जो कम नहीं होता</value>
+          </text>
+          <text id="/data/id:label">
             <value>मरीज का ID</value>
           </text>
-          <text id="/f/n:label">
+          <text id="/data/n:label">
             <value>Notes</value>
           </text>
-          <text id="/f/review:label">
-            <value>Submitting danger sign report for ID <output value=" /f/id "/>, with the following notes: <output value=" /f/n "/></value></text>
+          <text id="/data/review:label">
+            <value> Submitting danger sign report for ID <output value=" /data/id "/>, with the following notes: <output value=" /data/n "/></value>
+          </text>
+        </translation>
+        <translation lang="Bahasa Indonesia (Indonesian)">
+          <text id="select_yes_no-0">
+            <value>Iya</value>
+          </text>
+          <text id="select_yes_no-1">
+            <value>Tidak</value>
+          </text>
+          <text id="select_danger_signs-0">
+            <value>Nyeri, tekanan atau kram di perut</value>
+          </text>
+          <text id="select_danger_signs-1">
+            <value>Perdarahan atau cairan merembes dari vagina atau mengalir dari vagina dengan bau busuk</value>
+          </text>
+          <text id="select_danger_signs-2">
+            <value>Mual muntah berat</value>
+          </text>
+          <text id="select_danger_signs-3">
+            <value>Demam 38 derajat atau lebih tinggi</value>
+          </text>
+          <text id="select_danger_signs-4">
+            <value>Sakit kepala berat atau baru, penglihatan kabur</value>
+          </text>
+          <text id="select_danger_signs-5">
+            <value>Lonjakan berat badan atau berat pembengkakan kaki, pergelangan kaki, wajah, atau tangan</value>
+          </text>
+          <text id="select_danger_signs-6">
+            <value>Kurang gerak dan menendang dari bayi</value>
+          </text>
+          <text id="select_danger_signs-7">
+            <value>Darah dalam urin atau nyeri sekali, rasa seperti terbakar saat buang air kecil</value>
+          </text>
+          <text id="select_danger_signs-8">
+            <value>Diare yang tidak kunjung sembuh</value>
+          </text>
+          <text id="/data/id:label">
+            <value>Pasien ID</value>
+          </text>
+          <text id="/data/n:label">
+            <value>Notes</value>
+          </text>
+          <text id="/data/review:label">
+            <value> Submitting danger sign report for ID <output value=" /data/id "/>, with the following notes: <output value=" /data/n "/></value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <f delimiter="#" id="f" prefix="J1!f!" version="2017-08-12_06-44">
+        <data id="f" version="2017-08-12_06-44" prefix="J1!f!" delimiter="#">
           <id/>
           <n/>
           <review/>
           <meta tag="hidden">
             <instanceID/>
           </meta>
-        </f>
+        </data>
       </instance>
-      <bind nodeset="/f/id" required="true()" type="string"/>
-      <bind nodeset="/f/n" type="string"/>
-      <bind nodeset="/f/review" readonly="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/f/meta/instanceID" readonly="true()" type="string"/>
+      <instance id="select_yes_no">
+        <root>
+          <item>
+            <itextId>select_yes_no-0</itextId>
+            <name>yes</name>
+          </item>
+          <item>
+            <itextId>select_yes_no-1</itextId>
+            <name>no</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="select_danger_signs">
+        <root>
+          <item>
+            <itextId>select_danger_signs-0</itextId>
+            <name>d1</name>
+          </item>
+          <item>
+            <itextId>select_danger_signs-1</itextId>
+            <name>d2</name>
+          </item>
+          <item>
+            <itextId>select_danger_signs-2</itextId>
+            <name>d3</name>
+          </item>
+          <item>
+            <itextId>select_danger_signs-3</itextId>
+            <name>d4</name>
+          </item>
+          <item>
+            <itextId>select_danger_signs-4</itextId>
+            <name>d5</name>
+          </item>
+          <item>
+            <itextId>select_danger_signs-5</itextId>
+            <name>d6</name>
+          </item>
+          <item>
+            <itextId>select_danger_signs-6</itextId>
+            <name>d7</name>
+          </item>
+          <item>
+            <itextId>select_danger_signs-7</itextId>
+            <name>d8</name>
+          </item>
+          <item>
+            <itextId>select_danger_signs-8</itextId>
+            <name>d9</name>
+          </item>
+        </root>
+      </instance>
+      <bind nodeset="/data/id" type="string" required="true()"/>
+      <bind nodeset="/data/n" type="string"/>
+      <bind nodeset="/data/review" readonly="true()" type="string"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body class="pages">
-    <input appearance="numbers" ref="/f/id">
-      <label ref="jr:itext('/f/id:label')"/>
+    <input ref="/data/id" appearance="numbers">
+      <label ref="jr:itext('/data/id:label')"/>
     </input>
-    <input ref="/f/n">
-      <label ref="jr:itext('/f/n:label')"/>
+    <input ref="/data/n">
+      <label ref="jr:itext('/data/n:label')"/>
     </input>
-    <input ref="/f/review">
-      <label ref="jr:itext('/f/review:label')"/>
+    <input ref="/data/review">
+      <label ref="jr:itext('/data/review:label')"/>
     </input>
   </h:body>
 </h:html>

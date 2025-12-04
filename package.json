@@ -9,7 +9,7 @@
   "scripts": {
     "clean": "rm -rf ./build/",
     "eslint": "eslint 'src/**/*.js' test/*.js 'test/**/*.js'",
-    "test": "npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha \"../../test/**/*.spec.js\" --exclude \"../../test/e2e/**/*.spec.js\"",
+    "test": "npm run clean && mkdir -p build/test && cp -r test/data build/test/data && cd build/test && nyc --reporter=html mocha",
     "test-e2e": "mocha --config test/e2e/.mocharc.js",
     "semantic-release": "semantic-release"
   },
@@ -68,6 +68,7 @@
     "terser-webpack-plugin": "^5.3.11",
     "uuid": "^11.1.0",
     "webpack": "^5.102.1",
+    "xml-formatter": "^3.6.7",
     "xpath": "0.0.34"
   },
   "devDependencies": {
@@ -92,6 +93,7 @@
     "pouchdb-adapter-memory": "^9.0.0",
     "rewire": "^9.0.1",
     "semantic-release": "^25.0.2",
-    "sinon": "^21.0.0"
+    "sinon": "^21.0.0",
+    "sinon-chai": "^3.7.0"
   }
 }

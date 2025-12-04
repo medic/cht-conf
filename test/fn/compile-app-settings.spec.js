@@ -1,13 +1,10 @@
-const chai = require('chai');
 const path = require('path');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
 const fs = require('../../src/lib/sync-fs');
 const compileAppSettings = rewire('../../src/fn/compile-app-settings');
-const { expect } = chai;
-chai.use(require('chai-exclude'));
-chai.use(require('chai-as-promised'));
+const { expect } = require('chai');
 
 let writeJson;
 let environment;

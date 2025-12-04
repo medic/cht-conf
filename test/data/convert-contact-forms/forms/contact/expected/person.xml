@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
   <h:head>
     <h:title>Add Person</h:title>
-    <model>
+    <model odk:xforms-version="1.0.0">
       <instance>
-        <data delimiter="#" id="person" prefix="J1!person!" version="2017-08-16 00:00:00">
+        <data id="person" version="2017-08-16 00:00:00" prefix="J1!person!" delimiter="#">
           <inputs>
             <meta>
               <location>
@@ -35,19 +35,63 @@
           </meta>
         </data>
       </instance>
+      <instance id="nationality">
+        <root>
+          <item>
+            <name>kenyan</name>
+            <label>Kenyan</label>
+          </item>
+          <item>
+            <name>ugandan</name>
+            <label>Ugandan</label>
+          </item>
+          <item>
+            <name>rwandese</name>
+            <label>Rwandese</label>
+          </item>
+          <item>
+            <name>tanzanian</name>
+            <label>Tanzanian</label>
+          </item>
+          <item>
+            <name>burundian</name>
+            <label>Burundian</label>
+          </item>
+          <item>
+            <name>congolese</name>
+            <label>Congolese</label>
+          </item>
+          <item>
+            <name>other</name>
+            <label>Other</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="male_female">
+        <root>
+          <item>
+            <name>male</name>
+            <label>Male</label>
+          </item>
+          <item>
+            <name>female</name>
+            <label>Female</label>
+          </item>
+        </root>
+      </instance>
       <bind nodeset="/data/inputs" relevant="0"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/person/type" type="string"/>
       <bind nodeset="/data/person/parent" type="string"/>
-      <bind nodeset="/data/person/name" required="true()" type="string"/>
-      <bind nodeset="/data/person/external_id" required="false()" type="string"/>
-      <bind nodeset="/data/person/nationality" required="true()" type="select1"/>
-      <bind nodeset="/data/person/nationality_other" relevant="selected( /data/person/nationality , 'other')" type="string"/>
+      <bind nodeset="/data/person/name" type="string" required="true()"/>
+      <bind nodeset="/data/person/external_id" type="string" required="false()"/>
+      <bind nodeset="/data/person/nationality" type="string" required="true()"/>
+      <bind nodeset="/data/person/nationality_other" type="string" relevant="selected( /data/person/nationality , 'other')"/>
       <bind nodeset="/data/person/contact_telephone_number" type="string"/>
-      <bind nodeset="/data/person/date_of_birth" required="true()" type="date"/>
-      <bind nodeset="/data/person/sex" required="true()" type="select1"/>
-      <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/data/person/geolocation" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/person/date_of_birth" type="date" required="true()"/>
+      <bind nodeset="/data/person/sex" type="string" required="true()"/>
+      <bind nodeset="/data/person/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
     </model>
   </h:head>
   <h:body>
@@ -61,11 +105,11 @@
     </group>
     <group ref="/data/person">
       <label>Person</label>
-      <input appearance="hidden" ref="/data/person/type">
+      <input ref="/data/person/type" appearance="hidden">
         <label>Person Type</label>
         <hint>mandatory</hint>
       </input>
-      <input appearance="hidden" ref="/data/person/parent">
+      <input ref="/data/person/parent" appearance="hidden">
         <label>Parent</label>
         <hint>mandatory</hint>
       </input>
@@ -75,36 +119,12 @@
       <input ref="/data/person/external_id">
         <label>New Client's Unique Code</label>
       </input>
-      <select1 appearance="minimal" ref="/data/person/nationality">
+      <select1 ref="/data/person/nationality" appearance="minimal">
         <label>Nationality</label>
-        <item>
-          <label>Kenyan</label>
-          <value>kenyan</value>
-        </item>
-        <item>
-          <label>Ugandan</label>
-          <value>ugandan</value>
-        </item>
-        <item>
-          <label>Rwandese</label>
-          <value>rwandese</value>
-        </item>
-        <item>
-          <label>Tanzanian</label>
-          <value>tanzanian</value>
-        </item>
-        <item>
-          <label>Burundian</label>
-          <value>burundian</value>
-        </item>
-        <item>
-          <label>Congolese</label>
-          <value>congolese</value>
-        </item>
-        <item>
-          <label>Other</label>
-          <value>other</value>
-        </item>
+        <itemset nodeset="instance('nationality')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
       </select1>
       <input ref="/data/person/nationality_other">
         <label>Specify other</label>
@@ -115,16 +135,12 @@
       <input ref="/data/person/date_of_birth">
         <label>Date of Birth</label>
       </input>
-      <select1 appearance="horizontal-compact" ref="/data/person/sex">
+      <select1 ref="/data/person/sex" appearance="horizontal-compact">
         <label>Sex</label>
-        <item>
-          <label>Male</label>
-          <value>male</value>
-        </item>
-        <item>
-          <label>Female</label>
-          <value>female</value>
-        </item>
+        <itemset nodeset="instance('male_female')/root/item">
+          <value ref="name"/>
+          <label ref="label"/>
+        </itemset>
       </select1>
     </group>
   </h:body>
