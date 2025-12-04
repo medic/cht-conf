@@ -148,7 +148,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
   }
   const xmlDoc = domParser.parseFromString(xml);
 
-  handleFormId(xmlDoc, path);// TODO do not write on error
+  handleFormId(xmlDoc, path);
   replaceItemSetsWithMedia(xmlDoc);
   replaceBase64ImageDynamicDefaults(xmlDoc);
   removeNoLabelNodes(xmlDoc);
