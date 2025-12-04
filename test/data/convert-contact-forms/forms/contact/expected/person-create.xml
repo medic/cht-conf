@@ -4,7 +4,7 @@
     <h:title>Add Person</h:title>
     <model odk:xforms-version="1.0.0">
       <instance>
-        <data id="person" version="2017-08-16 00:00:00" prefix="J1!person!" delimiter="#">
+        <data id="contact:person:create" version="2025-12-03 00:00:00" prefix="J1!contact:person:create!" delimiter="#">
           <inputs>
             <meta>
               <location>

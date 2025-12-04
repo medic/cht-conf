@@ -104,6 +104,29 @@ describe('Handle form id', () => {
         }:create]. Rename the form xlsx/xml files to match the form_id.`
       );
     });
+
+    it('other handles forms with the PLACE_TYPE template in the xml', () => {
+      const doc = createXformDoc({
+        model: `
+          <instance>
+            <data id="contact:PLACE_TYPE:create" prefix="J1!contact:PLACE_TYPE:create!">
+            </data>
+          </instance>
+        `
+      });
+
+      handleFormId(doc, `forms/contact/person-create.xml`);
+
+      const expectedDoc = createXformString({
+        model: `
+          <instance>
+            <data id="contact:PLACE_TYPE:create" prefix="J1!contact:PLACE_TYPE:create!">
+            </data>
+          </instance>
+        `
+      });
+      expect(serializeToString(doc)).xml.to.equal(expectedDoc);
+    });
   });
 
   describe('training form', () => {

@@ -4,7 +4,7 @@
     <h:title>New District</h:title>
     <model odk:xforms-version="1.0.0">
       <instance>
-        <data id="district" version="2016-04-25" prefix="J1!district!" delimiter="#">
+        <data id="contact:district_hospital" version="2016-04-25" prefix="J1!contact:district_hospital!" delimiter="#">
           <inputs>
             <meta>
               <location>

@@ -32,10 +32,9 @@ module.exports = {
     const dataNode = Array
       .from(getPrimaryInstanceNode(xmlDoc).childNodes)
       .find(node => node.nodeType === 1);
-    // const dataNode = getPrimaryInstanceNode(xmlDoc).firstElementChild;
     const idFromXml = dataNode.getAttribute('id');
 
-    if (idFromXml === idFromPath) {
+    if (idFromXml === idFromPath || idFromXml === idFromPath.replace(formName, 'PLACE_TYPE')) {
       return;
     }
     // If the form_id is empty on the xlsx settings tab, pyxform will set the filename.
