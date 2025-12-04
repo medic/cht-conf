@@ -121,7 +121,7 @@ const updateFromPropertiesFile = (baseFileName, doc, path, supported_properties)
     Object
       .keys(properties)
       .forEach(key => {
-        if (typeof properties[key] === 'undefined') {
+        if (properties[key] === undefined) {
           return;
         }
         if (supported_properties.includes(key)) {

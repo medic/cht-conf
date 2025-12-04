@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 
 const fs = require('../../../src/lib/sync-fs');
+const nodeFs = require('node:fs');
 const path = require('path');
 const log = require('../../../src/lib/log');
 const { LEVEL_NONE } = log;
@@ -14,7 +15,7 @@ describe('convert-forms', () => {
   let mockExec;
   beforeEach(() => {
     mockExec = sinon.stub();
-    sinon.stub(log, 'warn');
+    convertForms.__set__('warn', sinon.stub(log, 'warn'));
     convertForms.__set__('exec', mockExec);
     convertForms.__set__('fixXml', sinon.stub());
     convertForms.__set__('getHiddenFields', sinon.stub());
@@ -22,6 +23,7 @@ describe('convert-forms', () => {
     sinon.stub(fs, 'readdir').returns(['a.xml', 'b.xlsx', 'c.xlsx']);
     sinon.stub(fs, 'exists').returns(true);
     sinon.stub(fs, 'readJson').returns({});
+    sinon.stub(nodeFs, 'rmSync');
   });
   afterEach(sinon.restore);
 
@@ -38,28 +40,31 @@ describe('convert-forms', () => {
         await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
           `There was a problem executing xls2xform. Make sure you have Python 3.10+ installed.\n${message}`
         );
+        expect(nodeFs.rmSync).to.have.been.calledOnceWithExactly('./path/forms/app/b.xml', { force: true });
       });
     });
 
-    it('throws error with empty string', () => async () => {
+    it('throws error with empty string', async () => {
       mockExec.returns(Promise.reject(''));
 
       await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
         `There was a problem executing xls2xform. Make sure you have Python 3.10+ installed.\n`
       );
+      expect(nodeFs.rmSync).to.have.been.calledOnceWithExactly('./path/forms/app/b.xml', { force: true });
     });
 
-    it('throws error with empty object', () => async () => {
+    it('throws error with empty object', async () => {
       mockExec.returns(Promise.reject({}));
 
       await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
         `There was a problem executing xls2xform. Make sure you have Python 3.10+ installed.\n{}`
       );
+      expect(nodeFs.rmSync).to.have.been.calledOnceWithExactly('./path/forms/app/b.xml', { force: true });
     });
   });
 
   describe('pyxform execution completes', () => {
-    it('succeeds when OK status code', () => async () => {
+    it('succeeds when OK status code', async () => {
       mockExec.returns(Promise.resolve(JSON.stringify({ code: 100 })));
 
       await convertForms.execute('./path', 'app');
@@ -68,9 +73,10 @@ describe('convert-forms', () => {
         [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/b.xlsx', './path/forms/app/b.xml'], LEVEL_NONE],
         [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml'], LEVEL_NONE]
       ]);
+      expect(nodeFs.rmSync).to.not.have.been.called;
     });
 
-    it('prints warnings before succeeding', () => async () => {
+    it('prints warnings before succeeding', async () => {
       const warnings = ['Warning 1', 'Warning 2'];
       mockExec.returns(Promise.resolve(JSON.stringify({ code: 101, warnings })));
 
@@ -86,9 +92,10 @@ describe('convert-forms', () => {
         ['Converted c.xlsx with warnings:'],
         ...warnings.map(w => [w])
       ]);
+      expect(nodeFs.rmSync).to.not.have.been.called;
     });
 
-    it('throws error when xls2xform reports an error', () => async () => {
+    it('throws error when xls2xform reports an error', async () => {
       const message = 'There has been a problem trying to replace ${doesNOtExist} with ' +
         'the XPath to the survey element named \'doesNOtExist\'. There is no survey element with this name.';
       mockExec.returns(Promise.resolve(JSON.stringify({ code: 999, message })));
@@ -96,18 +103,20 @@ describe('convert-forms', () => {
       await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
         `Could not convert b.xlsx: ${message}`
       );
+      expect(nodeFs.rmSync).to.have.been.calledOnceWithExactly('./path/forms/app/b.xml', { force: true });
     });
 
-    it('throws custom error when xls2xform reports an empty group', () => async () => {
+    it('throws custom error when xls2xform reports an empty group', async () => {
       const message = '\'NoneType\' object is not iterable';
       mockExec.returns(Promise.resolve(JSON.stringify({ message })));
 
       await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
         'Could not convert b.xlsx: Check the form for an empty group or repeat.'
       );
+      expect(nodeFs.rmSync).to.have.been.calledOnceWithExactly('./path/forms/app/b.xml', { force: true });
     });
 
-    it('warns of any additional messages included in log', () => async () => {
+    it('warns of any additional messages included in log', async () => {
       const msg0 = 'UserWarning: Data Validation extension is not supported and will be removed';
       const msg1 = 'warn(msg)';
       mockExec.returns(Promise.resolve(`
@@ -123,25 +132,26 @@ describe('convert-forms', () => {
         [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml'], LEVEL_NONE]
       ]);
       expect(log.warn.args).to.deep.equal([[msg0], [msg1], [msg0], [msg1]]);
+      expect(nodeFs.rmSync).to.not.have.been.called;
     });
   });
 
   describe('filtering', () => {
     beforeEach(() => mockExec.resolves(JSON.stringify({ code: 100 })));
 
-    it('filter matches one form only', () => async () => {
+    it('filter matches one form only', async () => {
       await convertForms.execute('./path', 'app', { forms: ['c'] });
       expect(mockExec).calledOnceWithExactly(
         [XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml'], LEVEL_NONE
       );
     });
 
-    it('filter matches no forms', () => async () => {
+    it('filter matches no forms', async () => {
       await convertForms.execute('./path', 'app', { forms: ['z'] });
       expect(mockExec).to.not.have.been.called;
     });
 
-    it('--debug does not filter', () => async () => {
+    it('--debug does not filter', async () => {
       await convertForms.execute('./path', 'app', { forms: ['--debug'] });
       expect(mockExec.args).to.deep.equal([
         [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/b.xlsx', './path/forms/app/b.xml'], LEVEL_NONE],
@@ -149,7 +159,7 @@ describe('convert-forms', () => {
       ]);
     });
 
-    it('escape whitespaces in path and convert forms', () => async () => {
+    it('escape whitespaces in path and convert forms', async () => {
       await convertForms.execute('./path with space', 'app');
       expect(mockExec.args).to.deep.equal([
         [[

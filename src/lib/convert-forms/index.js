@@ -1,6 +1,7 @@
 const argsFormFilter = require('../args-form-filter');
 const exec = require('../exec-promise');
 const fs = require('../sync-fs');
+const nodeFs = require('node:fs');
 const {
   getFormDir,
   escapeWhitespacesInPath,
@@ -46,9 +47,16 @@ const execute = async (projectDir, subDirectory, options = {}) => {
 
     info('Converting form', sourcePath, '…');
 
-    await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(targetPath), xls);
-    const hiddenFields = await getHiddenFields(`${fs.withoutExtension(sourcePath)}.properties.json`);
-    fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
+    try {
+      await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(targetPath), xls);
+      const hiddenFields = await getHiddenFields(`${fs.withoutExtension(sourcePath)}.properties.json`);
+      fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
+    } catch (e) {
+      // Remove xml file to avoid possibly leaving it in an invalid state
+      nodeFs.rmSync(targetPath, { force: true });
+      throw e;
+    }
+
     trace('Converted form', sourcePath);
   }
 };
