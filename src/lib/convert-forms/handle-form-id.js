@@ -1,7 +1,7 @@
 const { getPrimaryInstanceNode } = require('../forms-utils');
 
 const CONTACT_SUB_DIR = 'contact';
-const FORM_PREFIXES = [CONTACT_SUB_DIR, 'training'];
+const FORM_PREFIXES = new Set([CONTACT_SUB_DIR, 'training']);
 /*
   subDir - the name of the directory containing the form
   fileName - the name of the form file (without extension)
@@ -9,7 +9,7 @@ const FORM_PREFIXES = [CONTACT_SUB_DIR, 'training'];
  */
 const PATH_PATTERN = /^.*\/(?<subDir>[^/]+)\/(?<fileName>(?<formName>[^/]+?)(-(?<action>create|edit))?)\.xml$/;
 
-const getPrefix = subDirectory => FORM_PREFIXES.includes(subDirectory) ? `${subDirectory}:` : '';
+const getPrefix = subDirectory => FORM_PREFIXES.has(subDirectory) ? `${subDirectory}:` : '';
 const getSuffix = (subDirectory, action) => {
   if (!action) {
     return '';
@@ -39,7 +39,7 @@ module.exports = {
     }
     // If the form_id is empty on the xlsx settings tab, pyxform will set the filename.
     // For contact/training forms, we want to update the id in the xml.
-    if (idFromXml === fileName && FORM_PREFIXES.includes(subDir)) {
+    if (idFromXml === fileName && FORM_PREFIXES.has(subDir)) {
       dataNode.setAttribute('id', idFromPath);
       const smsPrefix = dataNode.getAttribute('prefix');
       dataNode.setAttribute('prefix', smsPrefix.replace(idFromXml, idFromPath));
