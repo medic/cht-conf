@@ -155,6 +155,72 @@ describe('validate-app-settings', () => {
       }], '"[0].start_from" must be one of [string, array]');
     });
 
+    it('recipient as string is valid.', () => {
+      isValid([{
+        name: 'schedule name',
+        start_from: 'dob',
+        messages: [{
+          translation_key: 'a.b',
+          group: '1',
+          offset: '0',
+          recipient: 'patient'
+        }]
+      }]);
+    });
+
+    it('recipient as single array element is valid.', () => {
+      isValid([{
+        name: 'schedule name',
+        start_from: 'dob',
+        messages: [{
+          translation_key: 'a.b',
+          group: '1',
+          offset: '0',
+          recipient: ['patient']
+        }]
+      }]);
+    });
+
+    it('recipient as multiple array element is valid.', () => {
+      isValid([{
+        name: 'schedule name',
+        start_from: 'dob',
+        messages: [{
+          translation_key: 'a.b',
+          group: '1',
+          offset: '0',
+          recipient: ['patient','praent.phone','link:g30_phone']
+        }]
+      }]);
+    });   
+
+    it('recipient as a number is invalid.', () => {
+      isNotValid([{
+        name: 'schedule name',
+        start_from: 'dob',
+        messages: [{
+          translation_key: 'a.b',
+          group: '1',
+          offset: '0',
+          recipient: 98410
+        }]
+      }], '"[0].messages[0].recipient" must be one of [string, array]');
+    });
+
+    it('recipient as number within string is valid.', () => {
+      isValid([{
+        name: 'schedule name',
+        start_from: 'dob',
+        messages: [{
+          translation_key: 'a.b',
+          group: '1',
+          offset: '0',
+          recipient: '98410'
+        }]
+      }]);
+    });
+
+
   });
 
   describe('validateAssetlinks', () => {
