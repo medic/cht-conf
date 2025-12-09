@@ -21,7 +21,7 @@ const convertContactForm = (forms) => {
     enketo: true,
     forms: forms,
     transformer: (xml, path) => {
-      const type = path.replace(/.*\/(.*?)(-(create|edit))?\.xml/, '$1');
+      const type = path.replace(/.*\/(.*?)(-(create|edit))?\.xml.swp$/, '$1');
 
       if (PLACE_TYPES) {
         xml = xml

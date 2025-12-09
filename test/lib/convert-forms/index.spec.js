@@ -24,6 +24,7 @@ describe('convert-forms', () => {
     sinon.stub(fs, 'exists').returns(true);
     sinon.stub(fs, 'readJson').returns({});
     sinon.stub(nodeFs, 'rmSync');
+    sinon.stub(nodeFs, 'renameSync');
   });
   afterEach(sinon.restore);
 
@@ -40,7 +41,10 @@ describe('convert-forms', () => {
         await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
           `There was a problem executing xls2xform. Make sure you have Python 3.10+ installed.\n${message}`
         );
-        expect(nodeFs.rmSync).to.have.been.calledOnceWithExactly('./path/forms/app/b.xml', { force: true });
+        expect(nodeFs.rmSync.args).to.deep.equal([
+          ['./path/forms/app/b.xml', { force: true }],
+          ['./path/forms/app/b.xml.swp', { force: true }]
+        ]);
       });
     });
 
@@ -50,7 +54,10 @@ describe('convert-forms', () => {
       await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
         `There was a problem executing xls2xform. Make sure you have Python 3.10+ installed.\n`
       );
-      expect(nodeFs.rmSync).to.have.been.calledOnceWithExactly('./path/forms/app/b.xml', { force: true });
+      expect(nodeFs.rmSync.args).to.deep.equal([
+        ['./path/forms/app/b.xml', { force: true }],
+        ['./path/forms/app/b.xml.swp', { force: true }]
+      ]);
     });
 
     it('throws error with empty object', async () => {
@@ -59,7 +66,10 @@ describe('convert-forms', () => {
       await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
         `There was a problem executing xls2xform. Make sure you have Python 3.10+ installed.\n{}`
       );
-      expect(nodeFs.rmSync).to.have.been.calledOnceWithExactly('./path/forms/app/b.xml', { force: true });
+      expect(nodeFs.rmSync.args).to.deep.equal([
+        ['./path/forms/app/b.xml', { force: true }],
+        ['./path/forms/app/b.xml.swp', { force: true }]
+      ]);
     });
   });
 
@@ -70,10 +80,17 @@ describe('convert-forms', () => {
       await convertForms.execute('./path', 'app');
 
       expect(mockExec.args).to.deep.equal([
-        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/b.xlsx', './path/forms/app/b.xml'], LEVEL_NONE],
-        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml'], LEVEL_NONE]
+        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/b.xlsx', './path/forms/app/b.xml.swp'], LEVEL_NONE],
+        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml.swp'], LEVEL_NONE]
       ]);
-      expect(nodeFs.rmSync).to.not.have.been.called;
+      expect(nodeFs.rmSync.args).to.deep.equal([
+        ['./path/forms/app/b.xml', { force: true }],
+        ['./path/forms/app/c.xml', { force: true }]
+      ]);
+      expect(nodeFs.renameSync.args).to.deep.equal([
+        ['./path/forms/app/b.xml.swp', './path/forms/app/b.xml'],
+        ['./path/forms/app/c.xml.swp', './path/forms/app/c.xml']
+      ]);
     });
 
     it('prints warnings before succeeding', async () => {
@@ -83,8 +100,8 @@ describe('convert-forms', () => {
       await convertForms.execute('./path', 'app');
 
       expect(mockExec.args).to.deep.equal([
-        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/b.xlsx', './path/forms/app/b.xml'], LEVEL_NONE],
-        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml'], LEVEL_NONE]
+        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/b.xlsx', './path/forms/app/b.xml.swp'], LEVEL_NONE],
+        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml.swp'], LEVEL_NONE]
       ]);
       expect(log.warn.args).to.deep.equal([
         ['Converted b.xlsx with warnings:'],
@@ -92,7 +109,14 @@ describe('convert-forms', () => {
         ['Converted c.xlsx with warnings:'],
         ...warnings.map(w => [w])
       ]);
-      expect(nodeFs.rmSync).to.not.have.been.called;
+      expect(nodeFs.rmSync.args).to.deep.equal([
+        ['./path/forms/app/b.xml', { force: true }],
+        ['./path/forms/app/c.xml', { force: true }]
+      ]);
+      expect(nodeFs.renameSync.args).to.deep.equal([
+        ['./path/forms/app/b.xml.swp', './path/forms/app/b.xml'],
+        ['./path/forms/app/c.xml.swp', './path/forms/app/c.xml']
+      ]);
     });
 
     it('throws error when xls2xform reports an error', async () => {
@@ -103,7 +127,11 @@ describe('convert-forms', () => {
       await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
         `Could not convert b.xlsx: ${message}`
       );
-      expect(nodeFs.rmSync).to.have.been.calledOnceWithExactly('./path/forms/app/b.xml', { force: true });
+      expect(nodeFs.rmSync.args).to.deep.equal([
+        ['./path/forms/app/b.xml', { force: true }],
+        ['./path/forms/app/b.xml.swp', { force: true }]
+      ]);
+      expect(nodeFs.renameSync).to.not.have.been.called;
     });
 
     it('throws custom error when xls2xform reports an empty group', async () => {
@@ -113,7 +141,11 @@ describe('convert-forms', () => {
       await expect(convertForms.execute('./path', 'app')).to.be.rejectedWith(
         'Could not convert b.xlsx: Check the form for an empty group or repeat.'
       );
-      expect(nodeFs.rmSync).to.have.been.calledOnceWithExactly('./path/forms/app/b.xml', { force: true });
+      expect(nodeFs.rmSync.args).to.deep.equal([
+        ['./path/forms/app/b.xml', { force: true }],
+        ['./path/forms/app/b.xml.swp', { force: true }]
+      ]);
+      expect(nodeFs.renameSync).to.not.have.been.called;
     });
 
     it('warns of any additional messages included in log', async () => {
@@ -128,11 +160,18 @@ describe('convert-forms', () => {
       await convertForms.execute('./path', 'app');
 
       expect(mockExec.args).to.deep.equal([
-        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/b.xlsx', './path/forms/app/b.xml'], LEVEL_NONE],
-        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml'], LEVEL_NONE]
+        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/b.xlsx', './path/forms/app/b.xml.swp'], LEVEL_NONE],
+        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml.swp'], LEVEL_NONE]
       ]);
       expect(log.warn.args).to.deep.equal([[msg0], [msg1], [msg0], [msg1]]);
-      expect(nodeFs.rmSync).to.not.have.been.called;
+      expect(nodeFs.rmSync.args).to.deep.equal([
+        ['./path/forms/app/b.xml', { force: true }],
+        ['./path/forms/app/c.xml', { force: true }]
+      ]);
+      expect(nodeFs.renameSync.args).to.deep.equal([
+        ['./path/forms/app/b.xml.swp', './path/forms/app/b.xml'],
+        ['./path/forms/app/c.xml.swp', './path/forms/app/c.xml']
+      ]);
     });
   });
 
@@ -142,7 +181,7 @@ describe('convert-forms', () => {
     it('filter matches one form only', async () => {
       await convertForms.execute('./path', 'app', { forms: ['c'] });
       expect(mockExec).calledOnceWithExactly(
-        [XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml'], LEVEL_NONE
+        [XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml.swp'], LEVEL_NONE
       );
     });
 
@@ -154,8 +193,8 @@ describe('convert-forms', () => {
     it('--debug does not filter', async () => {
       await convertForms.execute('./path', 'app', { forms: ['--debug'] });
       expect(mockExec.args).to.deep.equal([
-        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/b.xlsx', './path/forms/app/b.xml'], LEVEL_NONE],
-        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml'], LEVEL_NONE]
+        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/b.xlsx', './path/forms/app/b.xml.swp'], LEVEL_NONE],
+        [[XLS2XFORM, '--skip_validate', '--json', './path/forms/app/c.xlsx', './path/forms/app/c.xml.swp'], LEVEL_NONE]
       ]);
     });
 
@@ -167,14 +206,14 @@ describe('convert-forms', () => {
           '--skip_validate',
           '--json',
           './path\\ with\\ space/forms/app/b.xlsx',
-          './path\\ with\\ space/forms/app/b.xml'
+          './path\\ with\\ space/forms/app/b.xml.swp'
         ], LEVEL_NONE],
         [[
           XLS2XFORM,
           '--skip_validate',
           '--json',
           './path\\ with\\ space/forms/app/c.xlsx',
-          './path\\ with\\ space/forms/app/c.xml'
+          './path\\ with\\ space/forms/app/c.xml.swp'
         ], LEVEL_NONE]
       ]);
     });

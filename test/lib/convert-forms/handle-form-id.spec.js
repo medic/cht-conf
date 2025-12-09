@@ -15,7 +15,7 @@ describe('Handle form id', () => {
       };
       const doc = createXformDoc(opts);
 
-      handleFormId(doc, `forms/app/${FORM_ID}.xml`);
+      handleFormId(doc, `forms/app/${FORM_ID}.xml.swp`);
 
       const expectedDoc = createXformString(opts);
       expect(serializeToString(doc)).xml.to.equal(expectedDoc);
@@ -32,7 +32,7 @@ describe('Handle form id', () => {
         `
       });
 
-      expect(() => handleFormId(doc, `some/app/${FORM_ID}.xml`)).to.throw(
+      expect(() => handleFormId(doc, `some/app/${FORM_ID}.xml.swp`)).to.throw(
         `The file name for the form [${
           FORM_ID
         }] does not match the form_id in the xlsx [${
@@ -54,7 +54,7 @@ describe('Handle form id', () => {
       };
       const doc = createXformDoc(opts);
 
-      handleFormId(doc, `forms/contact/${FORM_ID}-create.xml`);
+      handleFormId(doc, `forms/contact/${FORM_ID}-create.xml.swp`);
 
       const expectedDoc = createXformString(opts);
       expect(serializeToString(doc)).xml.to.equal(expectedDoc);
@@ -71,7 +71,7 @@ describe('Handle form id', () => {
         `
         });
 
-        handleFormId(doc, `forms/contact/${FORM_ID}-${action}.xml`);
+        handleFormId(doc, `forms/contact/${FORM_ID}-${action}.xml.swp`);
 
         const expectedDoc = createXformString({
           model: `
@@ -96,7 +96,7 @@ describe('Handle form id', () => {
         `
       });
 
-      expect(() => handleFormId(doc, `some/contact/${FORM_ID}-create.xml`)).to.throw(
+      expect(() => handleFormId(doc, `some/contact/${FORM_ID}-create.xml.swp`)).to.throw(
         `The file name for the form [${
           FORM_ID
         }-create] does not match the form_id in the xlsx [contact:${
@@ -115,7 +115,7 @@ describe('Handle form id', () => {
         `
       });
 
-      handleFormId(doc, `forms/contact/person-create.xml`);
+      handleFormId(doc, `forms/contact/person-create.xml.swp`);
 
       const expectedDoc = createXformString({
         model: `
@@ -141,7 +141,7 @@ describe('Handle form id', () => {
       };
       const doc = createXformDoc(opts);
 
-      handleFormId(doc, `forms/training/${FORM_ID}.xml`);
+      handleFormId(doc, `forms/training/${FORM_ID}.xml.swp`);
 
       const expectedDoc = createXformString(opts);
       expect(serializeToString(doc)).xml.to.equal(expectedDoc);
@@ -157,7 +157,7 @@ describe('Handle form id', () => {
         `
       });
 
-      handleFormId(doc, `forms/training/${FORM_ID}.xml`);
+      handleFormId(doc, `forms/training/${FORM_ID}.xml.swp`);
 
       const expectedDoc = createXformString({
         model: `
@@ -181,7 +181,7 @@ describe('Handle form id', () => {
         `
       });
 
-      expect(() => handleFormId(doc, `some/training/${FORM_ID}.xml`)).to.throw(
+      expect(() => handleFormId(doc, `some/training/${FORM_ID}.xml.swp`)).to.throw(
         `The file name for the form [${
           FORM_ID
         }] does not match the form_id in the xlsx [training:${
@@ -202,7 +202,7 @@ describe('Handle form id', () => {
     };
     const doc = createXformDoc(opts);
 
-    handleFormId(doc, `forms/something/${FORM_ID}-create.xml`);
+    handleFormId(doc, `forms/something/${FORM_ID}-create.xml.swp`);
 
     const expectedDoc = createXformString(opts);
     expect(serializeToString(doc)).xml.to.equal(expectedDoc);

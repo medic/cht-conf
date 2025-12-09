@@ -7,7 +7,7 @@ const FORM_PREFIXES = new Set([CONTACT_SUB_DIR, 'training']);
   fileName - the name of the form file (without extension)
   formName - the base name of the form (without action suffix)
  */
-const PATH_PATTERN = /^.*\/(?<subDir>[^/]+)\/(?<fileName>(?<formName>[^/]+?)(-(?<action>create|edit))?)\.xml$/;
+const PATH_PATTERN = /^.*\/(?<subDir>[^/]+)\/(?<fileName>(?<formName>[^/]+?)(-(?<action>create|edit))?)\.xml.swp$/;
 
 const getPrefix = subDirectory => FORM_PREFIXES.has(subDirectory) ? `${subDirectory}:` : '';
 const getSuffix = (subDirectory, action) => {

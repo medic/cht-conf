@@ -43,19 +43,22 @@ const execute = async (projectDir, subDirectory, options = {}) => {
 
   for (const xls of filesToConvert) {
     const sourcePath = `${formsDir}/${xls}`;
-    const targetPath = `${fs.withoutExtension(sourcePath)}.xml`;
+    const formPathNoExt = fs.withoutExtension(sourcePath);
+    const xmlSwpPath = `${formPathNoExt}.xml.swp`;
+    const targetPath = `${formPathNoExt}.xml`;
 
     info('Converting form', sourcePath, '…');
+    nodeFs.rmSync(targetPath, { force: true });
 
     try {
-      await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(targetPath), xls);
+      await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(xmlSwpPath), xls);
       const hiddenFields = await getHiddenFields(`${fs.withoutExtension(sourcePath)}.properties.json`);
-      fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
+      fixXml(xmlSwpPath, hiddenFields, options.transformer, options.enketo);
     } catch (e) {
-      // Remove xml file to avoid possibly leaving it in an invalid state
-      nodeFs.rmSync(targetPath, { force: true });
+      nodeFs.rmSync(xmlSwpPath, { force: true });
       throw e;
     }
+    nodeFs.renameSync(xmlSwpPath, targetPath);
 
     trace('Converted form', sourcePath);
   }
