@@ -40,21 +40,31 @@ module.exports = projectDir => {
     if (typeof obj === 'function') {
       return obj.toString();
     }
+
     if (Array.isArray(obj)) {
       return obj.map(serializeFunctions);
     }
-    if (obj && typeof obj === 'object') {
-      const result = {};
-      for (const key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-          result[key] = serializeFunctions(obj[key]);
-        }
 
-      }
-      return result;
+    if (!isPlainObject(obj)) {
+      return obj;
     }
-    return obj;
+
+    return serializeObject(obj);
   };
+
+  const isPlainObject = value =>
+    value !== null && typeof value === 'object';
+
+  const serializeObject = obj => {
+    const result = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        result[key] = serializeFunctions(obj[key]);
+      }
+    }
+    return result;
+  };
+
 
 
   return {
