@@ -58,7 +58,7 @@ module.exports = projectDir => {
   const serializeObject = obj => {
     const result = {};
     for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      if (Object.hasOwn(obj, key)) {
         result[key] = serializeFunctions(obj[key]);
       }
     }
