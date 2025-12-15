@@ -219,8 +219,6 @@ describe('validate-app-settings', () => {
         }]
       }]);
     });
-
-
   });
 
   describe('validateAssetlinks', () => {
