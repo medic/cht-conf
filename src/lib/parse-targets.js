@@ -36,10 +36,40 @@ module.exports = projectDir => {
   if (!targets || !Array.isArray(targets)) {
     throwError(`Targets.js is expected to module.exports=[] an array of targets. ${jsPath}`);
   }
+  const serializeFunctions = obj => {
+    if (typeof obj === 'function') {
+      return obj.toString();
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map(serializeFunctions);
+    }
+
+    if (!isPlainObject(obj)) {
+      return obj;
+    }
+
+    return serializeObject(obj);
+  };
+
+  const isPlainObject = value =>
+    value !== null && typeof value === 'object';
+
+  const serializeObject = obj => {
+    const result = {};
+    for (const key in obj) {
+      if (Object.hasOwn(obj, key)) {
+        result[key] = serializeFunctions(obj[key]);
+      }
+    }
+    return result;
+  };
+
+
 
   return {
     enabled: true,
-    items: targets.map(target => pick(target, [
+    items: targets.map(target => serializeFunctions(pick(target, [
       'id',
       'type',
       'goal',
@@ -51,6 +81,7 @@ module.exports = projectDir => {
       'dhis',
       'visible',
       'aggregate',
-    ])),
+    ]))),
   };
+
 };
