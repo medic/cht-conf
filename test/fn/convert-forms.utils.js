@@ -14,7 +14,7 @@ const createXformString = ({
   primaryInstance = '',
   model = `
     <itext>
-      ${itext},
+      ${itext}
     </itext>
     <instance>
       <data id="${FORM_ID}">
