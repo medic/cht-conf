@@ -1,3 +1,10 @@
+# [5.6.0](https://github.com/medic/cht-conf/compare/v5.5.0...v5.6.0) (2025-12-15)
+
+
+### Features
+
+* **#772:** allow multiple sms recipients ([3647c7c](https://github.com/medic/cht-conf/commit/3647c7c18003280e7c461b63eac6466221e2474e)), closes [#772](https://github.com/medic/cht-conf/issues/772)
+
 # [5.5.0](https://github.com/medic/cht-conf/compare/v5.4.0...v5.5.0) (2025-10-08)
 
 
