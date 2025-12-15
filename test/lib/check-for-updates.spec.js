@@ -1,13 +1,9 @@
 const sinon = require('sinon');
-const chai = require('chai');
-const { expect } = chai;
-const chaiAsPromised = require('chai-as-promised');
+const { expect } = require('chai');
 const request = require('request-promise-native');
 const log = require('../../src/lib/log');
 const current = require('../../package.json').version;
 const checkForUpdates = require('../../src/lib/check-for-updates');
-
-chai.use(chaiAsPromised);
 
 describe('check-for-updates', () => {
   let requestStub;
