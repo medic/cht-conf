@@ -4,7 +4,7 @@
     <h:title>Edit Person</h:title>
     <model odk:xforms-version="1.0.0">
       <instance>
-        <data id="person" version="2016-04-06" prefix="J1!person!" delimiter="#">
+        <data id="contact:person:edit" version="2016-04-06" prefix="J1!contact:person:edit!" delimiter="#">
           <person>
             <type>person</type>
             <parent/>

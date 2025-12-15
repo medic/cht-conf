@@ -1,6 +1,7 @@
 const argsFormFilter = require('../args-form-filter');
 const exec = require('../exec-promise');
 const fs = require('../sync-fs');
+const nodeFs = require('node:fs');
 const {
   getFormDir,
   escapeWhitespacesInPath,
@@ -13,6 +14,7 @@ const { replaceBase64ImageDynamicDefaults, replaceItemSetsWithMedia } = require(
 const { removeNoLabelNodes } = require('./handle-no-label-placeholders');
 const { removeExtraRepeatInstance, addRepeatCount } = require('./handle-repeat');
 const { handleDbDocRefs } = require('./handle-db-doc-ref');
+const { handleFormId } = require('./handle-form-id');
 
 const domParser = new DOMParser();
 const serializer = new XMLSerializer();
@@ -40,25 +42,25 @@ const execute = async (projectDir, subDirectory, options = {}) => {
     .filter(name => formFileMatcher(name));
 
   for (const xls of filesToConvert) {
-    const originalSourcePath = `${formsDir}/${xls}`;
-    let sourcePath;
+    const sourcePath = `${formsDir}/${xls}`;
+    const formPathNoExt = fs.withoutExtension(sourcePath);
+    const xmlSwpPath = `${formPathNoExt}.xml.swp`;
+    const targetPath = `${formPathNoExt}.xml`;
 
-    if (options.force_data_node) {
-      const temporaryPath = `${fs.mkdtemp()}/${options.force_data_node}.xlsx`;
-      fs.copy(originalSourcePath, temporaryPath);
-      sourcePath = temporaryPath;
-    } else {
-      sourcePath = originalSourcePath;
+    info('Converting form', sourcePath, '…');
+    nodeFs.rmSync(targetPath, { force: true });
+
+    try {
+      await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(xmlSwpPath), xls);
+      const hiddenFields = await getHiddenFields(`${fs.withoutExtension(sourcePath)}.properties.json`);
+      fixXml(xmlSwpPath, hiddenFields, options.transformer, options.enketo);
+    } catch (e) {
+      nodeFs.rmSync(xmlSwpPath, { force: true });
+      throw e;
     }
+    nodeFs.renameSync(xmlSwpPath, targetPath);
 
-    const targetPath = `${fs.withoutExtension(originalSourcePath)}.xml`;
-
-    info('Converting form', originalSourcePath, '…');
-
-    await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(targetPath), xls);
-    const hiddenFields = await getHiddenFields(`${fs.withoutExtension(originalSourcePath)}.properties.json`);
-    fixXml(targetPath, hiddenFields, options.transformer, options.enketo);
-    trace('Converted form', originalSourcePath);
+    trace('Converted form', sourcePath);
   }
 };
 
@@ -149,6 +151,7 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
   }
   const xmlDoc = domParser.parseFromString(xml);
 
+  handleFormId(xmlDoc, path);
   replaceItemSetsWithMedia(xmlDoc);
   replaceBase64ImageDynamicDefaults(xmlDoc);
   removeNoLabelNodes(xmlDoc);
