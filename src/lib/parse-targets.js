@@ -8,6 +8,40 @@ const pick = (obj, attributes) => attributes.reduce((agg, curr) => {
   return agg;
 }, {});
 
+const FUNCTION_FIELDS = [
+  'visible',
+  'aggregate',
+  'context',
+  'dhis',
+];
+
+const serializeFunction = value =>
+  typeof value === 'function' ? value.toString() : value;
+
+const serializeTarget = target => {
+  const base = pick(target, [
+    'id',
+    'type',
+    'goal',
+    'translation_key',
+    'passesIfGroupCount',
+    'icon',
+    'context',
+    'subtitle_translation_key',
+    'dhis',
+    'visible',
+    'aggregate',
+  ]);
+
+  FUNCTION_FIELDS.forEach(key => {
+    if (key in base) {
+      base[key] = serializeFunction(base[key]);
+    }
+  });
+
+  return base;
+};
+
 module.exports = projectDir => {
   const jsonPath = path.join(projectDir, 'targets.json');
   const jsPath = path.join(projectDir, 'targets.js');
@@ -36,42 +70,10 @@ module.exports = projectDir => {
   if (!targets || !Array.isArray(targets)) {
     throwError(`Targets.js is expected to module.exports=[] an array of targets. ${jsPath}`);
   }
-  const serializeFunctions = obj => {
-    if (typeof obj === 'function') {
-      return obj.toString();
-    }
-    if (Array.isArray(obj)) {
-      return obj.map(serializeFunctions);
-    }
-    if (obj && typeof obj === 'object') {
-      const result = {};
-      for (const key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-          result[key] = serializeFunctions(obj[key]);
-        }
-
-      }
-      return result;
-    }
-    return obj;
-  };
-
 
   return {
     enabled: true,
-    items: targets.map(target => serializeFunctions(pick(target, [
-      'id',
-      'type',
-      'goal',
-      'translation_key',
-      'passesIfGroupCount',
-      'icon',
-      'context',
-      'subtitle_translation_key',
-      'dhis',
-      'visible',
-      'aggregate',
-    ]))),
+    items: targets.map(serializeTarget),
   };
 
 };
