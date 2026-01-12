@@ -5,11 +5,56 @@
 * feat([#613](https://github.com/medic/cht-conf/issues/613))!: uplift pyxform to `v4.0.0-medic` ([#709](https://github.com/medic/cht-conf/issues/709)) ([d78296d](https://github.com/medic/cht-conf/commit/d78296d4df7a43699a1d7a78584be4b8cc3967f9))
 
 
-### BREAKING CHANGES
+## BREAKING CHANGES
 
-* Requires consistent naming of form internalId.
-* New version of pyxform is bundled with additional form
-verifications.
+### New bundled version of pyxform
+
+#### Local pyxform installation is no longer required
+
+Previously, the `pyxform` utility (required for converting form `xlsx` files to the `xml` xform format for upload) needed to be manually installed in the user's environment. Now `pyxform` (version `v4.0.0-medic`) is bundled with cht-conf and installed automatically when cht-conf is installed. The user simply needs Python `3.12+` available in their environment.
+
+Existing cht-conf users can safely uninstall any local `pyxform` installation. cht-conf will only use the bundled instance of `pyxform`.
+
+#### New pyxform version may require change to forms
+
+The new version of `pyxform` brings with it a number of importiant changes that may require updating existing form `xlsx` files for compatibility. The known changes include:
+
+##### Modified Functionality
+- Attribute ordering in the generated XML file will now be deterministic.
+    - Re-converting an unmodified form should not result in any changes to the form's xml file.
+    - When converting a modified form, the only lines that will be changed in the form xml are ones that are directly related to the changes in the xlsx.
+- Question fields are now required to have a label or hint. (Previously, pyxform would just print a warning if a question did not have a label or hint.)
+    - If you try to convert a form with a question field with an empty label (and no hint) it will fail with an error like: `The survey element named 'world' has no label or hint. `
+    - For fields that should not be displayed to the user, consider using the `caluculate` type when you have a `calculation` expression or a `default` value.  If the field value is not coming from the `calculation` or `default`  columns, the `hidden` type can be used without a label/hint. This is particularly useful for input data fields or fields populated by the contact selector.
+- Empty groups/repeats (without any child fields) now result in an error.
+- Duplicate choice names now result in an error by default. However, support can be re-enabled via [the `allow_choice_duplicates` setting](https://xlsform.org/en/#choice-names).
+- pyxform will now warn when there are missing translation columns for any of the languages in the form.
+
+##### Added functionality
+
+- [`trigger` columns](https://docs.getodk.org/form-logic/#triggering-calculations-on-value-change) are now supported, allowing for calculations to be automatically re-evaluated when an unrelated value changes!
+- You can now reference `${paths}` in _labels_ on the `choices` sheet.
+- Support for [randomizing choice order](https://docs.getodk.org/form-question-types/#randomizing-choice-order) in select questions via the `randomize=true` parameter has been added.
+
+* feat([#613](https://github.com/medic/cht-conf/issues/613))!: uplift pyxform to `v4.0.0-medic` ([#709](https://github.com/medic/cht-conf/issues/709)) ([d78296d](https://github.com/medic/cht-conf/commit/d78296d4df7a43699a1d7a78584be4b8cc3967f9))
+
+### Consistent naming of form identifier required
+
+When there is a missmatch between the `form_id` in the xlsx, the _file name_ for the xml, and the `internalId` from the properties file, cht-conf will now raise an _error_ when you run the `convert-*-forms` action.
+
+Now it is not required to specify the form identifier at all (in the `xlsx`, `xml`, or properties files). cht-conf will automatically set the form identifier based on the name of the xlsx file and the form type.
+
+For cases where existing forms are now triggering an error:
+
+- `contact` forms - remove any custom identifiers specified in the xlsx or properties file for `contact` forms.
+- `app` forms - if a custom value (that does not match the xlsx file name) is currently specified as the `form_id` in the xlsx or the `internalId` in the properties file, the _file name_ of the form's xlsx/xml file should be updated to match the custom identifier value. 
+    - The renamed form will be seen as a "new" form on the CHT instance (even though it will produce reports with the same `form` value). So, be sure to remove the old version of the form from the instance before renaming and re-uploading the updated form.
+    - Do not update the custom identifier value to match the form's _file name_. That will result in new reports being written with a different `form` value and can produce data consistancy issues.
+- `training` forms - as with the `app` forms, if there is a missmatch in the identifier of a `training` form the _file name_ of the training form xlsx/xml file should be updated to match the custom identifier.
+    - Be sure to remove the old version of the form from the instance before renaming and re-uploading the updated form.
+    - Do not update the custom identifier value to match the form's _file name_. That will result in the form being treated as a totally new training and users would be prompted to redo the training even if they had previously completed it.
+
+* feat([#537](https://github.com/medic/cht-conf/issues/537))!: error when form internalId does not match file name ([#776](https://github.com/medic/cht-conf/issues/776)) ([f921f1e](https://github.com/medic/cht-conf/commit/f921f1e1c6c0e32f8d2a6b5f00c9700eab338700))
 
 # [5.6.0](https://github.com/medic/cht-conf/compare/v5.5.0...v5.6.0) (2025-12-15)
 
