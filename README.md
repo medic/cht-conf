@@ -10,7 +10,7 @@ Instructions on how to use this tool can be found on [the CHT documentation site
 
 ## Copyright
 
-Copyright 2013-2025 Medic Mobile, Inc. <hello@medic.org>
+Copyright 2013-2024 Medic Mobile, Inc. <hello@medic.org>
 
 ## License
 
