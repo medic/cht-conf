@@ -1,3 +1,16 @@
+# [6.0.0](https://github.com/medic/cht-conf/compare/v5.6.0...v6.0.0) (2026-01-12)
+
+
+* feat([#537](https://github.com/medic/cht-conf/issues/537))!: error when form internalId does not match file name ([#776](https://github.com/medic/cht-conf/issues/776)) ([f921f1e](https://github.com/medic/cht-conf/commit/f921f1e1c6c0e32f8d2a6b5f00c9700eab338700))
+* feat([#613](https://github.com/medic/cht-conf/issues/613))!: uplift pyxform to `v4.0.0-medic` ([#709](https://github.com/medic/cht-conf/issues/709)) ([d78296d](https://github.com/medic/cht-conf/commit/d78296d4df7a43699a1d7a78584be4b8cc3967f9))
+
+
+### BREAKING CHANGES
+
+* Requires consistent naming of form internalId.
+* New version of pyxform is bundled with additional form
+verifications.
+
 # [5.6.0](https://github.com/medic/cht-conf/compare/v5.5.0...v5.6.0) (2025-12-15)
 
 
