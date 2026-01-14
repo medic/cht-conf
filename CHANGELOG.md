@@ -1,3 +1,10 @@
+## [6.0.1](https://github.com/medic/cht-conf/compare/v6.0.0...v6.0.1) (2026-01-14)
+
+
+### Bug Fixes
+
+* **#785:** add `xls2xform-medic.cmd` file for Windows ([2686ce5](https://github.com/medic/cht-conf/commit/2686ce54b2aafa2bfec387f285458f9d9481f2a8)), closes [#785](https://github.com/medic/cht-conf/issues/785)
+
 # [6.0.0](https://github.com/medic/cht-conf/compare/v5.6.0...v6.0.0) (2026-01-12)
 
 
