@@ -8,7 +8,7 @@ const webpack = require('webpack');
 const fsUtils = require('../sync-fs');
 const { info, warn, error } = require('../log');
 
-module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
+module.exports = (pathToProject, entry, baseEslintPath, options = {}, extraAliases = {}) => {
   const baseEslintConfig = fsUtils.readJson(baseEslintPath);
 
   const directoryContainingEntry = path.dirname(entry);
@@ -47,6 +47,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
         'tasks.js': path.join(pathToProject, 'tasks.js'),
         'targets.js': path.join(pathToProject, 'targets.js'),
         'contact-summary.templated.js': path.join(pathToProject, 'contact-summary.templated.js'),
+        ...extraAliases,
       },
     },
     resolveLoader: {
