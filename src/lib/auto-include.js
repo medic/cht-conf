@@ -1,5 +1,25 @@
-const path = require('path');
-const fs = require('fs');
+const path = require('node:path');
+const fs = require('node:fs');
+
+/**
+ * Check if a file matches the suffix pattern and is not excluded
+ * @param {string} file - File name to check
+ * @param {string} suffix - File suffix to match
+ * @param {string} exclude - File name to exclude
+ * @returns {boolean} True if file matches criteria
+ */
+const matchesSuffixPattern = (file, suffix, exclude) => {
+  return file.endsWith(suffix) && file !== exclude;
+};
+
+/**
+ * Check if a path points to a regular file
+ * @param {string} filePath - Path to check
+ * @returns {boolean} True if path is a regular file
+ */
+const isRegularFile = (filePath) => {
+  return fs.statSync(filePath).isFile();
+};
 
 /**
  * Find all files matching a suffix pattern in a directory
@@ -11,12 +31,13 @@ const fs = require('fs');
 const findAutoIncludeFiles = (projectDir, suffix, exclude) => {
   try {
     const files = fs.readdirSync(projectDir);
-    return files
-      .filter(file => file.endsWith(suffix) && file !== exclude)
-      .sort() // Deterministic order
-      .map(file => path.join(projectDir, file))
-      .filter(filePath => fs.statSync(filePath).isFile());
-  } catch (e) {
+    const matchingFiles = files.filter(file => matchesSuffixPattern(file, suffix, exclude));
+    const sortedFiles = matchingFiles.sort();
+    const fullPaths = sortedFiles.map(file => path.join(projectDir, file));
+    return fullPaths.filter(isRegularFile);
+  } catch {
+    // Directory may not exist or may not be readable, which is expected
+    // when the project doesn't use auto-include files. Return empty array.
     return [];
   }
 };

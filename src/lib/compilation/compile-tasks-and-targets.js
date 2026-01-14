@@ -1,5 +1,6 @@
 const path = require('path');
-const os = require('os');
+const os = require('node:os');
+const nodeFs = require('node:fs');
 
 const fs = require('../sync-fs');
 const pack = require('./package-lib');
@@ -82,7 +83,7 @@ const compileDeclarativeFiles = async (projectDir, options) => {
   const tasksShimContent = tasksExtensions.length > 0
     ? `module.exports = [\n  ${tasksRequires}\n].flat();`
     : 'module.exports = [];';
-  require('fs').writeFileSync(tasksShimPath, tasksShimContent);
+  nodeFs.writeFileSync(tasksShimPath, tasksShimContent);
   extraAliases['cht-tasks-extensions-shim.js'] = tasksShimPath;
 
   const targetsShimPath = path.join(os.tmpdir(), 'cht-targets-extensions-shim.js');
@@ -90,10 +91,10 @@ const compileDeclarativeFiles = async (projectDir, options) => {
   const targetsShimContent = targetsExtensions.length > 0
     ? `module.exports = [\n  ${targetsRequires}\n].flat();`
     : 'module.exports = [];';
-  require('fs').writeFileSync(targetsShimPath, targetsShimContent);
+  nodeFs.writeFileSync(targetsShimPath, targetsShimContent);
   extraAliases['cht-targets-extensions-shim.js'] = targetsShimPath;
 
-  return pack(projectDir, pathToDeclarativeLib, baseEslintPath, options, extraAliases);
+  return pack(projectDir, pathToDeclarativeLib, { baseEslintPath, options, extraAliases });
 };
 
 module.exports = compileTasksAndTargets;

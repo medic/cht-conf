@@ -1,7 +1,8 @@
 const path = require('path');
+const nodeFs = require('node:fs');
 const fs = require('../sync-fs');
 const pack = require('./package-lib');
-const os = require('os');
+const os = require('node:os');
 const { findContactSummaryExtensions } = require('../auto-include');
 const { info } = require('../log');
 
@@ -49,7 +50,7 @@ module.exports = async (projectDir, options) => {
   const cardsShimContent = cardExtensions.length > 0
     ? `module.exports = [\n  ${cardsRequires}\n];`
     : 'module.exports = [];';
-  require('fs').writeFileSync(cardsShimPath, cardsShimContent);
+  nodeFs.writeFileSync(cardsShimPath, cardsShimContent);
   extraAliases['cht-cards-extensions-shim.js'] = cardsShimPath;
 
   /*
@@ -57,6 +58,6 @@ module.exports = async (projectDir, options) => {
   This isn't a direct output option for webpack, so add some boilerplate
   */
   const packOptions = Object.assign({}, options, { libraryTarget: 'ContactSummary' });
-  const code = await pack(projectDir, pathToPack, baseEslintPath, packOptions, extraAliases);
+  const code = await pack(projectDir, pathToPack, { baseEslintPath, options: packOptions, extraAliases });
   return `var ContactSummary = {}; ${code} return ContactSummary;`;
 };
