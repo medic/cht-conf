@@ -150,13 +150,17 @@ describe('upload-forms', () => {
   it('should accept xml id with hyphens when file name matches', async () => {
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     sinon.stub(environment, 'pathToProject').get(() => '.');
-    sinon.stub(Date, 'now').returns(123123);
     return uploadForms.__with__({ validateForms })(async () => {
       await uploadForms.execute(`${BASE_DIR}/invalid-id`, FORMS_SUBDIR, { forms: ['hyphenated-form-id'] });
+
       const form = await api.db.get('form:hyphenated:form:id');
-      expect(form.type).to.equal('form');
-      expect(form.internalId).to.equal('hyphenated-form-id');
-      expect(form.title).to.equal('Hyphenated XML ID');
+
+      expect(form).to.deep.include({
+        _id: 'form:hyphenated:form:id',
+        type: 'form',
+        internalId: 'hyphenated-form-id',
+        title: 'Hyphenated XML ID'
+      });
     });
   });
 });
