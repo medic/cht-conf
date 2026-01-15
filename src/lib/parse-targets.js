@@ -8,6 +8,40 @@ const pick = (obj, attributes) => attributes.reduce((agg, curr) => {
   return agg;
 }, {});
 
+const FUNCTION_FIELDS = [
+  'visible',
+  'aggregate',
+  'context',
+  'dhis',
+];
+
+const serializeFunction = value =>
+  typeof value === 'function' ? value.toString() : value;
+
+const serializeTarget = target => {
+  const base = pick(target, [
+    'id',
+    'type',
+    'goal',
+    'translation_key',
+    'passesIfGroupCount',
+    'icon',
+    'context',
+    'subtitle_translation_key',
+    'dhis',
+    'visible',
+    'aggregate',
+  ]);
+
+  FUNCTION_FIELDS.forEach(key => {
+    if (key in base) {
+      base[key] = serializeFunction(base[key]);
+    }
+  });
+
+  return base;
+};
+
 module.exports = projectDir => {
   const jsonPath = path.join(projectDir, 'targets.json');
   const jsPath = path.join(projectDir, 'targets.js');
@@ -39,18 +73,7 @@ module.exports = projectDir => {
 
   return {
     enabled: true,
-    items: targets.map(target => pick(target, [
-      'id',
-      'type',
-      'goal',
-      'translation_key',
-      'passesIfGroupCount',
-      'icon',
-      'context',
-      'subtitle_translation_key',
-      'dhis',
-      'visible',
-      'aggregate',
-    ])),
+    items: targets.map(serializeTarget),
   };
+
 };
