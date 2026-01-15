@@ -10,7 +10,7 @@ const log = require('../../src/lib/log');
 const BASE_DIR = 'data/lib/upload-forms';
 const FORMS_SUBDIR = '.';
 
-describe.only('upload-forms', () => {
+describe('upload-forms', () => {
 
   beforeEach(api.start);
 
