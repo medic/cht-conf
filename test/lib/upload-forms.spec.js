@@ -10,7 +10,7 @@ const log = require('../../src/lib/log');
 const BASE_DIR = 'data/lib/upload-forms';
 const FORMS_SUBDIR = '.';
 
-describe('upload-forms', () => {
+describe.only('upload-forms', () => {
 
   beforeEach(api.start);
 
@@ -68,13 +68,15 @@ describe('upload-forms', () => {
     sinon.stub(environment, 'isArchiveMode').get(() => false);
     const logWarn = sinon.stub(log, 'warn');
 
-    await expect(uploadForms.execute(`${BASE_DIR}/invalid-internal-id`, FORMS_SUBDIR)).to.be.rejectedWith(
-      'The file name for the form [example] does not match the internalId in the example.properties.json ' +
-      '[different]. Rename the form xlsx/xml files to match the internalId.'
+    await expect(
+      uploadForms.execute(`${BASE_DIR}/invalid-id`, FORMS_SUBDIR, { forms: ['invalid_internal_id'] })
+    ).to.be.rejectedWith(
+      'The file name for the form [invalid_internal_id] does not match the internalId in the ' +
+      'invalid_internal_id.properties.json [different]. Rename the form xlsx/xml files to match the internalId.'
     );
 
     expect(logWarn).to.have.been.calledOnceWithExactly(
-      'DEPRECATED: data/lib/upload-forms/invalid-internal-id/forms/./example.properties.json. ' +
+      'DEPRECATED: data/lib/upload-forms/invalid-id/forms/./invalid_internal_id.properties.json. ' +
       'Please do not manually set internalId in .properties.json for new projects. ' +
       'Support for configuring this value will be dropped. ' +
       'Please see https://github.com/medic/cht-core/issues/3342.'
@@ -134,4 +136,27 @@ describe('upload-forms', () => {
     });
   });
 
+  it('should fail if xml id does not match file name', async () => {
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
+
+    await expect(
+      uploadForms.execute(`${BASE_DIR}/invalid-id`, FORMS_SUBDIR, { forms: ['invalid_xml_id'] })
+    ).to.be.rejectedWith(
+      'The file name for the form [invalid_xml_id] does not match the id in the xml [different_id]. ' +
+      'Rename the form xlsx/xml files to match the id.'
+    );
+  });
+
+  it('should accept xml id with hyphens when file name matches', async () => {
+    sinon.stub(environment, 'isArchiveMode').get(() => false);
+    sinon.stub(environment, 'pathToProject').get(() => '.');
+    sinon.stub(Date, 'now').returns(123123);
+    return uploadForms.__with__({ validateForms })(async () => {
+      await uploadForms.execute(`${BASE_DIR}/invalid-id`, FORMS_SUBDIR, { forms: ['hyphenated-form-id'] });
+      const form = await api.db.get('form:hyphenated:form:id');
+      expect(form.type).to.equal('form');
+      expect(form.internalId).to.equal('hyphenated-form-id');
+      expect(form.title).to.equal('Hyphenated XML ID');
+    });
+  });
 });

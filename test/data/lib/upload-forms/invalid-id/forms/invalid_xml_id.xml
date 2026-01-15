@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 	<h:head>
-		<h:title>Merge properties</h:title>
+		<h:title>Invalid XML ID</h:title>
 		<model>
 			<instance>
-				<data id="example" version="2015-06-05">
+				<data id="different_id" version="2015-06-05">
 					<name/>
 				</data>
         <meta>

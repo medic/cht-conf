@@ -10,7 +10,7 @@ const warnUploadOverwrite = require('./warn-upload-overwrite');
 const {
   getFormDir,
   getFormFilePaths,
-  readTitleFrom,
+  readTitleFrom, readIdFrom,
 } = require('./forms-utils');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms', 'subject_key', 'hidden_fields'];
@@ -59,7 +59,7 @@ const execute = async (projectDir, subDirectory, options) => {
     log.info(`Preparing form for upload: ${fileName}…`);
 
     const { baseFileName, mediaDir, xformPath, filePath } = getFormFilePaths(formsDir, fileName);
-    const internalId = (options.id_prefix || '') + baseFileName.replaceAll('-', ':');
+    const baseDocId = (options.id_prefix || '') + baseFileName.replaceAll('-', ':');
 
     const mediaDirExists = fs.exists(mediaDir);
     if (!mediaDirExists) {
@@ -74,7 +74,14 @@ const execute = async (projectDir, subDirectory, options) => {
       sha256: hashSum.digest('hex'),
     };
 
-    const docId = `form:${internalId}`;
+    const internalId = readIdFrom(xml);
+    if (internalId.replaceAll('-', ':') !== baseDocId) {
+      throw new Error(`The file name for the form [${baseFileName}] does not match the id in the xml [${
+        internalId
+      }]. Rename the form xlsx/xml files to match the id.`);
+    }
+
+    const docId = `form:${baseDocId}`;
     const doc = {
       _id: docId,
       type: 'form',
