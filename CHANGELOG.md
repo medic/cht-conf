@@ -1,3 +1,10 @@
+## [6.0.2](https://github.com/medic/cht-conf/compare/v6.0.1...v6.0.2) (2026-01-16)
+
+
+### Bug Fixes
+
+* **#787:** upload forms with correct `internalId` property ([#788](https://github.com/medic/cht-conf/issues/788)) ([3a28dce](https://github.com/medic/cht-conf/commit/3a28dce3499c7cc2aac7ad5c8a7327303288986f)), closes [#787](https://github.com/medic/cht-conf/issues/787)
+
 ## [6.0.1](https://github.com/medic/cht-conf/compare/v6.0.0...v6.0.1) (2026-01-14)
 
 
