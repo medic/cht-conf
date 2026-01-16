@@ -128,6 +128,13 @@ module.exports = {
     xml.substring(xml.indexOf('<h:title>') + 9, xml.indexOf('</h:title>')),
 
   /**
+   * Get the ID of the form
+   * @param {string} xml the XML string
+   * @returns {string}
+   */
+  readIdFrom: xml => /<model.*?>[^]*?<instance>[^]*?id="([^"]*)"[^]*?<\/instance>[^]*?<\/model>/.exec(xml)?.[1],
+
+  /**
    * Escape whitespaces in a path.
    * @param {string} path the path string
    * @returns {string}
