@@ -54,15 +54,15 @@ describe('compile-contact-summary', () => {
           expect(actualCode).to.eq('var ContactSummary = {}; code return ContactSummary;');
           expect(mocks.pack.callCount).to.eq(1);
 
-          const [actualProjectPath, actualEntryPath, actualLintPath, actualOptions] = mocks.pack.args[0];
+          const [actualProjectPath, actualEntryPath, config] = mocks.pack.args[0];
           expect(actualProjectPath).to.eq(expectedProjectPath);
           expect(path.basename(actualEntryPath)).to.eq('lib.js');
           expect(fs.existsSync(actualEntryPath)).to.eq(true);
 
-          expect(path.basename(actualLintPath)).to.eq('.eslintrc');
-          expect(fs.existsSync(actualLintPath)).to.eq(true);
+          expect(path.basename(config.baseEslintPath)).to.eq('.eslintrc');
+          expect(fs.existsSync(config.baseEslintPath)).to.eq(true);
 
-          expect(actualOptions).to.deep.eq({ libraryTarget: 'ContactSummary' });
+          expect(config.options).to.deep.eq({ libraryTarget: 'ContactSummary' });
         });
     });
   });
