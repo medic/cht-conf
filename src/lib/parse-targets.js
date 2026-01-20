@@ -9,10 +9,7 @@ const pick = (obj, attributes) => attributes.reduce((agg, curr) => {
 }, {});
 
 const FUNCTION_FIELDS = [
-  'visible',
-  'aggregate',
-  'context',
-  'dhis',
+  'subtitle_translation_key',
 ];
 
 const serializeFunction = value =>
