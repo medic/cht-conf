@@ -257,4 +257,16 @@ describe('form-utils', () => {
       expect(title).to.equal('');
     });
   });
+
+  describe('readIdFrom', () => {
+    it('returns the id when the form has an id', () => {
+      const id = formUtils.readIdFrom(getXml());
+      expect(id).to.equal('ABC');
+    });
+
+    it('returns an empty string when the form id is empty', () => {
+      const id = formUtils.readIdFrom(getXml({ id: '' }));
+      expect(id).to.equal('');
+    });
+  });
 });

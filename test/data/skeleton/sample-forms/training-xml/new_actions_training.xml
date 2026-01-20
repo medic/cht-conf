@@ -23,7 +23,7 @@
         </translation>
       </itext>
       <instance>
-        <new_actions_training id="new_actions_training" prefix="J1!new_actions_training!" delimiter="#" version="2023-01-18 04:35:53">
+        <new_actions_training id="training:new_actions_training" prefix="J1!new_actions_training!" delimiter="#" version="2023-01-18 04:35:53">
           <intro tag="hidden">
             <intro_note_1 tag="hidden"/>
             <intro_note_2 tag="hidden"/>
