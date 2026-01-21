@@ -266,5 +266,27 @@ describe('compile-contact-summary', () => {
         ],
       });
     });
+
+    it('merges context, fields and cards from *.contact-summary.js extensions', async () => {
+      const compiled = await compileContactSummary(`${BASE_DIR}/with-extensions`, options);
+
+      const contact = { type: 'person' };
+      const result = evalInContext(compiled, contact, {}, []);
+
+      // Context should have both base and extension vars, with extension overriding conflicts
+      expect(result.context.baseVar).to.equal('from-base');
+      expect(result.context.extensionVar).to.equal('from-extension');
+      expect(result.context.overrideMe).to.equal('extension-value');
+
+      // Fields should include both base and extension fields
+      expect(result.fields).to.have.length(2);
+      expect(result.fields[0].label).to.equal('base.field');
+      expect(result.fields[1].label).to.equal('extension.field');
+
+      // Cards should include both base and extension cards
+      expect(result.cards).to.have.length(2);
+      expect(result.cards[0].label).to.equal('base.card');
+      expect(result.cards[1].label).to.equal('extension.card');
+    });
   });
 });
