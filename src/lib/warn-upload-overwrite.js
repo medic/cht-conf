@@ -7,7 +7,7 @@ const url = require('url');
 const path = require('path');
 const log = require('./log');
 const environment = require('./environment');
-const { compare, GroupingReporter } = require('dom-compare');
+const { compare, GroupingReporter } = require('./xml-compare');
 const DOMParser = require('@xmldom/xmldom').DOMParser;
 
 const question = 'You are trying to modify a configuration that has been modified since your last upload. ' +
