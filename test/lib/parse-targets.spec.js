@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 const fs = require('../../src/lib/sync-fs');
 
-let parseTargets = rewire('../../src/lib/parse-targets');
+let parseTargets;
 
 describe('parse-targets', () => {
   let fsExistsStub;
@@ -11,6 +11,7 @@ describe('parse-targets', () => {
   let originalRequire;
 
   beforeEach(() => {
+    parseTargets = rewire('../../src/lib/parse-targets');
     fsExistsStub = sinon.stub(fs, 'exists');
     fsReadJsonStub = sinon.stub(fs, 'readJson');
     // Mock require for targets.js
@@ -21,7 +22,6 @@ describe('parse-targets', () => {
   afterEach(() => {
     sinon.restore();
     parseTargets.__set__('require', originalRequire);
-    parseTargets = rewire('../../src/lib/parse-targets');
   });
 
   describe('serializeFunction', () => {
@@ -33,6 +33,11 @@ describe('parse-targets', () => {
 
     it('should serialize function to string', () => {
       const fn = () => 'test';
+      expect(serializeFunction(fn)).to.equal(fn.toString());
+    });
+
+    it('should serialize classic function to string', () => {
+      const fn = function() { return 'test'; };
       expect(serializeFunction(fn)).to.equal(fn.toString());
     });
 
@@ -61,7 +66,7 @@ describe('parse-targets', () => {
         passesIfGroupCount: true,
         icon: 'icon.png',
         context: () => ({ enabled: true }),
-        subtitle_translation_key: 'subkey',
+        subtitle_translation_key: () => 'subkey',
         dhis: () => ({ id: 'dhis-id' }),
         visible: () => false,
         aggregate: 'sum',
@@ -70,19 +75,20 @@ describe('parse-targets', () => {
 
       const result = serializeTarget(target);
 
-      expect(result).to.deep.equal({
-        id: 'test-id',
-        type: 'count',
-        goal: 10,
-        translation_key: 'key',
-        passesIfGroupCount: true,
-        icon: 'icon.png',
-        context: '() => ({ enabled: true })', // serialized
-        subtitle_translation_key: 'subkey',
-        dhis: '() => ({ id: \'dhis-id\' })', // serialized
-        visible: '() => false', // serialized
-        aggregate: 'sum' // not serialized since it's not a function
-      });
+      expect(result.id).to.equal('test-id');
+      expect(result.type).to.equal('count');
+      expect(result.goal).to.equal(10);
+      expect(result.translation_key).to.equal('key');
+      expect(result.passesIfGroupCount).to.be.true;
+      expect(result.icon).to.equal('icon.png');
+      expect(result.context).to.be.a('function');
+      expect(result.context.toString()).to.equal('() => ({ enabled: true })');
+      expect(result.subtitle_translation_key).to.equal('() => \'subkey\'');
+      expect(result.dhis).to.be.a('function');
+      expect(result.dhis.toString()).to.equal('() => ({ id: \'dhis-id\' })');
+      expect(result.visible).to.be.a('function');
+      expect(result.visible.toString()).to.equal('() => false');
+      expect(result.aggregate).to.equal('sum');
     });
 
     it('should handle missing function fields', () => {
@@ -128,7 +134,8 @@ describe('parse-targets', () => {
       expect(result.enabled).to.be.true;
       expect(result.items).to.have.length(1);
       expect(result.items[0].id).to.equal('target1');
-      expect(result.items[0].visible).to.equal('() => true');
+      expect(result.items[0].visible).to.be.a('function');
+      expect(result.items[0].visible.toString()).to.equal('() => true');
       expect(result.items[0].type).to.equal('count');
     });
 
