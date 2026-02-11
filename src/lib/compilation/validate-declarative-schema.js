@@ -25,7 +25,13 @@ const TargetSchema = joi.array().items(
     id: joi.string().min(1).required(),
     icon: joi.string().min(1).optional(),
     translation_key: joi.string().min(1).optional(),
-    subtitle_translation_key: joi.string().min(1).optional(),
+    subtitle_translation_key: joi.alternatives()
+      .try(
+        joi.string().min(1),
+        joi.function()
+      )
+      .optional()
+      .error(targetError('"subtitle_translation_key" must be a string or function(interval)')),
     percentage_count_translation_key: joi.string().min(1).optional(),
     context: joi.string().optional(),
 
