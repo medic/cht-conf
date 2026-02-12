@@ -1,12 +1,18 @@
 /* global c, emit, Task, Target */
 
-var tasks = require('tasks.js');
-var targets = require('targets.js');
+const tasks = require('tasks.js');
+const targets = require('targets.js');
+const tasksExtensions = require('cht-tasks-extensions-shim.js');
+const targetsExtensions = require('cht-targets-extensions-shim.js');
 
-var taskEmitter = require('./task-emitter'); 
-var targetEmitter = require('./target-emitter');
+const taskEmitter = require('./task-emitter');
+const targetEmitter = require('./target-emitter');
 
-targetEmitter(targets, c, Utils, Target, emit);
-taskEmitter(tasks, c, Utils, Task, emit);
+// Merge base tasks/targets with auto-included extensions
+const allTasks = (Array.isArray(tasks) ? tasks : []).concat(tasksExtensions);
+const allTargets = (Array.isArray(targets) ? targets : []).concat(targetsExtensions);
+
+targetEmitter(allTargets, c, Utils, Target, emit);
+taskEmitter(allTasks, c, Utils, Task, emit);
 
 emit('_complete', { _id: true });
