@@ -35,6 +35,11 @@ jobs:
   e2e:
     name: E2E tests
     runs-on: ubuntu-22.04
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REDIRECT_URI: "http://localhost"
+      GOOGLE_TOKEN_SCOPE: 'https://www.googleapis.com/auth/drive.readonly'
 
     steps:
     - uses: actions/checkout@v4
@@ -48,5 +53,20 @@ jobs:
     - name: Hard code local-ip IP in /etc/hosts per https://github.com/medic/medic-infrastructure/issues/571#issuecomment-2209120441
       run: |
         echo "15.188.129.97 local-ip.medicmobile.org" | sudo tee -a /etc/hosts
+    - id: auth
+      uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093
+      with:
+        service_account: ${{ env.GOOGLE_SERVICE_ACCT }}
+        credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+        token_format: access_token
+        access_token_scopes: ${{ env.GOOGLE_TOKEN_SCOPE }}
+    - name: Write access_token to .gdrive.session.json
+      run: |
+        echo '{
+          "access_token": "${{ steps.auth.outputs.access_token }}",
+          "scope": "${{ env.GOOGLE_TOKEN_SCOPE }}",
+          "token_type": "Bearer",
+          "expiry_date": "9999999999999"
+        }' > .gdrive.session.json
     - name: Run E2E tests
       run: npm run test-e2e
