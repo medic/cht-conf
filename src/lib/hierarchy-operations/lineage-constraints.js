@@ -145,9 +145,13 @@ async function assertOnPrimaryContactRemoval(db, sourceDoc, destinationDoc, desc
     .map(row => row?.doc?.contact?._id)
     .filter(Boolean);
   
-  const invalidPrimaryContactDoc = descendantDocs.find(descendant => primaryContactIds.some(primaryId => descendant._id === primaryId));
+  const invalidPrimaryContactDoc = descendantDocs.find(
+    descendant => primaryContactIds.some(primaryId => descendant._id === primaryId)
+  );
   if (invalidPrimaryContactDoc) {
-    throw Error(`Cannot remove contact '${invalidPrimaryContactDoc?.name}' (${invalidPrimaryContactDoc?._id}) from the hierarchy for which they are a primary contact.`);
+    throw Error('Cannot remove contact '+ 
+      `'${invalidPrimaryContactDoc?.name}' (${invalidPrimaryContactDoc?._id})` +  
+      'from the hierarchy for which they are a primary contact.');
   }
 }
 

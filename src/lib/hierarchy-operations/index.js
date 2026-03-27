@@ -112,8 +112,14 @@ function reassignReportSubjects(report, moveContext) {
   for (const subjectId of DataSource.SUBJECT_IDS) {
     updated = updated || reassignSingleReport(report, subjectId, moveContext.sourceId, moveContext.destinationId);
 
-    if (moveContext.mergePrimaryContacts && moveContext.sourcePrimaryContactId && moveContext.destinationPrimaryContactId) {
-      updated = updated || reassignSingleReport(report, subjectId, moveContext.sourcePrimaryContactId, moveContext.destinationPrimaryContactId);
+    if (
+      moveContext.mergePrimaryContacts && 
+      moveContext.sourcePrimaryContactId && 
+      moveContext.destinationPrimaryContactId
+    ) {
+      updated = updated || reassignSingleReport(
+        report, subjectId, moveContext.sourcePrimaryContactId, moveContext.destinationPrimaryContactId
+      );
     }
   }
   
