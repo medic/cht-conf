@@ -11,7 +11,7 @@ describe('exec-promise', () => {
 
   it('execute command resolve in a promise with the standard output as a result', async () => {
     exec.__set__('exec', (command, options, cb) => {
-      let sub = {};
+      const sub = {};
       sub.stdout = sub.stderr = readable;
       cb(null, 'Usage: node [options] ...', null);
       return sub;
@@ -20,9 +20,20 @@ describe('exec-promise', () => {
     expect(output).to.match(/Usage: node/);
   });
 
+  it('execute command resolve in a promise with stderr if nothing on stdout', async () => {
+    exec.__set__('exec', (command, options, cb) => {
+      const sub = {};
+      sub.stdout = sub.stderr = readable;
+      cb(null, '', 'Usage: node [options] ...');
+      return sub;
+    });
+    const output = await exec([ 'node', '-h']);  // No error is raised
+    expect(output).to.match(/Usage: node/);
+  });
+
   it('execute command that output error raise a rejected promise with output error as a result', async () => {
     exec.__set__('exec', (command, options, cb) => {
-      let sub = {};
+      const sub = {};
       sub.stdout = sub.stderr = readable;
       cb(new Error(), null, 'node: bad option: --invalid-arg');
       return sub;

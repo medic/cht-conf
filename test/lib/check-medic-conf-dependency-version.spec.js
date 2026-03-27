@@ -6,7 +6,8 @@ const checkChtConfVersion = rewire('../../src/lib/check-cht-conf-dependency-vers
 const RUNNING_VERSION = '3.1.2';
 
 describe('check-cht-conf-dependency-version', () => {
-  let warn, fs;
+  let warn;
+  let fs;
 
   beforeEach(() => {
     warn = sinon.stub();
@@ -58,9 +59,9 @@ describe('check-cht-conf-dependency-version', () => {
   });
 
   it('devDependencies', () => {
-      fs.readJson.returns({devDependencies:   {'cht-conf': '3.1.2'}});
-      const actual = checkChtConfVersion();
-      expect(actual).to.be.undefined;
-      expect(warn.called).to.eq(false);
-    });
+    fs.readJson.returns({devDependencies:   {'cht-conf': '3.1.2'}});
+    const actual = checkChtConfVersion();
+    expect(actual).to.be.undefined;
+    expect(warn.called).to.eq(false);
+  });
 });

@@ -1,14 +1,19 @@
 const supportedActions = require('./supported-actions');
 
 module.exports = () => {
+  /* eslint-disable max-len */
   console.log(`
 ${bold('NAME')}
   cht - Configure your CHT instances
 
 ${bold('SYNOPSIS')}
   cht <--local|--instance=instance-name|--url=url>
-Or:
+
+  Or
+
   cht <--local|--instance=instance-name|--url=url|--archive> <actions> <options> -- <params>
+
+  ${underscore('Note')}: If <actions>,<options> or <params> are ${bold('not')} passed but one of --local or --instance or --url ${bold('is')} passed, ${bold('all')} supported actions are called.
 
 ${bold('DESCRIPTION')}
   This script updates and uploads a project's configuration.
@@ -57,6 +62,9 @@ ${bold('OPTIONS')}
   --skip-dependency-check
     Skips checking the version running is set to the same version in the package.json
 
+  --skip-version-check       
+    Skips the automatic check for new cht-conf versions
+    
   --skip-git-check
     Skips checking the status of the current repository that holds the configuration
 
@@ -64,11 +72,13 @@ ${bold('OPTIONS')}
     Skips checking message translations
 
   --skip-validate
-    Skips form validation  
+    Skips form validation
 
   --force
-    CAN BE DANGEROUS! Passes yes to all commands and any where that would prompt to overwrite changes will overwrite automatically. 
+    CAN BE DANGEROUS! Passes yes to all commands and any where that would prompt to overwrite changes will overwrite automatically.
 `);
+  /* eslint-enable max-len */
 };
 
 const bold = text => `\x1b[1m${text}\x1b[0m`;
+const underscore = text => `\x1b[4m${text}\x1b[0m`;

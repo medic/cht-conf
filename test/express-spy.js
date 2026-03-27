@@ -1,11 +1,13 @@
 module.exports = function() {
   const requests = [];
   const responses = [];
+  let commonResponse = null;
 
   function reset() {
     if(responses.length !== 0) {
       throw new Error(`Unused responses (${responses.length})!`);
     }
+    commonResponse = null;
   }
 
   function clearRequests(){
@@ -17,9 +19,18 @@ module.exports = function() {
   function requestHandler(req, res) {
     requests.push(req);
 
+    if (commonResponse) {
+      res.status(commonResponse.status || 200);
+      res.type(commonResponse.type || 'json');
+      res.send(commonResponse.body || '');
+      return;
+    }
+
     const response = responses.shift();
 
-    if(!response) return error(req, res);
+    if(!response) {
+      return error(req, res);
+    }
 
     res.status(response.status || 200);
     res.type(response.type || 'json');
@@ -31,10 +42,18 @@ module.exports = function() {
     rr.forEach(r => responses.push(r));
   }
 
-  return { requests, clearRequests, requestHandler, reset, setResponses };
+  function setCommonResponse(response) {
+    reset();
+    commonResponse = response;
+  }
+
+  return { requests, clearRequests, requestHandler, reset, setResponses, setCommonResponse };
 };
 
 function error(req, res) {
   res.status(500);
-  res.send(`Unexpected request: ${req.method} ${req.originalUrl} - no more API HTTP responses have been defined for this test.  If you forgot to add one, use \`apiStub.requests.push({ status, type, body })\``);
+  res.send(
+    `Unexpected request: ${req.method} ${req.originalUrl} - no more API HTTP responses have been defined for this ` +
+    `test.  If you forgot to add one, use \`apiStub.requests.push({ status, type, body })\``
+  );
 }

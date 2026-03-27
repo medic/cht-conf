@@ -1,3 +1,190 @@
+## [6.0.2](https://github.com/medic/cht-conf/compare/v6.0.1...v6.0.2) (2026-01-16)
+
+
+### Bug Fixes
+
+* **#787:** upload forms with correct `internalId` property ([#788](https://github.com/medic/cht-conf/issues/788)) ([3a28dce](https://github.com/medic/cht-conf/commit/3a28dce3499c7cc2aac7ad5c8a7327303288986f)), closes [#787](https://github.com/medic/cht-conf/issues/787)
+
+## [6.0.1](https://github.com/medic/cht-conf/compare/v6.0.0...v6.0.1) (2026-01-14)
+
+
+### Bug Fixes
+
+* **#785:** add `xls2xform-medic.cmd` file for Windows ([2686ce5](https://github.com/medic/cht-conf/commit/2686ce54b2aafa2bfec387f285458f9d9481f2a8)), closes [#785](https://github.com/medic/cht-conf/issues/785)
+
+# [6.0.0](https://github.com/medic/cht-conf/compare/v5.6.0...v6.0.0) (2026-01-12)
+
+
+* feat([#537](https://github.com/medic/cht-conf/issues/537))!: error when form internalId does not match file name ([#776](https://github.com/medic/cht-conf/issues/776)) ([f921f1e](https://github.com/medic/cht-conf/commit/f921f1e1c6c0e32f8d2a6b5f00c9700eab338700))
+* feat([#613](https://github.com/medic/cht-conf/issues/613))!: uplift pyxform to `v4.0.0-medic` ([#709](https://github.com/medic/cht-conf/issues/709)) ([d78296d](https://github.com/medic/cht-conf/commit/d78296d4df7a43699a1d7a78584be4b8cc3967f9))
+
+
+## BREAKING CHANGES
+
+### New bundled version of pyxform
+
+#### Local pyxform installation is no longer required
+
+Previously, the `pyxform` utility (required for converting form `xlsx` files to the `xml` xform format for upload) needed to be manually installed in the user's environment. Now `pyxform` (version `v4.0.0-medic`) is bundled with cht-conf and installed automatically when cht-conf is installed. The user simply needs Python `3.12+` available in their environment.
+
+Existing cht-conf users can safely uninstall any local `pyxform` installation. cht-conf will only use the bundled instance of `pyxform`.
+
+#### New pyxform version may require change to forms
+
+The new version of `pyxform` brings with it a number of importiant changes that may require updating existing form `xlsx` files for compatibility. The known changes include:
+
+##### Modified Functionality
+- Attribute ordering in the generated XML file will now be deterministic.
+    - Re-converting an unmodified form should not result in any changes to the form's xml file.
+    - When converting a modified form, the only lines that will be changed in the form xml are ones that are directly related to the changes in the xlsx.
+- Question fields are now required to have a label or hint. (Previously, pyxform would just print a warning if a question did not have a label or hint.)
+    - If you try to convert a form with a question field with an empty label (and no hint) it will fail with an error like: `The survey element named 'world' has no label or hint. `
+    - For fields that should not be displayed to the user, consider using the `caluculate` type when you have a `calculation` expression or a `default` value.  If the field value is not coming from the `calculation` or `default`  columns, the `hidden` type can be used without a label/hint. This is particularly useful for input data fields or fields populated by the contact selector.
+- Empty groups/repeats (without any child fields) now result in an error.
+- Duplicate choice names now result in an error by default. However, support can be re-enabled via [the `allow_choice_duplicates` setting](https://xlsform.org/en/#choice-names).
+- pyxform will now warn when there are missing translation columns for any of the languages in the form.
+
+##### Added functionality
+
+- [`trigger` columns](https://docs.getodk.org/form-logic/#triggering-calculations-on-value-change) are now supported, allowing for calculations to be automatically re-evaluated when an unrelated value changes!
+- You can now reference `${paths}` in _labels_ on the `choices` sheet.
+- Support for [randomizing choice order](https://docs.getodk.org/form-question-types/#randomizing-choice-order) in select questions via the `randomize=true` parameter has been added.
+
+* feat([#613](https://github.com/medic/cht-conf/issues/613))!: uplift pyxform to `v4.0.0-medic` ([#709](https://github.com/medic/cht-conf/issues/709)) ([d78296d](https://github.com/medic/cht-conf/commit/d78296d4df7a43699a1d7a78584be4b8cc3967f9))
+
+### Consistent naming of form identifier required
+
+When there is a missmatch between the `form_id` in the xlsx, the _file name_ for the xml, and the `internalId` from the properties file, cht-conf will now raise an _error_ when you run the `convert-*-forms` action.
+
+Now it is not required to specify the form identifier at all (in the `xlsx`, `xml`, or properties files). cht-conf will automatically set the form identifier based on the name of the xlsx file and the form type.
+
+For cases where existing forms are now triggering an error:
+
+- `contact` forms - remove any custom identifiers specified in the xlsx or properties file for `contact` forms.
+- `app` forms - if a custom value (that does not match the xlsx file name) is currently specified as the `form_id` in the xlsx or the `internalId` in the properties file, the _file name_ of the form's xlsx/xml file should be updated to match the custom identifier value. 
+    - The renamed form will be seen as a "new" form on the CHT instance (even though it will produce reports with the same `form` value). So, be sure to remove the old version of the form from the instance before renaming and re-uploading the updated form.
+    - Do not update the custom identifier value to match the form's _file name_. That will result in new reports being written with a different `form` value and can produce data consistancy issues.
+- `training` forms - as with the `app` forms, if there is a missmatch in the identifier of a `training` form the _file name_ of the training form xlsx/xml file should be updated to match the custom identifier.
+    - Be sure to remove the old version of the form from the instance before renaming and re-uploading the updated form.
+    - Do not update the custom identifier value to match the form's _file name_. That will result in the form being treated as a totally new training and users would be prompted to redo the training even if they had previously completed it.
+
+* feat([#537](https://github.com/medic/cht-conf/issues/537))!: error when form internalId does not match file name ([#776](https://github.com/medic/cht-conf/issues/776)) ([f921f1e](https://github.com/medic/cht-conf/commit/f921f1e1c6c0e32f8d2a6b5f00c9700eab338700))
+
+# [5.6.0](https://github.com/medic/cht-conf/compare/v5.5.0...v5.6.0) (2025-12-15)
+
+
+### Features
+
+* **#772:** allow multiple sms recipients ([3647c7c](https://github.com/medic/cht-conf/commit/3647c7c18003280e7c461b63eac6466221e2474e)), closes [#772](https://github.com/medic/cht-conf/issues/772)
+
+# [5.5.0](https://github.com/medic/cht-conf/compare/v5.4.0...v5.5.0) (2025-10-08)
+
+
+### Features
+
+* **#753:** add deprecated `tel` type form validation ([#754](https://github.com/medic/cht-conf/issues/754)) ([e701b69](https://github.com/medic/cht-conf/commit/e701b691823e535d71e460f0300624642dafe270)), closes [#753](https://github.com/medic/cht-conf/issues/753)
+
+# [5.4.0](https://github.com/medic/cht-conf/compare/v5.3.0...v5.4.0) (2025-09-11)
+
+
+### Features
+
+* **#561:** add form validation for `instance::db-doc-ref` ([#738](https://github.com/medic/cht-conf/issues/738)) ([941a6f5](https://github.com/medic/cht-conf/commit/941a6f5b7504d6ff8c1682845d6e38efd6ea017b)), closes [#561](https://github.com/medic/cht-conf/issues/561)
+
+# [5.3.0](https://github.com/medic/cht-conf/compare/v5.2.1...v5.3.0) (2025-09-04)
+
+
+### Features
+
+* **#512:** add form validation for instance::db-doc ([#737](https://github.com/medic/cht-conf/issues/737)) ([0db687e](https://github.com/medic/cht-conf/commit/0db687eb8f2c5dbb6a2d2e387857af50af81a917)), closes [#512](https://github.com/medic/cht-conf/issues/512)
+
+## [5.2.1](https://github.com/medic/cht-conf/compare/v5.2.0...v5.2.1) (2025-08-27)
+
+
+### Bug Fixes
+
+* **#390:** notify user of new cht-conf versions ([#730](https://github.com/medic/cht-conf/issues/730)) ([9d36c21](https://github.com/medic/cht-conf/commit/9d36c215f5b6406233b856b6348fe949757ab0b8)), closes [#390](https://github.com/medic/cht-conf/issues/390)
+
+# [5.2.0](https://github.com/medic/cht-conf/compare/v5.1.0...v5.2.0) (2025-08-07)
+
+
+### Features
+
+* refactor requests from freetexts views to other similar views ([#660](https://github.com/medic/cht-conf/issues/660)) ([292565d](https://github.com/medic/cht-conf/commit/292565de488e05e630a21d5046215fa19910a1fb))
+
+# [5.1.0](https://github.com/medic/cht-conf/compare/v5.0.0...v5.1.0) (2025-07-02)
+
+
+### Features
+
+* compile max_task_notifications ([#717](https://github.com/medic/cht-conf/issues/717)) ([3c68ea2](https://github.com/medic/cht-conf/commit/3c68ea251c73ecfca5a910060c28e68f932c9963))
+
+# [5.0.0](https://github.com/medic/cht-conf/compare/v4.10.0...v5.0.0) (2025-06-24)
+
+
+* feat([#712](https://github.com/medic/cht-conf/issues/712))!: update targeted NodeJS versions ([#713](https://github.com/medic/cht-conf/issues/713)) ([40575ec](https://github.com/medic/cht-conf/commit/40575ece74da38a583238ed54a4b13cd892a14a4))
+
+
+### BREAKING CHANGES
+
+* remove support for NodeJS 18
+
+# [4.10.0](https://github.com/medic/cht-conf/compare/v4.9.0...v4.10.0) (2025-06-16)
+
+
+### Features
+
+* **#704:** add user-contact-summary instance to app form xml ([#705](https://github.com/medic/cht-conf/issues/705)) ([9013250](https://github.com/medic/cht-conf/commit/9013250dca39bcf23f985f6902cadc4e64ca5646)), closes [#704](https://github.com/medic/cht-conf/issues/704) [#704](https://github.com/medic/cht-conf/issues/704)
+
+# [4.9.0](https://github.com/medic/cht-conf/compare/v4.8.1...v4.9.0) (2025-06-02)
+
+
+### Features
+
+* **#692:** update the priority function to accept additional parameters ([#699](https://github.com/medic/cht-conf/issues/699)) ([ad28242](https://github.com/medic/cht-conf/commit/ad28242603d5d2d89bb48324e93e60b55052ce3d)), closes [#692](https://github.com/medic/cht-conf/issues/692) [#692](https://github.com/medic/cht-conf/issues/692)
+
+## [4.8.1](https://github.com/medic/cht-conf/compare/v4.8.0...v4.8.1) (2025-05-07)
+
+
+### Bug Fixes
+
+* **#680:** add command for uploading db indexes ([#681](https://github.com/medic/cht-conf/issues/681)) ([6170b57](https://github.com/medic/cht-conf/commit/6170b576faa4cc72d09350ba72eaedb57155d6c4)), closes [#680](https://github.com/medic/cht-conf/issues/680)
+
+# [4.8.0](https://github.com/medic/cht-conf/compare/v4.7.0...v4.8.0) (2025-04-25)
+
+
+### Features
+
+* **#685:** added PR title linting workflow in GitHub CI ([#686](https://github.com/medic/cht-conf/issues/686)) ([c2d42f6](https://github.com/medic/cht-conf/commit/c2d42f60adb39584ee5c7eb861aa38d7d8df8498)), closes [#685](https://github.com/medic/cht-conf/issues/685)
+
+# [4.7.0](https://github.com/medic/cht-conf/compare/v4.6.0...v4.7.0) (2025-04-25)
+
+
+### Features
+
+* **#683:** add autocompletion feature for zsh  ([#684](https://github.com/medic/cht-conf/issues/684)) ([356f2e8](https://github.com/medic/cht-conf/commit/356f2e8c25fa42e26d53e2d6df3be85da1bda704)), closes [#683](https://github.com/medic/cht-conf/issues/683)
+
+# [4.6.0](https://github.com/medic/cht-conf/compare/v4.5.0...v4.6.0) (2025-04-23)
+
+
+### Features
+
+* **#502:** warn when using deprecated `db-object` appearance ([#682](https://github.com/medic/cht-conf/issues/682)) ([ca6691b](https://github.com/medic/cht-conf/commit/ca6691b1f3285d1a59093fc3a6bb2c980dcb78e0)), closes [#502](https://github.com/medic/cht-conf/issues/502)
+
+# [4.5.0](https://github.com/medic/cht-conf/compare/v4.4.1...v4.5.0) (2025-04-15)
+
+
+### Features
+
+* **#675:** support `duplicate_check` contact form property ([#677](https://github.com/medic/cht-conf/issues/677)) ([503bb7d](https://github.com/medic/cht-conf/commit/503bb7d94dc9ee87078f183e43e5d1141123a05c)), closes [#675](https://github.com/medic/cht-conf/issues/675)
+
+## [4.4.1](https://github.com/medic/cht-conf/compare/v4.4.0...v4.4.1) (2025-02-03)
+
+
+### Bug Fixes
+
+* remove typo from .eslintrc file created by initialize-project-layout ([#658](https://github.com/medic/cht-conf/issues/658)) ([1aaad4c](https://github.com/medic/cht-conf/commit/1aaad4c336843bd85db8ca7d0373a0f87d629827))
+
 # [4.4.0](https://github.com/medic/cht-conf/compare/v4.3.0...v4.4.0) (2024-12-16)
 
 

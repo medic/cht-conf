@@ -27,7 +27,9 @@ module.exports = projectDir => {
     throwError(`Targets are defined at both ${jsonPath} and ${jsPath}.  Only one of these files should exist.`);
   }
 
-  if (jsonExists) return fs.readJson(jsonPath);
+  if (jsonExists) {
+    return fs.readJson(jsonPath);
+  }
 
   const pathToTargetJs = path.join(projectDir, 'targets.js');
   const targets = require(pathToTargetJs);

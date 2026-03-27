@@ -69,7 +69,9 @@ describe('compile-contact-summary', () => {
 
   describe('file based scenarios', () => {
     const options = { minifyScripts: true };
-    const evalInContext = (js, contact, reports, lineage) => new Function('contact', 'reports', 'lineage', js)(contact, reports, lineage);
+    const evalInContext = (js, contact, reports, lineage) => new Function(
+      'contact', 'reports', 'lineage', js
+    )(contact, reports, lineage);
 
     it('pack a simple file', async () => {
       // when

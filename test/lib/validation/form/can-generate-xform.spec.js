@@ -32,7 +32,9 @@ describe('can-generate-xform', () => {
     return canGenerateXForm.execute({ xformPath, xmlStr })
       .then(output => {
         expect(output.warnings).deep
-          .equals(['Form validation endpoint not found in your version of CHT Core, no form will be checked before push']);
+          .equals([
+            'Form validation endpoint not found in your version of CHT Core, no form will be checked before push'
+          ]);
         expect(output.errors).is.empty;
       });
   });
@@ -44,7 +46,9 @@ describe('can-generate-xform', () => {
     return canGenerateXForm.execute({ xformPath, xmlStr })
       .then(output => {
         expect(output.warnings).is.empty;
-        expect(output.errors).deep.equals([`Error found while validating "${xformPath}". Validation response: ${err.message}`]);
+        expect(output.errors).deep.equals([
+          `Error found while validating "${xformPath}". Validation response: ${err.message}`
+        ]);
       });
   });
 });

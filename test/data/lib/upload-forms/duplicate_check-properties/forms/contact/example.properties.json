@@ -1,0 +1,6 @@
+{
+  "duplicate_check": {
+    "expression": "levenshteinEq(current.name, existing.name, 3) && ageInYears(current) === ageInYears(existing)",
+    "disabled": true
+  }
+}

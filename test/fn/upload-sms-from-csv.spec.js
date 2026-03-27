@@ -1,5 +1,3 @@
-const chai = require('chai');
-chai.use(require('chai-exclude'));
 const sinon = require('sinon');
 
 const api = require('../api-stub');
@@ -7,7 +5,7 @@ const environment = require('../../src/lib/environment');
 const fs = require('../../src/lib/sync-fs');
 const csvToSms = require('../../src/fn/upload-sms-from-csv');
 
-const { assert } = chai;
+const { assert } = require('chai');
 
 describe('upload-sms-from-csv', function() {
   beforeEach(api.start);

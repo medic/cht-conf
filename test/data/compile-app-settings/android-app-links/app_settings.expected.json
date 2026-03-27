@@ -47,5 +47,6 @@
   "tasks": {
     "rules": "",
     "targets": {}
-  }
+  },
+  "purge": {}
 }

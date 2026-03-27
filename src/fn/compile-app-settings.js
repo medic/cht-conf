@@ -16,10 +16,14 @@ const JSON_FILE_MATCHER = /^(.+)(\.json)$/;
 const configFileMatcher = (fileName) => {
   const jsFileMatchResult = fileName.match(JS_FILE_MATCHER);
   // the first element is always the whole matched string, then our first file name group
-  if (jsFileMatchResult) return jsFileMatchResult[1];
+  if (jsFileMatchResult) {
+    return jsFileMatchResult[1];
+  }
 
   const jsonFileMatchResult = fileName.match(JSON_FILE_MATCHER);
-  if (jsonFileMatchResult) return jsonFileMatchResult[1];
+  if (jsonFileMatchResult) {
+    return jsonFileMatchResult[1];
+  }
 
   return null;
 };
@@ -48,7 +52,9 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   const oldTaskSchedulesPath = path.join(projectDir, 'tasks.json');
   if (fs.exists(oldTaskSchedulesPath)) {
     if (fs.exists(taskSchedulesPath)) {
-      throw new Error(`You have both ${taskSchedulesPath} and ${oldTaskSchedulesPath}.  Please remove one to continue!`);
+      throw new Error(
+        `You have both ${taskSchedulesPath} and ${oldTaskSchedulesPath}.  Please remove one to continue!`
+      );
     }
     warn(`tasks.json file is deprecated.  Please rename ${oldTaskSchedulesPath} to ${taskSchedulesPath}`);
     taskSchedulesPath = oldTaskSchedulesPath;
@@ -59,6 +65,13 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   const baseSettingsPath = path.join(projectDir, `${APP_SETTINGS_DIR_PATH}/base_settings.json`);
   const appSettingsPath = path.join(projectDir, APP_SETTINGS_JSON_PATH);
   const esLintFilePath = path.join(projectDir, '.eslintrc');
+  const parseMaxTaskNotifications = (maxTaskNotifications) => {
+    if (typeof maxTaskNotifications !== 'number' || !Number.isInteger(maxTaskNotifications) ||
+      maxTaskNotifications < 0) {
+      throw new Error('max_task_notifications should be a positive integer number');
+    }
+    return maxTaskNotifications;
+  };
 
   // Fail if no eslintrc file is found
   if (!fs.exists(esLintFilePath)) {
@@ -66,7 +79,10 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   }
 
   if (!fs.exists(baseSettingsPath) && !fs.exists(appSettingsPath)) {
-    throw new Error('No configuration defined please create a base_settings.json file in app_settings folder with the desired configuration');
+    throw new Error(
+      'No configuration defined please create a base_settings.json file in app_settings folder ' +
+      'with the desired configuration'
+    );
   }
   if (fs.exists(baseSettingsPath)) {
     // using modular config so should override anything already defined in app_settings.json
@@ -105,10 +121,13 @@ const compileAppSettingsForProject = async (projectDir, options) => {
       appSettings.assetlinks = assetlinks;
     }
   } else {
-    warn(`app_settings.json file should not be edited directly.
-    Please create a base_settings.json file in app_settings folder and move any manually defined configurations there.`);
+    warn(
+      `app_settings.json file should not be edited directly.
+    Please create a base_settings.json file in app_settings folder and move any manually defined configurations there.`
+    );
     appSettings = fs.readJson(appSettingsPath);
   }
+
   appSettings.contact_summary = await compilation.compileContactSummary(projectDir, options);
   const compiledTasksAndTargets = await compilation.compileTasksAndTargets(projectDir, options);
   appSettings.tasks = {
@@ -118,17 +137,27 @@ const compileAppSettingsForProject = async (projectDir, options) => {
     targets: parseTargets(projectDir),
   };
 
+  if (appSettings.max_task_notifications) {
+    appSettings.tasks.max_task_notifications = parseMaxTaskNotifications(appSettings.max_task_notifications);
+    delete appSettings.max_task_notifications;
+  }
+
   const purgeConfig = parsePurge(projectDir);
   if (purgeConfig) {
     appSettings.purge = purgeConfig;
   }
-
+  else{
+    warn('Setting purge configuration to empty object as purge.js and purging.js files were not found.');
+    appSettings.purge = {};
+  }
   return appSettings;
 };
 
 function applyTransforms(app_settings, inherited) {
   function doDelete(target, rules) {
-    if (!Array.isArray(rules)) throw new Error('.delete should be an array');
+    if (!Array.isArray(rules)) {
+      throw new Error('.delete should be an array');
+    }
 
     rules.forEach(k => {
       const parts = k.split('.');
@@ -142,7 +171,9 @@ function applyTransforms(app_settings, inherited) {
   }
 
   function doReplace(target, rules) {
-    if (typeof rules !== 'object') throw new Error('.replace should be an object');
+    if (typeof rules !== 'object') {
+      throw new Error('.replace should be an object');
+    }
 
     Object.keys(rules)
       .forEach(k => {
@@ -159,14 +190,22 @@ function applyTransforms(app_settings, inherited) {
   function doMerge(target, source) {
     Object.keys(target)
       .forEach(k => {
-        if (Array.isArray(source[k])) target[k] = target[k].concat(source[k]);
-        else if (typeof source[k] === 'object') doMerge(target[k], source[k]);
-        else source[k] = target[k];
+        if (Array.isArray(source[k])) {
+          target[k] = target[k].concat(source[k]);
+        }
+        else if (typeof source[k] === 'object') {
+          doMerge(target[k], source[k]);
+        }
+        else {
+          source[k] = target[k];
+        }
       });
   }
 
   function doFilter(target, rules) {
-    if (typeof rules !== 'object') throw new Error('.filter should be an object');
+    if (typeof rules !== 'object') {
+      throw new Error('.filter should be an object');
+    }
 
     Object.keys(rules)
       .forEach(k => {
@@ -177,11 +216,15 @@ function applyTransforms(app_settings, inherited) {
           parts.shift();
         }
 
-        if (!Array.isArray(rules[k])) throw new Error('.filter values must be arrays!');
+        if (!Array.isArray(rules[k])) {
+          throw new Error('.filter values must be arrays!');
+        }
 
         Object.keys(t[parts[0]])
           .forEach(tK => {
-            if (!rules[k].includes(tK)) delete t[parts[0]][tK];
+            if (!rules[k].includes(tK)) {
+              delete t[parts[0]][tK];
+            }
           });
       });
   }

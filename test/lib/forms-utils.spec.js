@@ -44,6 +44,27 @@ const emptyXml = `
 const projectDir = path.join(__dirname, '../data/convert-app-forms');
 
 describe('form-utils', () => {
+  [
+    ['hello', true],
+    ['/hello', true],
+    ['./hello', true],
+    ['/hello/world', true],
+    ['../hello/world', true],
+    ['/instance//*[@db-doc-ref]', false],
+    ['/hello[1]', false],
+    ['/hello/world[@attr="value"]', false],
+    ['/hello/world/text()', false],
+    ['/hello/world | /another/path', false],
+    ['/hello/world and /another/path', false],
+    ['/hello/world = "value"', false],
+    ['concat(/hello, "/world")', false],
+  ].forEach(([xpath, expected]) => {
+    it('SIMPLE_XPATH_PATTERN matches paths with no special characters', () => {
+      const result = formUtils.SIMPLE_XPATH_PATTERN.test(xpath);
+      expect(result).to.equal(expected);
+    });
+  });
+
   describe('getFormDir', () => {
     it('returns the form directory path when it exists', () => {
       const formDir = formUtils.getFormDir(projectDir, 'app');
@@ -91,6 +112,17 @@ describe('form-utils', () => {
       const hasInstanceId = formUtils.formHasInstanceId(getXmlDoc({ metaNodes: '' }));
       expect(hasInstanceId).to.equal(false);
     });
+  });
+
+  it('removeNode removes the given node from its parent', () => {
+    const xmlDoc = getXmlDoc();
+    const path = '/h:html/h:head/model/instance/data/name';
+    const nameNode = formUtils.getNode(xmlDoc, path);
+    expect(nameNode).to.not.be.undefined;
+
+    formUtils.removeNode(nameNode);
+
+    expect(formUtils.getNode(xmlDoc, path)).to.be.undefined;
   });
 
   describe('getNode', () => {
@@ -158,6 +190,18 @@ describe('form-utils', () => {
     });
   });
 
+  describe('getInstanceNode', () => {
+    it('returns the identified instance node', () => {
+      const node = formUtils.getInstanceNode(getXmlDoc(), 'contact-summary');
+      expect(node.hasChildNodes()).to.not.be.undefined;
+    });
+
+    it('returns undefined when no instance node exists with the given id', () => {
+      const node = formUtils.getInstanceNode(getXmlDoc(), 'non-existent-id');
+      expect(node).to.be.undefined;
+    });
+  });
+
   describe('getPrimaryInstanceNode', () => {
     it('returns the first instance node for the given form', () => {
       const node = formUtils.getPrimaryInstanceNode(getXmlDoc());
@@ -168,6 +212,37 @@ describe('form-utils', () => {
     it('returns undefined when no instance nodes exist', () => {
       const node = formUtils.getPrimaryInstanceNode(domParser.parseFromString(emptyXml));
       expect(node).to.be.undefined;
+    });
+  });
+
+  describe('getPrimaryInstanceNodeChildPath', () => {
+    const xmlDoc = getXmlDoc();
+
+    it('returns the correct path for a direct child of the primary instance node', () => {
+      const nameNode = formUtils.getNode(xmlDoc, '/h:html/h:head/model/instance/data/name');
+      const path = formUtils.getPrimaryInstanceNodeChildPath(nameNode);
+      expect(path).to.equal('/data/name');
+    });
+
+    it('returns the correct path for a nested child', () => {
+      const nestedXml = getXml();
+      const nestedDoc = domParser.parseFromString(nestedXml.replace('<age/>', '<age><child/></age>'));
+      const childNode = formUtils.getNode(nestedDoc, '/h:html/h:head/model/instance/data/age/child');
+      const path = formUtils.getPrimaryInstanceNodeChildPath(childNode);
+      expect(path).to.equal('/data/age/child');
+    });
+
+    it('returns an empty string for the primary instance node itself', () => {
+      const primaryInstanceNode = formUtils.getPrimaryInstanceNode(xmlDoc);
+      const path = formUtils.getPrimaryInstanceNodeChildPath(primaryInstanceNode);
+      expect(path).to.equal('');
+    });
+
+    it('returns an empty string for a non-element node', () => {
+      const nameNode = formUtils.getNode(xmlDoc, '/h:html/h:head/model/instance/data/name');
+      const textNode = nameNode.firstChild;
+      const path = formUtils.getPrimaryInstanceNodeChildPath(textNode);
+      expect(path).to.equal('');
     });
   });
 

@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [ 18.x, 20.x, 22.x ]
+        node-version: [ 20.x, 22.x, 24.x ]
       fail-fast: false
 
     steps:
@@ -20,8 +20,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Install pyxform
-      run: pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
     - run: npm ci
     - run: npm run eslint
     - run: npm test
@@ -37,18 +35,38 @@ jobs:
   e2e:
     name: E2E tests
     runs-on: ubuntu-22.04
+    env:
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_REDIRECT_URI: "http://localhost"
+      GOOGLE_TOKEN_SCOPE: 'https://www.googleapis.com/auth/drive.readonly'
 
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
-        node-version: 18.x
+        node-version: 24.x
+    - name: Set system ulimit
+      uses: medic/cht-core/.github/actions/bump-system-ulimit@476c97b0427e75ebdc1745afb5c73da0574f963a
     - name: Install dependencies
-      run: |
-        pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-        npm ci
+      run: npm ci
     - name: Hard code local-ip IP in /etc/hosts per https://github.com/medic/medic-infrastructure/issues/571#issuecomment-2209120441
       run: |
         echo "15.188.129.97 local-ip.medicmobile.org" | sudo tee -a /etc/hosts
+    - id: auth
+      uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093
+      with:
+        service_account: ${{ env.GOOGLE_SERVICE_ACCT }}
+        credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+        token_format: access_token
+        access_token_scopes: ${{ env.GOOGLE_TOKEN_SCOPE }}
+    - name: Write access_token to .gdrive.session.json
+      run: |
+        echo '{
+          "access_token": "${{ steps.auth.outputs.access_token }}",
+          "scope": "${{ env.GOOGLE_TOKEN_SCOPE }}",
+          "token_type": "Bearer",
+          "expiry_date": "9999999999999"
+        }' > .gdrive.session.json
     - name: Run E2E tests
       run: npm run test-e2e

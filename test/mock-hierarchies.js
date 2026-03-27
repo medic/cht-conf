@@ -8,7 +8,7 @@ const parentsToLineage = (...parentIds) => parentIds.reverse().reduce((arr, pare
 const mockHierarchy = async (db, hierarchy, existingLineage, depth = 0) => {
   const contactTypeByDepth = ['district_hospital', 'health_center', 'clinic', 'person'];
   const nextLineage = id => buildLineage(id, existingLineage);
-  for (let contactId of Object.keys(hierarchy)) {
+  for (const contactId of Object.keys(hierarchy)) {
     const contactDoc = {
       _id: contactId,
       parent: existingLineage,

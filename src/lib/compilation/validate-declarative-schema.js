@@ -3,7 +3,9 @@ const joi = require('joi');
 const { error, warn } = require('../log');
 
 const err = (filename, message) => details => {
-  const acceptedValues = details[0].local.valids ? ` but only ${JSON.stringify(details[0].local.valids)} are allowed` : '';
+  const acceptedValues = details[0].local.valids
+    ? ` but only ${JSON.stringify(details[0].local.valids)} are allowed`
+    : '';
   return new Error(`Invalid schema at ${filename}${details[0].local.label}
 ${message}
 Current value of ${filename}${details[0].local.label} is ${JSON.stringify(details[0].value)}${acceptedValues}
@@ -45,8 +47,9 @@ const TargetSchema = joi.array().items(
         then: joi.function().required(),
         otherwise: joi.function().forbidden(),
       })
-    })
-      .error(targetError('"passesIf" is required only "type=percent" and "groupBy" is not defined. Otherwise, it is forbidden.')),
+    }).error(targetError(
+      '"passesIf" is required only "type=percent" and "groupBy" is not defined. Otherwise, it is forbidden.'
+    )),
     groupBy: joi.function().optional()
       .error(targetError('"groupBy" should be of type function(contact, report)')),
     passesIfGroupCount: joi.alternatives().conditional('groupBy', {
@@ -57,23 +60,25 @@ const TargetSchema = joi.array().items(
       otherwise: joi.forbidden(),
     }),
     date: joi.alternatives().try(
-        joi.string().valid('reported', 'now'),
-        joi.function(),
-      )
+      joi.string().valid('reported', 'now'),
+      joi.function(),
+    )
       .optional()
-      .error(targetError('"date" should be either ["reported", "now"] or "function(contact, report)" returning timestamp')),
+      .error(targetError(
+        '"date" should be either ["reported", "now"] or "function(contact, report)" returning timestamp'
+      )),
     emitCustom: joi.function().optional()
       .error(targetError('"emitCustom" should be a function')),
     dhis: joi.alternatives().try(
-        DhisSchema,
-        joi.array().items(DhisSchema),
-      )
-        .optional(),
+      DhisSchema,
+      joi.array().items(DhisSchema),
+    )
+      .optional(),
     visible: joi.boolean().optional(),
     idType: joi.alternatives().try(
-        joi.string().valid('report', 'contact'),
-        joi.function(),
-      )
+      joi.string().valid('report', 'contact'),
+      joi.function(),
+    )
       .optional()
       .error(targetError('idType should be either "report" or "contact" or "function(contact, report)"')),
     aggregate: joi.boolean().optional(),
@@ -83,14 +88,20 @@ const TargetSchema = joi.array().items(
   .required();
 
 const EventSchema = idPresence => joi.object({
-    id: joi.string().presence(idPresence),
-    days: joi.alternatives().conditional('dueDate', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.number().required() })
-      .error(taskError('"event.days" is a required integer field only when "event.dueDate" is absent')),
-    dueDate: joi.alternatives().conditional('days', { is: joi.exist(), then: joi.forbidden(), otherwise: joi.function().required() })
-      .error(taskError('"event.dueDate" is required to be "function(event, contact, report)" only when "event.days" is absent')),
-    start: joi.number().min(0).required(),
-    end: joi.number().min(0).required(),
-  });
+  id: joi.string().presence(idPresence),
+  days: joi.alternatives().conditional(
+    'dueDate',
+    { is: joi.exist(), then: joi.forbidden(), otherwise: joi.number().required() }
+  ).error(taskError('"event.days" is a required integer field only when "event.dueDate" is absent')),
+  dueDate: joi.alternatives().conditional(
+    'days',
+    { is: joi.exist(), then: joi.forbidden(), otherwise: joi.function().required() }
+  ).error(taskError(
+    '"event.dueDate" is required to be "function(event, contact, report)" only when "event.days" is absent'
+  )),
+  start: joi.number().min(0).required(),
+  end: joi.number().min(0).required(),
+});
 
 const TaskSchema = joi.array().items(
   joi.object({
@@ -103,7 +114,7 @@ const TaskSchema = joi.array().items(
     appliesToType: joi.array().items(joi.string()).optional().min(1),
     contactLabel:
       joi.alternatives().try( joi.string().min(1), joi.function() ).optional()
-      .error(taskError('"contactLabel" should either be a non-empty string or function(contact, report)')),
+        .error(taskError('"contactLabel" should either be a non-empty string or function(contact, report)')),
     resolvedIf: joi
       .alternatives()
       .conditional('actions', {
@@ -111,12 +122,10 @@ const TaskSchema = joi.array().items(
         then: joi.function().optional(),
         otherwise: joi.function().required()
       })
-      .error(
-        taskError(
-          'ERROR: Schema error in actions array: Actions with property "type" which value is different than "report", ' +
-          'should define property "resolvedIf" as: function(contact, report) { ... }.'
-        )
-      ),
+      .error(taskError(
+        'ERROR: Schema error in actions array: Actions with property "type" which value is different than "report", ' +
+        'should define property "resolvedIf" as: function(contact, report) { ... }.'
+      )),
     events: joi.alternatives().conditional('events', {
       is: joi.array().length(1),
       then: joi.array().items(EventSchema('optional')).min(1).required(),
@@ -130,11 +139,18 @@ const TaskSchema = joi.array().items(
       joi.function(),
     )
       .optional()
-      .error(taskError('"priority" should be an object with optional fields "level" and "label" or a function which returns the same')),
+      .error(taskError(
+        '"priority" should be an object with optional fields "level" and "label" or a function which returns the same'
+      )),
     actions: joi.array().items(
       joi.object({
         type: joi.string().valid('report', 'contact').optional(),
-        form: joi.alternatives().conditional('type', { is: 'contact', then: joi.forbidden(), otherwise: joi.string().min(1).required() }),
+        form: joi
+          .alternatives()
+          .conditional(
+            'type',
+            { is: 'contact', then: joi.forbidden(), otherwise: joi.string().min(1).required() }
+          ),
         label: joi.string().min(1).optional(),
         modifyContent: joi.function().optional()
           .error(taskError('"actions.modifyContent" should be "function (content, contact, report)')),
@@ -181,7 +197,8 @@ const validate = (filename, fileContent, schema) => {
 const formatJoiError = (desc, detail) => {
   const { context } = detail;
   if (detail.type === 'array.unique') {
-    return `${desc}${context.label} contains duplicate value for the "${context.path}" field: "${context.value[context.path]}"`;
+    const fieldValue = context.value[context.path];
+    return `${desc}${context.label} contains duplicate value for the "${context.path}" field: "${fieldValue}"`;
   }
 
   let result = detail.message;

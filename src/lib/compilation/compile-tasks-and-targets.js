@@ -22,7 +22,10 @@ const compileTasksAndTargets = async (projectDir, options = {}) => {
   
   if (legacyRules !== undefined) {
     if (findMissingDeclarativeFiles(projectDir).length !== DECLARATIVE_NOOLS_FILES.length) {
-      throw new Error(`Both legacy and declarative files found. You should either have rules.nools.js xor ${DECLARATIVE_NOOLS_FILES} files.`);
+      throw new Error(
+        'Both legacy and declarative files found. '
+        + `You should either have rules.nools.js xor ${DECLARATIVE_NOOLS_FILES} files.`
+      );
     }
 
     const rules = options.minifyScripts ? nools.minify(legacyRules) : legacyRules;

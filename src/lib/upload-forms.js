@@ -10,11 +10,11 @@ const warnUploadOverwrite = require('./warn-upload-overwrite');
 const {
   getFormDir,
   getFormFilePaths,
-  readTitleFrom,
-  readIdFrom
+  readTitleFrom, readIdFrom,
 } = require('./forms-utils');
 
 const SUPPORTED_PROPERTIES = ['context', 'icon', 'title', 'xml2sms', 'subject_key', 'hidden_fields'];
+const CONTACT_DUPLICATE_CHECK_PROPERTY = 'duplicate_check';
 const FORM_EXTENSTION = '.xml';
 const FORM_PROPERTIES_EXTENSION = '.properties.json';
 const FORM_MEDIA_MATCHER = /(.+)-media$/;
@@ -40,11 +40,18 @@ const formMediaMatcher = (formMediaDir) => {
 
 const execute = async (projectDir, subDirectory, options) => {
   const db = pouch();
-  if (!options) options = {};
+  if (!options) {
+    options = {};
+  }
   const formsDir = getFormDir(projectDir, subDirectory);
   if (!fs.exists(formsDir)) {
     log.info(`Forms dir not found: ${formsDir}`);
     return;
+  }
+
+  const PROPERTIES = [...SUPPORTED_PROPERTIES];
+  if (subDirectory === 'contact') {
+    PROPERTIES.push(CONTACT_DUPLICATE_CHECK_PROPERTY);
   }
 
   const fileNames = argsFormFilter(formsDir, FORM_EXTENSTION, options);
@@ -52,7 +59,7 @@ const execute = async (projectDir, subDirectory, options) => {
     log.info(`Preparing form for upload: ${fileName}…`);
 
     const { baseFileName, mediaDir, xformPath, filePath } = getFormFilePaths(formsDir, fileName);
-    const baseDocId = (options.id_prefix || '') + baseFileName.replace(/-/g, ':');
+    const baseDocId = (options.id_prefix || '') + baseFileName.replaceAll('-', ':');
 
     const mediaDirExists = fs.exists(mediaDir);
     if (!mediaDirExists) {
@@ -68,7 +75,11 @@ const execute = async (projectDir, subDirectory, options) => {
     };
 
     const internalId = readIdFrom(xml);
-    if (internalId !== baseDocId) log.warn('DEPRECATED', 'Form:', fileName, 'Bad ID set in XML.  Expected:', baseDocId, 'but saw:', internalId, ' Support for setting these values differently will be dropped.  Please see https://github.com/medic/cht-core/issues/3342.');
+    if (internalId.replaceAll('-', ':') !== baseDocId) {
+      throw new Error(`The file name for the form [${baseFileName}] does not match the id in the xml [${
+        internalId
+      }]. Rename the form xlsx/xml files to match the id.`);
+    }
 
     const docId = `form:${baseDocId}`;
     const doc = {
@@ -81,12 +92,12 @@ const execute = async (projectDir, subDirectory, options) => {
     };
 
     const propertiesPath = `${formsDir}/${baseFileName}${FORM_PROPERTIES_EXTENSION}`;
-    updateFromPropertiesFile(doc, propertiesPath);
+    updateFromPropertiesFile(baseFileName, doc, propertiesPath, PROPERTIES);
 
     doc._attachments = mediaDirExists ? attachmentsFromDir(mediaDir) : {};
     doc._attachments.xml = attachmentFromFile(xformPath);
 
-    const properties = SUPPORTED_PROPERTIES.concat('internalId');
+    const properties = PROPERTIES.concat('internalId');
 
     const changes = await warnUploadOverwrite.preUploadForm(db, doc, xml, properties);
     if (changes) {
@@ -108,24 +119,36 @@ module.exports = {
   execute
 };
 
-const updateFromPropertiesFile = (doc, path) => {
+const updateFromPropertiesFile = (baseFileName, doc, path, supported_properties) => {
   if (fs.exists(path)) {
 
-    let ignoredKeys = [];
+    const ignoredKeys = [];
     const properties = fs.readJson(path);
 
-    Object.keys(properties).forEach(key => {
-      if (typeof properties[key] !== 'undefined') {
-        if (SUPPORTED_PROPERTIES.includes(key)) {
-          doc[key] = properties[key];
-        } else if (key === 'internalId') {
-          log.warn(`DEPRECATED: ${path}. Please do not manually set internalId in .properties.json for new projects. Support for configuring this value will be dropped. Please see https://github.com/medic/cht-core/issues/3342.`);
-          doc.internalId = properties.internalId;
-        } else {
-          ignoredKeys.push(key);
+    Object
+      .keys(properties)
+      .forEach(key => {
+        if (properties[key] === undefined) {
+          return;
         }
-      }
-    });
+        if (supported_properties.includes(key)) {
+          doc[key] = properties[key];
+          return;
+        }
+        if (key === 'internalId') {
+          log.warn(`DEPRECATED: ${path}. Please do not manually set internalId in .properties.json for new projects. Support for configuring this value will be dropped. Please see https://github.com/medic/cht-core/issues/3342.`);
+          if (doc.internalId === properties.internalId) {
+            return;
+          }
+          throw new Error(`The file name for the form [${
+            baseFileName
+          }] does not match the internalId in the ${baseFileName}.properties.json [${
+            properties.internalId
+          }]. Rename the form xlsx/xml files to match the internalId.`);
+        }
+
+        ignoredKeys.push(key);
+      });
 
     if (ignoredKeys.length) {
       log.warn(`Ignoring unknown properties in ${path}: ${ignoredKeys.join(', ')}`);

@@ -1,7 +1,11 @@
 const lineageManipulation = require('./lineage-manipulation');
+const {getValidApiVersion} = require('../get-api-version');
+const semver = require('semver');
+const api = require('../api');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
+const NOUVEAU_MIN_VERSION = '5.0.0';
 const SUBJECT_IDS = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
 
 /*
@@ -13,7 +17,9 @@ async function getContactsByIds(db, ids) {
     include_docs: true,
   });
 
-  const missingContactErrors = contactDocs.rows.filter(row => !row.doc).map(row => `Contact with id '${row.key}' could not be found.`);
+  const missingContactErrors = contactDocs.rows
+    .filter(row => !row.doc)
+    .map(row => `Contact with id '${row.key}' could not be found.`);
   if (missingContactErrors.length > 0) {
     throw Error(missingContactErrors);
   }
@@ -55,24 +61,48 @@ async function getContactWithDescendants(db, contactId) {
     .filter(doc => doc && doc.type !== 'tombstone');
 }
 
-async function getReportsForContacts(db, createdByIds, createdAtIds, skip) {
-  const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-  const mapIdToSubjectKeys = id => SUBJECT_IDS.map(subjectId => [`${subjectId}:${id}`]);
-  const createdAtKeys = createdAtIds ? createdAtIds.map(mapIdToSubjectKeys).flat() : [];
-
-  const reports = await db.query('medic-client/reports_by_freetext', {
-    keys: [
-      ...createdByKeys,
-      ...createdAtKeys,
-    ],
+const getFromDbView = async (db, view, keys, skip) => {
+  const res = await db.query(view, {
+    keys,
     include_docs: true,
     limit: BATCH_SIZE,
-    skip,
+    skip
   });
+  return res.rows.map(row => row.doc);
+};
 
-  const docsWithId = reports.rows.map(({ doc }) => [doc._id, doc]);
+const fetchReportsByCreator = async (db, createdByIds, skip) => {
+  if (createdByIds.length === 0) {
+    return [];
+  }
+
+  const coreVersion = await getValidApiVersion();
+  if (coreVersion && semver.gte(coreVersion, NOUVEAU_MIN_VERSION)) {
+    return await api().getReportsByCreatedByIds(createdByIds, BATCH_SIZE, skip);
+  }
+
+  const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
+  return await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
+};
+
+const fetchReportsBySubject = async (db, createdAtIds, skip) => {
+  if (!createdAtIds || createdAtIds.length <= 0) {
+    return [];
+  }
+  return await getFromDbView(db, 'medic-client/reports_by_subject', createdAtIds, skip);
+};
+
+const getReportsForContacts = async (db, createdByIds, createdAtIds, skip) => {
+  const [creatorReports, subjectReports] = await Promise.all([
+    fetchReportsByCreator(db, createdByIds, skip),
+    fetchReportsBySubject(db, createdAtIds, skip)
+  ]);
+
+  const allRows = [...creatorReports, ...subjectReports];
+
+  const docsWithId = allRows.map(( doc ) => [doc._id, doc]);
   return Array.from(new Map(docsWithId).values());
-}
+};
 
 async function getAncestorsOf(db, contactDoc) {
   const ancestorIds = lineageManipulation.pluckIdsFromLineage(contactDoc.parent);
@@ -83,7 +113,10 @@ async function getAncestorsOf(db, contactDoc) {
 
   const ancestorIdsNotFound = ancestors.rows.filter(ancestor => !ancestor.doc).map(ancestor => ancestor.key);
   if (ancestorIdsNotFound.length > 0) {
-    throw Error(`Contact '${contactDoc?.name}' (${contactDoc?._id}) has parent id(s) '${ancestorIdsNotFound.join(',')}' which could not be found.`);
+    throw Error(
+      `Contact '${contactDoc?.name}' (${contactDoc?._id}) has parent id(s) `
+      + `'${ancestorIdsNotFound.join(',')}' which could not be found.`
+    );
   }
 
   return ancestors.rows.map(ancestor => ancestor.doc);

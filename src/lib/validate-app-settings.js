@@ -58,7 +58,7 @@ const ScheduleSchema = joi.array().items(
         offset: joi.string().required(),
         send_day: joi.string().allow(''),
         send_time: joi.string().allow(''),
-        recipient: joi.string()
+        recipient: joi.alternatives().try(joi.string(), joi.array())
       })
     ).required()
   })

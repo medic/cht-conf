@@ -35,11 +35,17 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
     await constraints.assertNoPrimaryContactViolations(sourceDoc, destinationDoc, descendantsAndSelf);
     
     const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
-    trace(`Considering updates to ${descendantsAndSelf.length} descendant(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
+    trace(
+      `Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact `
+      + `${prettyPrintDocument(sourceDoc)}.`
+    );
     const updatedDescendants = updateContacts(moveContext, constraints);
     
     const ancestors = await DataSource.getAncestorsOf(db, sourceDoc);
-    trace(`Considering primary contact updates to ${ancestors.length} ancestor(s) of contact ${prettyPrintDocument(sourceDoc)}.`);
+    trace(
+      `Considering primary contact updates to ${ancestors.length} ancestor(s) of contact `
+      + `${prettyPrintDocument(sourceDoc)}.`
+    );
     const updatedAncestors = replaceLineageInAncestors(descendantsAndSelf, ancestors);
     
     minifyLineageAndWriteToDisk(options, [...updatedDescendants, ...updatedAncestors]);
@@ -50,10 +56,16 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
     affectedContactCount += updatedDescendants.length + updatedAncestors.length;
     affectedReportCount += movedReportsCount;
 
-    info(`Staged updates to ${prettyPrintDocument(sourceDoc)}. ${updatedDescendants.length} contact(s) and ${movedReportsCount} report(s).`);
+    info(
+      `Staged updates to ${prettyPrintDocument(sourceDoc)}. ${updatedDescendants.length} contact(s) and `
+      + `${movedReportsCount} report(s).`
+    );
   }
 
-  info(`Staged changes to lineage information for ${affectedContactCount} contact(s) and ${affectedReportCount} report(s).`);
+  info(
+    `Staged changes to lineage information for ${affectedContactCount} contact(s) and `
+    + `${affectedReportCount} report(s).`
+  );
 }
 
 function getPrimaryContactId(doc) {

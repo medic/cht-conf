@@ -52,10 +52,25 @@ describe('validate-forms', () => {
     expect(checkXPathsExist.requiresInstance).to.equal(false);
     expect(checkXPathsExist.skipFurtherValidation).to.equal(false);
 
+    const ddocValid = validations.shift();
+    expect(ddocValid.name).to.equal('db-doc-is-valid.js');
+    expect(ddocValid.requiresInstance).to.equal(false);
+    expect(ddocValid.skipFurtherValidation).to.equal(false);
+
+    const ddocRefValid = validations.shift();
+    expect(ddocRefValid.name).to.equal('db-doc-ref-is-valid.js');
+    expect(ddocRefValid.requiresInstance).to.equal(false);
+    expect(ddocRefValid.skipFurtherValidation).to.equal(false);
+
     const deprecatedAppearance = validations.shift();
     expect(deprecatedAppearance.name).to.equal('deprecated-appearance.js');
     expect(deprecatedAppearance.requiresInstance).to.equal(true);
     expect(deprecatedAppearance.skipFurtherValidation).to.equal(false);
+
+    const deprecatedTelType = validations.shift();
+    expect(deprecatedTelType.name).to.equal('deprecated-tel-type.js');
+    expect(deprecatedTelType.requiresInstance).to.equal(true);
+    expect(deprecatedTelType.skipFurtherValidation).to.equal(false);
 
     const noRequiredNotes = validations.shift();
     expect(noRequiredNotes.name).to.equal('no-required-notes.js');
@@ -188,7 +203,9 @@ describe('validate-forms', () => {
     return validateForms.__with__({ validations: [mockValidation(), mockValidation(), mockValidation()] })(async () => {
       await validateForms(`${BASE_DIR}/non-existant-directory`, FORMS_SUBDIR);
       expect(logInfo.callCount).to.equal(1);
-      expect(logInfo.args[0][0]).to.equal(`Forms dir not found: ${BASE_DIR}/non-existant-directory/forms/${FORMS_SUBDIR}`);
+      expect(logInfo.args[0][0]).to.equal(
+        `Forms dir not found: ${BASE_DIR}/non-existant-directory/forms/${FORMS_SUBDIR}`
+      );
     });
   });
 });
