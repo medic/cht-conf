@@ -1,6 +1,6 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const fs = require('fs');
+const fs = require('node:fs');
 const uploadUiExtensions = require('../../src/lib/upload-ui-extensions');
 const log = require('../../src/lib/log');
 
