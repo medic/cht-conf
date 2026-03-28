@@ -15,27 +15,70 @@ const schema = Joi.object({
   config: Joi.object().unknown(true)
 });
 
-module.exports = async (uiExtensionsDir, specificExtensions = []) => {
-  if (!fs.existsSync(uiExtensionsDir)) {
-    log.info(`No directory found at "${uiExtensionsDir}" - not uploading ui-extensions`);
-    return;
-  }
-
+const getNamesToUpload = (uiExtensionsDir, specificExtensions) => {
   const allFiles = fs.readdirSync(uiExtensionsDir);
-
-  // Extract unique extension names from either .js or .properties.json files
   const extensionNames = new Set(
     allFiles
       .filter(f => f.endsWith('.js') || f.endsWith('.properties.json'))
       .map(f => f.replace(/\.properties\.json$|\.js$/, ''))
   );
 
-  let namesToUpload = Array.from(extensionNames);
-  if (specificExtensions && specificExtensions.length > 0) {
-    namesToUpload = namesToUpload.filter(name => specificExtensions.includes(name));
+  let names = Array.from(extensionNames);
+  if (specificExtensions?.length) {
+    names = names.filter(name => specificExtensions.includes(name));
+  }
+  return names;
+};
+
+const getExtensionDoc = (uiExtensionsDir, name) => {
+  const jsPath = path.join(uiExtensionsDir, `${name}.js`);
+  const propsPath = path.join(uiExtensionsDir, `${name}.properties.json`);
+
+  if (!fs.existsSync(jsPath) || !fs.existsSync(propsPath)) {
+    throw new Error(`UI Extension "${name}" is missing either its .js or .properties.json file.`);
   }
 
-  if (namesToUpload.length === 0) {
+  const propsContent = JSON.parse(fs.readFileSync(propsPath, 'utf-8'));
+  const validation = schema.validate(propsContent);
+
+  if (validation.error) {
+    throw new Error(`Validation error for UI extension "${name}": ${validation.error.message}`);
+  }
+
+  return {
+    _id: `ui-extension:${name}`,
+    type: 'ui-extension',
+    ...propsContent,
+    _attachments: {
+      'extension.js': {
+        content_type: 'application/javascript',
+        data: fs.readFileSync(jsPath)
+      }
+    }
+  };
+};
+
+const uploadDocToDb = async (db, doc, name) => {
+  const changes = await warnUploadOverwrite.preUploadDoc(db, doc);
+  if (!changes) {
+    log.info(`UI Extension "${name}" not uploaded as already up to date`);
+    return;
+  }
+
+  await insertOrReplace(db, doc);
+  log.info(`UI Extension "${name}" upload complete`);
+  await warnUploadOverwrite.postUploadDoc(db, doc);
+};
+
+const uploadUiExtensions = async (uiExtensionsDir, specificExtensions = []) => {
+  if (!fs.existsSync(uiExtensionsDir)) {
+    log.info(`No directory found at "${uiExtensionsDir}" - not uploading ui-extensions`);
+    return;
+  }
+
+  const namesToUpload = getNamesToUpload(uiExtensionsDir, specificExtensions);
+
+  if (!namesToUpload.length) {
     log.info('No UI extensions to upload.');
     return;
   }
@@ -43,48 +86,11 @@ module.exports = async (uiExtensionsDir, specificExtensions = []) => {
   log.info(`Found UI extensions: ${namesToUpload.join(', ')}`);
 
   let db;
-
   for (const name of namesToUpload) {
-    const jsPath = path.join(uiExtensionsDir, `${name}.js`);
-    const propsPath = path.join(uiExtensionsDir, `${name}.properties.json`);
-
-    if (!fs.existsSync(jsPath) || !fs.existsSync(propsPath)) {
-      throw new Error(`UI Extension "${name}" is missing either its .js or .properties.json file.`);
-    }
-
-    const propsContent = JSON.parse(fs.readFileSync(propsPath, 'utf-8'));
-    const validation = schema.validate(propsContent);
-
-    if (validation.error) {
-      throw new Error(`Validation error for UI extension "${name}": ${validation.error.message}`);
-    }
-
-    const jsContent = fs.readFileSync(jsPath);
-
-    const doc = {
-      _id: `ui-extension:${name}`,
-      type: 'ui-extension',
-      ...propsContent,
-      _attachments: {
-        'extension.js': {
-          content_type: 'application/javascript',
-          data: jsContent
-        }
-      }
-    };
-
-    if (!db) {
-      db = pouch(environment.apiUrl);
-    }
-
-    const changes = await warnUploadOverwrite.preUploadDoc(db, doc);
-    if (!changes) {
-      log.info(`UI Extension "${name}" not uploaded as already up to date`);
-      continue;
-    }
-
-    await insertOrReplace(db, doc);
-    log.info(`UI Extension "${name}" upload complete`);
-    await warnUploadOverwrite.postUploadDoc(db, doc);
+    const doc = getExtensionDoc(uiExtensionsDir, name);
+    db = db || pouch(environment.apiUrl);
+    await uploadDocToDb(db, doc, name);
   }
 };
+
+module.exports = uploadUiExtensions;

@@ -9,7 +9,6 @@ module.exports = {
 
     let specificExtensions = [];
     if (environment.extraArgs?.length) {
-      // Filter out standard CLI syntax (e.g. drop the initial '--')
       specificExtensions = environment.extraArgs.filter(arg => !arg.startsWith('--'));
     }
 
