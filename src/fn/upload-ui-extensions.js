@@ -8,7 +8,8 @@ module.exports = {
     const uiExtensionsDir = `${environment.pathToProject}/${projectPaths.UI_EXTENSIONS_PATH}`;
 
     let specificExtensions = [];
-    if (environment.extraArgs && environment.extraArgs.length) {
+    if (environment.extraArgs?.length) {
+      // Filter out standard CLI syntax (e.g. drop the initial '--')
       specificExtensions = environment.extraArgs.filter(arg => !arg.startsWith('--'));
     }
 
