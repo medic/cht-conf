@@ -139,13 +139,13 @@ describe('lineage constriants', () => {
         const parentDoc = await pouchDb.get('clinic_2');
 
         const actual = assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, [contactDoc]);
-        expect(actual).to.eventually.be.rejectedWith(`clinic_1_contact) from the hierarchy`);
+        await expect(actual).to.eventually.be.rejectedWith(`clinic_1_contact) from the hierarchy`);
       });
 
       it('cannot move clinic_1_contact to root', async () => {
         const contactDoc = await pouchDb.get('clinic_1_contact');
         const actual = assertOnPrimaryContactRemoval(pouchDb, contactDoc, undefined, [contactDoc]);
-        expect(actual).to.eventually.be.rejectedWith(`clinic_1_contact) from the hierarchy`);
+        await expect(actual).to.eventually.be.rejectedWith(`clinic_1_contact) from the hierarchy`);
       });
 
       it('can move clinic_1_contact to clinic_1', async () => {
@@ -179,7 +179,7 @@ describe('lineage constriants', () => {
           'health_center_1_contact', 'clinic_1', 'clinic_1_contact', 'patient_1'
         ].map(id => pouchDb.get(id)));
         const actual = assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, descendants);
-        expect(actual).to.eventually.be.rejectedWith(`patient_1) from the hierarchy`);
+        await expect(actual).to.eventually.be.rejectedWith(`patient_1) from the hierarchy`);
       });
 
       // It is possible that one or more parents will not be found. Since these parents are being removed, do not throw

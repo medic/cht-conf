@@ -25,7 +25,7 @@ module.exports = async (db, options) => {
           throw Error(`Hierarchy Constraints: ${hierarchyError}`);
         }
       });
-  
+
       /*
        * It is nice that the tool can move lists of contacts as one operation, but strange things happen when two
        * contactIds are in the same lineage. For example, moving a district_hospital and moving a contact under that
@@ -144,13 +144,13 @@ async function assertOnPrimaryContactRemoval(db, sourceDoc, destinationDoc, desc
   const primaryContactIds = docsRemovedFromContactLineage.rows
     .map(row => row?.doc?.contact?._id)
     .filter(Boolean);
-  
+
   const invalidPrimaryContactDoc = descendantDocs.find(
     descendant => primaryContactIds.some(primaryId => descendant._id === primaryId)
   );
   if (invalidPrimaryContactDoc) {
-    throw Error('Cannot remove contact '+ 
-      `'${invalidPrimaryContactDoc?.name}' (${invalidPrimaryContactDoc?._id})` +  
+    throw new Error('Cannot remove contact '+
+      `'${invalidPrimaryContactDoc?.name}' (${invalidPrimaryContactDoc?._id}) ` +
       'from the hierarchy for which they are a primary contact.');
   }
 }
