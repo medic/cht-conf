@@ -146,7 +146,7 @@ async function assertOnPrimaryContactRemoval(db, sourceDoc, destinationDoc, desc
     .filter(Boolean);
 
   const invalidPrimaryContactDoc = descendantDocs.find(
-    descendant => primaryContactIds.some(primaryId => descendant._id === primaryId)
+    descendant => primaryContactIds.includes(descendant._id)
   );
   if (invalidPrimaryContactDoc) {
     throw new Error('Cannot remove contact '+
@@ -164,7 +164,7 @@ async function assertSourcePrimaryContactType(db, contactTypeInfo, sourceDoc) {
   const sourcePrimaryContactDoc = await db.get(sourcePrimaryContactId);
   const primaryContactIsPlace = isPlace(contactTypeInfo, sourcePrimaryContactDoc);
   if (primaryContactIsPlace) {
-    throw Error(`Source "${sourceDoc._id}" has primary contact "${sourcePrimaryContactId}" which is of type place`);
+    throw new Error(`Source "${sourceDoc._id}" has primary contact "${sourcePrimaryContactId}" which is of type place`);
   }
 }
 
