@@ -6,6 +6,7 @@ const api = require('../api');
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
 const NOUVEAU_MIN_VERSION = '5.0.0';
+const SUBJECT_IDS = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
 
 /*
 Fetches all of the documents associated with the "contactIds" and confirms they exist.
@@ -84,17 +85,17 @@ const fetchReportsByCreator = async (db, createdByIds, skip) => {
   return await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
 };
 
-const fetchReportsBySubject = async (db, createdAtId, skip) => {
-  if (!createdAtId) {
+const fetchReportsBySubject = async (db, createdAtIds, skip) => {
+  if (!createdAtIds || createdAtIds.length <= 0) {
     return [];
   }
-  return await getFromDbView(db, 'medic-client/reports_by_subject', [createdAtId], skip);
+  return await getFromDbView(db, 'medic-client/reports_by_subject', createdAtIds, skip);
 };
 
-const getReportsForContacts = async (db, createdByIds, createdAtId, skip) => {
+const getReportsForContacts = async (db, createdByIds, createdAtIds, skip) => {
   const [creatorReports, subjectReports] = await Promise.all([
     fetchReportsByCreator(db, createdByIds, skip),
-    fetchReportsBySubject(db, createdAtId, skip)
+    fetchReportsBySubject(db, createdAtIds, skip)
   ]);
 
   const allRows = [...creatorReports, ...subjectReports];
@@ -124,6 +125,7 @@ async function getAncestorsOf(db, contactDoc) {
 module.exports = {
   BATCH_SIZE,
   HIERARCHY_ROOT,
+  SUBJECT_IDS,
   getAncestorsOf,
   getContactWithDescendants,
   getContact,
