@@ -1,11 +1,12 @@
 const lineageManipulation = require('./lineage-manipulation');
-const {getValidApiVersion} = require('../get-api-version');
+const { getValidApiVersion } = require('../get-api-version');
 const semver = require('semver');
 const api = require('../api');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
 const NOUVEAU_MIN_VERSION = '5.0.0';
+const QUERY_IDS_BATCH_SIZE = 100;
 
 /*
 Fetches all of the documents associated with the "contactIds" and confirms they exist.
@@ -76,12 +77,20 @@ const fetchReportsByCreator = async (db, createdByIds, skip) => {
   }
 
   const coreVersion = await getValidApiVersion();
-  if (coreVersion && semver.gte(coreVersion, NOUVEAU_MIN_VERSION)) {
-    return await api().getReportsByCreatedByIds(createdByIds, BATCH_SIZE, skip);
+  const useNouveau = coreVersion && semver.gte(coreVersion, NOUVEAU_MIN_VERSION);
+  const allResults = [];
+  for (let i = 0; i < createdByIds.length; i += QUERY_IDS_BATCH_SIZE) {
+    const idsBatch = createdByIds.slice(i, i + QUERY_IDS_BATCH_SIZE);
+    if (useNouveau) {
+      const batchResults = await api().getReportsByCreatedByIds(idsBatch, BATCH_SIZE, skip);
+      allResults.push(...batchResults);
+    } else {
+      const createdByKeys = idsBatch.map(id => [`contact:${id}`]);
+      const batchResults = await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
+      allResults.push(...batchResults);
+    }
   }
-
-  const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-  return await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
+  return allResults;
 };
 
 const fetchReportsBySubject = async (db, createdAtId, skip) => {
@@ -99,7 +108,7 @@ const getReportsForContacts = async (db, createdByIds, createdAtId, skip) => {
 
   const allRows = [...creatorReports, ...subjectReports];
 
-  const docsWithId = allRows.map(( doc ) => [doc._id, doc]);
+  const docsWithId = allRows.map((doc) => [doc._id, doc]);
   return Array.from(new Map(docsWithId).values());
 };
 
