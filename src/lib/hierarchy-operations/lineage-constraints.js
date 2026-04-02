@@ -141,12 +141,12 @@ async function assertOnPrimaryContactRemoval(db, sourceDoc, destinationDoc, desc
     include_docs: true,
   });
 
-  const primaryContactIds = docsRemovedFromContactLineage.rows
+  const primaryContactIds = new Set(docsRemovedFromContactLineage.rows
     .map(row => row?.doc?.contact?._id)
-    .filter(Boolean);
+    .filter(Boolean));
 
   const invalidPrimaryContactDoc = descendantDocs.find(
-    descendant => primaryContactIds.includes(descendant._id)
+    descendant => primaryContactIds.has(descendant._id)
   );
   if (invalidPrimaryContactDoc) {
     throw new Error('Cannot remove contact '+
