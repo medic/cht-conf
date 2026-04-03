@@ -71,6 +71,14 @@ const getFromDbView = async (db, view, keys, skip) => {
   return res.rows.map(row => row.doc);
 };
 
+const fetchReportsBatch = async (db, idsBatch, useNouveau, skip) => {
+  if (useNouveau) {
+    return api().getReportsByCreatedByIds(idsBatch, BATCH_SIZE, skip);
+  }
+  const createdByKeys = idsBatch.map(id => [`contact:${id}`]);
+  return getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
+};
+
 const fetchReportsByCreator = async (db, createdByIds, skip) => {
   if (createdByIds.length === 0) {
     return [];
@@ -81,14 +89,8 @@ const fetchReportsByCreator = async (db, createdByIds, skip) => {
   const allResults = [];
   for (let i = 0; i < createdByIds.length; i += QUERY_IDS_BATCH_SIZE) {
     const idsBatch = createdByIds.slice(i, i + QUERY_IDS_BATCH_SIZE);
-    if (useNouveau) {
-      const batchResults = await api().getReportsByCreatedByIds(idsBatch, BATCH_SIZE, skip);
-      allResults.push(...batchResults);
-    } else {
-      const createdByKeys = idsBatch.map(id => [`contact:${id}`]);
-      const batchResults = await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
-      allResults.push(...batchResults);
-    }
+    const batchResults = await fetchReportsBatch(db, idsBatch, useNouveau, skip);
+    allResults.push(...batchResults);
   }
   return allResults;
 };
