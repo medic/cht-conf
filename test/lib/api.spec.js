@@ -282,17 +282,17 @@ describe('api', () => {
             ]
           };
 
-          mockRequest.get.resolves(mockResponse);
+          mockRequest.post.resolves(mockResponse);
 
           // Act
           const result = await api().getReportsByCreatedByIds(createdByIds, limit, skip);
 
           // Assert - Check API call details
-          expect(mockRequest.get.callCount).to.equal(1);
-          const [url, options] = mockRequest.get.getCall(0).args;
+          expect(mockRequest.post.callCount).to.equal(1);
+          const [url, options] = mockRequest.post.getCall(0).args;
           expect(url).to.equal('http://example.com/db-name/_design/medic/_nouveau/reports_by_freetext');
-          expect(options.qs).to.deep.equal({
-            sort: '"reported_date"',
+          expect(options.body).to.deep.equal({
+            sort: 'reported_date',
             q: 'exact_match:"contact:user1" OR exact_match:"contact:user2"',
             include_docs: true,
             limit: 10,
@@ -312,16 +312,16 @@ describe('api', () => {
           const createdByIds = ['user1'];
           const mockResponse = { hits: [] };
 
-          mockRequest.get.resolves(mockResponse);
+          mockRequest.post.resolves(mockResponse);
 
           // Act
           const result = await api().getReportsByCreatedByIds(createdByIds, undefined, null);
 
           // Assert
-          const [, options] = mockRequest.get.getCall(0).args;
-          expect(options.qs.q).to.equal('exact_match:"contact:user1"');
-          expect(options.qs.limit).to.be.undefined;
-          expect(options.qs.skip).to.be.null;
+          const [, options] = mockRequest.post.getCall(0).args;
+          expect(options.body.q).to.equal('exact_match:"contact:user1"');
+          expect(options.body.limit).to.be.undefined;
+          expect(options.body.skip).to.be.null;
           expect(result).to.deep.equal([]);
         });
       });
@@ -329,23 +329,23 @@ describe('api', () => {
       describe('edge cases', () => {
         it('should handle various edge case inputs', async () => {
           const mockResponse = { hits: [] };
-          mockRequest.get.resolves(mockResponse);
+          mockRequest.post.resolves(mockResponse);
 
           // Test empty array
           await api().getReportsByCreatedByIds([], 10, 0);
-          expect(mockRequest.get.getCall(0).args[1].qs.q).to.equal('');
+          expect(mockRequest.post.getCall(0).args[1].body.q).to.equal('');
 
           // Test special characters in IDs
           await api().getReportsByCreatedByIds(['user@domain.com', 'user-with-dashes'], 10, 0);
           expect(
-            mockRequest.get.getCall(1).args[1].qs.q
+            mockRequest.post.getCall(1).args[1].body.q
           ).to.equal('exact_match:"contact:user@domain.com" OR exact_match:"contact:user-with-dashes"');
 
           // Test zero values
           await api().getReportsByCreatedByIds(['user1'], 0, 0);
-          const options = mockRequest.get.getCall(2).args[1];
-          expect(options.qs.limit).to.equal(0);
-          expect(options.qs.skip).to.equal(0);
+          const options = mockRequest.post.getCall(2).args[1];
+          expect(options.body.limit).to.equal(0);
+          expect(options.body.skip).to.equal(0);
         });
       });
 
@@ -353,7 +353,7 @@ describe('api', () => {
         it('should propagate request errors', async () => {
           // Arrange
           const expectedError = new Error('Network error');
-          mockRequest.get.rejects(expectedError);
+          mockRequest.post.rejects(expectedError);
 
           // Act & Assert
           try {
@@ -366,7 +366,7 @@ describe('api', () => {
 
         it('should handle malformed responses', async () => {
           // Test missing hits property
-          mockRequest.get.resolves({});
+          mockRequest.post.resolves({});
 
           try {
             await api().getReportsByCreatedByIds(['user1'], 10, 0);
@@ -376,7 +376,7 @@ describe('api', () => {
           }
 
           // Test hits with missing doc properties
-          mockRequest.get.resolves({
+          mockRequest.post.resolves({
             hits: [
               { doc: { _id: 'report1' } },
               {}, // Missing doc property
