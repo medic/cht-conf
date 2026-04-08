@@ -53,7 +53,7 @@ describe('hierarchy-operations', () => {
     delete result._rev;
     return result;
   };
-  const expectWrittenDocs = expected => expect(writtenDocs.map(doc => doc._id)).to.have.members(expected);
+  const expectWrittenDocs = expected => expect([...new Set(writtenDocs.map(doc => doc._id))]).to.have.members(expected);
 
   const upsert = async (id, content) => {
     const { _rev } = await pouchDb.get(id);

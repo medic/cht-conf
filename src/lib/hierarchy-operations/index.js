@@ -74,22 +74,36 @@ function getPrimaryContactId(doc) {
 
 async function updateReports(db, options, moveContext) {
   const descendantIds = moveContext.descendantsAndSelf.map(contact => contact._id);
+  const createdAtIds = getReportsCreatedAtIds(moveContext);
 
+  let totalCount = 0;
+  totalCount += await processReportsInBatches(
+    skip => DataSource.fetchReportsByCreator(db, descendantIds, skip),
+    options, moveContext
+  );
+  totalCount += await processReportsInBatches(
+    skip => DataSource.fetchReportsBySubject(db, createdAtIds, skip),
+    options, moveContext
+  );
+
+  return totalCount;
+}
+
+async function processReportsInBatches(fetchBatch, options, moveContext) {
   let skip = 0;
-  let reportDocsBatch;
+  let batch;
   do {
     info(`Processing ${skip} to ${skip + DataSource.BATCH_SIZE} report docs`);
-    const createdAtIds = getReportsCreatedAtIds(moveContext);
-    reportDocsBatch = await DataSource.getReportsForContacts(db, descendantIds, createdAtIds, skip);
+    batch = await fetchBatch(skip);
 
-    const lineageUpdates = replaceLineageOfReportCreator(reportDocsBatch, moveContext);
-    const reassignUpdates = reassignReports(reportDocsBatch, moveContext);
-    const updatedReports = reportDocsBatch.filter(doc => lineageUpdates.has(doc._id) || reassignUpdates.has(doc._id));
+    const lineageUpdates = replaceLineageOfReportCreator(batch, moveContext);
+    const reassignUpdates = reassignReports(batch, moveContext);
+    const updatedReports = batch.filter(doc => lineageUpdates.has(doc._id) || reassignUpdates.has(doc._id));
 
     minifyLineageAndWriteToDisk(options, updatedReports);
 
-    skip += reportDocsBatch.length;
-  } while (reportDocsBatch.length >= DataSource.BATCH_SIZE);
+    skip += batch.length;
+  } while (batch.length >= DataSource.BATCH_SIZE);
 
   return skip;
 }
