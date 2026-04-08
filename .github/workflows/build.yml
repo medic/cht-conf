@@ -40,7 +40,7 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       GOOGLE_REDIRECT_URI: "http://localhost"
       GOOGLE_TOKEN_SCOPE: 'https://www.googleapis.com/auth/drive.readonly'
-      RUN_GOOGLE_TESTS: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+      RUN_GOOGLE_TESTS: ${{ secrets.GOOGLE_CREDENTIALS != '' }}
 
     steps:
     - uses: actions/checkout@v4
