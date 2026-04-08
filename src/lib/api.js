@@ -256,7 +256,7 @@ const api = {
     }
   },
 
-  async getReportsByCreatedByIds (createdByIds, limit, skip) {
+  async getReportsByFreetext (createdByIds, limit, skip) {
     const queryString = createdByIds.map(id => `exact_match:"contact:${id}"`).join(' OR ');
     const res = await request.post(`${environment.apiUrl}/_design/medic/_nouveau/reports_by_freetext`, {
       body: {

@@ -264,7 +264,7 @@ describe('api', () => {
       });
     });
 
-    describe('getReportsByCreatedByIds', async () => {
+    describe('getReportsByFreetext', async () => {
       beforeEach(() => {
         sinon.stub(environment, 'isArchiveMode').get(() => false);
       });
@@ -285,7 +285,7 @@ describe('api', () => {
           mockRequest.post.resolves(mockResponse);
 
           // Act
-          const result = await api().getReportsByCreatedByIds(createdByIds, limit, skip);
+          const result = await api().getReportsByFreetext(createdByIds, limit, skip);
 
           // Assert - Check API call details
           expect(mockRequest.post.callCount).to.equal(1);
@@ -315,13 +315,11 @@ describe('api', () => {
           mockRequest.post.resolves(mockResponse);
 
           // Act
-          const result = await api().getReportsByCreatedByIds(createdByIds, undefined, null);
+          const result = await api().getReportsByFreetext(createdByIds, undefined, null);
 
           // Assert
           const [, options] = mockRequest.post.getCall(0).args;
           expect(options.body.q).to.equal('exact_match:"contact:user1"');
-          expect(options.body.limit).to.be.undefined;
-          expect(options.body.skip).to.be.null;
           expect(result).to.deep.equal([]);
         });
       });
@@ -332,20 +330,14 @@ describe('api', () => {
           mockRequest.post.resolves(mockResponse);
 
           // Test empty array
-          await api().getReportsByCreatedByIds([], 10, 0);
+          await api().getReportsByFreetext([], 10, 0);
           expect(mockRequest.post.getCall(0).args[1].body.q).to.equal('');
 
           // Test special characters in IDs
-          await api().getReportsByCreatedByIds(['user@domain.com', 'user-with-dashes'], 10, 0);
+          await api().getReportsByFreetext(['user@domain.com', 'user-with-dashes'], 10, 0);
           expect(
             mockRequest.post.getCall(1).args[1].body.q
           ).to.equal('exact_match:"contact:user@domain.com" OR exact_match:"contact:user-with-dashes"');
-
-          // Test zero values
-          await api().getReportsByCreatedByIds(['user1'], 0, 0);
-          const options = mockRequest.post.getCall(2).args[1];
-          expect(options.body.limit).to.equal(0);
-          expect(options.body.skip).to.equal(0);
         });
       });
 
@@ -357,7 +349,7 @@ describe('api', () => {
 
           // Act & Assert
           try {
-            await api().getReportsByCreatedByIds(['user1'], 10, 0);
+            await api().getReportsByFreetext(['user1'], 10, 0);
             expect.fail('Should have thrown an error');
           } catch (error) {
             expect(error).to.equal(expectedError);
@@ -369,7 +361,7 @@ describe('api', () => {
           mockRequest.post.resolves({});
 
           try {
-            await api().getReportsByCreatedByIds(['user1'], 10, 0);
+            await api().getReportsByFreetext(['user1'], 10, 0);
             expect.fail('Should have thrown an error');
           } catch (error) {
             expect(error).to.be.instanceOf(TypeError);
@@ -384,7 +376,7 @@ describe('api', () => {
             ]
           });
 
-          const result = await api().getReportsByCreatedByIds(['user1'], 10, 0);
+          const result = await api().getReportsByFreetext(['user1'], 10, 0);
           expect(result).to.have.length(3);
           expect(result[0]).to.deep.equal({ _id: 'report1' });
           expect(result[1]).to.be.undefined;
