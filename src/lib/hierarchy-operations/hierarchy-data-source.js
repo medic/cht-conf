@@ -71,38 +71,25 @@ const getFromDbView = async (db, view, keys, skip) => {
   return res.rows.map(row => row.doc);
 };
 
-const fetchReportsByCreator = async (db, createdByIds) => {
+const fetchReportsByCreator = async (db, createdByIds, skip) => {
   if (createdByIds.length === 0) {
     return [];
   }
 
   const coreVersion = await getValidApiVersion();
   if (coreVersion && semver.gte(coreVersion, NOUVEAU_MIN_VERSION)) {
-    return await api().getReportsByCreatedByIds(createdByIds, BATCH_SIZE, 0);
+    return await api().getReportsByFreetext(createdByIds, BATCH_SIZE, skip);
   }
 
   const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-  return await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, 0);
+  return await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
 };
 
-const fetchReportsBySubject = async (db, createdAtIds) => {
+const fetchReportsBySubject = async (db, createdAtIds, skip) => {
   if (!createdAtIds || createdAtIds.length <= 0) {
     return [];
   }
-  return await getFromDbView(db, 'medic-client/reports_by_subject', createdAtIds, 0);
-};
-
-const getReportsForContacts = async (db, createdByIds, createdAtIds, skip) => {
-  const [creatorReports, subjectReports] = await Promise.all([
-    fetchReportsByCreator(db, createdByIds),
-    fetchReportsBySubject(db, createdAtIds)
-  ]);
-
-  const allRows = [...creatorReports, ...subjectReports];
-
-  const docsWithId = allRows.map((doc) => [doc._id, doc]);
-  const uniqueDocs = Array.from(new Map(docsWithId).values());
-  return uniqueDocs.slice(skip, skip + BATCH_SIZE);
+  return await getFromDbView(db, 'medic-client/reports_by_subject', createdAtIds, skip);
 };
 
 async function getAncestorsOf(db, contactDoc) {
@@ -131,5 +118,6 @@ module.exports = {
   getContactWithDescendants,
   getContact,
   getContactsByIds,
-  getReportsForContacts,
+  fetchReportsByCreator,
+  fetchReportsBySubject,
 };
