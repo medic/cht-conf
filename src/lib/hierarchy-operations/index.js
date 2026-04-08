@@ -77,35 +77,34 @@ async function updateReports(db, options, moveContext) {
   const createdAtIds = getReportsCreatedAtIds(moveContext);
 
   let totalCount = 0;
-  totalCount += await processReportsInBatches(
-    skip => DataSource.fetchReportsByCreator(db, descendantIds, skip),
-    options, moveContext
-  );
-  totalCount += await processReportsInBatches(
-    skip => DataSource.fetchReportsBySubject(db, createdAtIds, skip),
-    options, moveContext
-  );
+
+  let skip = 0;
+  let batch;
+  do {
+    info(`Processing creator reports ${skip} to ${skip + DataSource.BATCH_SIZE}`);
+    batch = await DataSource.fetchReportsByCreator(db, descendantIds, skip);
+    processAndWriteReportBatch(batch, options, moveContext);
+    skip += batch.length;
+    totalCount += batch.length;
+  } while (batch.length >= DataSource.BATCH_SIZE);
+
+  skip = 0;
+  do {
+    info(`Processing subject reports ${skip} to ${skip + DataSource.BATCH_SIZE}`);
+    batch = await DataSource.fetchReportsBySubject(db, createdAtIds, skip);
+    processAndWriteReportBatch(batch, options, moveContext);
+    skip += batch.length;
+    totalCount += batch.length;
+  } while (batch.length >= DataSource.BATCH_SIZE);
 
   return totalCount;
 }
 
-async function processReportsInBatches(fetchBatch, options, moveContext) {
-  let skip = 0;
-  let batch;
-  do {
-    info(`Processing ${skip} to ${skip + DataSource.BATCH_SIZE} report docs`);
-    batch = await fetchBatch(skip);
-
-    const lineageUpdates = replaceLineageOfReportCreator(batch, moveContext);
-    const reassignUpdates = reassignReports(batch, moveContext);
-    const updatedReports = batch.filter(doc => lineageUpdates.has(doc._id) || reassignUpdates.has(doc._id));
-
-    minifyLineageAndWriteToDisk(options, updatedReports);
-
-    skip += batch.length;
-  } while (batch.length >= DataSource.BATCH_SIZE);
-
-  return skip;
+function processAndWriteReportBatch(batch, options, moveContext) {
+  const lineageUpdates = replaceLineageOfReportCreator(batch, moveContext);
+  const reassignUpdates = reassignReports(batch, moveContext);
+  const updatedReports = batch.filter(doc => lineageUpdates.has(doc._id) || reassignUpdates.has(doc._id));
+  minifyLineageAndWriteToDisk(options, updatedReports);
 }
 
 function getReportsCreatedAtIds(moveContext) {
