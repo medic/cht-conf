@@ -78,15 +78,15 @@ async function updateReports(db, options, moveContext) {
 
   let totalCount = 0;
 
-  let skip = 0;
-  let batch;
+  let cursor = null;
+  let result;
   do {
-    info(`Processing creator reports ${skip} to ${skip + DataSource.BATCH_SIZE}`);
-    batch = await DataSource.fetchReportsByCreator(db, descendantIds, skip);
-    processAndWriteReportBatch(batch, options, moveContext);
-    skip += batch.length;
-    totalCount += batch.length;
-  } while (batch.length >= DataSource.BATCH_SIZE);
+    info(`Processing creator reports ${totalCount} to ${totalCount + DataSource.BATCH_SIZE}`);
+    result = await DataSource.fetchReportsByCreator(db, descendantIds, cursor);
+    processAndWriteReportBatch(result.docs, options, moveContext);
+    cursor = result.cursor;
+    totalCount += result.docs.length;
+  } while (result.docs.length >= DataSource.BATCH_SIZE);
 
   skip = 0;
   do {

@@ -274,18 +274,19 @@ describe('api', () => {
           // Arrange
           const createdByIds = ['user1', 'user2'];
           const limit = 10;
-          const skip = 5;
+          const bookmark = 'abc123';
           const mockResponse = {
             hits: [
               {doc: {_id: 'report1', content: 'data1'}},
               {doc: {_id: 'report2', content: 'data2'}}
-            ]
+            ],
+            bookmark: 'next_page_bookmark'
           };
 
           mockRequest.post.resolves(mockResponse);
 
           // Act
-          const result = await api().getReportsByFreetext(createdByIds, limit, skip);
+          const result = await api().getReportsByFreetext(createdByIds, limit, bookmark);
 
           // Assert - Check API call details
           expect(mockRequest.post.callCount).to.equal(1);
@@ -296,21 +297,24 @@ describe('api', () => {
             q: 'exact_match:"contact:user1" OR exact_match:"contact:user2"',
             include_docs: true,
             limit: 10,
-            skip: 5
+            bookmark: 'abc123'
           });
           expect(options.json).to.be.true;
 
           // Assert - Check return value
-          expect(result).to.deep.equal([
-            {_id: 'report1', content: 'data1'},
-            {_id: 'report2', content: 'data2'}
-          ]);
+          expect(result).to.deep.equal({
+            docs: [
+              {_id: 'report1', content: 'data1'},
+              {_id: 'report2', content: 'data2'}
+            ],
+            bookmark: 'next_page_bookmark'
+          });
         });
 
         it('should handle single ID and empty results', async () => {
           // Arrange
           const createdByIds = ['user1'];
-          const mockResponse = { hits: [] };
+          const mockResponse = { hits: [], bookmark: null };
 
           mockRequest.post.resolves(mockResponse);
 
@@ -320,7 +324,8 @@ describe('api', () => {
           // Assert
           const [, options] = mockRequest.post.getCall(0).args;
           expect(options.body.q).to.equal('exact_match:"contact:user1"');
-          expect(result).to.deep.equal([]);
+          expect(options.body.bookmark).to.be.undefined;
+          expect(result).to.deep.equal({ docs: [], bookmark: null });
         });
       });
 
@@ -373,14 +378,15 @@ describe('api', () => {
               { doc: { _id: 'report1' } },
               {}, // Missing doc property
               { doc: { _id: 'report3' } }
-            ]
+            ],
+            bookmark: 'some_bookmark'
           });
 
-          const result = await api().getReportsByFreetext(['user1'], 10, 0);
-          expect(result).to.have.length(3);
-          expect(result[0]).to.deep.equal({ _id: 'report1' });
-          expect(result[1]).to.be.undefined;
-          expect(result[2]).to.deep.equal({ _id: 'report3' });
+          const result = await api().getReportsByFreetext(['user1'], 10, null);
+          expect(result.docs).to.have.length(3);
+          expect(result.docs[0]).to.deep.equal({ _id: 'report1' });
+          expect(result.docs[1]).to.be.undefined;
+          expect(result.docs[2]).to.deep.equal({ _id: 'report3' });
         });
       });
     });

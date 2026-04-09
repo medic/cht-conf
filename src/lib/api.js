@@ -256,20 +256,23 @@ const api = {
     }
   },
 
-  async getReportsByFreetext (createdByIds, limit, skip) {
+  async getReportsByFreetext (createdByIds, limit, bookmark) {
     const queryString = createdByIds.map(id => `exact_match:"contact:${id}"`).join(' OR ');
+    const body = {
+      // sorting by this field ensures that the output are same with the clouseau views
+      // https://github.com/medic/cht-core/pull/9541
+      sort: 'reported_date',
+      q: queryString,
+      include_docs: true,
+      limit,
+    };
+    if (bookmark) {
+      body.bookmark = bookmark;
+    }
     const res = await request.post(`${environment.apiUrl}/_design/medic/_nouveau/reports_by_freetext`, {
-      body: {
-        // sorting by this field ensures that the output are same with the clouseau views
-        // https://github.com/medic/cht-core/pull/9541
-        sort: 'reported_date',
-        q: queryString,
-        include_docs: true,
-        limit,
-        skip
-      }, json: true
+      body, json: true
     });
-    return res.hits.map(item => item.doc);
+    return { docs: res.hits.map(item => item.doc), bookmark: res.bookmark };
   }
 };
 

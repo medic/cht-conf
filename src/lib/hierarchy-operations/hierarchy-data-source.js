@@ -71,18 +71,21 @@ const getFromDbView = async (db, view, keys, skip) => {
   return res.rows.map(row => row.doc);
 };
 
-const fetchReportsByCreator = async (db, createdByIds, skip) => {
+const fetchReportsByCreator = async (db, createdByIds, cursor) => {
   if (createdByIds.length === 0) {
-    return [];
+    return { docs: [], cursor: null };
   }
 
   const coreVersion = await getValidApiVersion();
   if (coreVersion && semver.gte(coreVersion, NOUVEAU_MIN_VERSION)) {
-    return await api().getReportsByFreetext(createdByIds, BATCH_SIZE, skip);
+    const { docs, bookmark } = await api().getReportsByFreetext(createdByIds, BATCH_SIZE, cursor);
+    return { docs, cursor: bookmark };
   }
 
+  const skip = cursor || 0;
   const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-  return await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
+  const docs = await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
+  return { docs, cursor: skip + docs.length };
 };
 
 const fetchReportsBySubject = async (db, createdAtIds, skip) => {
