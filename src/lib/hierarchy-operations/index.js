@@ -88,7 +88,8 @@ async function updateReports(db, options, moveContext) {
     totalCount += result.docs.length;
   } while (result.docs.length >= DataSource.BATCH_SIZE);
 
-  skip = 0;
+  let skip = 0;
+  let batch;
   do {
     info(`Processing subject reports ${skip} to ${skip + DataSource.BATCH_SIZE}`);
     batch = await DataSource.fetchReportsBySubject(db, createdAtIds, skip);
