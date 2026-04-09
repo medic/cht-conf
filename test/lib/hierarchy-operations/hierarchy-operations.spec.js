@@ -2,6 +2,7 @@ const rewire = require('rewire');
 const sinon = require('sinon');
 
 const { mockReport, mockHierarchy, parentsToLineage } = require('../../mock-hierarchies');
+const { clearCache: clearApiVersionCache } = require('../../../src/lib/get-api-version');
 const JsDocs = rewire('../../../src/lib/hierarchy-operations/jsdocFolder');
 const DataSource = rewire('../../../src/lib/hierarchy-operations/hierarchy-data-source');
 
@@ -119,6 +120,7 @@ describe('hierarchy-operations', () => {
   afterEach(async () => {
     pouchDb.destroy();
     sinon.restore();
+    clearApiVersionCache();
     await apiStub.stop();
   });
 
@@ -1100,6 +1102,85 @@ describe('hierarchy-operations', () => {
             limit: undefined
           }],
         ]);
+      });
+    });
+
+    describe('pagination processes all reports across multiple batches', () => {
+      const initialBatchSize = DataSource.BATCH_SIZE;
+      beforeEach(async () => {
+        clearApiVersionCache();
+        await mockReport(pouchDb, {
+          id: 'report_2',
+          creatorId: 'health_center_1_contact',
+          patientId: 'health_center_1_contact',
+        });
+
+        await mockReport(pouchDb, {
+          id: 'report_3',
+          creatorId: 'health_center_1_contact',
+          patientId: 'health_center_1_contact',
+        });
+      });
+
+      afterEach(() => {
+        DataSource.BATCH_SIZE = initialBatchSize;
+        DataSource.__set__('BATCH_SIZE', initialBatchSize);
+      });
+
+      it('paginates creator reports with skip in CHT version 4.15.0', async () => {
+        DataSource.__set__('BATCH_SIZE', 2);
+        DataSource.BATCH_SIZE = 2;
+        sinon.spy(pouchDb, 'query');
+        apiStub.giveCommonResponse({
+          body: { version: '4.15.0' }
+        });
+
+        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
+
+        expect(getWrittenDoc('report_1')).to.not.be.undefined;
+        expect(getWrittenDoc('report_2')).to.not.be.undefined;
+        expect(getWrittenDoc('report_3')).to.not.be.undefined;
+
+        const freetextQueries = pouchDb.query.args.filter(
+          args => args[0] === 'medic-client/reports_by_freetext'
+        );
+        expect(freetextQueries.length).to.equal(2);
+        expect(freetextQueries[0][1].skip).to.equal(0);
+        expect(freetextQueries[0][1].limit).to.equal(2);
+        expect(freetextQueries[1][1].skip).to.equal(2);
+        expect(freetextQueries[1][1].limit).to.equal(2);
+      });
+
+      it('paginates creator reports with bookmark in CHT version 5.0.0', async () => {
+        DataSource.__set__('BATCH_SIZE', 2);
+        DataSource.BATCH_SIZE = 2;
+        sinon.spy(pouchDb, 'query');
+
+        // eslint-disable-next-line max-len
+        const report1Hit = {id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}};
+        // eslint-disable-next-line max-len
+        const report2Hit = {id:'report_2',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_2',_rev:'1-3cc001d7d9c9a306920e0caeb54709d4'}};
+        // eslint-disable-next-line max-len
+        const report3Hit = {id:'report_3',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_3',_rev:'1-3b7b94f966bcc262a48063efdf1ebf84'}};
+
+        apiStub.giveResponses(
+          { body: { version: '5.0.0' } },
+          { body: { hits: [report1Hit, report2Hit], bookmark: 'bookmark_page2' } },
+          { body: { hits: [report3Hit], bookmark: 'bookmark_page3' } },
+        );
+
+        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
+
+        expect(getWrittenDoc('report_1')).to.not.be.undefined;
+        expect(getWrittenDoc('report_2')).to.not.be.undefined;
+        expect(getWrittenDoc('report_3')).to.not.be.undefined;
+
+        const apiRequests = apiStub.requestLog().filter(
+          req => req.url.includes('_nouveau/reports_by_freetext')
+        );
+        expect(apiRequests.length).to.equal(2);
+        expect(apiRequests[0].body.bookmark).to.be.undefined;
+        expect(apiRequests[1].body.bookmark).to.equal('bookmark_page2');
       });
     });
   });
