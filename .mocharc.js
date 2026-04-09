@@ -6,6 +6,7 @@ chai.use(require('sinon-chai'));
 chai.use(require('chai-xml'));
 
 module.exports = {
+  require: ['../../test/hooks.js'],
   allowUncaught: false,
   asyncOnly: false,
   exclude: '../../test/e2e/**/*.spec.js',
