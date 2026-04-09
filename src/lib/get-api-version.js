@@ -17,8 +17,16 @@ const getApiVersion = async () => {
   return version;
 };
 
+let cachedVersion;
 const getValidApiVersion = async () => {
-  return semver.valid(semver.coerce(await getApiVersion()));
+  if (!cachedVersion) {
+    cachedVersion = semver.valid(semver.coerce(await getApiVersion()));
+  }
+  return cachedVersion;
 };
 
-module.exports = { getValidApiVersion };
+const clearCache = () => {
+  cachedVersion = undefined;
+};
+
+module.exports = { getValidApiVersion, clearCache };
