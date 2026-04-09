@@ -77,12 +77,13 @@ async function updateReports(db, options, moveContext) {
   const createdAtIds = getReportsCreatedAtIds(moveContext);
 
   let totalCount = 0;
+  const useNouveau = await DataSource.useNouveauSearch();
 
   let cursor = null;
   let result;
   do {
     info(`Processing creator reports ${totalCount} to ${totalCount + DataSource.BATCH_SIZE}`);
-    result = await DataSource.fetchReportsByCreator(db, descendantIds, cursor);
+    result = await DataSource.fetchReportsByCreator(db, descendantIds, cursor, useNouveau);
     processAndWriteReportBatch(result.docs, options, moveContext);
     cursor = result.cursor;
     totalCount += result.docs.length;

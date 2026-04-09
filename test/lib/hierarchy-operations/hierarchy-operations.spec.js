@@ -2,7 +2,6 @@ const rewire = require('rewire');
 const sinon = require('sinon');
 
 const { mockReport, mockHierarchy, parentsToLineage } = require('../../mock-hierarchies');
-const { clearCache: clearApiVersionCache } = require('../../../src/lib/get-api-version');
 const JsDocs = rewire('../../../src/lib/hierarchy-operations/jsdocFolder');
 const DataSource = rewire('../../../src/lib/hierarchy-operations/hierarchy-data-source');
 
@@ -120,7 +119,6 @@ describe('hierarchy-operations', () => {
   afterEach(async () => {
     pouchDb.destroy();
     sinon.restore();
-    clearApiVersionCache();
     await apiStub.stop();
   });
 
@@ -1108,7 +1106,6 @@ describe('hierarchy-operations', () => {
     describe('pagination processes all reports across multiple batches', () => {
       const initialBatchSize = DataSource.BATCH_SIZE;
       beforeEach(async () => {
-        clearApiVersionCache();
         await mockReport(pouchDb, {
           id: 'report_2',
           creatorId: 'health_center_1_contact',

@@ -71,13 +71,17 @@ const getFromDbView = async (db, view, keys, skip) => {
   return res.rows.map(row => row.doc);
 };
 
-const fetchReportsByCreator = async (db, createdByIds, cursor) => {
+const useNouveauSearch = async () => {
+  const coreVersion = await getValidApiVersion();
+  return coreVersion && semver.gte(coreVersion, NOUVEAU_MIN_VERSION);
+};
+
+const fetchReportsByCreator = async (db, createdByIds, cursor, useNouveau) => {
   if (createdByIds.length === 0) {
     return { docs: [], cursor: null };
   }
 
-  const coreVersion = await getValidApiVersion();
-  if (coreVersion && semver.gte(coreVersion, NOUVEAU_MIN_VERSION)) {
+  if (useNouveau) {
     const { docs, bookmark } = await api().getReportsByFreetext(createdByIds, BATCH_SIZE, cursor);
     return { docs, cursor: bookmark };
   }
@@ -121,6 +125,7 @@ module.exports = {
   getContactWithDescendants,
   getContact,
   getContactsByIds,
+  useNouveauSearch,
   fetchReportsByCreator,
   fetchReportsBySubject,
 };

@@ -7,7 +7,6 @@ const apiVersion = rewire('../../src/lib/get-api-version');
 describe('get-api-version', () => {
   afterEach(() => {
     sinon.reset();
-    apiVersion.clearCache();
   });
 
   const versions = [

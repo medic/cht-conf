@@ -4,7 +4,6 @@ PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-find'));
 
 const environment = require('../src/lib/environment');
-const { clearCache: clearApiVersionCache } = require('../src/lib/get-api-version');
 const express = require('express');
 const expressPouch = require('express-pouchdb');
 const ExpressSpy = require('./express-spy');
@@ -67,7 +66,6 @@ module.exports = {
 
     mockMiddleware.clearRequests();
     mockMiddleware.reset();
-    clearApiVersionCache();
   },
 };
 
