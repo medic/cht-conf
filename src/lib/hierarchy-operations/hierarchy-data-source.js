@@ -1,10 +1,11 @@
 const lineageManipulation = require('./lineage-manipulation');
-const {getValidApiVersion} = require('../get-api-version');
+const { getValidApiVersion } = require('../get-api-version');
 const semver = require('semver');
 const api = require('../api');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
+const QUERY_IDS_BATCH_SIZE = 100;
 const NOUVEAU_MIN_VERSION = '5.0.0';
 const SUBJECT_IDS = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
 
@@ -71,18 +72,39 @@ const getFromDbView = async (db, view, keys, skip) => {
   return res.rows.map(row => row.doc);
 };
 
-const fetchReportsByCreator = async (db, createdByIds, skip) => {
-  if (createdByIds.length === 0) {
-    return [];
-  }
-
+const useNouveauSearch = async () => {
   const coreVersion = await getValidApiVersion();
-  if (coreVersion && semver.gte(coreVersion, NOUVEAU_MIN_VERSION)) {
-    return await api().getReportsByCreatedByIds(createdByIds, BATCH_SIZE, skip);
+  return coreVersion && semver.gte(coreVersion, NOUVEAU_MIN_VERSION);
+};
+
+const fetchReportsByCreator = async (db, createdByIds, cursor, useNouveau) => {
+  if (createdByIds.length === 0) {
+    return { docs: [], cursor: null };
   }
 
+  if (useNouveau) {
+    return await fetchAllReportsFromNouveau(createdByIds);
+  }
+
+  const skip = cursor || 0;
   const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
-  return await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
+  const docs = await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
+  return { docs, cursor: skip + docs.length };
+};
+
+const fetchAllReportsFromNouveau = async (createdByIds) => {
+  const allDocs = [];
+  for (let i = 0; i < createdByIds.length; i += QUERY_IDS_BATCH_SIZE) {
+    const idsBatch = createdByIds.slice(i, i + QUERY_IDS_BATCH_SIZE);
+    let bookmark = null;
+    let batch;
+    do {
+      batch = await api().getReportsByFreetext(idsBatch, BATCH_SIZE, bookmark);
+      allDocs.push(...batch.docs);
+      bookmark = batch.bookmark;
+    } while (batch.docs.length >= BATCH_SIZE);
+  }
+  return { docs: allDocs, cursor: null };
 };
 
 const fetchReportsBySubject = async (db, createdAtIds, skip) => {
@@ -90,18 +112,6 @@ const fetchReportsBySubject = async (db, createdAtIds, skip) => {
     return [];
   }
   return await getFromDbView(db, 'medic-client/reports_by_subject', createdAtIds, skip);
-};
-
-const getReportsForContacts = async (db, createdByIds, createdAtIds, skip) => {
-  const [creatorReports, subjectReports] = await Promise.all([
-    fetchReportsByCreator(db, createdByIds, skip),
-    fetchReportsBySubject(db, createdAtIds, skip)
-  ]);
-
-  const allRows = [...creatorReports, ...subjectReports];
-
-  const docsWithId = allRows.map(( doc ) => [doc._id, doc]);
-  return Array.from(new Map(docsWithId).values());
 };
 
 async function getAncestorsOf(db, contactDoc) {
@@ -130,5 +140,7 @@ module.exports = {
   getContactWithDescendants,
   getContact,
   getContactsByIds,
-  getReportsForContacts,
+  useNouveauSearch,
+  fetchReportsByCreator,
+  fetchReportsBySubject,
 };

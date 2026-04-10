@@ -34,7 +34,7 @@ async function deleteReportsForContact(db, options, contact) {
   let skip = 0;
   let reportBatch;
   do {
-    reportBatch = await DataSource.getReportsForContacts(db, [], [contact._id], skip);
+    reportBatch = await DataSource.fetchReportsBySubject(db, [contact._id], skip);
 
     for (const report of reportBatch) {
       JsDocs.deleteDoc(options, report);

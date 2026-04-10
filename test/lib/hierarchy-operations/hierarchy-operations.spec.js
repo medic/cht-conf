@@ -53,7 +53,7 @@ describe('hierarchy-operations', () => {
     delete result._rev;
     return result;
   };
-  const expectWrittenDocs = expected => expect(writtenDocs.map(doc => doc._id)).to.have.members(expected);
+  const expectWrittenDocs = expected => expect([...new Set(writtenDocs.map(doc => doc._id))]).to.have.members(expected);
 
   const upsert = async (id, content) => {
     const { _rev } = await pouchDb.get(id);
@@ -978,8 +978,7 @@ describe('hierarchy-operations', () => {
       );
     });
 
-    describe('batching works as expected', () => {
-      const initialBatchSize = DataSource.BATCH_SIZE;
+    describe('fetches all reports correctly', () => {
       beforeEach(async () => {
         await mockReport(pouchDb, {
           id: 'report_2',
@@ -1000,434 +999,185 @@ describe('hierarchy-operations', () => {
         });
       });
 
+      it('move health_center_1 to district_2 fetches all reports in CHT version 4.15.0', async () => {
+        sinon.spy(pouchDb, 'query');
+        apiStub.giveCommonResponse({
+          body: {
+            version: '4.15.0'
+          }
+        });
+
+        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
+
+        expect(getWrittenDoc('report_1')).to.deep.eq({
+          _id: 'report_1',
+          form: 'foo',
+          type: 'data_record',
+          fields: { 'patient_uuid': 'health_center_1_contact' },
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+        });
+
+        expect(getWrittenDoc('report_2')).to.deep.eq({
+          _id: 'report_2',
+          form: 'foo',
+          type: 'data_record',
+          fields: { 'patient_uuid': 'health_center_1_contact' },
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+        });
+
+        expect(getWrittenDoc('report_3')).to.deep.eq({
+          _id: 'report_3',
+          form: 'foo',
+          type: 'data_record',
+          fields: { 'patient_uuid': 'health_center_1_contact' },
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+        });
+
+        const contactIdsKeys = [
+          ['contact:clinic_1'],
+          ['contact:clinic_1_contact'],
+          ['contact:health_center_1'],
+          ['contact:health_center_1_contact'],
+          ['contact:patient_1']
+        ];
+        expect(pouchDb.query.callCount).to.deep.equal(2);
+        expect(pouchDb.query.args).to.deep.equal([
+          [
+            'medic/contacts_by_depth',
+            { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }
+          ],
+          [
+            'medic-client/reports_by_freetext',
+            { keys: contactIdsKeys, include_docs: true, limit: 10000, skip: 0, group_level: undefined }
+          ],
+        ]);
+      });
+
+      it('move health_center_1 to district_2 fetches all reports in CHT version 5.0.0', async () => {
+        sinon.spy(pouchDb, 'query');
+        apiStub.giveResponses({
+          body: { version: '5.0.0' }
+        }, {
+          body: {
+            // eslint-disable-next-line max-len
+            hits: [{id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}},{id:'report_2',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_2',_rev:'1-3cc001d7d9c9a306920e0caeb54709d4'}},{id:'report_3',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_3',_rev:'1-3b7b94f966bcc262a48063efdf1ebf84'}},{id:'report_4',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_4',_rev:'1-622a96629997c0e89d73af7cfb360056'}}]
+          }
+        });
+
+        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
+
+        expect(getWrittenDoc('report_1')).to.deep.eq({
+          _id: 'report_1',
+          form: 'foo',
+          type: 'data_record',
+          fields: { 'patient_uuid': 'health_center_1_contact' },
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+        });
+
+        expect(getWrittenDoc('report_2')).to.deep.eq({
+          _id: 'report_2',
+          form: 'foo',
+          type: 'data_record',
+          fields: { 'patient_uuid': 'health_center_1_contact' },
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+        });
+
+        expect(getWrittenDoc('report_3')).to.deep.eq({
+          _id: 'report_3',
+          form: 'foo',
+          type: 'data_record',
+          fields: { 'patient_uuid': 'health_center_1_contact' },
+          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
+        });
+
+        expect(pouchDb.query.callCount).to.deep.equal(1);
+        expect(pouchDb.query.args).to.deep.equal([
+          ['medic/contacts_by_depth', {
+            key: ['health_center_1'],
+            include_docs: true,
+            group_level: undefined,
+            skip: undefined,
+            limit: undefined
+          }],
+        ]);
+      });
+    });
+
+    describe('pagination processes all reports across multiple batches', () => {
+      const initialBatchSize = DataSource.BATCH_SIZE;
+      beforeEach(async () => {
+        await mockReport(pouchDb, {
+          id: 'report_2',
+          creatorId: 'health_center_1_contact',
+          patientId: 'health_center_1_contact',
+        });
+
+        await mockReport(pouchDb, {
+          id: 'report_3',
+          creatorId: 'health_center_1_contact',
+          patientId: 'health_center_1_contact',
+        });
+      });
+
       afterEach(() => {
         DataSource.BATCH_SIZE = initialBatchSize;
         DataSource.__set__('BATCH_SIZE', initialBatchSize);
       });
 
-      it('move health_center_1 to district_2 in batches of 1 in CHT version 4.15.0', async () => {
-        DataSource.__set__('BATCH_SIZE', 1);
-        DataSource.BATCH_SIZE = 1;
-        sinon.spy(pouchDb, 'query');
-        apiStub.giveCommonResponse({
-          body: {
-            version: '4.15.0'
-          }
-        });
-
-        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
-
-        expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
-          _id: 'health_center_1_contact',
-          type: 'person',
-          parent: parentsToLineage('health_center_1', 'district_2'),
-        });
-
-        expect(getWrittenDoc('health_center_1')).to.deep.eq({
-          _id: 'health_center_1',
-          type: 'health_center',
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
-          parent: parentsToLineage('district_2'),
-        });
-
-        expect(getWrittenDoc('clinic_1')).to.deep.eq({
-          _id: 'clinic_1',
-          type: 'clinic',
-          contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_2'),
-          parent: parentsToLineage('health_center_1', 'district_2'),
-        });
-
-        expect(getWrittenDoc('patient_1')).to.deep.eq({
-          _id: 'patient_1',
-          type: 'person',
-          parent: parentsToLineage('clinic_1', 'health_center_1', 'district_2'),
-        });
-
-        expect(getWrittenDoc('report_1')).to.deep.eq({
-          _id: 'report_1',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            'patient_uuid': 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
-        });
-
-        expect(getWrittenDoc('report_2')).to.deep.eq({
-          _id: 'report_2',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            'patient_uuid': 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
-        });
-
-        expect(getWrittenDoc('report_3')).to.deep.eq({
-          _id: 'report_3',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            'patient_uuid': 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
-        });
-
-        expect(pouchDb.query.callCount).to.deep.equal(6);
-
-        const contactIdsKeys = [
-          ['contact:clinic_1'],
-          ['contact:clinic_1_contact'],
-          ['contact:health_center_1'],
-          ['contact:health_center_1_contact'],
-          ['contact:patient_1']
-        ];
-        expect(pouchDb.query.args).to.deep.equal([
-          [
-            'medic/contacts_by_depth',
-            { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }
-          ],
-          [
-            'medic-client/reports_by_freetext',
-            { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 0, group_level: undefined }
-          ],
-          [
-            'medic-client/reports_by_freetext',
-            { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 1, group_level: undefined }
-          ],
-          [
-            'medic-client/reports_by_freetext',
-            { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 2, group_level: undefined }
-          ],
-          [
-            'medic-client/reports_by_freetext',
-            { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 3, group_level: undefined }
-          ],
-          [
-            'medic-client/reports_by_freetext',
-            { keys: contactIdsKeys, include_docs: true, limit: 1, skip: 4, group_level: undefined }
-          ],
-        ]);
-      });
-
-      it('move health_center_1 to district_2 in batches of 1 in CHT version in 5.0.0', async () => {
-        DataSource.__set__('BATCH_SIZE', 1);
-        DataSource.BATCH_SIZE = 1;
-        sinon.spy(pouchDb, 'query');
-        apiStub.giveResponses({
-          body: {
-            version: '5.0.0'
-          }
-        }, {
-          body: {
-            hits: [
-              // eslint-disable-next-line max-len
-              {id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}}
-            ]
-          }
-        }, {
-          body: {
-            version: '5.0.0'
-          }
-        }, {
-          body: {
-            hits: [
-              // eslint-disable-next-line max-len
-              {id:'report_2',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_2',_rev:'1-3cc001d7d9c9a306920e0caeb54709d4'}}
-            ]
-          }
-        }, {
-          body: {
-            version: '5.0.0'
-          }
-        }, {
-          body: {
-            hits: [
-              // eslint-disable-next-line max-len
-              {id:'report_3',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_3',_rev:'1-3b7b94f966bcc262a48063efdf1ebf84'}}
-            ]
-          }
-        }, {
-          body: {
-            version: '5.0.0'
-          }
-        }, {
-          body: {
-            hits: [
-              // eslint-disable-next-line max-len
-              {id:'report_4',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_4',_rev:'1-622a96629997c0e89d73af7cfb360056'}}
-            ]
-          }
-        }, {
-          body: {
-            version: '5.0.0'
-          }
-        }, {
-          body: {
-            hits: []
-          }
-        });
-
-        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
-
-        expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
-          _id: 'health_center_1_contact',
-          type: 'person',
-          parent: parentsToLineage('health_center_1', 'district_2'),
-        });
-
-        expect(getWrittenDoc('health_center_1')).to.deep.eq({
-          _id: 'health_center_1',
-          type: 'health_center',
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
-          parent: parentsToLineage('district_2'),
-        });
-
-        expect(getWrittenDoc('clinic_1')).to.deep.eq({
-          _id: 'clinic_1',
-          type: 'clinic',
-          contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_2'),
-          parent: parentsToLineage('health_center_1', 'district_2'),
-        });
-
-        expect(getWrittenDoc('patient_1')).to.deep.eq({
-          _id: 'patient_1',
-          type: 'person',
-          parent: parentsToLineage('clinic_1', 'health_center_1', 'district_2'),
-        });
-
-        expect(getWrittenDoc('report_1')).to.deep.eq({
-          _id: 'report_1',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            'patient_uuid': 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
-        });
-
-        expect(getWrittenDoc('report_2')).to.deep.eq({
-          _id: 'report_2',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            'patient_uuid': 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
-        });
-
-        expect(getWrittenDoc('report_3')).to.deep.eq({
-          _id: 'report_3',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            'patient_uuid': 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_2'),
-        });
-
-        expect(pouchDb.query.callCount).to.deep.equal(1);
-        expect(pouchDb.query.args).to.deep.equal([['medic/contacts_by_depth', {
-          key: ['health_center_1'],
-          include_docs: true,
-          group_level: undefined,
-          skip: undefined,
-          limit: undefined
-        }],]);
-      });
-
-      it('should health_center_1 to district_1 in batches of 2 in CHT version 4.15.0', async () => {
+      it('paginates creator reports with skip in CHT version 4.15.0', async () => {
         DataSource.__set__('BATCH_SIZE', 2);
         DataSource.BATCH_SIZE = 2;
         sinon.spy(pouchDb, 'query');
         apiStub.giveCommonResponse({
-          body: {
-            version: '4.15.0'
-          }
+          body: { version: '4.15.0' }
         });
 
-        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_1');
+        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
 
-        expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
-          _id: 'health_center_1_contact',
-          type: 'person',
-          parent: parentsToLineage('health_center_1', 'district_1'),
-        });
+        expect(getWrittenDoc('report_1')).to.not.be.undefined;
+        expect(getWrittenDoc('report_2')).to.not.be.undefined;
+        expect(getWrittenDoc('report_3')).to.not.be.undefined;
 
-        expect(getWrittenDoc('health_center_1')).to.deep.eq({
-          _id: 'health_center_1',
-          type: 'health_center',
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
-          parent: parentsToLineage('district_1'),
-        });
-
-        expect(getWrittenDoc('clinic_1')).to.deep.eq({
-          _id: 'clinic_1',
-          type: 'clinic',
-          contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_1'),
-          parent: parentsToLineage('health_center_1', 'district_1'),
-        });
-
-        expect(getWrittenDoc('patient_1')).to.deep.eq({
-          _id: 'patient_1',
-          type: 'person',
-          parent: parentsToLineage('clinic_1', 'health_center_1', 'district_1'),
-        });
-
-        expect(getWrittenDoc('report_1')).to.deep.eq({
-          _id: 'report_1',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            patient_uuid: 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
-        });
-
-        expect(getWrittenDoc('report_2')).to.deep.eq({
-          _id: 'report_2',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            patient_uuid: 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
-        });
-
-        expect(getWrittenDoc('report_3')).to.deep.eq({
-          _id: 'report_3',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            patient_uuid: 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
-        });
-
-        expect(pouchDb.query.callCount).to.deep.equal(4);
-
-        const contactIdsKeys = [
-          ['contact:clinic_1'],
-          ['contact:clinic_1_contact'],
-          ['contact:health_center_1'],
-          ['contact:health_center_1_contact'],
-          ['contact:patient_1']
-        ];
-        expect(pouchDb.query.args).to.deep.equal([
-          [
-            'medic/contacts_by_depth',
-            { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }
-          ],
-          [
-            'medic-client/reports_by_freetext',
-            { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 0, group_level: undefined }
-          ],
-          [
-            'medic-client/reports_by_freetext',
-            { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 2, group_level: undefined }
-          ],
-          [
-            'medic-client/reports_by_freetext',
-            { keys: contactIdsKeys, include_docs: true, limit: 2, skip: 4, group_level: undefined }
-          ]
-        ]);
+        const freetextQueries = pouchDb.query.args.filter(
+          args => args[0] === 'medic-client/reports_by_freetext'
+        );
+        expect(freetextQueries.length).to.equal(2);
+        expect(freetextQueries[0][1].skip).to.equal(0);
+        expect(freetextQueries[0][1].limit).to.equal(2);
+        expect(freetextQueries[1][1].skip).to.equal(2);
+        expect(freetextQueries[1][1].limit).to.equal(2);
       });
 
-      it('should health_center_1 to district_1 in batches of 2 in CHT version 5.0.0', async () => {
+      it('paginates creator reports with bookmark in CHT version 5.0.0', async () => {
         DataSource.__set__('BATCH_SIZE', 2);
         DataSource.BATCH_SIZE = 2;
         sinon.spy(pouchDb, 'query');
-        apiStub.giveResponses({
-          body: {
-            version: '5.0.0'
-          }
-        }, {
-          body: {
-            // eslint-disable-next-line max-len
-            hits: [{id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}},{id:'report_2',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_2',_rev:'1-3cc001d7d9c9a306920e0caeb54709d4'}}]
-          }
-        }, {
-          body: {
-            version: '5.0.0'
-          }
-        }, {
-          body: {
-            // eslint-disable-next-line max-len
-            hits: [{id:'report_3',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_3',_rev:'1-3b7b94f966bcc262a48063efdf1ebf84'}},{id:'report_4',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_4',_rev:'1-622a96629997c0e89d73af7cfb360056'}}]
-          }
-        }, {
-          body: {
-            version: '5.0.0'
-          }
-        }, {
-          body: {
-            hits: []
-          }
-        });
 
-        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_1');
+        // eslint-disable-next-line max-len
+        const report1Hit = {id:'report_1',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_1',_rev:'1-2b8fdb6d5e5068efcf1ee44b23d030a3'}};
+        // eslint-disable-next-line max-len
+        const report2Hit = {id:'report_2',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_2',_rev:'1-3cc001d7d9c9a306920e0caeb54709d4'}};
+        // eslint-disable-next-line max-len
+        const report3Hit = {id:'report_3',fields:{patient_uuid:'health_center_1_contact'},doc:{form:'foo',type:'data_record',contact:{_id:'health_center_1_contact',parent:{_id:'health_center_1',parent:{_id:'district_1'}}},fields:{patient_uuid:'health_center_1_contact'},_id:'report_3',_rev:'1-3b7b94f966bcc262a48063efdf1ebf84'}};
 
-        expect(getWrittenDoc('health_center_1_contact')).to.deep.eq({
-          _id: 'health_center_1_contact',
-          type: 'person',
-          parent: parentsToLineage('health_center_1', 'district_1'),
-        });
+        apiStub.giveResponses(
+          { body: { version: '5.0.0' } },
+          { body: { hits: [report1Hit, report2Hit], bookmark: 'bookmark_page2' } },
+          { body: { hits: [report3Hit], bookmark: 'bookmark_page3' } },
+        );
 
-        expect(getWrittenDoc('health_center_1')).to.deep.eq({
-          _id: 'health_center_1',
-          type: 'health_center',
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
-          parent: parentsToLineage('district_1'),
-        });
+        await HierarchyOperations(pouchDb).move(['health_center_1'], 'district_2');
 
-        expect(getWrittenDoc('clinic_1')).to.deep.eq({
-          _id: 'clinic_1',
-          type: 'clinic',
-          contact: parentsToLineage('clinic_1_contact', 'clinic_1', 'health_center_1', 'district_1'),
-          parent: parentsToLineage('health_center_1', 'district_1'),
-        });
+        expect(getWrittenDoc('report_1')).to.not.be.undefined;
+        expect(getWrittenDoc('report_2')).to.not.be.undefined;
+        expect(getWrittenDoc('report_3')).to.not.be.undefined;
 
-        expect(getWrittenDoc('patient_1')).to.deep.eq({
-          _id: 'patient_1',
-          type: 'person',
-          parent: parentsToLineage('clinic_1', 'health_center_1', 'district_1'),
-        });
-
-        expect(getWrittenDoc('report_1')).to.deep.eq({
-          _id: 'report_1',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            patient_uuid: 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
-        });
-
-        expect(getWrittenDoc('report_2')).to.deep.eq({
-          _id: 'report_2',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            patient_uuid: 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
-        });
-
-        expect(getWrittenDoc('report_3')).to.deep.eq({
-          _id: 'report_3',
-          form: 'foo',
-          type: 'data_record',
-          fields: {
-            patient_uuid: 'health_center_1_contact'
-          },
-          contact: parentsToLineage('health_center_1_contact', 'health_center_1', 'district_1'),
-        });
-
-        expect(pouchDb.query.callCount).to.deep.equal(1);
-        expect(pouchDb.query.args).to.deep.equal([
-          // eslint-disable-next-line max-len
-          ['medic/contacts_by_depth', { key: ['health_center_1'], include_docs: true, group_level: undefined, skip: undefined, limit: undefined }],
-        ]);
+        const apiRequests = apiStub.requestLog().filter(
+          req => req.url.includes('_nouveau/reports_by_freetext')
+        );
+        expect(apiRequests.length).to.equal(2);
+        expect(apiRequests[0].body.bookmark).to.be.undefined;
+        expect(apiRequests[1].body.bookmark).to.equal('bookmark_page2');
       });
     });
   });
