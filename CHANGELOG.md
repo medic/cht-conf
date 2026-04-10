@@ -1,3 +1,10 @@
+## [6.1.1](https://github.com/medic/cht-conf/compare/v6.1.0...v6.1.1) (2026-04-10)
+
+
+### Bug Fixes
+
+* **#799:** batch contact IDs in move-contacts to avoid URI length errors ([#802](https://github.com/medic/cht-conf/issues/802)) ([08e92a5](https://github.com/medic/cht-conf/commit/08e92a568196bdcb3e68076a760fbd8a5b7ff461)), closes [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799) [#799](https://github.com/medic/cht-conf/issues/799)
+
 # [6.1.0](https://github.com/medic/cht-conf/compare/v6.0.2...v6.1.0) (2026-04-02)
 
 
