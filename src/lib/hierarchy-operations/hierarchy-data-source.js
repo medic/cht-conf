@@ -5,6 +5,7 @@ const api = require('../api');
 
 const HIERARCHY_ROOT = 'root';
 const BATCH_SIZE = 10000;
+const QUERY_IDS_BATCH_SIZE = 100;
 const NOUVEAU_MIN_VERSION = '5.0.0';
 const SUBJECT_IDS = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
 
@@ -82,14 +83,28 @@ const fetchReportsByCreator = async (db, createdByIds, cursor, useNouveau) => {
   }
 
   if (useNouveau) {
-    const { docs, bookmark } = await api().getReportsByFreetext(createdByIds, BATCH_SIZE, cursor);
-    return { docs, cursor: bookmark };
+    return await fetchAllReportsFromNouveau(createdByIds);
   }
 
   const skip = cursor || 0;
   const createdByKeys = createdByIds.map(id => [`contact:${id}`]);
   const docs = await getFromDbView(db, 'medic-client/reports_by_freetext', createdByKeys, skip);
   return { docs, cursor: skip + docs.length };
+};
+
+const fetchAllReportsFromNouveau = async (createdByIds) => {
+  const allDocs = [];
+  for (let i = 0; i < createdByIds.length; i += QUERY_IDS_BATCH_SIZE) {
+    const idsBatch = createdByIds.slice(i, i + QUERY_IDS_BATCH_SIZE);
+    let bookmark = null;
+    let batch;
+    do {
+      batch = await api().getReportsByFreetext(idsBatch, BATCH_SIZE, bookmark);
+      allDocs.push(...batch.docs);
+      bookmark = batch.bookmark;
+    } while (batch.docs.length >= BATCH_SIZE);
+  }
+  return { docs: allDocs, cursor: null };
 };
 
 const fetchReportsBySubject = async (db, createdAtIds, skip) => {

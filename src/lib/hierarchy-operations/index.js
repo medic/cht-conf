@@ -87,7 +87,7 @@ async function updateReports(db, options, moveContext) {
     processAndWriteReportBatch(result.docs, options, moveContext);
     cursor = result.cursor;
     totalCount += result.docs.length;
-  } while (result.docs.length >= DataSource.BATCH_SIZE);
+  } while (result.cursor && result.docs.length >= DataSource.BATCH_SIZE);
 
   let skip = 0;
   let batch;
