@@ -50,11 +50,8 @@ describe('Upload UI Extensions Library', () => {
 
   it('should throw an error if missing either the .js or .properties.json file', async () => {
     sandbox.stub(fs, 'readdirSync').returns(['valid-name.js']);
-    
-    sandbox.stub(fs, 'existsSync').callsFake((path) => {
-      if (path.includes('.properties.json')) {return false;}
-      return true;
-    });
+
+    sandbox.stub(fs, 'existsSync').callsFake((path) => !path.includes('.properties.json'));
 
     await expect(uploadUiExtensions('/fake/path'))
       .to.be.rejectedWith('UI Extension "valid-name" is missing either its .js or .properties.json file.');
@@ -63,12 +60,12 @@ describe('Upload UI Extensions Library', () => {
   it('should throw an error if properties.json is invalid JSON', async () => {
     sandbox.stub(fs, 'existsSync').returns(true);
     sandbox.stub(fs, 'readdirSync').returns(['valid-name.js', 'valid-name.properties.json']);
-    
+
     // simulates a broken JSON file
     sandbox.stub(fs, 'readFileSync').returns('invalid json { oops');
 
     await expect(uploadUiExtensions('/fake/path'))
-      .to.be.rejectedWith('Failed to parse valid-name.properties.json - Invalid JSON format.');
+      .to.be.rejectedWith('Failed to parse valid-name.properties.json - Invalid JSON format:');
   });
 
   it('should throw an error if properties.json fails Joi schema validation', async () => {

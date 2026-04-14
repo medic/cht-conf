@@ -57,7 +57,7 @@ const getExtensionDoc = (uiExtensionsDir, name) => {
     const rawProps = fs.readFileSync(propsPath, 'utf-8');
     propsContent = JSON.parse(rawProps);
   } catch (err) {
-    throw new Error(`Failed to parse ${name}.properties.json - Invalid JSON format.`);
+    throw new Error(`Failed to parse ${name}.properties.json - Invalid JSON format: ${err.message}`);
   }
 
   const validation = schema.validate(propsContent);
