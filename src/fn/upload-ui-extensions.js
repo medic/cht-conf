@@ -1,6 +1,6 @@
 const environment = require('../lib/environment');
 const projectPaths = require('../lib/project-paths');
-const uploadUiExtensions = require('../lib/upload-ui-extensions');
+const { uploadUiExtensions } = require('../lib/upload-ui-extensions');
 
 module.exports = {
   requiresInstance: true,
