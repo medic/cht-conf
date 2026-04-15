@@ -2,10 +2,7 @@ const argsFormFilter = require('../args-form-filter');
 const exec = require('../exec-promise');
 const fs = require('../sync-fs');
 const nodeFs = require('node:fs');
-const {
-  getFormDir,
-  escapeWhitespacesInPath,
-} = require('../forms-utils');
+const { getFormDir, escapeWhitespacesInPath, } = require('../forms-utils');
 const { info, trace, warn, LEVEL_NONE } = require('../log');
 const path = require('node:path');
 const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
@@ -15,6 +12,7 @@ const { removeNoLabelNodes } = require('./handle-no-label-placeholders');
 const { removeExtraRepeatInstance, addRepeatCount } = require('./handle-repeat');
 const { handleDbDocRefs } = require('./handle-db-doc-ref');
 const { handleFormId } = require('./handle-form-id');
+const { checkVars } = require('./handle-var-checks');
 
 const domParser = new DOMParser();
 const serializer = new XMLSerializer();
@@ -52,8 +50,8 @@ const execute = async (projectDir, subDirectory, options = {}) => {
 
     try {
       await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(xmlSwpPath), xls);
-      const hiddenFields = await getHiddenFields(`${fs.withoutExtension(sourcePath)}.properties.json`);
-      fixXml(xmlSwpPath, hiddenFields, options.transformer, options.enketo);
+      const propsData = getPropsData(`${fs.withoutExtension(sourcePath)}.properties.json`);
+      fixXml(xmlSwpPath, propsData, options.transformer, options.enketo);
     } catch (e) {
       nodeFs.rmSync(xmlSwpPath, { force: true });
       throw e;
@@ -123,7 +121,7 @@ const xls2xform = async (sourcePath, targetPath, xlsxFileName) => {
 
 // here we fix the form content in arcane ways.  Seeing as we have out own fork
 // of pyxform, we should probably be doing this fixing there.
-const fixXml = (path, hiddenFields, transformer, enketo) => {
+const fixXml = (path, propsData, transformer, enketo) => {
   // This is not how you should modify XML, but we have reasonable control over
   // the input and so far this works OK.  Keep an eye on the tests, and any
   // future changes to the output of xls2xform.
@@ -140,8 +138,8 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
     xml = xml.replaceAll('default="true()"', '');
   }
 
-  if (hiddenFields) {
-    const r = new RegExp(`<(${hiddenFields.join('|')})(/?)>`, 'g');
+  if (propsData[FORM_PROPERTIES_HIDDEN_FIELDS]) {
+    const r = new RegExp(`<(${propsData[FORM_PROPERTIES_HIDDEN_FIELDS].join('|')})(/?)>`, 'g');
     xml = xml.replace(r, '<$1 tag="hidden"$2>');
   }
 
@@ -170,6 +168,10 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
     lineSeparator: '\n'
   }).replaceAll(/\s+<\/value>/g, '</value>'); // Ignoring the 'value' path results in extra trailing whitespace
 
+  if(propsData[FORM_PROPERTIES_VAR_RESTRICTIONS]){
+    checkVars(xmlDoc, propsData[FORM_PROPERTIES_VAR_RESTRICTIONS]);
+  }
+
   if (transformer) {
     xml = transformer(xml, path);
   }
@@ -177,12 +179,20 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
   fs.write(path, xml);
 };
 
-function getHiddenFields(propsJson) {
-  if (fs.exists(propsJson)) {
-    return fs.readJson(propsJson).hidden_fields;
+const FORM_PROPERTIES_HIDDEN_FIELDS = 'hidden_fields';
+const FORM_PROPERTIES_VAR_RESTRICTIONS = 'var_restrictions';
+function getPropsData(propsJson) {
+  if(fs.exists(propsJson)){
+    const json = fs.readJson(propsJson);
+    return {
+      [FORM_PROPERTIES_HIDDEN_FIELDS]: json[FORM_PROPERTIES_HIDDEN_FIELDS],
+      [FORM_PROPERTIES_VAR_RESTRICTIONS]: json[FORM_PROPERTIES_VAR_RESTRICTIONS]
+    };
   }
-
-  return [];
+  return {
+    [FORM_PROPERTIES_HIDDEN_FIELDS]: [],
+    [FORM_PROPERTIES_VAR_RESTRICTIONS]: {} 
+  };
 }
 
 const META_XML_SECTION = `<inputs>

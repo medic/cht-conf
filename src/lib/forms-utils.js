@@ -3,6 +3,7 @@ const fs = require('./sync-fs');
 
 const XPATH_MODEL = '/h:html/h:head/model';
 const XPATH_BODY = '/h:html/h:body';
+const XML_ATT_NODESET = 'nodeset';
 
 const getNode = (currentNode, path) =>
   xpath.parse(path).select1({ node: currentNode, allowAnyNamespaceForNoPrefix: true });
@@ -21,6 +22,8 @@ const getFullNodePath = (childNode) => {
 module.exports = {
   XPATH_MODEL,
   XPATH_BODY,
+
+  XML_ATT_NODESET,
 
   /**
    * Matches XPath expressions that are only paths to a node (either absolute or relative) without any
