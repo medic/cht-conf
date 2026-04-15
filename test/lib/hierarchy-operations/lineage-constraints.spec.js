@@ -106,8 +106,8 @@ describe('lineage constriants', () => {
     });
   });
 
-  describe('getPrimaryContactViolations', () => {
-    const assertNoHierarchyErrors = lineageConstraints.__get__('getPrimaryContactViolations');
+  describe('assertOnPrimaryContactRemoval', () => {
+    const assertOnPrimaryContactRemoval = lineageConstraints.__get__('assertOnPrimaryContactRemoval');
 
     describe('on memory pouchdb', async () => {
       let pouchDb;
@@ -138,21 +138,21 @@ describe('lineage constriants', () => {
         const contactDoc = await pouchDb.get('clinic_1_contact');
         const parentDoc = await pouchDb.get('clinic_2');
 
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
-        expect(doc).to.deep.include({ _id: 'clinic_1_contact' });
+        const actual = assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, [contactDoc]);
+        await expect(actual).to.eventually.be.rejectedWith(`clinic_1_contact) from the hierarchy`);
       });
 
       it('cannot move clinic_1_contact to root', async () => {
         const contactDoc = await pouchDb.get('clinic_1_contact');
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, undefined, [contactDoc]);
-        expect(doc).to.deep.include({ _id: 'clinic_1_contact' });
+        const actual = assertOnPrimaryContactRemoval(pouchDb, contactDoc, undefined, [contactDoc]);
+        await expect(actual).to.eventually.be.rejectedWith(`clinic_1_contact) from the hierarchy`);
       });
 
       it('can move clinic_1_contact to clinic_1', async () => {
         const contactDoc = await pouchDb.get('clinic_1_contact');
         const parentDoc = await pouchDb.get('clinic_1');
 
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
+        const doc = await assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, [contactDoc]);
         expect(doc).to.be.undefined;
       });
 
@@ -163,7 +163,7 @@ describe('lineage constriants', () => {
         const descendants = await Promise.all([
           'health_center_2_contact', 'clinic_2', 'clinic_2_contact', 'patient_2'
         ].map(id => pouchDb.get(id)));
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, descendants);
+        const doc = await assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, descendants);
         expect(doc).to.be.undefined;
       });
 
@@ -178,8 +178,8 @@ describe('lineage constriants', () => {
         const descendants = await Promise.all([
           'health_center_1_contact', 'clinic_1', 'clinic_1_contact', 'patient_1'
         ].map(id => pouchDb.get(id)));
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, descendants);
-        expect(doc).to.deep.include({ _id: 'patient_1' });
+        const actual = assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, descendants);
+        await expect(actual).to.eventually.be.rejectedWith(`patient_1) from the hierarchy`);
       });
 
       // It is possible that one or more parents will not be found. Since these parents are being removed, do not throw
@@ -189,7 +189,7 @@ describe('lineage constriants', () => {
 
         contactDoc.parent._id = 'dne';
 
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
+        const doc = await assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, [contactDoc]);
         expect(doc).to.be.undefined;
       });
     });
