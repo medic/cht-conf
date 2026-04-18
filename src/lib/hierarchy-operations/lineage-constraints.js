@@ -9,13 +9,8 @@ module.exports = async (db, options) => {
 
   return {
     assertNoPrimaryContactViolations: async (sourceDoc, destinationDoc, descendantDocs) => {
-      const invalidPrimaryContactDoc = await getPrimaryContactViolations(db, sourceDoc, destinationDoc, descendantDocs);
-      if (invalidPrimaryContactDoc) {
-        throw Error(
-          `Cannot remove contact '${invalidPrimaryContactDoc?.name}' (${invalidPrimaryContactDoc?._id}) from the `
-          + 'hierarchy for which they are a primary contact.'
-        );
-      }
+      await assertOnPrimaryContactRemoval(db, sourceDoc, destinationDoc, descendantDocs);
+      await assertSourcePrimaryContactType(db, contactTypeInfo, sourceDoc);
     },
     assertNoHierarchyErrors: (sourceDocs, destinationDoc) => {
 
@@ -30,7 +25,7 @@ module.exports = async (db, options) => {
           throw Error(`Hierarchy Constraints: ${hierarchyError}`);
         }
       });
-  
+
       /*
        * It is nice that the tool can move lists of contacts as one operation, but strange things happen when two
        * contactIds are in the same lineage. For example, moving a district_hospital and moving a contact under that
@@ -47,12 +42,15 @@ module.exports = async (db, options) => {
         });
     },
 
-    isPlace: (contact) => {
-      const contactType = getContactType(contact);
-      return !contactTypeInfo[contactType]?.person;
-    },
+    isPlace: (contact) => isPlace(contactTypeInfo, contact),
   };
 };
+
+function isPlace(contactTypeInfo, contact) {
+  const contactType = getContactType(contact);
+  const isPerson = contactTypeInfo[contactType]?.person || false;
+  return !isPerson;
+}
 
 /*
 Enforce the list of allowed parents for each contact type
@@ -133,24 +131,50 @@ A place's primary contact must be a descendant of that place.
 1. Check to see which part of the contact's lineage will be removed
 2. For each removed part of the contact's lineage, confirm that place's primary contact isn't being removed.
 */
-const getPrimaryContactViolations = async (db, contactDoc, destinationDoc, descendantDocs) => {
-  const contactsLineageIds = lineageManipulation.pluckIdsFromLineage(contactDoc?.parent);
-  const parentsLineageIds = lineageManipulation.pluckIdsFromLineage(destinationDoc);
+async function assertOnPrimaryContactRemoval(db, sourceDoc, destinationDoc, descendantDocs) {
+  const sourceLineageIds = lineageManipulation.pluckIdsFromLineage(sourceDoc?.parent);
+  const destinationLineageIds = lineageManipulation.pluckIdsFromLineage(destinationDoc);
 
-  const docIdsRemovedFromContactLineage = contactsLineageIds.filter(value => !parentsLineageIds.includes(value));
+  const docIdsRemovedFromContactLineage = sourceLineageIds.filter(value => !destinationLineageIds.includes(value));
   const docsRemovedFromContactLineage = await db.allDocs({
     keys: docIdsRemovedFromContactLineage,
     include_docs: true,
   });
 
-  const primaryContactIds = docsRemovedFromContactLineage.rows
+  const primaryContactIds = new Set(docsRemovedFromContactLineage.rows
     .map(row => row?.doc?.contact?._id)
-    .filter(Boolean);
-  
-  return descendantDocs.find(descendant => primaryContactIds.some(primaryId => descendant._id === primaryId));
-};
+    .filter(Boolean));
 
-const getContactType = doc => doc?.type === 'contact' ? doc?.contact_type : doc?.type;
+  const invalidPrimaryContactDoc = descendantDocs.find(
+    descendant => primaryContactIds.has(descendant._id)
+  );
+  if (invalidPrimaryContactDoc) {
+    throw new Error('Cannot remove contact '+
+      `'${invalidPrimaryContactDoc?.name}' (${invalidPrimaryContactDoc?._id}) ` +
+      'from the hierarchy for which they are a primary contact.');
+  }
+}
+
+async function assertSourcePrimaryContactType(db, contactTypeInfo, sourceDoc) {
+  const sourcePrimaryContactId = getPrimaryContactId(sourceDoc);
+  if (!sourcePrimaryContactId) {
+    return;
+  }
+
+  const sourcePrimaryContactDoc = await db.get(sourcePrimaryContactId);
+  const primaryContactIsPlace = isPlace(contactTypeInfo, sourcePrimaryContactDoc);
+  if (primaryContactIsPlace) {
+    throw new Error(`Source "${sourceDoc._id}" has primary contact "${sourcePrimaryContactId}" which is of type place`);
+  }
+}
+
+function getContactType(doc) {
+  return doc?.type === 'contact' ? doc?.contact_type : doc?.type;
+}
+
+function getPrimaryContactId(doc) {
+  return typeof doc?.contact === 'string' ? doc.contact : doc?.contact?._id;
+}
 
 async function fetchContactTypeInfo(db) {
   try {

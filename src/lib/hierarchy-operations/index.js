@@ -19,27 +19,27 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
   for (const sourceId of sourceIds) {
     const sourceDoc = sourceDocs[sourceId];
     const descendantsAndSelf = await DataSource.getContactWithDescendants(db, sourceId);
+
     const moveContext = {
       sourceId,
       destinationId,
       descendantsAndSelf,
       replacementLineage,
       merge: !!options.merge,
+      disableUsers: !!options.disableUsers,
+      mergePrimaryContacts: !!options.mergePrimaryContacts,
+      sourcePrimaryContactId: getPrimaryContactId(sourceDoc),
+      destinationPrimaryContactId: getPrimaryContactId(destinationDoc),
     };
 
     await constraints.assertNoPrimaryContactViolations(sourceDoc, destinationDoc, descendantsAndSelf);
     
-    if (options.merge) {
-      const toDeleteUsers = options.disableUsers && constraints.isPlace(sourceDoc);
-      JsDocs.deleteDoc(options, sourceDoc, toDeleteUsers);
-    }
-        
     const prettyPrintDocument = doc => `'${doc.name}' (${doc._id})`;
     trace(
       `Considering lineage updates to ${descendantsAndSelf.length} descendant(s) of contact `
       + `${prettyPrintDocument(sourceDoc)}.`
     );
-    const updatedDescendants = replaceLineageInContacts(moveContext);
+    const updatedDescendants = updateContacts(moveContext, constraints);
     
     const ancestors = await DataSource.getAncestorsOf(db, sourceDoc);
     trace(
@@ -68,44 +68,92 @@ async function moveHierarchy(db, options, sourceIds, destinationId) {
   );
 }
 
-async function updateReports(db, options, moveContext) {
-  const descendantIds = moveContext.descendantsAndSelf.map(contact => contact._id);
-
-  let skip = 0;
-  let reportDocsBatch;
-  do {
-    info(`Processing ${skip} to ${skip + DataSource.BATCH_SIZE} report docs`);
-    const createdAtId = options.merge && moveContext.sourceId;
-    reportDocsBatch = await DataSource.getReportsForContacts(db, descendantIds, createdAtId, skip);
-
-    const lineageUpdates = replaceLineageOfReportCreator(reportDocsBatch, moveContext);
-    const reassignUpdates = reassignReports(reportDocsBatch, moveContext);
-    const updatedReports = reportDocsBatch.filter(doc => lineageUpdates.has(doc._id) || reassignUpdates.has(doc._id));
-
-    minifyLineageAndWriteToDisk(options, updatedReports);
-
-    skip += reportDocsBatch.length;
-  } while (reportDocsBatch.length >= DataSource.BATCH_SIZE);
-
-  return skip;
+function getPrimaryContactId(doc) {
+  return typeof doc?.contact === 'string' ? doc.contact : doc?.contact?._id;
 }
 
-function reassignReportSubjects(report, { sourceId, destinationId }) {
-  const SUBJECT_IDS = ['patient_id', 'patient_uuid', 'place_id', 'place_uuid'];
-  let updated = false;
-  for (const subjectId of SUBJECT_IDS) {
-    if (report[subjectId] === sourceId) {
-      report[subjectId] = destinationId;
-      updated = true;
-    }
+async function updateReports(db, options, moveContext) {
+  const descendantIds = moveContext.descendantsAndSelf.map(contact => contact._id);
+  const createdAtIds = getReportsCreatedAtIds(moveContext);
 
-    if (report.fields[subjectId] === sourceId) {
-      report.fields[subjectId] = destinationId;
-      updated = true;
+  let totalCount = 0;
+  const useNouveau = await DataSource.useNouveauSearch();
+
+  let cursor = null;
+  let result;
+  do {
+    info(`Processing creator reports ${totalCount} to ${totalCount + DataSource.BATCH_SIZE}`);
+    result = await DataSource.fetchReportsByCreator(db, descendantIds, cursor, useNouveau);
+    processAndWriteReportBatch(result.docs, options, moveContext);
+    cursor = result.cursor;
+    totalCount += result.docs.length;
+  } while (result.cursor && result.docs.length >= DataSource.BATCH_SIZE);
+
+  let skip = 0;
+  let batch;
+  do {
+    info(`Processing subject reports ${skip} to ${skip + DataSource.BATCH_SIZE}`);
+    batch = await DataSource.fetchReportsBySubject(db, createdAtIds, skip);
+    processAndWriteReportBatch(batch, options, moveContext);
+    skip += batch.length;
+    totalCount += batch.length;
+  } while (batch.length >= DataSource.BATCH_SIZE);
+
+  return totalCount;
+}
+
+function processAndWriteReportBatch(batch, options, moveContext) {
+  const lineageUpdates = replaceLineageOfReportCreator(batch, moveContext);
+  const reassignUpdates = reassignReports(batch, moveContext);
+  const updatedReports = batch.filter(doc => lineageUpdates.has(doc._id) || reassignUpdates.has(doc._id));
+  minifyLineageAndWriteToDisk(options, updatedReports);
+}
+
+function getReportsCreatedAtIds(moveContext) {
+  const result = [];
+  if (moveContext.merge) {
+    result.push(moveContext.sourceId);
+  }
+
+  if (moveContext.mergePrimaryContacts && moveContext.sourcePrimaryContactId) {
+    result.push(moveContext.sourcePrimaryContactId);
+  }
+
+  return result;
+}
+
+function reassignReportSubjects(report, moveContext) {
+  let updated = false;
+  for (const subjectId of DataSource.SUBJECT_IDS) {
+    updated = updated || reassignSingleReport(report, subjectId, moveContext.sourceId, moveContext.destinationId);
+
+    if (
+      moveContext.mergePrimaryContacts && 
+      moveContext.sourcePrimaryContactId && 
+      moveContext.destinationPrimaryContactId
+    ) {
+      updated = updated || reassignSingleReport(
+        report, subjectId, moveContext.sourcePrimaryContactId, moveContext.destinationPrimaryContactId
+      );
     }
   }
   
   return updated;
+}
+
+function reassignSingleReport(report, subjectId, matchId, resultingId) {
+  let result = false;
+  if (report[subjectId] === matchId) {
+    report[subjectId] = resultingId;
+    result = true;
+  }
+
+  if (report.fields[subjectId] === matchId) {
+    report.fields[subjectId] = resultingId;
+    result = true;
+  }
+
+  return result;
 }
 
 function reassignReports(reports, moveContext) {
@@ -179,9 +227,26 @@ function replaceLineageInSingleContact(doc, moveContext) {
   }
 }
 
-function replaceLineageInContacts(moveContext) {
+function updateContacts(moveContext, constraints) {
   return moveContext.descendantsAndSelf
-    .map(descendant => replaceLineageInSingleContact(descendant, moveContext))
+    .map(descendant => {
+      const deleteSource = moveContext.merge && descendant._id === moveContext.sourceId;
+      const deletePrimaryContact = moveContext.mergePrimaryContacts 
+        && descendant._id === moveContext.sourcePrimaryContactId 
+        && moveContext.destinationPrimaryContactId;
+
+      if (deleteSource || deletePrimaryContact) {
+        const toDeleteUsers = moveContext.disableUsers && constraints.isPlace(descendant);
+        return {
+          _id: descendant._id,
+          _rev: descendant._rev,
+          _deleted: true,
+          cht_disable_linked_users: !!toDeleteUsers,
+        };
+      }
+
+      return replaceLineageInSingleContact(descendant, moveContext);
+    })
     .filter(Boolean);
 }
 

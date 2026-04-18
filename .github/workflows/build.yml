@@ -40,6 +40,7 @@ jobs:
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       GOOGLE_REDIRECT_URI: "http://localhost"
       GOOGLE_TOKEN_SCOPE: 'https://www.googleapis.com/auth/drive.readonly'
+      RUN_GOOGLE_TESTS: ${{ secrets.GOOGLE_CREDENTIALS != '' }}
 
     steps:
     - uses: actions/checkout@v4
@@ -54,6 +55,7 @@ jobs:
       run: |
         echo "15.188.129.97 local-ip.medicmobile.org" | sudo tee -a /etc/hosts
     - id: auth
+      if: ${{ env.RUN_GOOGLE_TESTS == 'true' }}
       uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093
       with:
         service_account: ${{ env.GOOGLE_SERVICE_ACCT }}
@@ -61,6 +63,7 @@ jobs:
         token_format: access_token
         access_token_scopes: ${{ env.GOOGLE_TOKEN_SCOPE }}
     - name: Write access_token to .gdrive.session.json
+      if: ${{ env.RUN_GOOGLE_TESTS == 'true' }}
       run: |
         echo '{
           "access_token": "${{ steps.auth.outputs.access_token }}",
