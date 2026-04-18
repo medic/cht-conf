@@ -1,6 +1,6 @@
 {
   "name": "cht-conf",
-  "version": "6.1.1",
+  "version": "6.2.0",
   "description": "Configure CHT deployments",
   "main": "./src/lib/main.js",
   "engines": {

@@ -1,3 +1,10 @@
+# [6.2.0](https://github.com/medic/cht-conf/compare/v6.1.1...v6.2.0) (2026-04-18)
+
+
+### Features
+
+* **#10240:** allow limit_count_to_goal in target configuration schema ([#800](https://github.com/medic/cht-conf/issues/800)) ([7c6ec4f](https://github.com/medic/cht-conf/commit/7c6ec4fffb1a4721b309e7510b86e8ac9a7e745d)), closes [#10240](https://github.com/medic/cht-conf/issues/10240) [medic/cht-core#10772](https://github.com/medic/cht-core/issues/10772)
+
 ## [6.1.1](https://github.com/medic/cht-conf/compare/v6.1.0...v6.1.1) (2026-04-10)
 
 
