@@ -127,6 +127,29 @@ describe('Handle form id', () => {
       });
       expect(serializeToString(doc)).xml.to.equal(expectedDoc);
     });
+
+    it('other handles forms with the CONTACT_TYPE template in the xml', () => {
+      const doc = createXformDoc({
+        model: `
+          <instance>
+            <data id="contact:CONTACT_TYPE:create" prefix="J1!contact:CONTACT_TYPE:create!">
+            </data>
+          </instance>
+        `
+      });
+
+      handleFormId(doc, `forms/contact/person-create.xml.swp`);
+
+      const expectedDoc = createXformString({
+        model: `
+          <instance>
+            <data id="contact:CONTACT_TYPE:create" prefix="J1!contact:CONTACT_TYPE:create!">
+            </data>
+          </instance>
+        `
+      });
+      expect(serializeToString(doc)).xml.to.equal(expectedDoc);
+    });
   });
 
   describe('training form', () => {

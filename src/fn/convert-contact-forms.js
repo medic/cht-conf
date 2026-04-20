@@ -1,33 +1,22 @@
 const convertForms = require('../lib/convert-forms').execute;
 const environment = require('../lib/environment');
-const fs = require('../lib/sync-fs');
 const { CONTACT_FORMS_PATH } = require('../lib/project-paths');
+const { createFormsFromTemplates } = require('../lib/create-forms-from-templates');
+const { replaceFormPlaceholderVars } = require('../lib/replace-form-placeholder-vars');
 
 const convertContactForm = (forms) => {
-  const dir = `${environment.pathToProject}/${CONTACT_FORMS_PATH}`;
-  const placeTypesJson = `${dir}/place-types.json`;
-
-  let PLACE_TYPES;
-  if (fs.exists(placeTypesJson)) {
-    PLACE_TYPES = fs.readJson(placeTypesJson);
-    Object.keys(PLACE_TYPES)
-      .forEach(type => {
-        fs.copy(`${dir}/PLACE_TYPE-create.xlsx`, `${dir}/${type}-create.xlsx`, { overwrite: false });
-        fs.copy(`${dir}/PLACE_TYPE-edit.xlsx`, `${dir}/${type}-edit.xlsx`, { overwrite: false });
-      });
-  }
+  // Will create the necessary xlsx files based on the conf <entity>-types.json files
+  // For now, this only works for contacts but can be extended to work for app forms
+  const result = createFormsFromTemplates(environment.pathToProject, CONTACT_FORMS_PATH);
 
   return convertForms(environment.pathToProject, 'contact', {
     enketo: true,
     forms: forms,
-    transformer: (xml, path) => {
+    templateFileNames: result?.templateFileNames,
+    transformer: (xml, path, properties) => {
       const type = path.replace(/.*\/(.*?)(-(create|edit))?\.xml.swp$/, '$1');
 
-      if (PLACE_TYPES) {
-        xml = xml
-          .replace(/PLACE_TYPE/g, type)
-          .replace(/PLACE_NAME/g, PLACE_TYPES[type]);
-      }
+      xml = replaceFormPlaceholderVars(xml, type, result?.config, properties);
 
       // The ordering of elements in the <model> has an arcane affect on the
       // order that docs are saved in the database when processing a form.
