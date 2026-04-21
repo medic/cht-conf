@@ -19,8 +19,6 @@ const schema = Joi.object().pattern(
 // - key - representing the placeholder reference/key that needs replacing, and
 // - value - representing the value that should be used in that space instead
 
-// TODO: Templates can purge sections that has no relevance (maybe something like __cht_relevant?) 
-
 function formatFeedbackMsg(title, items, footer){
   return `${title}\n${items.join('\n')}\n${footer}`;
 }
@@ -67,7 +65,7 @@ function processUserPlaceholderVars(dynamicReplacementVars){
 }
 
 function replacePlaceholders(xml, obj){
-  const keys = [...Object.keys(obj)];
+  const keys = Object.keys(obj);
   if(keys.length){
     const regex = new RegExp(keys.join('|'), 'g');
     xml = xml.replace(regex, (matched) => obj[matched]);
