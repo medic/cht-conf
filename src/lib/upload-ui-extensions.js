@@ -36,6 +36,17 @@ const getNamesToUpload = (uiExtensionsDir) => {
   return Array.from(extensionNames);
 };
 
+const readPropertiesFile = (propsPath) => {
+  try {
+    const rawProps = fs.readFileSync(propsPath, 'utf-8');
+    return JSON.parse(rawProps);
+  } catch (err) {
+    throw new Error(
+      `Failed to parse ${propsPath.split('/').at(-1)} - Invalid JSON format: ${err.message}`
+    );
+  }
+};
+
 const getExtensionDoc = (uiExtensionsDir, name) => {
   if (!validateExtensionName(name)) {
     throw new Error(
@@ -52,13 +63,7 @@ const getExtensionDoc = (uiExtensionsDir, name) => {
     throw new Error(`UI Extension "${name}" is missing either its .js or .properties.json file.`);
   }
 
-  let propsContent;
-  try {
-    const rawProps = fs.readFileSync(propsPath, 'utf-8');
-    propsContent = JSON.parse(rawProps);
-  } catch (err) {
-    throw new Error(`Failed to parse ${name}.properties.json - Invalid JSON format: ${err.message}`);
-  }
+  const propsContent = readPropertiesFile(propsPath);
 
   const validation = schema.validate(propsContent);
   if (validation.error) {
