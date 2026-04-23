@@ -116,7 +116,16 @@ describe('warn-upload-overwrite', () => {
       expect(fs.read.args[0][0]).to.equal('.snapshots/local.json');
       expect(actual).to.equal('abc');
     });
-
+    
+    it('returns matching snapshot with specified db name for local-ip hostname', () => {
+      const given = { id1: { '192-168-0-3.local-ip.medicmobile.org/medic': 'abc' } };
+      sinon.stub(fs, 'read').returns(JSON.stringify(given));
+      sinon.stub(environment, 'apiUrl').get(() => 'https://192-168-0-3.local-ip.medicmobile.org:8443/medic');
+      const actual = warnUploadOverwrite.__get__('getStoredHash')('id1');
+      expect(fs.read.callCount).to.equal(1);
+      expect(fs.read.args[0][0]).to.equal('.snapshots/local.json');
+      expect(actual).to.equal('abc');
+    });
   });
 
   describe('prompts when attempting to overwrite docs', () => {
@@ -127,7 +136,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(apiStub.db, 'get').resolves({ _id: 'a', _rev: 'x', value: 1 });
       sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'localhost/medic': 'y' }}));
       sinon.stub(environment, 'apiUrl').get(() => 'http://admin:pass@localhost:35423/medic');
-      sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
+      sinon.stub(request, 'get').resolves({ 'compressible_types': 'text/*, application/*', 'compression_level': '8' });
       api.__set__('cache', new Map());
       const localDoc = { _id: 'a', value: 2 };
       return warnUploadOverwrite.preUploadDoc(apiStub.db, localDoc).then(() => {
@@ -145,7 +154,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(readline, 'keyInSelect').returns(3);
       sinon.stub(apiStub.db, 'get').resolves({ _rev: 'x' });
-      sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'localhost/medic': 'y' }}));
+      sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'localhost/medic': 'y' } }));
       const localDoc = { _id: 'a', _rev: 'y' };
       return warnUploadOverwrite.preUploadDoc(apiStub.db, localDoc).catch(e => {
         assert.equal('configuration modified', e.message);
@@ -154,8 +163,8 @@ describe('warn-upload-overwrite', () => {
 
     it('removes username and password from couchUrl before writing', async () => {
       const write = sinon.stub(fs, 'write').returns();
-      sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'y/m': 'a-12' }}));
-      sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
+      sinon.stub(fs, 'read').returns(JSON.stringify({ a: { 'y/m': 'a-12' } }));
+      sinon.stub(request, 'get').resolves({ 'compressible_types': 'text/*, application/*', 'compression_level': '8' });
       const localDoc = { _id: 'a' };
       await warnUploadOverwrite.postUploadDoc(apiStub.db, localDoc);
       assert.equal(write.callCount, 1);
@@ -179,7 +188,7 @@ describe('warn-upload-overwrite', () => {
     it('prompts the user if a compressible doc type has changes', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
-      warnUploadOverwrite.__set__('api', ()=> ({
+      warnUploadOverwrite.__set__('api', () => ({
         getCompressibleTypes: () => ['text/*', 'application/*']
       }));
       sinon.stub(apiStub.db, 'get').resolves({
@@ -207,7 +216,7 @@ describe('warn-upload-overwrite', () => {
     it('does not prompt the user if a compressible doc type has no changes', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
-      sinon.stub(request, 'get').resolves({'compressible_types':'text/*, application/*','compression_level':'8'});
+      sinon.stub(request, 'get').resolves({ 'compressible_types': 'text/*, application/*', 'compression_level': '8' });
       warnUploadOverwrite.__set__('cache', new Map());
       sinon.stub(apiStub.db, 'get').resolves({
         _rev: 'x',
@@ -232,7 +241,7 @@ describe('warn-upload-overwrite', () => {
       sinon.stub(readline, 'keyInSelect').returns(-1);
       sinon.stub(readline, 'keyInYN').returns(true);
       sinon.stub(environment, 'apiUrl').get(() => 'http://admin:pass@localhost:35423/medic');
-      warnUploadOverwrite.__set__('api', ()=> ({
+      warnUploadOverwrite.__set__('api', () => ({
         getCompressibleTypes: () => ['text/*', 'application/*']
       }));
       sinon.stub(apiStub.db, 'get').resolves({
