@@ -64,6 +64,18 @@ const ScheduleSchema = joi.array().items(
   })
 );
 
+const UiExtensionsSchema = joi.array().items(
+  joi.object({
+    id: joi.string().required(),
+    type: joi.string().required(),
+    title: joi.string().optional(),
+    roles: joi.array().items(joi.string()).optional(),
+    icon: joi.string().optional(),
+    resource_icon: joi.string().optional(),
+    config: joi.object().unknown(true).optional(),
+  })
+);
+
 const AssetlinksSchema = joi.array().items(
   joi.object({
     relation: joi.array().items(
@@ -88,6 +100,10 @@ module.exports = {
   },
   validateAssetlinks: (assetlinksObject) => {
     const { error } = AssetlinksSchema.validate(assetlinksObject);
+    return error ? { valid: false, error } : { valid: true };
+  },
+  validateUiExtensions: (uiExtensionsArray) => {
+    const { error } = UiExtensionsSchema.validate(uiExtensionsArray);
     return error ? { valid: false, error } : { valid: true };
   }
 };
