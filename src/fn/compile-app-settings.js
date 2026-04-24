@@ -120,6 +120,15 @@ const compileAppSettingsForProject = async (projectDir, options) => {
       }
       appSettings.assetlinks = assetlinks;
     }
+
+    const uiExtensions = readOptionalJson(path.join(projectDir, 'app_settings/ui_extensions.json'));
+    if (uiExtensions) {
+      const validate = validateAppSettings.validateUiExtensions(uiExtensions);
+      if (!validate.valid) {
+        throw new Error(`Invalid ui_extensions.json: ${validate.error}`);
+      }
+      appSettings.ui_extensions = uiExtensions;
+    }
   } else {
     warn(
       `app_settings.json file should not be edited directly.

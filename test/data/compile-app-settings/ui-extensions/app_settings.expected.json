@@ -1,0 +1,40 @@
+{
+  "locale": "en",
+  "locales": [
+    {
+      "code": "en",
+      "name": "English"
+    },
+    {
+      "code": "es",
+      "name": "Español (Spanish)"
+    }
+  ],
+  "kujua-reporting": [
+    {
+      "code": "SS",
+      "reporting_freq": "monthly"
+    }
+  ],
+  "ui_extensions": [
+    {
+      "id": "hello-extension",
+      "type": "app_drawer_tab",
+      "title": "Hello Extension",
+      "resource_icon": "hello-icon",
+      "roles": ["chw"]
+    },
+    {
+      "id": "fa-extension",
+      "type": "app_drawer_tab",
+      "title": "FA Extension",
+      "icon": "fa-star"
+    }
+  ],
+  "contact_summary": "",
+  "tasks": {
+    "rules": "",
+    "targets": {}
+  },
+  "purge": {}
+}

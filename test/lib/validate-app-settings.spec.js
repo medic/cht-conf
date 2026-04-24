@@ -221,6 +221,73 @@ describe('validate-app-settings', () => {
     });
   });
 
+  describe('validateUiExtensions', () => {
+    const isValid = (uiExtensions) => {
+      const result = validateAppSettings.validateUiExtensions(uiExtensions);
+      expect(result.valid).to.be.true;
+    };
+
+    const isNotValid = (uiExtensions, errorMessage) => {
+      const result = validateAppSettings.validateUiExtensions(uiExtensions);
+      expect(result.valid).to.be.false;
+      expect(result.error.details[0].message).to.equal(errorMessage);
+    };
+
+    it('returns true for empty array', () => {
+      isValid([]);
+    });
+
+    it('returns true for extension with resource_icon', () => {
+      isValid([{
+        id: 'hello-ext',
+        type: 'app_drawer_tab',
+        title: 'Hello',
+        resource_icon: 'hello-icon',
+        roles: ['chw'],
+      }]);
+    });
+
+    it('returns true for extension with font-awesome icon', () => {
+      isValid([{
+        id: 'fa-ext',
+        type: 'app_drawer_tab',
+        title: 'FA Extension',
+        icon: 'fa-star',
+      }]);
+    });
+
+    it('returns true for extension with both icon and resource_icon', () => {
+      isValid([{
+        id: 'both-ext',
+        type: 'app_drawer_tab',
+        icon: 'fa-star',
+        resource_icon: 'star-img',
+      }]);
+    });
+
+    it('returns true for extension with config object', () => {
+      isValid([{
+        id: 'config-ext',
+        type: 'app_drawer_tab',
+        config: { url: 'https://example.com', param: 42 },
+      }]);
+    });
+
+    it('returns false when id is missing', () => {
+      isNotValid(
+        [{ type: 'app_drawer_tab', title: 'Missing ID' }],
+        '"[0].id" is required',
+      );
+    });
+
+    it('returns false when type is missing', () => {
+      isNotValid(
+        [{ id: 'no-type', title: 'Missing Type' }],
+        '"[0].type" is required',
+      );
+    });
+  });
+
   describe('validateAssetlinks', () => {
     const isValid = (assetlinks) => {
       const result = validateAppSettings.validateAssetlinks(assetlinks);

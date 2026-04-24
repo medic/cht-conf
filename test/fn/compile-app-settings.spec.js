@@ -128,6 +128,15 @@ const scenarios = [
     error: 'Invalid assetlinks: ValidationError: "[0].target.sha256_cert_fingerprints" is required',
   },
   {
+    description: 'should handle a configuration using the ui_extensions.json file',
+    folder: 'ui-extensions/project',
+  },
+  {
+    description: 'should reject a configuration using an invalid ui_extensions.json file',
+    folder: 'ui-extensions/invalid-file',
+    error: 'Invalid ui_extensions.json: ValidationError: "[0].id" is required',
+  },
+  {
     description: 'should compile max_task_notifications to tasks.max_task_notifications',
     folder: 'task-notifications/project',
   }
