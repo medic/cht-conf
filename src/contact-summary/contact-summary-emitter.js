@@ -124,6 +124,7 @@ function addCard(card, context, r) {
 
   return {
     label: card.label,
+    collapsed: card.collapsed,
     fields: fields,
   };
 }
