@@ -921,7 +921,7 @@ describe('task-emitter', () => {
     });
 
     describe('scheduled-task based', () => {
-      it('???', () => { // FIXME this test needs a proper name
+      it('should emit once per scheduled task in a report', () => { 
         // given
         const config = {
           c: personWithReports(aReportWithScheduledTasks(5)),
