@@ -44,6 +44,20 @@ describe('contact-summary-emitter', function() {
       });
     });
 
+    it('includes the collapsed property on emitted cards', () => {
+      const cards = [
+        { appliesToType: 'report', fields: [], label: 'collapsed-card', collapsed: true },
+        { appliesToType: 'report', fields: [], label: 'expanded-card', collapsed: false },
+      ];
+      const report = { report: true };
+      const actual = emitter({ cards }, {}, [report]);
+
+      expect(actual.cards).to.deep.eq([
+        { fields: [], label: 'collapsed-card', collapsed: true },
+        { fields: [], label: 'expanded-card', collapsed: false },
+      ]);
+    });
+
     it('allows appliesToType to be an array', () => {
       const appliesIf = sinon.stub().returns(false);
       const cards = [

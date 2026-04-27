@@ -122,11 +122,14 @@ function addCard(card, context, r) {
     card.modifyContext(context, r);
   }
 
-  return {
+  const summary = {
     label: card.label,
-    collapsed: card.collapsed,
     fields: fields,
   };
+  if (card.collapsed !== undefined) {
+    summary.collapsed = card.collapsed;
+  }
+  return summary;
 }
 
 module.exports = emitter;
