@@ -1,3 +1,10 @@
+# [6.3.0](https://github.com/medic/cht-conf/compare/v6.2.0...v6.3.0) (2026-04-27)
+
+
+### Features
+
+* **#10766:** support `collapsed` in contact summary card ([#812](https://github.com/medic/cht-conf/issues/812)) ([8b3f34a](https://github.com/medic/cht-conf/commit/8b3f34a3b58ffbd2c58c0e28f15dbc87e6d1e572)), closes [#10766](https://github.com/medic/cht-conf/issues/10766)
+
 # [6.2.0](https://github.com/medic/cht-conf/compare/v6.1.1...v6.2.0) (2026-04-18)
 
 
