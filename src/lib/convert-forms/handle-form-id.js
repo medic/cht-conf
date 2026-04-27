@@ -36,7 +36,10 @@ module.exports = {
       .find(node => node.nodeType === 1);
     const idFromXml = dataNode.getAttribute('id');
 
-    if (idFromXml === idFromPath || idFromXml === idFromPath.replace(formName, 'PLACE_TYPE')) {
+    if (
+      idFromXml === idFromPath || 
+      idFromXml === idFromPath.replace(formName, 'PLACE_TYPE') || 
+      idFromXml === idFromPath.replace(formName, 'CONTACT_TYPE')) {
       // We already have the correct id
       return;
     }
