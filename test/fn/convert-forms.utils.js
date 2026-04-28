@@ -12,6 +12,7 @@ const serializer = new XMLSerializer();
 const createXformString = ({
   itext = '',
   primaryInstance = '',
+  bindNodes = [],
   model = `
     <itext>
       ${itext}
@@ -21,6 +22,7 @@ const createXformString = ({
         ${primaryInstance}
       </data>
     </instance>
+    ${bindNodes.join('\n')}
   `,
   body = ''
 }) => `
