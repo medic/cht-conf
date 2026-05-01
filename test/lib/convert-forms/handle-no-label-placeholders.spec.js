@@ -1,8 +1,18 @@
 const { expect } = require('chai');
+const sinon = require('sinon');
+const log = require('../../../src/lib/log');
 const { removeNoLabelNodes } = require('../../../src/lib/convert-forms/handle-no-label-placeholders');
 const { createXformDoc, createXformString, serializeToString } = require('../../fn/convert-forms.utils');
 
 describe('Handle NO_LABEL placeholders', () => {
+  beforeEach(() => {
+    sinon.stub(log, 'warn');
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it('removes labels and itext text nodes that are only NO_LABEL', () => {
     const doc = createXformDoc({
       itext: `
@@ -34,6 +44,9 @@ describe('Handle NO_LABEL placeholders', () => {
     });
 
     removeNoLabelNodes(doc);
+
+    expect(log.warn.callCount).to.equal(1);
+    expect(log.warn.firstCall.args[0]).to.include('The "NO_LABEL" value is deprecated');
 
     const expectedDoc = createXformString({
       itext: `
@@ -76,6 +89,9 @@ describe('Handle NO_LABEL placeholders', () => {
 
     removeNoLabelNodes(doc);
 
+    expect(log.warn.callCount).to.equal(1);
+    expect(log.warn.firstCall.args[0]).to.include('The "NO_LABEL" value is deprecated');
+
     const expectedDoc = createXformDoc({
       itext: `
         <translation lang="en">
@@ -115,6 +131,9 @@ describe('Handle NO_LABEL placeholders', () => {
     });
 
     removeNoLabelNodes(doc);
+
+    expect(log.warn.callCount).to.equal(1);
+    expect(log.warn.firstCall.args[0]).to.include('The "NO_LABEL" value is deprecated');
 
     const expectedDoc = createXformDoc({
       itext: `
