@@ -2,6 +2,8 @@ const convertForms = require('../lib/convert-forms').execute;
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { CONTACT_FORMS_PATH } = require('../lib/project-paths');
+const { DOMParser, XMLSerializer } = require('@xmldom/xmldom');
+const { removeNode } = require('../lib/forms-utils');
 
 const convertContactForm = (forms) => {
   const dir = `${environment.pathToProject}/${CONTACT_FORMS_PATH}`;
@@ -61,23 +63,18 @@ const convertContactForm = (forms) => {
       }
 
       if (xml.includes('ref="/data/contact"')) {
-        const groupRegex = name => new RegExp(`(\\s*)<group(\\s.*)?\\sref="${name}"(\\s.*)?>[^]*?</group>`);
-        let matchedBlock;
+        const domParser = new DOMParser();
+        const serializer = new XMLSerializer();
+        const doc = domParser.parseFromString(xml, 'text/xml');
 
-        if (xml.match(groupRegex('/data/init'))) {
-          xml = xml.replace(groupRegex('/data/contact'), match => {
-            matchedBlock = match;
-            return '';
-          });
+        const groups = Array.from(doc.getElementsByTagName('group'));
+        const contactGroup = groups.find(g => g.getAttribute('ref') === '/data/contact');
+        const initGroup = groups.find(g => g.getAttribute('ref') === '/data/init');
 
-          if (matchedBlock) {
-            const stripTrailingGroup = s => s.replace(/[\r\n\s]*<\/group>$/, '');
-            xml = xml.replace(groupRegex('/data/init'), match => {
-              return stripTrailingGroup(match) +
-                stripTrailingGroup(matchedBlock).replace(/\n/g, '\n  ') +
-                '\n        </group>\n      </group>';
-            });
-          }
+        if (contactGroup && initGroup) {
+          removeNode(contactGroup);
+          initGroup.appendChild(contactGroup);
+          xml = serializer.serializeToString(doc);
         }
       }
 
