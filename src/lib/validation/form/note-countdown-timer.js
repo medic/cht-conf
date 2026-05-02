@@ -16,7 +16,7 @@ const validateNoteCountdownTimer = async ({ xformPath, xmlDoc, apiVersion }) => 
     .map(node => node.getAttribute('ref'))
     .filter(ref => {
       const bind = bindNodes.find(b => b.getAttribute('nodeset') === ref);
-      return bind && bind.hasAttribute('readonly');
+      return bind?.hasAttribute('readonly');
     })
     .map(ref => `  - ${ref}`);
 
