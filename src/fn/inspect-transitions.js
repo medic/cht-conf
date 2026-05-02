@@ -39,6 +39,7 @@ const execute = async () => {
       }
     });
   } catch (err) {
+    warn(`Failed to fetch deprecated transitions status: ${err.message}`);
     // If deprecated-transitions endpoint fails, just list them
     transitionNames.forEach(name => {
       const config = transitions[name];

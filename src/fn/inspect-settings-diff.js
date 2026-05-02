@@ -4,7 +4,7 @@ const { info } = require('../lib/log');
 const environment = require('../lib/environment');
 const jsonDiff = require('json-diff');
 const fs = require('../lib/sync-fs');
-const path = require('path');
+const path = require('node:path');
 
 const execute = async () => {
   const api = getApi();
@@ -33,11 +33,11 @@ const execute = async () => {
     return;
   }
 
-  if (!diff) {
-    info('Local and remote settings are in sync.');
-  } else {
+  if (diff) {
     info('Differences found between local and remote settings:');
     console.log(diff);
+  } else {
+    info('Local and remote settings are in sync.');
   }
 };
 

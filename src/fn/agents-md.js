@@ -1,4 +1,4 @@
-const path = require('path');
+const path = require('node:path');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { info, warn } = require('../lib/log');

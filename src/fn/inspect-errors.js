@@ -2,7 +2,7 @@
 const getApi = require('../lib/api');
 const { info, error } = require('../lib/log');
 const environment = require('../lib/environment');
-const url = require('url');
+const url = require('node:url');
 
 const execute = async () => {
   const api = getApi();

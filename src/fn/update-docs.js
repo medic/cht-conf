@@ -1,5 +1,5 @@
-const path = require('path');
-const os = require('os');
+const path = require('node:path');
+const os = require('node:os');
 const fs = require('../lib/sync-fs');
 const { info, error } = require('../lib/log');
 const getApi = require('../lib/api');

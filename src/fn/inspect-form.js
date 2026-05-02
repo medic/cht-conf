@@ -13,7 +13,7 @@ const execute = async () => {
   const api = getApi();
   const settings = await api.getAppSettings();
   
-  const form = settings.forms && settings.forms[formId];
+  const form = settings?.forms?.[formId];
   if (!form) {
     error(`Form ${formId} not found in deployed settings.`);
     return;
