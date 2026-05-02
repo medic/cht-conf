@@ -3,8 +3,11 @@ const path = require('path');
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { info } = require('../lib/log');
+const { AGENTS_MD, CLAUDE_MD } = require('../lib/agent-templates');
 
 const LAYOUT = {
+  'AGENTS.md': AGENTS_MD,
+  'CLAUDE.md': CLAUDE_MD,
   'contact-summary.templated.js': `module.exports = {
   fields: [],
   cards: [],

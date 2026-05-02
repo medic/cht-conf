@@ -142,6 +142,10 @@ const api = {
     });
   },
 
+  get(options) {
+    return request.get(options);
+  },
+
   /**
    * Check whether the API is alive or not. The request
    * is made to a "lightweight" endpoint that only returns a HTTP 302,
