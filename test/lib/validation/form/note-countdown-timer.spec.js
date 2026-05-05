@@ -21,8 +21,10 @@ const getXml = ({ deprecated = false, newStyle = false } = {}) => `
     </model>
   </h:head>
   <h:body>
-    ${deprecated ? '<input ref="/data/deprecated_timer" appearance="countdown-timer"><label>Deprecated Timer</label></input>' : ''}
-    ${newStyle ? '<trigger ref="/data/required_timer" appearance="countdown-timer"><label>Required Timer</label></trigger>' : ''}
+    ${deprecated
+    ? '<input ref="/data/deprecated_timer" appearance="countdown-timer"><label>Deprecated Timer</label></input>' : ''}
+    ${newStyle
+    ? '<trigger ref="/data/required_timer" appearance="countdown-timer"><label>Required Timer</label></trigger>' : ''}
   </h:body>
 </h:html>`;
 
