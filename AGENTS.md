@@ -151,14 +151,54 @@ GitHub Actions workflow runs:
 
 The project uses semantic-release for automated versioning based on commit messages.
 
-## Notes for AI Agents
+## Non-obvious gotchas when contributing to cht-conf
 
-- Use `npm test` for unit tests and `npm run test-e2e` for integration tests.
-- All new code should include corresponding tests in the mirrored `test/` directory.
-- Follow the Action Module Pattern for new functionality in `src/fn/`.
-- Form validation modules should follow the Form Validation Pattern in `src/lib/validation/form/`.
-- PRs must pass CI (lint + tests) before merging.
-- All commits should follow the Conventional Commits format.
+### `getFormDir` returns `null` silently — not an error
+`src/lib/forms-utils.js` `getFormDir()` returns `null` when the directory is absent.
+Callers that don't check the return value will silently do nothing. This is intentional:
+a missing `forms/app/` in the user's project is not an error in cht-conf itself.
+When writing new actions that iterate over forms, always guard against a `null` result.
+
+### Declarative schema validation uses conditional Joi rules — test every branch
+`src/lib/compilation/validate-declarative-schema.js` uses Joi conditionals that look
+like the field is always optional but are actually required or forbidden depending on
+sibling field values. Key pairs:
+- `event.days` vs `event.dueDate` — mutually exclusive; neither both nor neither is valid.
+- `resolvedIf` — required only when every action has `type: 'contact'`, optional otherwise.
+- `passesIf` — required for `type: 'percent'` targets without `groupBy`; forbidden if `groupBy` is set.
+- multi-event tasks — `event.id` optional for single-event tasks, required + unique for 2+.
+
+When extending the schema, always add a test that confirms both the "forbidden" and
+"required" branches, not just the happy path.
+
+### `rules.nools.js` and `tasks.js`/`targets.js` are mutually exclusive
+`src/lib/compilation/compile-tasks-and-targets.js` fails at compile time if both
+the legacy (`rules.nools.js`) and declarative (`tasks.js` + `targets.js`) files exist.
+Both declarative files must be present together; either alone is also an error.
+Test fixtures that mix styles will break this validation by design.
+
+### `appliesToType` semantics differ by `appliesTo` value — no compile check
+In `src/nools/task-emitter.js`, `appliesToType` is matched against `report.form`
+when `appliesTo: 'reports'` or `'scheduled_tasks'`, but against the resolved contact type
+when `appliesTo: 'contacts'`. Contact type itself is resolved as `contact.contact_type`
+when `contact.type === 'contact'`, otherwise `contact.type`. There is no schema validation
+for this; wrong `appliesToType` values produce silent task non-emission in tests and prod.
+
+### `appliesIf` arity changes with `appliesTo: 'scheduled_tasks'`
+`src/nools/task-emitter.js` passes a third `scheduledTaskIndex` argument to `appliesIf`
+only when `appliesTo: 'scheduled_tasks'`. Copying task fixtures between `appliesTo` types
+without adjusting the function signature will silently break the condition logic.
+
+### `.properties.json` unknown fields are warned, not errored
+`src/lib/upload-forms.js` accepts only a fixed set of properties. Unknown fields log a
+warning and are discarded — they never surface as failures. If a test asserts that a
+certain property was applied, verify it is in the allowed set before trusting the test
+was actually exercising the right code path.
+
+### `internalId` in `.properties.json` is deprecated and errors on mismatch
+If a `.properties.json` contains `internalId`, it must exactly match the filename-derived
+ID or upload throws. New code and fixtures should never write `internalId`; existing
+fixtures that carry it are testing the deprecation warning path, not a live feature.
 
 ## Security Considerations
 
