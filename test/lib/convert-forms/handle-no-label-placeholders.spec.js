@@ -4,6 +4,10 @@ const log = require('../../../src/lib/log');
 const { removeNoLabelNodes } = require('../../../src/lib/convert-forms/handle-no-label-placeholders');
 const { createXformDoc, createXformString, serializeToString } = require('../../fn/convert-forms.utils');
 
+const WARNING_TEXT = 'The "NO_LABEL/DELETE_THIS_LINE" value is deprecated and will be removed in a future version of ' +
+  'cht-conf. For groups, a label is not required. For other fields, if you set a hint you do not have to provide a ' +
+  'label. If the field should not be visible, use "hidden" or "calculate" types.';
+
 describe('Handle NO_LABEL placeholders', () => {
   beforeEach(() => {
     sinon.stub(log, 'warn');
@@ -45,9 +49,6 @@ describe('Handle NO_LABEL placeholders', () => {
 
     removeNoLabelNodes(doc);
 
-    expect(log.warn.callCount).to.equal(1);
-    expect(log.warn.firstCall.args[0]).to.include('The "NO_LABEL" value is deprecated');
-
     const expectedDoc = createXformString({
       itext: `
         <translation lang="en">
@@ -67,6 +68,7 @@ describe('Handle NO_LABEL placeholders', () => {
       `
     });
     expect(serializeToString(doc)).xml.to.equal(expectedDoc);
+    expect(log.warn).to.have.been.calledOnceWithExactly(WARNING_TEXT);
   });
 
   it('keeps label when text has other values, but removes NO_LABEL values', () => {
@@ -89,9 +91,6 @@ describe('Handle NO_LABEL placeholders', () => {
 
     removeNoLabelNodes(doc);
 
-    expect(log.warn.callCount).to.equal(1);
-    expect(log.warn.firstCall.args[0]).to.include('The "NO_LABEL" value is deprecated');
-
     const expectedDoc = createXformDoc({
       itext: `
         <translation lang="en">
@@ -107,6 +106,7 @@ describe('Handle NO_LABEL placeholders', () => {
       `
     });
     expect(serializeToString(doc)).xml.to.equal(expectedDoc);
+    expect(log.warn).to.have.been.calledOnceWithExactly(WARNING_TEXT);
   });
 
   it('handles multiple translations with NO_LABEL by removing all and associated labels', () => {
@@ -132,9 +132,6 @@ describe('Handle NO_LABEL placeholders', () => {
 
     removeNoLabelNodes(doc);
 
-    expect(log.warn.callCount).to.equal(1);
-    expect(log.warn.firstCall.args[0]).to.include('The "NO_LABEL" value is deprecated');
-
     const expectedDoc = createXformDoc({
       itext: `
         <translation lang="en" />
@@ -143,5 +140,6 @@ describe('Handle NO_LABEL placeholders', () => {
       body: `<input ref="/data/d"/>`
     });
     expect(serializeToString(doc)).xml.to.equal(expectedDoc);
+    expect(log.warn).to.have.been.calledOnceWithExactly(WARNING_TEXT);
   });
 });
