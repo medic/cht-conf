@@ -82,6 +82,9 @@ ${bold('OPTIONS')}
 
 --docDirectoryPath=<path to stage docs>
   Specifies the folder used to store the documents representing the changes in hierarchy.
+
+--force
+  Don't prompt if the doc staging folder already contains files; continue using it.
 `);
   /* eslint-enable max-len */
 };
