@@ -27,8 +27,7 @@ module.exports = {
     if (noLabelItextNodes.length > 0 || noLabelValueNodes.length > 0) {
       log.warn(
         'The "NO_LABEL/DELETE_THIS_LINE" value is deprecated and will be removed in a future version of cht-conf. ' +
-        'For groups, a label is not required. For other fields, if you set a hint you do not have to provide a ' +
-        'label. If the field should not be visible, use "hidden" or "calculate" types.'
+        'For groups, a label is not required. If the field should not be visible, use the "hidden" or "calculate" type.'
       );
     }
   }
