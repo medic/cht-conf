@@ -116,6 +116,7 @@ describe('warn-upload-overwrite', () => {
       expect(fs.read.args[0][0]).to.equal('.snapshots/local.json');
       expect(actual).to.equal('abc');
     });
+
     it('returns matching snapshot with specified db name for local-ip hostname', () => {
       const given = { id1: { '192-168-0-3.local-ip.medicmobile.org/medic': 'abc' } };
       sinon.stub(fs, 'read').returns(JSON.stringify(given));
