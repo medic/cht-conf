@@ -1,5 +1,5 @@
 const projectPaths = require('../lib/project-paths');
-const uploadUiExtensionsLib = require('../lib/upload-ui-extensions');
+const uploadUiExtensionsLib = require('../lib/ui-extensions');
 const environment = require('../lib/environment');
 
 

@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 
 const environment = require('../../src/lib/environment');
-const uploadUiExtensionsLib = require('../../src/lib/upload-ui-extensions');
+const uploadUiExtensionsLib = require('../../src/lib/ui-extensions');
 const uploadUiExtensions = require('../../src/fn/upload-ui-extensions');
 
 describe('Upload UI Extensions', () => {
