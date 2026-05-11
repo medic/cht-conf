@@ -9,7 +9,7 @@ const pouch = require('./db');
 const attachmentFromFile = require('./attachment-from-file');
 
 const schema = Joi.object({
-  type: Joi.string().valid('app_main_tab', 'app_drawer_tab').required(),
+  type: Joi.string().valid('header_tab', 'sidebar_tab').required(),
   title: Joi.string().required(),
   icon: Joi.string().pattern(/^fa-/).optional(),
   resource_icon: Joi.string().optional(),

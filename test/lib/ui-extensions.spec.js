@@ -34,7 +34,7 @@ describe('UI Extensions Library', () => {
     let attachmentFromFile;
 
     const validProps = {
-      type: 'app_main_tab',
+      type: 'header_tab',
       title: 'My Extension',
       icon: 'fa-star',
       accent_color: 'red',
@@ -114,10 +114,10 @@ describe('UI Extensions Library', () => {
     });
 
     [
-      { type: 'app_main_tab' },
+      { type: 'header_tab' },
       { title: 'My Extension' },
-      { type: 'app_main_tab', title: 'My Extension', roles: 'my-role' },
-      { type: 'app_main_tab', title: 'My Extension', roles: ['my-role'], config: 'my-config' },
+      { type: 'header_tab', title: 'My Extension', roles: 'my-role' },
+      { type: 'header_tab', title: 'My Extension', roles: ['my-role'], config: 'my-config' },
       { ...validProps, resource_icon: 'icon.png' },
       { ...validProps, icon: 'icon' }
     ].forEach(invalidProps => {
