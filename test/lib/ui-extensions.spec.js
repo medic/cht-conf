@@ -39,6 +39,7 @@ describe('UI Extensions Library', () => {
       icon: 'fa-star',
       accent_color: 'red',
       roles: ['admin'],
+      weight: 7,
       config: { foo: 'bar' }
     };
 
@@ -119,7 +120,8 @@ describe('UI Extensions Library', () => {
       { type: 'header_tab', title: 'My Extension', roles: 'my-role' },
       { type: 'header_tab', title: 'My Extension', roles: ['my-role'], config: 'my-config' },
       { ...validProps, resource_icon: 'icon.png' },
-      { ...validProps, icon: 'icon' }
+      { ...validProps, icon: 'icon' },
+      { ...validProps, weight: 'Not a number' }
     ].forEach(invalidProps => {
       it('throws an exception if properties.json fails Joi schema validation', async () => {
         fs.readdirSync.returns(['valid-name.js', 'valid-name.properties.json']);

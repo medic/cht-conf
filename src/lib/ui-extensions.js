@@ -15,6 +15,7 @@ const schema = Joi.object({
   resource_icon: Joi.string().optional(),
   roles: Joi.array().items(Joi.string()),
   accent_color: Joi.string().optional(),
+  weight: Joi.number().optional(),
   config: Joi.object().unknown(true)
 }).oxor('icon', 'resource_icon');
 
