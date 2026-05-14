@@ -2,7 +2,6 @@ const convertForms = require('../lib/convert-forms').execute;
 const environment = require('../lib/environment');
 const { CONTACT_FORMS_PATH } = require('../lib/project-paths');
 const { createFormsFromTemplates } = require('../lib/create-forms-from-templates');
-const { replaceFormPlaceholderVars } = require('../lib/replace-form-placeholder-vars');
 
 const handleInputs = (xml, type) => {
   if (!xml.includes('</inputs>')) {
@@ -73,16 +72,14 @@ const handleContact = (xml) => {
 };
 
 const convertContactForm = (forms) => {
-  const result = createFormsFromTemplates(environment.pathToProject, CONTACT_FORMS_PATH);
+  const templateInfo = createFormsFromTemplates(environment.pathToProject, CONTACT_FORMS_PATH);
 
   return convertForms(environment.pathToProject, 'contact', {
     enketo: true,
     forms: forms,
-    templateFileNames: result?.templateFileNames,
-    transformer: (xml, path, properties) => {
+    templateInfo: templateInfo,
+    transformer: (xml, path) => {
       const type = path.replace(/.*\/(.*?)(-(create|edit))?\.xml.swp$/, '$1');
-      
-      xml = replaceFormPlaceholderVars(xml, type, result?.config, properties);
       // The ordering of elements in the <model> has an arcane affect on the
       // order that docs are saved in the database when processing a form.
       // Move the main doc's element down to the bottom.

@@ -12,6 +12,7 @@ const { removeNoLabelNodes } = require('./handle-no-label-placeholders');
 const { removeExtraRepeatInstance, addRepeatCount } = require('./handle-repeat');
 const { handleDbDocRefs } = require('./handle-db-doc-ref');
 const { handleFormId } = require('./handle-form-id');
+const { handlePlaceholderVarReplacement } = require('./handle-placeholder-var-replacement');
 
 const domParser = new DOMParser();
 const serializer = new XMLSerializer();
@@ -48,8 +49,10 @@ const execute = async (projectDir, subDirectory, options = {}) => {
     return;
   }
 
+  const { transformer, enketo, templateInfo } = options;
+
   const filesToConvert = argsFormFilter(formsDir, FORM_EXTENSION, options)
-    .filter(name => formFileMatcher(name, options.templateFileNames));
+    .filter(name => formFileMatcher(name, templateInfo?.templateFileNames));
 
   for (const xls of filesToConvert) {
     const sourcePath = `${formsDir}/${xls}`;
@@ -63,7 +66,7 @@ const execute = async (projectDir, subDirectory, options = {}) => {
     try {
       await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(xmlSwpPath), xls);
       const propsData = getPropsData(`${fs.withoutExtension(sourcePath)}.properties.json`);
-      fixXml(xmlSwpPath, propsData, options.transformer, options.enketo);
+      fixXml(xmlSwpPath, transformer, enketo, { propsData, templateConfig: templateInfo?.config });
     } catch (e) {
       nodeFs.rmSync(xmlSwpPath, { force: true });
       throw e;
@@ -133,7 +136,8 @@ const xls2xform = async (sourcePath, targetPath, xlsxFileName) => {
 
 // here we fix the form content in arcane ways.  Seeing as we have out own fork
 // of pyxform, we should probably be doing this fixing there.
-const fixXml = (path, propsData, transformer, enketo) => {
+const fixXml = (path, transformer, enketo, config) => {
+  const { propsData, templateConfig } = config;
   // This is not how you should modify XML, but we have reasonable control over
   // the input and so far this works OK.  Keep an eye on the tests, and any
   // future changes to the output of xls2xform.
@@ -153,6 +157,15 @@ const fixXml = (path, propsData, transformer, enketo) => {
   if (propsData[FORM_PROPERTIES_HIDDEN_FIELDS]) {
     const r = new RegExp(`<(${propsData[FORM_PROPERTIES_HIDDEN_FIELDS].join('|')})(/?)>`, 'g');
     xml = xml.replace(r, '<$1 tag="hidden"$2>');
+  }
+
+  if(propsData[FORM_PROPERTIES_PLACEHOLDER_VARS]){
+    xml = handlePlaceholderVarReplacement(
+      xml, 
+      path, 
+      templateConfig,
+      propsData[FORM_PROPERTIES_PLACEHOLDER_VARS]
+    );
   }
 
   // Check for deprecations
@@ -181,7 +194,7 @@ const fixXml = (path, propsData, transformer, enketo) => {
   }).replaceAll(/\s+<\/value>/g, '</value>'); // Ignoring the 'value' path results in extra trailing whitespace
 
   if (transformer) {
-    xml = transformer(xml, path, propsData[FORM_PROPERTIES_PLACEHOLDER_VARS]);
+    xml = transformer(xml, path);
   }
 
   fs.write(path, xml);

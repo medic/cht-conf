@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { replaceFormPlaceholderVars } = require('../../src/lib/replace-form-placeholder-vars');
-const { createXformString } = require('../fn/convert-forms.utils');
+const { handlePlaceholderVarReplacement } = require('../../../src/lib/convert-forms/handle-placeholder-var-replacement');
+const { createXformString } = require('../../fn/convert-forms.utils');
 
 describe('Replace form placeholder vars', () => {
   const getXmlString = ({
@@ -78,7 +78,7 @@ describe('Replace form placeholder vars', () => {
   it('should handle null values', () => {
     let result;
     expect(() => {
-      result = replaceFormPlaceholderVars(xml, null, null, null);
+      result = handlePlaceholderVarReplacement(xml, null, null, null);
     }).to.not.throw();
     expect(result).to.exist;
     expect(result).to.deep.equal(createXformString(getXmlString()));
@@ -87,7 +87,7 @@ describe('Replace form placeholder vars', () => {
   it('should replace old PLACE_TYPE placeholder if type is provided and no properties config', () => {
     let result;
     expect(() => {
-      result = replaceFormPlaceholderVars(xml, 'my_type_1', null, null);
+      result = handlePlaceholderVarReplacement(xml, 'my_type_1', null, null);
     }).to.not.throw();
     expect(result).to.exist;
     expect(!result.includes('PLACE_TYPE')).to.be.true;
@@ -97,7 +97,7 @@ describe('Replace form placeholder vars', () => {
   it('should replace new CONTACT_TYPE placeholder if type is provided and no properties config', () => {
     let result;
     expect(() => {
-      result = replaceFormPlaceholderVars(
+      result = handlePlaceholderVarReplacement(
         createXformString(getXmlString({ placeholderType: 'CONTACT_TYPE' })), 
         'my_type_2', 
         null, 
@@ -112,7 +112,7 @@ describe('Replace form placeholder vars', () => {
   it('should replace resolve PLACE_NAME placeholder when type and template config is being provided', () => {
     let result;
     expect(() => {
-      result = replaceFormPlaceholderVars(xml, 'my_type_3', { 'my_type_3': 'Type name 3' }, null);
+      result = handlePlaceholderVarReplacement(xml, 'my_type_3', { 'my_type_3': 'Type name 3' }, null);
     }).to.not.throw();
     expect(result).to.exist;
     expect(!result.includes('PLACE_TYPE')).to.be.true;
@@ -123,7 +123,7 @@ describe('Replace form placeholder vars', () => {
   it('should replace resolve CONTACT_NAME placeholder when type and template config is being provided', () => {
     let result;
     expect(() => {
-      result = replaceFormPlaceholderVars(
+      result = handlePlaceholderVarReplacement(
         createXformString(getXmlString({ placeholderType: 'CONTACT_TYPE', placeholderName: 'CONTACT_NAME' })),
         'my_type_3', 
         { 'my_type_3': { name: 'Type name 3' } }, 
@@ -138,7 +138,7 @@ describe('Replace form placeholder vars', () => {
 
   it('should throw and list vars with invalid syntax', () => {
     expect(() => {
-      replaceFormPlaceholderVars(
+      handlePlaceholderVarReplacement(
         createXformString(getXmlString({ 
           placeholderType: 'CONTACT_TYPE', 
           placeholderName: 'CONTACT_NAME',
@@ -161,7 +161,7 @@ describe('Replace form placeholder vars', () => {
 
   it('should throw when any user defined placeholder vars remain after replacement', () => {
     expect(() => {
-      replaceFormPlaceholderVars(
+      handlePlaceholderVarReplacement(
         createXformString(getXmlString({ 
           placeholderType: 'CONTACT_TYPE', 
           placeholderName: 'CONTACT_NAME',
@@ -183,7 +183,7 @@ describe('Replace form placeholder vars', () => {
   it('should replace vars as expected', () => {
     let result;
     expect(() => {
-      result = replaceFormPlaceholderVars(
+      result = handlePlaceholderVarReplacement(
         createXformString(getXmlString({ 
           placeholderType: 'CONTACT_TYPE', 
           placeholderName: 'CONTACT_NAME',

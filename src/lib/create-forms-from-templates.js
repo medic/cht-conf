@@ -15,6 +15,8 @@ const DEFAULT_TEMPLATES = [
   `${FORM_OG_TEMPLATE_DEFAULT_KEY}${FORM_EDIT_SFX}${FORM_EXT}`,
 ];
 
+const TEMPLATE_SUB_DIR = 'templates';
+
 const contactTypesSchema = Joi.object().pattern(
   Joi.string(), 
   Joi.object({
@@ -42,12 +44,12 @@ const readTemplateTypesJson = (dir, fileName) => {
   }
 };
 
-function writeXlsxFile(dir, sourceFileName, destFileName){
+function writeXlsxFile(sourceFilePath, destFilePath){
   try{
-    fs.copy(`${dir}/${sourceFileName}`, `${dir}/${destFileName}`, { overwrite: false });
+    fs.copy(sourceFilePath, destFilePath, { overwrite: false });
   }
   catch(e){
-    throw new Error(`Unable to write "${destFileName}" to disk: ${e.message}`);
+    throw new Error(`Unable to write "${destFilePath}" to disk: ${e.message}`);
   }
 }
 
@@ -60,14 +62,12 @@ function processPlaceConfig(dir, json){
   
   Object.keys(json).forEach(type => {
     writeXlsxFile(
-      dir,
-      getFormFileName(FORM_OG_TEMPLATE_DEFAULT_KEY, FORM_CREATE_SFX),
-      getFormFileName(type, FORM_CREATE_SFX)
+      `${dir}/${getFormFileName(FORM_OG_TEMPLATE_DEFAULT_KEY, FORM_CREATE_SFX)}`,
+      `${dir}/${getFormFileName(type, FORM_CREATE_SFX)}`
     );
     writeXlsxFile(
-      dir,
-      getFormFileName(FORM_OG_TEMPLATE_DEFAULT_KEY, FORM_EDIT_SFX),
-      getFormFileName(type, FORM_EDIT_SFX)
+      `${dir}/${getFormFileName(FORM_OG_TEMPLATE_DEFAULT_KEY, FORM_EDIT_SFX)}`,
+      `${dir}/${getFormFileName(type, FORM_EDIT_SFX)}`
     );
   });
 } 
@@ -85,7 +85,7 @@ function ensureValidContactSchema(json) {
   );
 }
 
-function processContactConfig(dir, json){
+function processContactConfig(dir, subDir, json){
   if (!json) {
     return;
   }
@@ -96,16 +96,14 @@ function processContactConfig(dir, json){
   Object.entries(json).forEach(([key, value]) => {
     const { templateCreate, templateEdit } = value;
     writeXlsxFile(
-      dir,
-      templateCreate,
-      getFormFileName(key, FORM_CREATE_SFX)
+      `${dir}/${subDir}/${templateCreate}`,
+      `${dir}/${getFormFileName(key, FORM_CREATE_SFX)}`
     );
     arr.push(templateCreate);
     if(templateEdit){
       writeXlsxFile(
-        dir,
-        templateEdit,
-        getFormFileName(key, FORM_EDIT_SFX)
+        `${dir}/${subDir}/${templateEdit}`,
+        `${dir}/${getFormFileName(key, FORM_EDIT_SFX)}`
       );
       arr.push(templateEdit);
     }
@@ -116,7 +114,7 @@ function processContactConfig(dir, json){
 function createFormsFromTemplates(pathToProject, subDirectory){
   const dir = `${pathToProject}/${subDirectory}`;
   const placeTypeConfig = readTemplateTypesJson(dir, getPropertiesFileName(PROPERTIES_PLACE_TYPES_KEY));
-  const contactTypeConfig = readTemplateTypesJson(dir, getPropertiesFileName(PROPERTIES_CONTACT_TYPES_KEY));
+  const contactTypeConfig = readTemplateTypesJson(`${dir}/${TEMPLATE_SUB_DIR}`, getPropertiesFileName(PROPERTIES_CONTACT_TYPES_KEY));
   // Is there a need to support app form templates?
 
   let config;
@@ -125,7 +123,7 @@ function createFormsFromTemplates(pathToProject, subDirectory){
     throw new Error('Can not have both place-types.json AND contact-types.json template config');
   }
   else if(contactTypeConfig){
-    templateFileNames = new Set(processContactConfig(dir, contactTypeConfig));
+    templateFileNames = new Set(processContactConfig(dir, TEMPLATE_SUB_DIR, contactTypeConfig));
     config = contactTypeConfig;
   }
   else if(placeTypeConfig){

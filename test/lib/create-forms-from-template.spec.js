@@ -31,7 +31,7 @@ describe('Create forms from templates', () => {
     expect(result.config).to.not.exist;
     expect(exists.callCount).to.be.equal(2);
     expect(exists.getCall(0).args[0]).to.be.equal('undefined/undefined/place-types.json');
-    expect(exists.getCall(1).args[0]).to.be.equal('undefined/undefined/contact-types.json');
+    expect(exists.getCall(1).args[0]).to.be.equal('undefined/undefined/templates/contact-types.json');
     expect(result.templateFileNames).to.exist;
     expect(result.templateFileNames.size).to.be.equal(2);
     expect([...result.templateFileNames]).to.deep.equal([
@@ -49,7 +49,7 @@ describe('Create forms from templates', () => {
     expect(result.config).to.not.exist;
     expect(exists.callCount).to.be.equal(2);
     expect(exists.getCall(0).args[0]).to.be.equal('some_dir/contact/place-types.json');
-    expect(exists.getCall(1).args[0]).to.be.equal('some_dir/contact/contact-types.json');
+    expect(exists.getCall(1).args[0]).to.be.equal('some_dir/contact/templates/contact-types.json');
   });
 
   it('should throw if unable to load json config file', () => {
@@ -80,11 +80,11 @@ describe('Create forms from templates', () => {
     expect(result).to.not.exist;
     expect(exists.callCount).to.be.equal(2);
     expect(exists.getCall(0).args[0]).to.be.equal('some_dir/contact/place-types.json');
-    expect(exists.getCall(1).args[0]).to.be.equal('some_dir/contact/contact-types.json');
+    expect(exists.getCall(1).args[0]).to.be.equal('some_dir/contact/templates/contact-types.json');
     expect(exists.returned(true)).to.be.true;
     expect(readJson.callCount).to.be.equal(2);
     expect(readJson.getCall(0).args[0]).to.be.equal('some_dir/contact/place-types.json');
-    expect(readJson.getCall(1).args[0]).to.be.equal('some_dir/contact/contact-types.json');
+    expect(readJson.getCall(1).args[0]).to.be.equal('some_dir/contact/templates/contact-types.json');
   });
 
   it('should throw when unable to copy file', () => {
@@ -99,11 +99,11 @@ describe('Create forms from templates', () => {
     let result;
     expect(() => {
       result = templateHelper.createFormsFromTemplates('some_dir', 'contact');
-    }).to.throw('Unable to write "my_type_1-create.xlsx" to disk: Permission issue');
+    }).to.throw('Unable to write "some_dir/contact/my_type_1-create.xlsx" to disk: Permission issue');
     expect(result).to.not.exist;
     expect(exists.callCount).to.be.equal(2);
     expect(exists.getCall(0).args[0]).to.be.equal('some_dir/contact/place-types.json');
-    expect(exists.getCall(1).args[0]).to.be.equal('some_dir/contact/contact-types.json');
+    expect(exists.getCall(1).args[0]).to.be.equal('some_dir/contact/templates/contact-types.json');
     expect(exists.getCall(0).returned(true)).to.be.true;
     expect(exists.getCall(1).returned(false)).to.be.true;
     expect(readJson.callCount).to.be.equal(1);
@@ -133,7 +133,7 @@ describe('Create forms from templates', () => {
     expect(result.config).to.exist;
     expect(exists.callCount).to.be.equal(2);
     expect(exists.getCall(0).args[0]).to.be.equal('some_dir/contact/place-types.json');
-    expect(exists.getCall(1).args[0]).to.be.equal('some_dir/contact/contact-types.json');
+    expect(exists.getCall(1).args[0]).to.be.equal('some_dir/contact/templates/contact-types.json');
     expect(exists.getCall(0).returned(true)).to.be.true;
     expect(exists.getCall(1).returned(false)).to.be.true;
     expect(readJson.callCount).to.be.equal(1);
@@ -188,11 +188,11 @@ describe('Create forms from templates', () => {
     expect(result.config).to.exist;
     expect(exists.callCount).to.be.equal(2);
     expect(exists.getCall(0).args[0]).to.be.equal('some_dir/contact/place-types.json');
-    expect(exists.getCall(1).args[0]).to.be.equal('some_dir/contact/contact-types.json');
+    expect(exists.getCall(1).args[0]).to.be.equal('some_dir/contact/templates/contact-types.json');
     expect(exists.getCall(0).returned(false)).to.be.true;
     expect(exists.getCall(1).returned(true)).to.be.true;
     expect(readJson.callCount).to.be.equal(1);
-    expect(readJson.getCall(0).args[0]).to.be.equal('some_dir/contact/contact-types.json');
+    expect(readJson.getCall(0).args[0]).to.be.equal('some_dir/contact/templates/contact-types.json');
     expect(warn.callCount).to.be.equal(0);
     expect(copy.callCount).to.be.equal(18); // Not 20 due to 2 types opting out of edit forms
     const entries = Object.entries(contactTypesConfig).entries();
@@ -202,13 +202,13 @@ describe('Create forms from templates', () => {
       const { templateCreate, templateEdit } = value;
       
       expect(copy.getCall(index + moveUp).args).to.deep.equal([
-        `some_dir/contact/${templateCreate}`, 
+        `some_dir/contact/templates/${templateCreate}`, 
         `some_dir/contact/${key}-create.xlsx`, 
         { overwrite: false }
       ]);
       if((templateEdit)){
         expect(copy.getCall(index + moveUp +1).args).to.deep.equal([
-          `some_dir/contact/${templateEdit}`, 
+          `some_dir/contact/templates/${templateEdit}`, 
           `some_dir/contact/${key}-edit.xlsx`,
           { overwrite: false }
         ]);

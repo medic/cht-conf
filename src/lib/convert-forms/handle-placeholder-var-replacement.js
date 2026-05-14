@@ -84,17 +84,16 @@ function checkForStragglers(xml){
   }
 }
 
-function replaceFormPlaceholderVars(xml, type, templateConfig, dynamicReplacementVars){
-  validate(dynamicReplacementVars);
-  const obj = {
-    ...buildBaseObj(type, templateConfig), 
-    ...processUserPlaceholderVars(dynamicReplacementVars)
-  };
-  xml = replacePlaceholders(xml, obj);
-  checkForStragglers(xml);
-  return xml;
-}
-
 module.exports = {
-  replaceFormPlaceholderVars
+  handlePlaceholderVarReplacement: (xml, path, templateConfig, dynamicReplacementVars) => {
+    const type = path ? path.replace(/.*\/(.*?)(-(create|edit))?\.xml.swp$/, '$1') : null;
+    validate(dynamicReplacementVars);
+    const obj = {
+      ...buildBaseObj(type, templateConfig), 
+      ...processUserPlaceholderVars(dynamicReplacementVars)
+    };
+    xml = replacePlaceholders(xml, obj);
+    checkForStragglers(xml);
+    return xml;
+  }
 };
