@@ -86,7 +86,15 @@ function checkForStragglers(xml){
 
 module.exports = {
   handlePlaceholderVarReplacement: (xml, path, templateConfig, dynamicReplacementVars) => {
-    const type = path ? path.replace(/.*\/(.*?)(-(create|edit))?\.xml.swp$/, '$1') : null;
+    // Suppose we have the file path:
+    // ./forms/contact/household-create.xml.swp
+    // It will be split into the following parts:
+    // ['forms', 'contact', 'household-create.xml.swp']\
+    // After the pop we'd have the last segment:
+    // 'household-create.xml.swp'
+    // Regex only the last segment for the type.
+    const type = path ? path.split('/').pop()?.replace(/(?:-(?:create|edit))?\.xml\.swp$/, ''): null;
+
     validate(dynamicReplacementVars);
     const obj = {
       ...buildBaseObj(type, templateConfig), 
