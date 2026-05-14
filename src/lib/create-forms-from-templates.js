@@ -114,7 +114,10 @@ function processContactConfig(dir, subDir, json){
 function createFormsFromTemplates(pathToProject, subDirectory){
   const dir = `${pathToProject}/${subDirectory}`;
   const placeTypeConfig = readTemplateTypesJson(dir, getPropertiesFileName(PROPERTIES_PLACE_TYPES_KEY));
-  const contactTypeConfig = readTemplateTypesJson(`${dir}/${TEMPLATE_SUB_DIR}`, getPropertiesFileName(PROPERTIES_CONTACT_TYPES_KEY));
+  const contactTypeConfig = readTemplateTypesJson(
+    `${dir}/${TEMPLATE_SUB_DIR}`, 
+    getPropertiesFileName(PROPERTIES_CONTACT_TYPES_KEY)
+  );
   // Is there a need to support app form templates?
 
   let config;

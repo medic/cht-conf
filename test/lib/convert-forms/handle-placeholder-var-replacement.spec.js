@@ -1,6 +1,8 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const { handlePlaceholderVarReplacement } = require('../../../src/lib/convert-forms/handle-placeholder-var-replacement');
+const { 
+  handlePlaceholderVarReplacement 
+} = require('../../../src/lib/convert-forms/handle-placeholder-var-replacement');
 const { createXformString } = require('../../fn/convert-forms.utils');
 
 describe('Replace form placeholder vars', () => {

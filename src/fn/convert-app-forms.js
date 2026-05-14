@@ -7,7 +7,7 @@ const convertAppForms = (forms) => {
   return convertForms(environment.pathToProject, 'app', {
     enketo: true,
     forms: forms,
-    transformer: (xml, _) => {
+    transformer: (xml) => {
       return xml.replace('</instance>', `</instance>${contactSummaryXML}`);
     },
   });
