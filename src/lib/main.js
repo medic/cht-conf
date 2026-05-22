@@ -143,7 +143,16 @@ module.exports = async (argv, env) => {
   const projectName = fs.path.basename(pathToProject);
 
   const requiresInstance = actions.some(action => action.requiresInstance);
-  const apiUrl = requiresInstance && getApiUrl(cmdArgs, env);
+
+  let apiUrl;
+
+  try {
+    apiUrl = getApiUrl(cmdArgs, env);
+  } catch (err) {
+    if (requiresInstance) {
+      throw err;
+    }
+  }
 
   if (cmdArgs['accept-self-signed-certs'] || isLocalhost(apiUrl)) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
