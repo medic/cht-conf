@@ -161,7 +161,17 @@ async function assertSourcePrimaryContactType(db, contactTypeInfo, sourceDoc) {
     return;
   }
 
-  const sourcePrimaryContactDoc = await db.get(sourcePrimaryContactId);
+  let sourcePrimaryContactDoc;
+  try {
+    sourcePrimaryContactDoc = await db.get(sourcePrimaryContactId);
+  } catch (err) {
+    if (err.status === 404) {
+      log.warn(`Source "${sourceDoc._id}" has primary contact "${sourcePrimaryContactId}" which is deleted or missing. Ignoring.`);
+      return;
+    }
+    throw err;
+  }
+
   const primaryContactIsPlace = isPlace(contactTypeInfo, sourcePrimaryContactDoc);
   if (primaryContactIsPlace) {
     throw new Error(`Source "${sourceDoc._id}" has primary contact "${sourcePrimaryContactId}" which is of type place`);
