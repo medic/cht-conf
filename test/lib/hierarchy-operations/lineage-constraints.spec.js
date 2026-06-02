@@ -207,10 +207,18 @@ describe('lineage constriants', () => {
     });
 
     it('no error when primary contact doc is deleted (404)', async () => {
+      const warnStub = sinon.stub(log, 'warn');
       const deletedErr = Object.assign(new Error('deleted'), { status: 404 });
       const mockDb = { get: sinon.stub().rejects(deletedErr) };
       const sourceDoc = { _id: 'place_1', type: 'health_center', contact: { _id: 'deleted_person' } };
-      await assertSourcePrimaryContactType(mockDb, {}, sourceDoc);
+      try {
+        await assertSourcePrimaryContactType(mockDb, {}, sourceDoc);
+        expect(warnStub.calledOnce).to.be.true;
+        expect(warnStub.firstCall.args[0]).to.include('place_1');
+        expect(warnStub.firstCall.args[0]).to.include('deleted_person');
+      } finally {
+        warnStub.restore();
+      }
     });
 
     it('rethrows non-404 errors', async () => {

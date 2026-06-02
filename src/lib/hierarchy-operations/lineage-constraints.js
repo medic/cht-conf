@@ -166,7 +166,8 @@ async function assertSourcePrimaryContactType(db, contactTypeInfo, sourceDoc) {
     sourcePrimaryContactDoc = await db.get(sourcePrimaryContactId);
   } catch (err) {
     if (err.status === 404) {
-      log.warn(`Source "${sourceDoc._id}" has primary contact "${sourcePrimaryContactId}" which is deleted or missing. Ignoring.`);
+      log.warn(`Source "${sourceDoc._id}" has primary contact "${sourcePrimaryContactId}"` +
+        ` which is deleted or missing. Ignoring.`);
       return;
     }
     throw err;
