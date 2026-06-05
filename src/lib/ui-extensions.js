@@ -9,7 +9,7 @@ const pouch = require('./db');
 const attachmentFromFile = require('./attachment-from-file');
 
 const schema = Joi.object({
-  type: Joi.string().valid('header_tab', 'sidebar_tab').required(),
+  extension_type: Joi.string().valid('header_tab', 'sidebar_tab').required(),
   title: Joi.string().required(),
   icon: Joi.string().pattern(/^fa-/).optional(),
   resource_icon: Joi.string().optional(),
@@ -20,7 +20,7 @@ const schema = Joi.object({
 }).oxor('icon', 'resource_icon');
 
 // Name will be used in Couch _id and in web component name.
-const validateExtensionName = (name) => /^[a-zA-Z0-9_.-]+$/.test(name);
+const isValidExtensionName = (name) => /^[a-zA-Z0-9_.-]+$/.test(name);
 
 const getNamesToUpload = (uiExtensionsDir) => {
   const allFiles = fs.readdirSync(uiExtensionsDir);
@@ -45,10 +45,9 @@ const readPropertiesFile = (propsPath) => {
 };
 
 const getExtensionDoc = (uiExtensionsDir, name) => {
-  if (!validateExtensionName(name)) {
+  if (!isValidExtensionName(name)) {
     throw new Error(
-      `UI Extension name "${name}" is invalid. It must start with a lowercase letter, ` +
-      'contain at least one hyphen, and use only lowercase letters, digits, hyphens, ' +
+      `UI Extension name "${name}" is invalid. It must contain only letters, digits, hyphens, ` +
       'periods, or underscores.'
     );
   }
@@ -68,9 +67,9 @@ const getExtensionDoc = (uiExtensionsDir, name) => {
   }
 
   return {
+    ...propsContent,
     _id: `ui-extension:${name}`,
     type: 'ui-extension',
-    ...propsContent,
     _attachments: {
       'extension.js': attachmentFromFile(jsPath)
     }
@@ -116,47 +115,27 @@ const uploadUiExtensions = async (uiExtensionsDir, specificExtensions = []) => {
   }
 };
 
-const fetchSingleDoc = async (db, name) => {
-  try {
-    return await db.get(`ui-extension:${name}`);
-  } catch (err) {
-    if (err.status === 404) {
-      log.warn(`UI Extension "${name}" not found in database. Skipping.`);
-      return null;
-    }
-    throw new Error(`Failed to fetch extension "${name}": ${err.message}`);
-  }
-};
-
-const getSpecificDocs = async (db, specificExtensions) => {
-  const docs = [];
-  for (const name of specificExtensions) {
-    const doc = await fetchSingleDoc(db, name);
-    if (doc) {
-      docs.push(doc);
-    }
-  }
-  return docs;
-};
-
-const getDocsToDelete = async (db, specificExtensions) => {
-  if (specificExtensions?.length > 0) {
-    return getSpecificDocs(db, specificExtensions);
-  }
-
-  const result = await db.allDocs({
+const getDocsToDelete = async (db, specifiedExtensions) => {
+  const keys = specifiedExtensions.map(name => `ui-extension:${name}`);
+  const opts = keys.length ? { keys }: {
     startkey: 'ui-extension:',
-    endkey: 'ui-extension:\ufff0',
+    endkey: 'ui-extension:\ufff0'
+  };
+  const result = await db.allDocs({
+    ...opts,
     include_docs: true
   });
-
+  const docs = result.rows.map(row => row.doc);
+  keys
+    .filter(key => !docs.some(({ _id }) => _id === key))
+    .forEach(name => log.warn(`UI Extension "${name.slice(13)}" not found in database. Skipping.`));
   return result.rows.map(row => row.doc);
 };
 
-const deleteUiExtensions = async (specificExtensions = []) => {
+const deleteUiExtensions = async (specifiedExtensions = []) => {
   const db = pouch(environment.apiUrl);
 
-  const docs = await getDocsToDelete(db, specificExtensions);
+  const docs = await getDocsToDelete(db, specifiedExtensions);
 
   if (!docs.length) {
     log.info('No UI extensions found to delete.');

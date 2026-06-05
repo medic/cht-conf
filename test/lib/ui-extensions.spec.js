@@ -18,7 +18,6 @@ describe('UI Extensions Library', () => {
     uiExtensionsModule = rewire('../../src/lib/ui-extensions');
 
     db = {
-      get: sinon.stub(),
       allDocs: sinon.stub(),
       remove: sinon.stub()
     };
@@ -34,7 +33,7 @@ describe('UI Extensions Library', () => {
     let attachmentFromFile;
 
     const validProps = {
-      type: 'header_tab',
+      extension_type: 'header_tab',
       title: 'My Extension',
       icon: 'fa-star',
       accent_color: 'red',
@@ -115,10 +114,10 @@ describe('UI Extensions Library', () => {
     });
 
     [
-      { type: 'header_tab' },
+      { extension_type: 'header_tab' },
       { title: 'My Extension' },
-      { type: 'header_tab', title: 'My Extension', roles: 'my-role' },
-      { type: 'header_tab', title: 'My Extension', roles: ['my-role'], config: 'my-config' },
+      { extension_type: 'header_tab', title: 'My Extension', roles: 'my-role' },
+      { extension_type: 'header_tab', title: 'My Extension', roles: ['my-role'], config: 'my-config' },
       { ...validProps, resource_icon: 'icon.png' },
       { ...validProps, icon: 'icon' },
       { ...validProps, weight: 'Not a number' }
@@ -144,7 +143,11 @@ describe('UI Extensions Library', () => {
       expect(warnUploadOverwrite.preUploadDoc.callCount).to.equal(1);
       expect(insertOrReplace.callCount).to.equal(1);
       expect(insertOrReplace.args[0][0]).to.equal(db);
-      expect(insertOrReplace.args[0][1]).to.deep.include(validProps);
+      expect(insertOrReplace.args[0][1]).to.deep.include({
+        ...validProps,
+        _id: 'ui-extension:valid-name',
+        type: 'ui-extension'
+      });
       expect(insertOrReplace.args[0][1]._attachments).to.have.property('extension.js');
       expect(attachmentFromFile.calledOnce).to.be.true;
       expect(warnUploadOverwrite.postUploadDoc.callCount).to.equal(1);
@@ -219,27 +222,23 @@ describe('UI Extensions Library', () => {
     it('should delete only specific extensions when provided', async () => {
       const targetDoc = { _id: 'ui-extension:target-ext', _rev: '1' };
       const targetDoc1 = { _id: 'ui-extension:target-ext1', _rev: '1' };
-      db.get.withArgs('ui-extension:target-ext').resolves(targetDoc);
-      db.get.withArgs('ui-extension:target-ext1').resolves(targetDoc1);
+      db.allDocs.resolves({ rows: [{ doc: targetDoc }, { doc: targetDoc1 }]});
       db.remove.resolves();
 
       await uiExtensionsModule.deleteUiExtensions(['target-ext', 'target-ext1']);
 
-      expect(db.allDocs.called).to.be.false;
-      expect(db.get.args).to.deep.equal([
-        ['ui-extension:target-ext'],
-        ['ui-extension:target-ext1']
-      ]);
+      expect(db.allDocs).to.have.been.calledOnceWithExactly({
+        keys: ['ui-extension:target-ext', 'ui-extension:target-ext1'],
+        include_docs: true
+      });
       expect(db.remove.args).to.deep.equal([
         [targetDoc],
         [targetDoc1]
       ]);
     });
 
-    it('should log a warning if a specific extension is not found (404)', async () => {
-      const notFoundError = new Error('missing');
-      notFoundError.status = 404;
-      db.get.rejects(notFoundError);
+    it('should log a warning if a specific extension is not found', async () => {
+      db.allDocs.resolves({ rows: []});
 
       await uiExtensionsModule.deleteUiExtensions(['missing-ext']);
 
@@ -247,18 +246,9 @@ describe('UI Extensions Library', () => {
       expect(db.remove.called).to.be.false;
     });
 
-    it('should throw an error when getting an extension doc fails', async () => {
-      db.get.rejects(new Error('CouchDB read error'));
-
-      await expect(uiExtensionsModule.deleteUiExtensions(['broken-ext']))
-        .to.be.rejectedWith(`Failed to fetch extension "broken-ext": CouchDB read error`);
-
-      expect(db.remove.called).to.be.false;
-    });
-
     it('should throw an error if the database removal fails', async () => {
       const targetDoc = { _id: 'ui-extension:broken-ext', _rev: '1' };
-      db.get.resolves(targetDoc);
+      db.allDocs.resolves({ rows: [{ doc: targetDoc }]});
       db.remove.rejects(new Error('CouchDB write error'));
 
       await expect(uiExtensionsModule.deleteUiExtensions(['broken-ext']))
