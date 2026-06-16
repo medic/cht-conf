@@ -8,6 +8,10 @@ const warnUploadOverwrite = require('./warn-upload-overwrite');
 const pouch = require('./db');
 const attachmentFromFile = require('./attachment-from-file');
 
+const TYPE = 'ui-extension';
+const ID_PREFIX = `${TYPE}:`;
+const ATTACHMENT_NAME = 'extension.js';
+
 const schema = Joi.object({
   extension_type: Joi.string().valid('header_tab', 'sidebar_tab').required(),
   title: Joi.string().required(),
@@ -68,10 +72,10 @@ const getExtensionDoc = (uiExtensionsDir, name) => {
 
   return {
     ...propsContent,
-    _id: `ui-extension:${name}`,
-    type: 'ui-extension',
+    _id: `${ID_PREFIX}${name}`,
+    type: TYPE,
     _attachments: {
-      'extension.js': attachmentFromFile(jsPath)
+      [ATTACHMENT_NAME]: attachmentFromFile(jsPath)
     }
   };
 };
@@ -116,20 +120,22 @@ const uploadUiExtensions = async (uiExtensionsDir, specificExtensions = []) => {
 };
 
 const getDocsToDelete = async (db, specifiedExtensions) => {
-  const keys = specifiedExtensions.map(name => `ui-extension:${name}`);
+  const keys = specifiedExtensions.map(name => `${ID_PREFIX}${name}`);
   const opts = keys.length ? { keys }: {
-    startkey: 'ui-extension:',
-    endkey: 'ui-extension:\ufff0'
+    startkey: ID_PREFIX,
+    endkey: `${ID_PREFIX}\ufff0`
   };
   const result = await db.allDocs({
     ...opts,
     include_docs: true
   });
-  const docs = result.rows.map(row => row.doc);
+  const docs = result.rows
+    .map(row => row.doc)
+    .filter(Boolean);
   keys
     .filter(key => !docs.some(({ _id }) => _id === key))
-    .forEach(name => log.warn(`UI Extension "${name.slice(13)}" not found in database. Skipping.`));
-  return result.rows.map(row => row.doc);
+    .forEach(name => log.warn(`UI Extension "${name.slice(ID_PREFIX.length)}" not found in database. Skipping.`));
+  return docs;
 };
 
 const deleteUiExtensions = async (specifiedExtensions = []) => {
@@ -147,7 +153,7 @@ const deleteUiExtensions = async (specifiedExtensions = []) => {
   for (const doc of docs) {
     try {
       await db.remove(doc);
-      log.info(`Deleted UI Extension: ${doc._id.replace('ui-extension:', '')}`);
+      log.info(`Deleted UI Extension: ${doc._id.slice(ID_PREFIX.length)}`);
     } catch (err) {
       throw new Error(`Failed to delete ${doc._id}: ${err.message}`);
     }

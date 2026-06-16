@@ -5,7 +5,7 @@ const environment = require('../../src/lib/environment');
 const uiExtensionsLib = require('../../src/lib/ui-extensions');
 const deleteUiExtensions = require('../../src/fn/delete-ui-extensions');
 
-describe('Upload UI Extensions', () => {
+describe('Delete UI Extensions', () => {
   let deleteUiExtensionsStub;
 
   beforeEach(() => {
@@ -14,7 +14,7 @@ describe('Upload UI Extensions', () => {
 
   afterEach(() => sinon.restore());
 
-  it('calls uploadUiExtensions with the ui-extensions directory and no specific extensions', async () => {
+  it('calls deleteUiExtensions with no specific extensions', async () => {
     sinon.stub(environment, 'extraArgs').get(() => undefined);
 
     await deleteUiExtensions.execute();
