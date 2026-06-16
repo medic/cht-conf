@@ -71,8 +71,8 @@ const getExtensionDoc = (uiExtensionsDir, name) => {
   }
 
   return {
-    ...propsContent,
     _id: `${ID_PREFIX}${name}`,
+    ...propsContent,
     type: TYPE,
     _attachments: {
       [ATTACHMENT_NAME]: attachmentFromFile(jsPath)
