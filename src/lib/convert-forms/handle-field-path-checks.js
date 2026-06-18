@@ -128,10 +128,9 @@ function getBindNodes(xmlDoc, ignoreSet){
 
 function categorizeBindNode(bindNode, warnLength, errorLength, reservedSet){
   const length = bindNode.length;
-  
-  let reserved = undefined;
-  let error = undefined;
-  let warn = undefined;
+  let reserved;
+  let error;
+  let warn;
 
   if (reservedSet.has(bindNode)){
     reserved = bindNode;
