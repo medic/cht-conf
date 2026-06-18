@@ -126,49 +126,61 @@ function getBindNodes(xmlDoc, ignoreSet){
   );
 }
 
+function categorizeBindNode(bindNode, warnLength, errorLength, reservedSet){
+  const length = bindNode.length;
+  
+  let reserved = undefined;
+  let error = undefined;
+  let warn = undefined;
+
+  if (reservedSet.has(bindNode)){
+    reserved = bindNode;
+  }
+  if (errorLength > 0 && length >= errorLength) {
+    error = bindNode;
+  }
+  if (warnLength > 0 && length >= warnLength) {
+    warn = bindNode;
+  }
+  return { reserved, error, warn };
+}
+
 function processBindNodes(bindNodes, warnLength, errorLength, reservedSet){
-  const reserved = [];
+  const reservedNodes = [];
   const errorNodes = [];
   const warnNodes = [];
 
   for (const bind of bindNodes) {
     const nodeset = bind.getAttribute(XML_ATT_NODESET);
     const stripped = nodeset.replace(/\/data/, '');
-    const length = stripped.length;
-
-    if (reservedSet.has(stripped)){
-      reserved.push(stripped);
-    }
-    if (errorLength > 0 && length >= errorLength) {
-      errorNodes.push(stripped);
-    }
-    if (warnLength > 0 && length >= warnLength) {
-      warnNodes.push(stripped);
-    }
+    const { reserved, error, warn } = categorizeBindNode(stripped, warnLength, errorLength, reservedSet);
+    reserved && reservedNodes.push(reserved);
+    error && errorNodes.push(error);
+    warn && warnNodes.push(warn);
   }
 
-  return { reserved, errorNodes, warnNodes };
+  return { reservedNodes, errorNodes, warnNodes };
 }
 
-function handleFormVarResults(reserved, warnObj, errorObj){
-  if(reserved.length > 0){
+function handleFormVarResults(reservedNodes, warnNodes, errorNodes){
+  if(reservedNodes.length > 0){
     throw new Error(formatFeedbackMsg(
       'The following reserved entries were found in the form:',
-      reserved,
+      reservedNodes,
       'Please remove or rename as appropriate.'
     ));
   }
-  if(errorObj.errorNodes.length > 0){
+  if(errorNodes.errorNodes.length > 0){
     throw new Error(formatFeedbackMsg(
-      `The following vars are longer than the acceptable var length (${errorObj.errorLength}):`,
-      errorObj.errorNodes,
+      `The following vars are longer than the acceptable var length (${errorNodes.errorLength}):`,
+      errorNodes.errorNodes,
       'Please simplify nesting or remove verbosity.'
     ));
   }
-  else if(warnObj.warnNodes.length > 0){
+  else if(warnNodes.warnNodes.length > 0){
     warn(formatFeedbackMsg(
-      `The following vars are longer than the acceptable var length (${warnObj.warnLength}):`,
-      warnObj.warnNodes,
+      `The following vars are longer than the acceptable var length (${warnNodes.warnLength}):`,
+      warnNodes.warnNodes,
       'Please consider simplifying nesting or removing verbosity.'
     ));
   }
@@ -183,8 +195,8 @@ function checkFieldPaths(xmlDoc, props) {
   }
   
   const bindNodes = getBindNodes(xmlDoc, ignoreSet);
-  const { reserved, errorNodes, warnNodes } = processBindNodes(bindNodes, warnLength, errorLength, reservedSet);
-  handleFormVarResults(reserved, { warnNodes, warnLength }, { errorNodes, errorLength } );
+  const { reservedNodes, errorNodes, warnNodes } = processBindNodes(bindNodes, warnLength, errorLength, reservedSet);
+  handleFormVarResults(reservedNodes, { warnNodes, warnLength }, { errorNodes, errorLength } );
 }
 
 module.exports = {
