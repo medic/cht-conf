@@ -219,7 +219,7 @@ describe('convert-forms', () => {
     });
   });
 
-  describe('var checks', () => {
+  describe('field path checks', () => {
     const convertForms = rewire('./../../../src/lib/convert-forms');
     const { createXformString } = require('../../fn/convert-forms.utils');
     const FORM_ID = 'c';
@@ -233,19 +233,19 @@ describe('convert-forms', () => {
     });
     let getPropsData;
     let fixXml;
-    let checkVars;
+    let checkFieldPaths;
     
     beforeEach(() => {
       mockExec.resolves(JSON.stringify({ code: 100 }));
 
       getPropsData = sinon.stub().returns({
-        var_restrictions: { some_prop: 'some_value' }
+        field_path_linting: { 'warn_length': 10  }
       });
       convertForms.__set__('getPropsData', getPropsData);
 
-      const realCheckVars = convertForms.__get__('checkVars');
-      checkVars = sinon.spy(realCheckVars);
-      convertForms.__set__('checkVars', checkVars);
+      const realCheckFieldPaths = convertForms.__get__('checkFieldPaths');
+      checkFieldPaths = sinon.spy(realCheckFieldPaths);
+      convertForms.__set__('checkFieldPaths', checkFieldPaths);
 
       const realFixXml = convertForms.__get__('fixXml');
       fixXml = sinon.spy(realFixXml);
@@ -258,7 +258,7 @@ describe('convert-forms', () => {
     });
     afterEach(sinon.restore);
 
-    it('should skip checkVars when no "var_restriction" config is being supplied', async () => {
+    it('checkFieldPaths not throw when no "field_path_linting" config is being supplied', async () => {
       getPropsData = sinon.stub().returns({});
       convertForms.__set__('getPropsData', getPropsData);
       await expect(convertForms.execute('./path', 'app', { forms: [FORM_ID] })).to.be.fulfilled;
@@ -267,19 +267,20 @@ describe('convert-forms', () => {
       expect(getPropsData.args[0][0]).to.be.equal('./path/forms/app/c.properties.json');
       expect(fixXml.calledOnce).to.be.true;
       expect(fixXml.args[0][1]).to.be.deep.equal({});
-      expect(checkVars.callCount).to.be.equal(0);
+      expect(checkFieldPaths.callCount).to.be.equal(1);
+      expect(checkFieldPaths.args[0][1]).to.be.equal(undefined);
       expect(fs.write.calledOnce).to.be.true;
     });
 
-    it('should pick up var config & call checkVars', async () => {
+    it('should pick up field path linting config & call checkFieldPaths', async () => {
       await expect(convertForms.execute('./path', 'app', { forms: ['c'] })).to.be.fulfilled;
 
       expect(getPropsData.calledOnce).to.be.true;
       expect(getPropsData.args[0][0]).to.be.equal('./path/forms/app/c.properties.json');
       expect(fixXml.calledOnce).to.be.true;
-      expect(fixXml.args[0][1]).to.be.deep.equal({ 'var_restrictions': { 'some_prop': 'some_value' } });
-      expect(checkVars.calledOnce).to.be.true;
-      expect(checkVars.args[0][1]).to.be.deep.equal({ 'some_prop': 'some_value' });
+      expect(fixXml.args[0][1]).to.be.deep.equal({ 'field_path_linting': { 'warn_length': 10 } });
+      expect(checkFieldPaths.calledOnce).to.be.true;
+      expect(checkFieldPaths.args[0][1]).to.be.deep.equal({ 'warn_length': 10 });
     });
   });
 });

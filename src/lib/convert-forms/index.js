@@ -12,7 +12,7 @@ const { removeNoLabelNodes } = require('./handle-no-label-placeholders');
 const { removeExtraRepeatInstance, addRepeatCount } = require('./handle-repeat');
 const { handleDbDocRefs } = require('./handle-db-doc-ref');
 const { handleFormId } = require('./handle-form-id');
-const { checkVars } = require('./handle-var-checks');
+const { checkFieldPaths } = require('./handle-field-path-checks');
 
 const domParser = new DOMParser();
 const serializer = new XMLSerializer();
@@ -156,6 +156,7 @@ const fixXml = (path, propsData, transformer, enketo) => {
   removeExtraRepeatInstance(xmlDoc);
   addRepeatCount(xmlDoc);
   handleDbDocRefs(xmlDoc);
+  checkFieldPaths(xmlDoc, propsData[FORM_PROPERTIES_FIELD_PATH_LINTING]);
 
   const xmlString = serializer.serializeToString(xmlDoc);
   xml = xmlFormat(xmlString, {
@@ -168,10 +169,6 @@ const fixXml = (path, propsData, transformer, enketo) => {
     lineSeparator: '\n'
   }).replaceAll(/\s+<\/value>/g, '</value>'); // Ignoring the 'value' path results in extra trailing whitespace
 
-  if(propsData[FORM_PROPERTIES_VAR_RESTRICTIONS]){
-    checkVars(xmlDoc, propsData[FORM_PROPERTIES_VAR_RESTRICTIONS]);
-  }
-
   if (transformer) {
     xml = transformer(xml, path);
   }
@@ -180,18 +177,24 @@ const fixXml = (path, propsData, transformer, enketo) => {
 };
 
 const FORM_PROPERTIES_HIDDEN_FIELDS = 'hidden_fields';
-const FORM_PROPERTIES_VAR_RESTRICTIONS = 'var_restrictions';
+const FORM_PROPERTIES_FIELD_PATH_LINTING = 'field_path_linting';
+const DEFAULT_PROPS = {
+  [FORM_PROPERTIES_HIDDEN_FIELDS]: undefined,
+  [FORM_PROPERTIES_FIELD_PATH_LINTING]: undefined 
+};
 function getPropsData(propsJson) {
-  if(fs.exists(propsJson)){
-    const json = fs.readJson(propsJson);
-    return {
-      [FORM_PROPERTIES_HIDDEN_FIELDS]: json[FORM_PROPERTIES_HIDDEN_FIELDS],
-      [FORM_PROPERTIES_VAR_RESTRICTIONS]: json[FORM_PROPERTIES_VAR_RESTRICTIONS]
-    };
+  if(!fs.exists(propsJson) || !fs.statSync(propsJson).isFile()){
+    return DEFAULT_PROPS;
   }
+
+  const json = fs.readJson(propsJson);
+  if(!json){
+    return DEFAULT_PROPS;
+  }
+
   return {
-    [FORM_PROPERTIES_HIDDEN_FIELDS]: [],
-    [FORM_PROPERTIES_VAR_RESTRICTIONS]: {} 
+    [FORM_PROPERTIES_HIDDEN_FIELDS]: json[FORM_PROPERTIES_HIDDEN_FIELDS],
+    [FORM_PROPERTIES_FIELD_PATH_LINTING]: json[FORM_PROPERTIES_FIELD_PATH_LINTING]
   };
 }
 
