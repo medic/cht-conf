@@ -1,3 +1,10 @@
+# [6.5.0](https://github.com/medic/cht-conf/compare/v6.4.1...v6.5.0) (2026-06-23)
+
+
+### Features
+
+* **#10224:** add actions for upload/delete UI extensions ([#823](https://github.com/medic/cht-conf/issues/823)) ([178bbfc](https://github.com/medic/cht-conf/commit/178bbfc9f412a2ea6c7ee2fe9d0610a18c2a50e3)), closes [#10224](https://github.com/medic/cht-conf/issues/10224)
+
 ## [6.4.1](https://github.com/medic/cht-conf/compare/v6.4.0...v6.4.1) (2026-05-12)
 
 
