@@ -5,18 +5,24 @@ const fs = require('../lib/sync-fs');
 const { info } = require('../lib/log');
 
 const LAYOUT = {
-  'contact-summary.templated.js': `module.exports = {
+  'contact-summary': {
+    'base.js': `module.exports = {
   fields: [],
   cards: [],
   context: {}
 };\n`,
+  },
   'privacy-policies.json': {},
   'privacy-policies': {},
   'resources.json': {},
   'harness.defaults.json': {},
   resources: {},
-  'targets.js': 'module.exports = [];\n',
-  'tasks.js': 'module.exports = [];\n',
+  targets: {
+    'base.js': 'module.exports = [];\n',
+  },
+  tasks: {
+    'base.js': 'module.exports = [];\n',
+  },
   '.eslintrc': `{
   "env": {
     "node": true,
