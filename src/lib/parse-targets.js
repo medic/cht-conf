@@ -1,12 +1,7 @@
 const path = require('path');
 const fs = require('./sync-fs');
 const { findTargetsFiles } = require('./auto-include');
-
-const TARGET_FIELDS = [
-  'id', 'type', 'goal', 'translation_key', 'passesIfGroupCount', 'icon',
-  'context', 'subtitle_translation_key', 'dhis', 'visible', 'aggregate',
-  'limit_count_to_goal',
-];
+const { TARGET_METADATA_FIELDS } = require('./compilation/validate-declarative-schema');
 
 const pick = (obj, attributes) => attributes.reduce((agg, curr) => {
   if (curr in obj) {
@@ -20,7 +15,7 @@ const requireTargetArray = (filePath) => {
   if (!Array.isArray(targets)) {
     throw new Error(`Targets file is expected to module.exports=[] an array of targets. ${filePath}`);
   }
-  return targets.map(target => pick(target, TARGET_FIELDS));
+  return targets.map(target => pick(target, TARGET_METADATA_FIELDS));
 };
 
 module.exports = projectDir => {
@@ -48,7 +43,7 @@ module.exports = projectDir => {
     // top-level-array targets.json as well as the documented { enabled, items } object.
     const jsonItems = Array.isArray(json) ? json : (json.items || []);
     const merged = Array.isArray(json) ? { enabled: true } : Object.assign({}, json);
-    merged.items = jsonItems.map(target => pick(target, TARGET_FIELDS)).concat(dirItems);
+    merged.items = jsonItems.map(target => pick(target, TARGET_METADATA_FIELDS)).concat(dirItems);
     return merged;
   }
 

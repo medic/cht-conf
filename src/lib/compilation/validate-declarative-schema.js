@@ -15,6 +15,14 @@ Current value of ${filename}${details[0].local.label} is ${JSON.stringify(detail
 const targetError = message => err('targets', message);
 const taskError = message => err('tasks', message);
 
+// Marks a target property as static display metadata that belongs in
+// app_settings.tasks.targets.items. parse-targets derives its whitelist from
+// these tags (see TARGET_METADATA_FIELDS), so the schema is the single source
+// of truth and the two cannot drift. Runtime/logic properties (appliesIf,
+// passesIf, groupBy, date, emitCustom, idType, appliesTo, appliesToType) are
+// intentionally left untagged.
+const APP_SETTINGS_META = { appSettingsTarget: true };
+
 const DhisSchema = joi.object({
   dataSet: joi.string().min(1).max(15).optional(),
   dataElement: joi.string().min(1).max(15).required(),
@@ -23,19 +31,19 @@ const DhisSchema = joi.object({
 
 const TargetSchema = joi.array().items(
   joi.object({
-    id: joi.string().min(1).required(),
-    icon: joi.string().min(1).optional(),
-    translation_key: joi.string().min(1).optional(),
-    subtitle_translation_key: joi.string().min(1).optional(),
-    percentage_count_translation_key: joi.string().min(1).optional(),
-    context: joi.string().optional(),
+    id: joi.string().min(1).required().meta(APP_SETTINGS_META),
+    icon: joi.string().min(1).optional().meta(APP_SETTINGS_META),
+    translation_key: joi.string().min(1).optional().meta(APP_SETTINGS_META),
+    subtitle_translation_key: joi.string().min(1).optional().meta(APP_SETTINGS_META),
+    percentage_count_translation_key: joi.string().min(1).optional().meta(APP_SETTINGS_META),
+    context: joi.string().optional().meta(APP_SETTINGS_META),
 
-    type: joi.string().valid('count', 'percent').required(),
+    type: joi.string().valid('count', 'percent').required().meta(APP_SETTINGS_META),
     goal: joi.alternatives().conditional('type', {
       is: 'percent',
       then: joi.number().min(-1).max(100).required(),
       otherwise: joi.number().min(-1).required(),
-    }),
+    }).meta(APP_SETTINGS_META),
     appliesTo: joi.string().valid('contacts', 'reports').required(),
     appliesToType: joi.array().items(joi.string()).optional().min(1),
     appliesIf: joi.function().optional()
@@ -59,7 +67,7 @@ const TargetSchema = joi.array().items(
         gte: joi.number().required(),
       }).required(),
       otherwise: joi.forbidden(),
-    }),
+    }).meta(APP_SETTINGS_META),
     date: joi.alternatives().try(
       joi.string().valid('reported', 'now'),
       joi.function(),
@@ -74,20 +82,31 @@ const TargetSchema = joi.array().items(
       DhisSchema,
       joi.array().items(DhisSchema),
     )
-      .optional(),
-    visible: joi.boolean().optional(),
+      .optional()
+      .meta(APP_SETTINGS_META),
+    visible: joi.boolean().optional().meta(APP_SETTINGS_META),
     idType: joi.alternatives().try(
       joi.string().valid('report', 'contact'),
       joi.function(),
     )
       .optional()
       .error(targetError('idType should be either "report" or "contact" or "function(contact, report)"')),
-    aggregate: joi.boolean().optional(),
-    limit_count_to_goal: joi.boolean().optional(),
+    aggregate: joi.boolean().optional().meta(APP_SETTINGS_META),
+    limit_count_to_goal: joi.boolean().optional().meta(APP_SETTINGS_META),
   })
 )
   .unique('id')
   .required();
+
+// Derive the static-metadata field whitelist directly from the schema's
+// `appSettingsTarget` tags, so adding a tagged property to TargetSchema is the
+// only step needed for it to flow into app_settings (no separate list to keep
+// in sync). parse-targets consumes this via the module export.
+const deriveTargetMetadataFields = (arraySchema) => {
+  const { keys } = arraySchema.describe().items[0];
+  return Object.keys(keys).filter(name => (keys[name].metas || []).some(meta => meta.appSettingsTarget));
+};
+const TARGET_METADATA_FIELDS = deriveTargetMetadataFields(TargetSchema);
 
 const EventSchema = idPresence => joi.object({
   id: joi.string().presence(idPresence),
@@ -268,3 +287,7 @@ module.exports = (projectDir, errorOnValidation) => {
     throw Error('Declarative configuration schema validation errors');
   }
 };
+
+// Whitelist of target properties that are copied verbatim into
+// app_settings.tasks.targets.items, derived from the schema (see above).
+module.exports.TARGET_METADATA_FIELDS = TARGET_METADATA_FIELDS;

@@ -67,4 +67,11 @@ describe('parse-targets', () => {
     expect(result.items[0]).to.not.have.property('secret');
     expect(result.items[0]).to.include({ id: 'a', type: 'count', goal: 1 });
   });
+
+  it('keeps percentage_count_translation_key (whitelist derived from schema)', () => {
+    writeJs('targets.js',
+      'module.exports = [{ id: "a", type: "percent", goal: 1, percentage_count_translation_key: "k" }];');
+    const result = parseTargets(dir);
+    expect(result.items[0]).to.have.property('percentage_count_translation_key', 'k');
+  });
 });
