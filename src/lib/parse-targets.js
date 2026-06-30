@@ -13,7 +13,7 @@ const pick = (obj, attributes) => attributes.reduce((agg, curr) => {
 const requireTargetArray = (filePath) => {
   const targets = require(filePath);
   if (!Array.isArray(targets)) {
-    throw new Error(`Targets file is expected to module.exports=[] an array of targets. ${filePath}`);
+    throw new TypeError(`Targets file is expected to module.exports=[] an array of targets. ${filePath}`);
   }
   return targets.map(target => pick(target, TARGET_METADATA_FIELDS));
 };
@@ -42,7 +42,7 @@ module.exports = projectDir => {
     // whitelist so the combined items array has a consistent shape. Tolerate a legacy
     // top-level-array targets.json as well as the documented { enabled, items } object.
     const jsonItems = Array.isArray(json) ? json : (json.items || []);
-    const merged = Array.isArray(json) ? { enabled: true } : Object.assign({}, json);
+    const merged = Array.isArray(json) ? { enabled: true } : { ...json };
     merged.items = jsonItems.map(target => pick(target, TARGET_METADATA_FIELDS)).concat(dirItems);
     return merged;
   }

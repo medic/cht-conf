@@ -243,9 +243,10 @@ describe('validate-declarative-schema', () => {
     });
 
     it('excludes runtime/logic fields', () => {
-      expect(TARGET_METADATA_FIELDS).to.not.have.members([
+      const runtimeFields = [
         'appliesTo', 'appliesToType', 'appliesIf', 'passesIf', 'groupBy', 'date', 'emitCustom', 'idType',
-      ]);
+      ];
+      runtimeFields.forEach(field => expect(TARGET_METADATA_FIELDS).to.not.include(field));
     });
   });
 });

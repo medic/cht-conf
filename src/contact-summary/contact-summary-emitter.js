@@ -1,8 +1,8 @@
 function emitter(contactSummaries, contact, reports) {
-  var merged = mergeContactSummaries(contactSummaries);
-  var fields = merged.fields;
-  var context = merged.context;
-  var cards = merged.cards;
+  const merged = mergeContactSummaries(contactSummaries);
+  const fields = merged.fields;
+  const context = merged.context;
+  const cards = merged.cards;
 
   var contactType = contact && (contact.type === 'contact' ? contact.contact_type : contact.type);
 
@@ -133,11 +133,20 @@ function addCard(card, context, r) {
   return summary;
 }
 
+function mergeContext(context, entryContext) {
+  // first-writer-wins: earlier (more preferred) entries keep their value
+  Object.keys(entryContext).forEach(function(key) {
+    if (!(key in context)) {
+      context[key] = entryContext[key];
+    }
+  });
+}
+
 function mergeContactSummaries(contactSummaries) {
-  var list = Array.isArray(contactSummaries) ? contactSummaries : [contactSummaries];
-  var cards = [];
-  var fields = [];
-  var context = {};
+  const list = Array.isArray(contactSummaries) ? contactSummaries : [contactSummaries];
+  let cards = [];
+  let fields = [];
+  const context = {};
 
   list.forEach(function(entry) {
     if (!entry) {
@@ -154,12 +163,7 @@ function mergeContactSummaries(contactSummaries) {
       fields = fields.concat(entry.fields);
     }
     if (entry.context && typeof entry.context === 'object') {
-      Object.keys(entry.context).forEach(function(key) {
-        // first-writer-wins: earlier (more preferred) entries keep their value
-        if (!(key in context)) {
-          context[key] = entry.context[key];
-        }
-      });
+      mergeContext(context, entry.context);
     }
   });
 
