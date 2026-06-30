@@ -26,7 +26,10 @@ const getEnvironmentKey = () => {
 
 const getHashFileName = () => {
   const parsed = new url.URL(environment.apiUrl);
-  if (parsed.hostname === 'localhost') {
+  if (
+    parsed.hostname === 'localhost' ||
+    parsed.hostname.endsWith('.local-ip.medicmobile.org')
+  ) {
     return 'local.json';
   }
   return 'remote.json';

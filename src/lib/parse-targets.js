@@ -51,6 +51,7 @@ module.exports = projectDir => {
       'dhis',
       'visible',
       'aggregate',
+      'limit_count_to_goal',
     ])),
   };
 };

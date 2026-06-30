@@ -19,6 +19,7 @@ describe('merge-contacts', () => {
         sourceIds: ['food', 'is', 'tasty'],
         destinationId: 'bar',
         disableUsers: false,
+        mergePrimaryContacts: false,
         force: true,
         docDirectoryPath: '/',
       });

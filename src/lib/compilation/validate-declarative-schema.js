@@ -82,6 +82,7 @@ const TargetSchema = joi.array().items(
       .optional()
       .error(targetError('idType should be either "report" or "contact" or "function(contact, report)"')),
     aggregate: joi.boolean().optional(),
+    limit_count_to_goal: joi.boolean().optional(),
   })
 )
   .unique('id')
