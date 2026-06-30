@@ -207,4 +207,22 @@ describe('validate-declarative-schema', () => {
       ]);
     });
   });
+
+  describe('directory and base file validation', () => {
+    const path = require('path');
+    const BASE = path.join(__dirname, '../../data/validate-declarative-schema');
+
+    it('throws for an invalid task inside the tasks/ directory', () => {
+      expect(() => validateDeclarativeSchema(`${BASE}/directory-invalid`, true))
+        .to.throw('Declarative configuration schema validation errors');
+    });
+
+    it('passes for valid targets/ directory files', () => {
+      expect(() => validateDeclarativeSchema(`${BASE}/directory-valid`, true)).to.not.throw();
+    });
+
+    it('does not throw when no tasks/targets files exist', () => {
+      expect(() => validateDeclarativeSchema(`${BASE}/empty`, true)).to.not.throw();
+    });
+  });
 });

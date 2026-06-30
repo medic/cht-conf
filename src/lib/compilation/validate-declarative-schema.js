@@ -1,6 +1,10 @@
 const path = require('path');
+const nodeFs = require('node:fs');
 const joi = require('joi');
 const { error, warn } = require('../log');
+const { findTasksFiles, findTargetsFiles } = require('../auto-include');
+
+const fileExists = (filePath) => nodeFs.existsSync(filePath);
 
 const err = (filename, message) => details => {
   const acceptedValues = details[0].local.valids
@@ -164,19 +168,18 @@ const TaskSchema = joi.array().items(
   .unique('name')
   .required();
 
-const validateFile = (logEvent, projectDir, filename, schema) => {
-  const pathToTasks = path.join(projectDir, filename);
+const validateFile = (logEvent, filePath, displayName, schema) => {
   let fileContent;
   try {
-    fileContent = require(pathToTasks);
+    fileContent = require(filePath);
   } catch (err) {
-    logEvent(`Failed to parse file ${pathToTasks}. ${err}`);
+    logEvent(`Failed to parse file ${filePath}. ${err}`);
     return false;
   }
 
-  const errors = validate(filename, fileContent, schema);
+  const errors = validate(displayName, fileContent, schema);
   if (errors.length) {
-    logEvent(`${filename} invalid schema:`);
+    logEvent(`${displayName} invalid schema:`);
     errors.forEach(err => logEvent(err));
   }
   return errors.length === 0;
@@ -209,10 +212,24 @@ const formatJoiError = (desc, detail) => {
   return result;
 };
 
+const collectFiles = (projectDir, baseFilename, directoryFinder) => {
+  const files = [];
+  const basePath = path.join(projectDir, baseFilename);
+  if (fileExists(basePath)) {
+    files.push(basePath);
+  }
+  files.push(...directoryFinder(projectDir));
+  return files;
+};
+
 module.exports = (projectDir, errorOnValidation) => {
   const logEvent = errorOnValidation ? error : warn;
-  const tasksValid = validateFile(logEvent, projectDir, 'tasks.js', TaskSchema);
-  const targetsValid = validateFile(logEvent, projectDir, 'targets.js', TargetSchema);
+
+  const taskFiles = collectFiles(projectDir, 'tasks.js', findTasksFiles);
+  const targetFiles = collectFiles(projectDir, 'targets.js', findTargetsFiles);
+
+  const tasksValid = taskFiles.every(f => validateFile(logEvent, f, path.basename(f), TaskSchema));
+  const targetsValid = targetFiles.every(f => validateFile(logEvent, f, path.basename(f), TargetSchema));
 
   const success = tasksValid && targetsValid;
   if (errorOnValidation && !success) {
