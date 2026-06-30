@@ -2,99 +2,81 @@ const path = require('path');
 const os = require('node:os');
 const nodeFs = require('node:fs');
 
-const fs = require('../sync-fs');
 const pack = require('./package-lib');
-const nools = require('../nools-utils');
 const validateDeclarativeSchema = require('./validate-declarative-schema');
-const { findTasksExtensions, findTargetsExtensions } = require('../auto-include');
-const { info } = require('../log');
+const { findTasksFiles, findTargetsFiles } = require('../auto-include');
+const { info, warn } = require('../log');
 
-const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js' ];
-
-const compileTasksAndTargets = async (projectDir, options = {}) => {
-  const tryLoadLegacyRules = legacyNoolsFilePath => {
-    let result;
-    if (fs.exists(legacyNoolsFilePath)) {
-      result = fs.read(legacyNoolsFilePath);
-    }
-  
-    return result;
-  };
-
-  const legacyNoolsFilePath = path.join(projectDir, 'rules.nools.js');
-  const legacyRules = tryLoadLegacyRules(legacyNoolsFilePath);
-  
-  if (legacyRules !== undefined) {
-    if (findMissingDeclarativeFiles(projectDir).length !== DECLARATIVE_NOOLS_FILES.length) {
-      throw new Error(
-        'Both legacy and declarative files found. '
-        + `You should either have rules.nools.js xor ${DECLARATIVE_NOOLS_FILES} files.`
-      );
-    }
-
-    const rules = options.minifyScripts ? nools.minify(legacyRules) : legacyRules;
-    return { rules };
+/**
+ * Ordered list of files for a config type: the deprecated base file first
+ * (most preferred), then the directory files alphabetically.
+ * @param {string} projectDir - Project directory path
+ * @param {string} baseFilename - Deprecated single base file (e.g. 'tasks.js')
+ * @param {function} directoryFinder - auto-include finder for the config directory
+ * @param {string} label - Config type label, used for logging and the directory name
+ * @returns {string[]} Absolute paths of source files
+ */
+const collectFiles = (projectDir, baseFilename, directoryFinder, label) => {
+  const files = [];
+  const basePath = path.join(projectDir, baseFilename);
+  if (nodeFs.existsSync(basePath)) {
+    warn(`${baseFilename} is deprecated. Please move it to ${label}/base.js`);
+    files.push(basePath);
   }
-
-  return {
-    rules: await compileDeclarativeFiles(projectDir, options),
-    isDeclarative: true,
-  };
+  directoryFinder(projectDir).forEach(filePath => {
+    info(`Including ${label}: ${path.basename(filePath)}`);
+    files.push(filePath);
+  });
+  return files;
 };
 
-const findMissingDeclarativeFiles = projectDir => DECLARATIVE_NOOLS_FILES.filter(filename => {
-  const filePath = path.join(projectDir, filename);
-  return !fs.exists(filePath);
-});
+/**
+ * Generate the webpack entry that requires every task/target file and emits
+ * them via the emitters.
+ * @param {string[]} taskFiles - Absolute paths of task source files
+ * @param {string[]} targetFiles - Absolute paths of target source files
+ * @returns {string} Path to the generated entry file
+ */
+const generateEntry = (taskFiles, targetFiles) => {
+  const entryDir = path.join(os.tmpdir(), 'nools');
+  nodeFs.mkdirSync(entryDir, { recursive: true });
+  const entryPath = path.join(entryDir, 'lib.js');
 
-const compileDeclarativeFiles = async (projectDir, options) => {
-  const missingFiles = findMissingDeclarativeFiles(projectDir);
-  if (missingFiles.length > 0) {
-    throw new Error(`Missing required declarative configuration file(s): ${missingFiles}`);
-  }
+  const taskEmitterPath = path.join(__dirname, '../../nools/task-emitter');
+  const targetEmitterPath = path.join(__dirname, '../../nools/target-emitter');
+  const requireList = paths => paths.map(p => `  require(${JSON.stringify(p)})`).join(',\n');
+
+  const content = `/* global c, emit, Task, Target, Utils */
+const taskEmitter = require(${JSON.stringify(taskEmitterPath)});
+const targetEmitter = require(${JSON.stringify(targetEmitterPath)});
+
+const allTasks = [].concat(
+${requireList(taskFiles)}
+);
+const allTargets = [].concat(
+${requireList(targetFiles)}
+);
+
+targetEmitter(allTargets, c, Utils, Target, emit);
+taskEmitter(allTasks, c, Utils, Task, emit);
+
+emit('_complete', { _id: true });
+`;
+  nodeFs.writeFileSync(entryPath, content);
+  return entryPath;
+};
+
+const compileTasksAndTargets = async (projectDir, options = {}) => {
+  const taskFiles = collectFiles(projectDir, 'tasks.js', findTasksFiles, 'tasks');
+  const targetFiles = collectFiles(projectDir, 'targets.js', findTargetsFiles, 'targets');
 
   validateDeclarativeSchema(projectDir, options.haltOnSchemaError);
 
-  const pathToDeclarativeLib = path.join(__dirname, '../../nools/lib.js');
+  const entryPath = generateEntry(taskFiles, targetFiles);
   const baseEslintPath = path.join(__dirname, '../../nools/.eslintrc');
 
-  // Find auto-include files
-  const tasksExtensions = findTasksExtensions(projectDir);
-  const targetsExtensions = findTargetsExtensions(projectDir);
-
-  // Build webpack aliases for extensions
-  const extraAliases = {};
-
-  tasksExtensions.forEach((filePath, index) => {
-    const aliasName = `cht-tasks-extension-${index}.js`;
-    extraAliases[aliasName] = filePath;
-    info(`Auto-including tasks: ${path.basename(filePath)}`);
-  });
-
-  targetsExtensions.forEach((filePath, index) => {
-    const aliasName = `cht-targets-extension-${index}.js`;
-    extraAliases[aliasName] = filePath;
-    info(`Auto-including targets: ${path.basename(filePath)}`);
-  });
-
-  // Generate shim that explicitly requires all extensions (webpack needs static requires)
-  const tasksShimPath = path.join(os.tmpdir(), 'cht-tasks-extensions-shim.js');
-  const tasksRequires = tasksExtensions.map((_, i) => `require('cht-tasks-extension-${i}.js')`).join(',\n  ');
-  const tasksShimContent = tasksExtensions.length > 0
-    ? `module.exports = [\n  ${tasksRequires}\n].flat();`
-    : 'module.exports = [];';
-  nodeFs.writeFileSync(tasksShimPath, tasksShimContent);
-  extraAliases['cht-tasks-extensions-shim.js'] = tasksShimPath;
-
-  const targetsShimPath = path.join(os.tmpdir(), 'cht-targets-extensions-shim.js');
-  const targetsRequires = targetsExtensions.map((_, i) => `require('cht-targets-extension-${i}.js')`).join(',\n  ');
-  const targetsShimContent = targetsExtensions.length > 0
-    ? `module.exports = [\n  ${targetsRequires}\n].flat();`
-    : 'module.exports = [];';
-  nodeFs.writeFileSync(targetsShimPath, targetsShimContent);
-  extraAliases['cht-targets-extensions-shim.js'] = targetsShimPath;
-
-  return pack(projectDir, pathToDeclarativeLib, { baseEslintPath, options, extraAliases });
+  const rules = await pack(projectDir, entryPath, { baseEslintPath, options });
+  return { rules, isDeclarative: true };
 };
 
 module.exports = compileTasksAndTargets;

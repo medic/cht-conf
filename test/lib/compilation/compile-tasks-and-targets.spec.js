@@ -1,107 +1,41 @@
-const { assert, expect } = require('chai');
-const fs = require('fs');
+const { expect } = require('chai');
 const path = require('path');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const compileTasksAndTargets = rewire('../../../src/lib/compilation/compile-tasks-and-targets');
+const compile = require('../../../src/lib/compilation/compile-tasks-and-targets');
 
-const genMocks = () => ({
-  fs: {
-    exists: sinon.stub(),
-    read: sinon.stub(),
-  },
-  pack: sinon.stub().returns('code'),
-});
+const BASE_DIR = path.join(__dirname, '../../data/compile-tasks-and-targets');
+const options = { minifyScripts: false, haltOnSchemaError: false };
 
-describe('compile tasks and targets', () => {
-  it('use minified legacy rules when present', () => {
-    const mocks = genMocks();
-    mocks.fs.exists
-      .withArgs('/project/rules.nools.js').returns(true);
-    mocks.fs.read
-      .withArgs('/project/rules.nools.js').returns(`define Target {
-        _id: null
-      }
-      
-      define Contact {
-        contact: null,
-        reports: null
-      }
-
-      rule GenerateEvents {
-        when {
-          c: Contact
-        }
-        then {
-          var now = Utils.now();
-          var today = new Date();
-        }
-      }`);
-    
-    return compileTasksAndTargets
-      .__with__(mocks)(() => compileTasksAndTargets('/project', { minifyScripts: true }))
-      .then(actual => {
-        expect(actual).to.deep.eq({
-          rules: 'define Target {_id: null}define Contact {contact: null,reports: null}rule '
-            + 'GenerateEvents {when {c: Contact}then {var now = Utils.now();var today = new Date();}}',
-        });
-        expect(mocks.pack.callCount).to.eq(0);
-      });
+describe('compile-tasks-and-targets', () => {
+  it('compiles declarative base files', async () => {
+    const result = await compile(`${BASE_DIR}/base`, options);
+    expect(result.isDeclarative).to.equal(true);
+    expect(result.rules).to.be.a('string');
+    expect(result.rules).to.include('_complete');
   });
 
-  it('legacy + declarative files yields exception', () => {
-    const mocks = genMocks();
-    mocks.fs.exists
-      .withArgs('/rules.nools.js').returns(true)
-      .withArgs('/targets.js').returns(true);
-    mocks.fs.read.withArgs('/rules.nools.js').returns('define Target {_id: null}');
-    
-    return compileTasksAndTargets.__with__(mocks)(() => compileTasksAndTargets('/'))
-      .then(() => assert.fail('Expected compilation error'))
-      .catch(err => {
-        expect(err.message).to.include('Both legacy and declarative');
-      });
+  it('compiles config from tasks/ and targets/ directories', async () => {
+    const result = await compile(`${BASE_DIR}/directory`, options);
+    expect(result.isDeclarative).to.equal(true);
+    expect(result.rules).to.include('_complete');
   });
 
-  it('package and use declarative files', () => {
-    const expectedProjectPath = '/project';
-    const options = {};
-    const mocks = genMocks();
-    mocks.fs.exists
-      .withArgs('/project/rules.nools.js').returns(false)
-      .withArgs('/project/targets.js').returns(true)
-      .withArgs('/project/tasks.js').returns(true);
-
-    return compileTasksAndTargets
-      .__with__(mocks)(() => compileTasksAndTargets(expectedProjectPath, options))
-      .then(({ rules: actualCode }) => {
-        expect(actualCode).to.eq('code');
-        expect(mocks.pack.callCount).to.eq(1);
-
-        const [actualProjectPath, actualEntryPath, config] = mocks.pack.args[0];
-        expect(actualProjectPath).to.eq(expectedProjectPath);
-        expect(path.basename(actualEntryPath)).to.eq('lib.js');
-        expect(fs.existsSync(actualEntryPath)).to.eq(true);
-
-        expect(path.basename(config.baseEslintPath)).to.eq('.eslintrc');
-        expect(fs.existsSync(config.baseEslintPath)).to.eq(true);
-
-        expect(config.options).to.eq(options);
-      });
+  it('emits empty rules when no task/target files exist', async () => {
+    const result = await compile(`${BASE_DIR}/empty`, options);
+    expect(result.isDeclarative).to.equal(true);
+    expect(result.rules).to.include('_complete');
   });
 
-  it('missing declarative file yields exception', () => {
-    const mocks = genMocks();
-    mocks.fs.exists
-      .withArgs('/rules.nools.js').returns(false)
-      .withArgs('/targets.js').returns(true);
-    mocks.fs.read.withArgs('/rules.nools.js').returns('');
-    
-    return compileTasksAndTargets.__with__(mocks)(() => compileTasksAndTargets('/'))
-      .then(() => assert.fail('Expected compilation error'))
-      .catch(err => {
-        expect(err.message).to.include('tasks.js');
-      });
+  it('warns that tasks.js and targets.js are deprecated', async () => {
+    const mod = rewire('../../../src/lib/compilation/compile-tasks-and-targets');
+    const warn = sinon.spy();
+    mod.__set__('warn', warn);
+
+    await mod(`${BASE_DIR}/base`, options);
+
+    expect(warn.calledWithMatch(/tasks\.js is deprecated/)).to.equal(true);
+    expect(warn.calledWithMatch(/targets\.js is deprecated/)).to.equal(true);
   });
 });
