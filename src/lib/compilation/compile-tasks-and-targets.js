@@ -38,8 +38,9 @@ const collectFiles = (projectDir, baseFilename, directoryFinder, label) => {
  * @returns {string} Path to the generated entry file
  */
 const generateEntry = (taskFiles, targetFiles) => {
-  const entryDir = path.join(os.tmpdir(), 'nools');
-  nodeFs.mkdirSync(entryDir, { recursive: true });
+  // Unique dir per call so concurrent compiles (parallel CI, monorepos) never
+  // clobber each other's entry file.
+  const entryDir = nodeFs.mkdtempSync(path.join(os.tmpdir(), 'nools-'));
   const entryPath = path.join(entryDir, 'lib.js');
 
   const taskEmitterPath = path.join(__dirname, '../../nools/task-emitter');

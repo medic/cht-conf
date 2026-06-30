@@ -43,7 +43,13 @@ module.exports = projectDir => {
     if (dirItems.length === 0) {
       return json;
     }
-    return Object.assign({}, json, { items: (json.items || []).concat(dirItems) });
+    // Merging with directory files: normalise both sources through the same field
+    // whitelist so the combined items array has a consistent shape. Tolerate a legacy
+    // top-level-array targets.json as well as the documented { enabled, items } object.
+    const jsonItems = Array.isArray(json) ? json : (json.items || []);
+    const merged = Array.isArray(json) ? { enabled: true } : Object.assign({}, json);
+    merged.items = jsonItems.map(target => pick(target, TARGET_FIELDS)).concat(dirItems);
+    return merged;
   }
 
   if (jsExists) {

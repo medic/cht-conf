@@ -174,7 +174,7 @@ const validateFile = (logEvent, filePath, displayName, schema) => {
     fileContent = require(filePath);
   } catch (err) {
     logEvent(`Failed to parse file ${filePath}. ${err}`);
-    return false;
+    return { valid: false };
   }
 
   const errors = validate(displayName, fileContent, schema);
@@ -182,7 +182,50 @@ const validateFile = (logEvent, filePath, displayName, schema) => {
     logEvent(`${displayName} invalid schema:`);
     errors.forEach(err => logEvent(err));
   }
-  return errors.length === 0;
+  return { valid: errors.length === 0, content: fileContent };
+};
+
+const findDuplicates = (items, key) => {
+  const seen = new Set();
+  const duplicates = new Set();
+  items.forEach(item => {
+    if (item && typeof item === 'object' && key in item) {
+      const value = item[key];
+      if (seen.has(value)) {
+        duplicates.add(value);
+      } else {
+        seen.add(value);
+      }
+    }
+  });
+  return [...duplicates];
+};
+
+// Validates every file (no short-circuit, so all schema errors surface) and then
+// checks that `uniqueKey` is unique across the combined set, since the directory
+// files are concatenated at compile time and per-file joi `.unique()` cannot catch
+// duplicates spanning multiple files.
+const validateFiles = (logEvent, files, schema, uniqueKey) => {
+  let valid = true;
+  const allItems = [];
+
+  files.forEach(filePath => {
+    const { valid: fileValid, content } = validateFile(logEvent, filePath, path.basename(filePath), schema);
+    if (!fileValid) {
+      valid = false;
+    }
+    if (Array.isArray(content)) {
+      allItems.push(...content);
+    }
+  });
+
+  const duplicates = findDuplicates(allItems, uniqueKey);
+  if (duplicates.length) {
+    logEvent(`Duplicate "${uniqueKey}" value(s) found across files: ${duplicates.join(', ')}`);
+    valid = false;
+  }
+
+  return valid;
 };
 
 const validate = (filename, fileContent, schema) => {
@@ -228,8 +271,8 @@ module.exports = (projectDir, errorOnValidation) => {
   const taskFiles = collectFiles(projectDir, 'tasks.js', findTasksFiles);
   const targetFiles = collectFiles(projectDir, 'targets.js', findTargetsFiles);
 
-  const tasksValid = taskFiles.every(f => validateFile(logEvent, f, path.basename(f), TaskSchema));
-  const targetsValid = targetFiles.every(f => validateFile(logEvent, f, path.basename(f), TargetSchema));
+  const tasksValid = validateFiles(logEvent, taskFiles, TaskSchema, 'name');
+  const targetsValid = validateFiles(logEvent, targetFiles, TargetSchema, 'id');
 
   const success = tasksValid && targetsValid;
   if (errorOnValidation && !success) {

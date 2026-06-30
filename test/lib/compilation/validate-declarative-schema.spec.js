@@ -224,5 +224,10 @@ describe('validate-declarative-schema', () => {
     it('does not throw when no tasks/targets files exist', () => {
       expect(() => validateDeclarativeSchema(`${BASE}/empty`, true)).to.not.throw();
     });
+
+    it('throws on a target id duplicated across two directory files', () => {
+      expect(() => validateDeclarativeSchema(`${BASE}/directory-duplicate-ids`, true))
+        .to.throw('Declarative configuration schema validation errors');
+    });
   });
 });

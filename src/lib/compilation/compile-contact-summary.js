@@ -34,8 +34,8 @@ const collectContactSummaryFiles = (projectDir) => {
  * @returns {string} Path to the generated entry file
  */
 const generateEntry = (files) => {
-  const entryDir = path.join(os.tmpdir(), 'contact-summary');
-  nodeFs.mkdirSync(entryDir, { recursive: true });
+  // Unique dir per call so concurrent compiles never clobber each other's entry file.
+  const entryDir = nodeFs.mkdtempSync(path.join(os.tmpdir(), 'contact-summary-'));
   const entryPath = path.join(entryDir, 'lib.js');
 
   const emitterPath = path.join(__dirname, '../../contact-summary/contact-summary-emitter');
