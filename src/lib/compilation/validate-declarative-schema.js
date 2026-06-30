@@ -1,10 +1,7 @@
 const path = require('path');
-const nodeFs = require('node:fs');
 const joi = require('joi');
 const { error, warn } = require('../log');
-const { findTasksFiles, findTargetsFiles } = require('../auto-include');
-
-const fileExists = (filePath) => nodeFs.existsSync(filePath);
+const { collectConfigFiles } = require('../auto-include');
 
 const err = (filename, message) => details => {
   const acceptedValues = details[0].local.valids
@@ -255,21 +252,13 @@ const formatJoiError = (desc, detail) => {
   return result;
 };
 
-const collectFiles = (projectDir, baseFilename, directoryFinder) => {
-  const files = [];
-  const basePath = path.join(projectDir, baseFilename);
-  if (fileExists(basePath)) {
-    files.push(basePath);
-  }
-  files.push(...directoryFinder(projectDir));
-  return files;
-};
-
 module.exports = (projectDir, errorOnValidation) => {
   const logEvent = errorOnValidation ? error : warn;
 
-  const taskFiles = collectFiles(projectDir, 'tasks.js', findTasksFiles);
-  const targetFiles = collectFiles(projectDir, 'targets.js', findTargetsFiles);
+  const taskFiles = collectConfigFiles(projectDir, { baseFilename: 'tasks.js', subdir: 'tasks', label: 'tasks' });
+  const targetFiles = collectConfigFiles(projectDir, {
+    baseFilename: 'targets.js', subdir: 'targets', label: 'targets',
+  });
 
   const tasksValid = validateFiles(logEvent, taskFiles, TaskSchema, 'name');
   const targetsValid = validateFiles(logEvent, targetFiles, TargetSchema, 'id');

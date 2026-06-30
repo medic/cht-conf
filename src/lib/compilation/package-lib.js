@@ -45,9 +45,6 @@ module.exports = (pathToProject, entry, config = {}) => {
     },
     resolve: {
       alias: {
-        'tasks.js': path.join(pathToProject, 'tasks.js'),
-        'targets.js': path.join(pathToProject, 'targets.js'),
-        'contact-summary.templated.js': path.join(pathToProject, 'contact-summary.templated.js'),
         ...extraAliases,
       },
     },

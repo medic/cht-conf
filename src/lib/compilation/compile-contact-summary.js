@@ -1,30 +1,24 @@
 const path = require('path');
 const nodeFs = require('node:fs');
-const os = require('node:os');
 const pack = require('./package-lib');
-const { findContactSummaryFiles } = require('../auto-include');
-const { info, warn } = require('../log');
+const { collectConfigFiles } = require('../auto-include');
+const { requireStatements, writeEntry } = require('./generated-entry');
+const { warn } = require('../log');
 
-const DEPRECATED_BASE = 'contact-summary.templated.js';
+const REMOVED_FREEFORM_FILE = 'contact-summary.js';
 
 /**
- * Build the ordered list of contact-summary source files: the deprecated
- * templated base file first (most preferred), then contact-summary/*.js.
+ * Warn (once) if the project still has the removed freeform contact-summary
+ * file, which is silently ignored as of cht-conf 7.0.
  * @param {string} projectDir - Project directory path
- * @returns {string[]} Absolute paths of contact-summary source files
  */
-const collectContactSummaryFiles = (projectDir) => {
-  const files = [];
-  const basePath = path.join(projectDir, DEPRECATED_BASE);
-  if (nodeFs.existsSync(basePath)) {
-    warn(`${DEPRECATED_BASE} is deprecated. Please move it to contact-summary/base.js`);
-    files.push(basePath);
+const warnRemovedFiles = (projectDir) => {
+  if (nodeFs.existsSync(path.join(projectDir, REMOVED_FREEFORM_FILE))) {
+    warn(
+      `${REMOVED_FREEFORM_FILE} (freeform contact-summary) is no longer supported and will be ignored. `
+      + 'Migrate to declarative contact-summary/ configuration.'
+    );
   }
-  findContactSummaryFiles(projectDir).forEach(filePath => {
-    info(`Including contact-summary: ${path.basename(filePath)}`);
-    files.push(filePath);
-  });
-  return files;
 };
 
 /**
@@ -34,24 +28,25 @@ const collectContactSummaryFiles = (projectDir) => {
  * @returns {string} Path to the generated entry file
  */
 const generateEntry = (files) => {
-  // Unique dir per call so concurrent compiles never clobber each other's entry file.
-  const entryDir = nodeFs.mkdtempSync(path.join(os.tmpdir(), 'contact-summary-'));
-  const entryPath = path.join(entryDir, 'lib.js');
-
   const emitterPath = path.join(__dirname, '../../contact-summary/contact-summary-emitter');
-  const requires = files.map(f => `  require(${JSON.stringify(f)})`).join(',\n');
   const content = `const emitter = require(${JSON.stringify(emitterPath)});
 const contactSummaries = [
-${requires}
+  ${requireStatements(files).join(',\n  ')}
 ];
 module.exports = emitter(contactSummaries, contact, reports);
 `;
-  nodeFs.writeFileSync(entryPath, content);
-  return entryPath;
+  return writeEntry('contact-summary', content);
 };
 
 module.exports = async (projectDir, options) => {
-  const files = collectContactSummaryFiles(projectDir);
+  warnRemovedFiles(projectDir);
+
+  const files = collectConfigFiles(projectDir, {
+    baseFilename: 'contact-summary.templated.js',
+    subdir: 'contact-summary',
+    label: 'contact-summary',
+    log: true,
+  });
   const entryPath = generateEntry(files);
 
   const baseEslintPath = path.join(__dirname, '../../contact-summary/.eslintrc');

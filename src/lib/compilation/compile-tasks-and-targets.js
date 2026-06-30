@@ -1,33 +1,26 @@
 const path = require('path');
-const os = require('node:os');
 const nodeFs = require('node:fs');
 
 const pack = require('./package-lib');
 const validateDeclarativeSchema = require('./validate-declarative-schema');
-const { findTasksFiles, findTargetsFiles } = require('../auto-include');
-const { info, warn } = require('../log');
+const { collectConfigFiles } = require('../auto-include');
+const { requireStatements, writeEntry } = require('./generated-entry');
+const { warn } = require('../log');
+
+const REMOVED_NOOLS_FILE = 'rules.nools.js';
 
 /**
- * Ordered list of files for a config type: the deprecated base file first
- * (most preferred), then the directory files alphabetically.
+ * Warn (once) if the project still has the removed nools rules file, which is
+ * silently ignored as of cht-conf 7.0.
  * @param {string} projectDir - Project directory path
- * @param {string} baseFilename - Deprecated single base file (e.g. 'tasks.js')
- * @param {function} directoryFinder - auto-include finder for the config directory
- * @param {string} label - Config type label, used for logging and the directory name
- * @returns {string[]} Absolute paths of source files
  */
-const collectFiles = (projectDir, baseFilename, directoryFinder, label) => {
-  const files = [];
-  const basePath = path.join(projectDir, baseFilename);
-  if (nodeFs.existsSync(basePath)) {
-    warn(`${baseFilename} is deprecated. Please move it to ${label}/base.js`);
-    files.push(basePath);
+const warnRemovedFiles = (projectDir) => {
+  if (nodeFs.existsSync(path.join(projectDir, REMOVED_NOOLS_FILE))) {
+    warn(
+      `${REMOVED_NOOLS_FILE} is no longer supported and will be ignored. `
+      + 'Migrate your nools rules to declarative tasks/ and targets/ configuration.'
+    );
   }
-  directoryFinder(projectDir).forEach(filePath => {
-    info(`Including ${label}: ${path.basename(filePath)}`);
-    files.push(filePath);
-  });
-  return files;
 };
 
 /**
@@ -38,24 +31,18 @@ const collectFiles = (projectDir, baseFilename, directoryFinder, label) => {
  * @returns {string} Path to the generated entry file
  */
 const generateEntry = (taskFiles, targetFiles) => {
-  // Unique dir per call so concurrent compiles (parallel CI, monorepos) never
-  // clobber each other's entry file.
-  const entryDir = nodeFs.mkdtempSync(path.join(os.tmpdir(), 'nools-'));
-  const entryPath = path.join(entryDir, 'lib.js');
-
   const taskEmitterPath = path.join(__dirname, '../../nools/task-emitter');
   const targetEmitterPath = path.join(__dirname, '../../nools/target-emitter');
-  const requireList = paths => paths.map(p => `  require(${JSON.stringify(p)})`).join(',\n');
 
   const content = `/* global c, emit, Task, Target, Utils */
 const taskEmitter = require(${JSON.stringify(taskEmitterPath)});
 const targetEmitter = require(${JSON.stringify(targetEmitterPath)});
 
 const allTasks = [].concat(
-${requireList(taskFiles)}
+  ${requireStatements(taskFiles).join(',\n  ')}
 );
 const allTargets = [].concat(
-${requireList(targetFiles)}
+  ${requireStatements(targetFiles).join(',\n  ')}
 );
 
 targetEmitter(allTargets, c, Utils, Target, emit);
@@ -63,13 +50,18 @@ taskEmitter(allTasks, c, Utils, Task, emit);
 
 emit('_complete', { _id: true });
 `;
-  nodeFs.writeFileSync(entryPath, content);
-  return entryPath;
+  return writeEntry('nools', content);
 };
 
 const compileTasksAndTargets = async (projectDir, options = {}) => {
-  const taskFiles = collectFiles(projectDir, 'tasks.js', findTasksFiles, 'tasks');
-  const targetFiles = collectFiles(projectDir, 'targets.js', findTargetsFiles, 'targets');
+  warnRemovedFiles(projectDir);
+
+  const taskFiles = collectConfigFiles(projectDir, {
+    baseFilename: 'tasks.js', subdir: 'tasks', label: 'tasks', log: true,
+  });
+  const targetFiles = collectConfigFiles(projectDir, {
+    baseFilename: 'targets.js', subdir: 'targets', label: 'targets', log: true,
+  });
 
   validateDeclarativeSchema(projectDir, options.haltOnSchemaError);
 

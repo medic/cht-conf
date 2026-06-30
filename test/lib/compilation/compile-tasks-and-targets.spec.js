@@ -28,14 +28,13 @@ describe('compile-tasks-and-targets', () => {
     expect(result.rules).to.include('_complete');
   });
 
-  it('warns that tasks.js and targets.js are deprecated', async () => {
+  it('warns that rules.nools.js is no longer supported', async () => {
     const mod = rewire('../../../src/lib/compilation/compile-tasks-and-targets');
     const warn = sinon.spy();
     mod.__set__('warn', warn);
 
-    await mod(`${BASE_DIR}/base`, options);
+    await mod(`${BASE_DIR}/removed-nools`, options);
 
-    expect(warn.calledWithMatch(/tasks\.js is deprecated/)).to.equal(true);
-    expect(warn.calledWithMatch(/targets\.js is deprecated/)).to.equal(true);
+    expect(warn.calledWithMatch(/rules\.nools\.js is no longer supported/)).to.equal(true);
   });
 });

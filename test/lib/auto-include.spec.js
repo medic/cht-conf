@@ -2,8 +2,11 @@ const { expect } = require('chai');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const sinon = require('sinon');
+const rewire = require('rewire');
 const {
   findConfigFiles,
+  collectConfigFiles,
   findTasksFiles,
   findTargetsFiles,
   findContactSummaryFiles,
@@ -81,6 +84,52 @@ describe('auto-include', () => {
       writeFile('tasks', 'base.js');
       const [result] = findConfigFiles(testDir, 'tasks');
       expect(path.isAbsolute(result)).to.equal(true);
+    });
+  });
+
+  describe('collectConfigFiles', () => {
+    const opts = { baseFilename: 'tasks.js', subdir: 'tasks', label: 'tasks' };
+
+    it('orders the deprecated base file first, then directory files alphabetically', () => {
+      fs.writeFileSync(path.join(testDir, 'tasks.js'), 'module.exports = [];');
+      writeFile('tasks', 'a.js');
+      writeFile('tasks', 'b.js');
+
+      const result = collectConfigFiles(testDir, opts).map(p => path.basename(p));
+
+      expect(result).to.deep.equal(['tasks.js', 'a.js', 'b.js']);
+    });
+
+    it('omits the base file when it does not exist', () => {
+      writeFile('tasks', 'base.js');
+      const result = collectConfigFiles(testDir, opts).map(p => path.basename(p));
+      expect(result).to.deep.equal(['base.js']);
+    });
+
+    it('warns the base file is deprecated and logs each directory file when log is true', () => {
+      fs.writeFileSync(path.join(testDir, 'tasks.js'), 'module.exports = [];');
+      writeFile('tasks', 'a.js');
+      const mod = rewire('../../src/lib/auto-include');
+      const warn = sinon.spy();
+      const info = sinon.spy();
+      mod.__set__('warn', warn);
+      mod.__set__('info', info);
+
+      mod.collectConfigFiles(testDir, { ...opts, log: true });
+
+      expect(warn.calledWithMatch(/tasks\.js is deprecated/)).to.equal(true);
+      expect(info.calledWithMatch(/Including tasks: a\.js/)).to.equal(true);
+    });
+
+    it('does not log when log is false (default)', () => {
+      fs.writeFileSync(path.join(testDir, 'tasks.js'), 'module.exports = [];');
+      const mod = rewire('../../src/lib/auto-include');
+      const warn = sinon.spy();
+      mod.__set__('warn', warn);
+
+      mod.collectConfigFiles(testDir, opts);
+
+      expect(warn.called).to.equal(false);
     });
   });
 });

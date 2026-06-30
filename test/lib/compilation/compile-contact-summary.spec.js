@@ -205,13 +205,13 @@ describe('compile-contact-summary', () => {
     expect(result.cards[1].label).to.equal('extension.card');
   });
 
-  it('warns that contact-summary.templated.js is deprecated', async () => {
+  it('warns that freeform contact-summary.js is no longer supported', async () => {
     const mod = rewire('../../../src/lib/compilation/compile-contact-summary');
     const warn = sinon.spy();
     mod.__set__('warn', warn);
 
-    await mod(`${BASE_DIR}/templated`, options);
+    await mod(`${BASE_DIR}/removed-freeform`, options);
 
-    expect(warn.calledWithMatch(/contact-summary\.templated\.js is deprecated/)).to.equal(true);
+    expect(warn.calledWithMatch(/contact-summary\.js .* is no longer supported/)).to.equal(true);
   });
 });
