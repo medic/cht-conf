@@ -1,84 +1,64 @@
 const path = require('path');
 const nodeFs = require('node:fs');
-const fs = require('../sync-fs');
-const pack = require('./package-lib');
 const os = require('node:os');
-const { findContactSummaryExtensions } = require('../auto-include');
-const { info } = require('../log');
+const pack = require('./package-lib');
+const { findContactSummaryFiles } = require('../auto-include');
+const { info, warn } = require('../log');
+
+const DEPRECATED_BASE = 'contact-summary.templated.js';
 
 /**
- * Validate that exactly one contact-summary file exists
- * @param {string} freeformPath - Path to contact-summary.js
- * @param {string} structuredPath - Path to contact-summary.templated.js
- * @throws {Error} If neither or both files exist
+ * Build the ordered list of contact-summary source files: the deprecated
+ * templated base file first (most preferred), then contact-summary/*.js.
+ * @param {string} projectDir - Project directory path
+ * @returns {string[]} Absolute paths of contact-summary source files
  */
-const validateContactSummaryFiles = (freeformPath, structuredPath) => {
-  const freeformExists = fs.exists(freeformPath);
-  const structuredExists = fs.exists(structuredPath);
-
-  if (!freeformExists && !structuredExists) {
-    throw new Error(
-      `Could not find contact-summary javascript at either of ${freeformPath} or ${structuredPath}.  `
-      + 'Please create one xor other of these files.'
-    );
+const collectContactSummaryFiles = (projectDir) => {
+  const files = [];
+  const basePath = path.join(projectDir, DEPRECATED_BASE);
+  if (nodeFs.existsSync(basePath)) {
+    warn(`${DEPRECATED_BASE} is deprecated. Please move it to contact-summary/base.js`);
+    files.push(basePath);
   }
-  if (freeformExists && structuredExists) {
-    throw new Error(
-      `Found contact-summary javascript at both ${freeformPath} and ${structuredPath}.  `
-      + 'Only one of these files should exist.'
-    );
-  }
-
-  return { freeformExists, structuredExists };
-};
-
-/**
- * Register card extension aliases for webpack
- * @param {string[]} extensions - Array of extension file paths
- * @returns {Object} Webpack aliases map
- */
-const registerExtensionAliases = (extensions) => {
-  const aliases = {};
-  extensions.forEach((filePath, index) => {
-    aliases[`cht-cards-extension-${index}.js`] = filePath;
-    info(`Auto-including contact-summary: ${path.basename(filePath)}`);
+  findContactSummaryFiles(projectDir).forEach(filePath => {
+    info(`Including contact-summary: ${path.basename(filePath)}`);
+    files.push(filePath);
   });
-  return aliases;
+  return files;
 };
 
 /**
- * Generate shim file with explicit requires for webpack
- * @param {string[]} extensions - Array of extension file paths
- * @returns {string} Path to generated shim file
+ * Generate the webpack entry that requires every contact-summary file and
+ * emits the merged config via the emitter.
+ * @param {string[]} files - Absolute paths of contact-summary source files
+ * @returns {string} Path to the generated entry file
  */
-const generateExtensionsShim = (extensions) => {
-  const shimPath = path.join(os.tmpdir(), 'cht-cards-extensions-shim.js');
-  const requires = extensions.map((_, i) => `require('cht-cards-extension-${i}.js')`).join(',\n  ');
-  const content = extensions.length > 0
-    ? `module.exports = [\n  ${requires}\n];`
-    : 'module.exports = [];';
-  nodeFs.writeFileSync(shimPath, content);
-  return shimPath;
+const generateEntry = (files) => {
+  const entryDir = path.join(os.tmpdir(), 'contact-summary');
+  nodeFs.mkdirSync(entryDir, { recursive: true });
+  const entryPath = path.join(entryDir, 'lib.js');
+
+  const emitterPath = path.join(__dirname, '../../contact-summary/contact-summary-emitter');
+  const requires = files.map(f => `  require(${JSON.stringify(f)})`).join(',\n');
+  const content = `const emitter = require(${JSON.stringify(emitterPath)});
+const contactSummaries = [
+${requires}
+];
+module.exports = emitter(contactSummaries, contact, reports);
+`;
+  nodeFs.writeFileSync(entryPath, content);
+  return entryPath;
 };
 
 module.exports = async (projectDir, options) => {
-  const freeformPath = `${projectDir}/contact-summary.js`;
-  const structuredPath = `${projectDir}/contact-summary.templated.js`;
-
-  const { freeformExists, structuredExists } = validateContactSummaryFiles(freeformPath, structuredPath);
+  const files = collectContactSummaryFiles(projectDir);
+  const entryPath = generateEntry(files);
 
   const baseEslintPath = path.join(__dirname, '../../contact-summary/.eslintrc');
-  const pathToDeclarativeLib = path.join(__dirname, '../../contact-summary/lib.js');
-  const pathToPack = freeformExists ? freeformPath : pathToDeclarativeLib;
-
-  // Find and register auto-include files (only for templated mode)
-  const cardExtensions = structuredExists ? findContactSummaryExtensions(projectDir) : [];
-  const extraAliases = registerExtensionAliases(cardExtensions);
-  extraAliases['cht-cards-extensions-shim.js'] = generateExtensionsShim(cardExtensions);
 
   // WebApp expects the contact-summary to make a bare return
   // This isn't a direct output option for webpack, so add some boilerplate
   const packOptions = Object.assign({}, options, { libraryTarget: 'ContactSummary' });
-  const code = await pack(projectDir, pathToPack, { baseEslintPath, options: packOptions, extraAliases });
+  const code = await pack(projectDir, entryPath, { baseEslintPath, options: packOptions });
   return `var ContactSummary = {}; ${code} return ContactSummary;`;
 };

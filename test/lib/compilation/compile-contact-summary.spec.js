@@ -1,292 +1,217 @@
-const { assert, expect } = require('chai');
-const fs = require('fs');
+const { expect } = require('chai');
 const path = require('path');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const compileContactSummary = rewire('../../../src/lib/compilation/compile-contact-summary');
+const compileContactSummary = require('../../../src/lib/compilation/compile-contact-summary');
 
 const BASE_DIR = path.join(__dirname, '../../data/compile-contact-summary');
 
-const genMocks = () => ({
-  fs: {
-    exists: sinon.stub(),
-    read: sinon.stub(),
-  },
-  pack: sinon.stub().returns('code'),
-});
+const evalInContext = (js, contact, reports, lineage) => new Function(
+  'contact', 'reports', 'lineage', js
+)(contact, reports, lineage);
 
 describe('compile-contact-summary', () => {
-  describe('mocked scenarios', () => {
-    it('no contact-summary files yields exception', () =>
-      compileContactSummary(`${BASE_DIR}/empty`)
-        .then(() => assert.fail('Expected compilation error'))
-        .catch(err => {
-          expect(err.message).to.include('Could not find contact-summary');
-        })
-    );
+  const options = { minifyScripts: true };
 
-    it('multiple contact-summary files yields exception', () => {
-      const mocks = genMocks();
-      mocks.fs.exists
-        .withArgs('/project/contact-summary.js').returns(true)
-        .withArgs('/project/contact-summary.templated.js').returns(true);
-      mocks.fs.read.withArgs('/rules.nools.js').returns('define Target {_id: null}');
+  it('emits empty config when no contact-summary files exist', async () => {
+    const compiled = await compileContactSummary(`${BASE_DIR}/empty`, {});
+    const result = evalInContext(compiled, { type: 'person' }, [], []);
+    expect(result).to.deep.equal({ fields: [], cards: [], context: {} });
+  });
 
-      return compileContactSummary.__with__(mocks)(() => compileContactSummary('/project'))
-        .then(() => assert.fail('Expected compilation error'))
-        .catch(err => {
-          expect(err.message).to.include('contact-summary.js and');
-        });
+  it('compiles config from the contact-summary directory', async () => {
+    const compiled = await compileContactSummary(`${BASE_DIR}/directory`, options);
+    const result = evalInContext(compiled, { type: 'person' }, [], []);
+
+    expect(result.fields.map(f => f.label)).to.deep.equal(['name']);
+    expect(result.cards.map(c => c.label)).to.deep.equal(['base.card']);
+    expect(result.context).to.deep.equal({ muted: false });
+  });
+
+  it('templated script', async () => {
+    const compiled = await compileContactSummary(`${BASE_DIR}/templated`, options);
+
+    const contact = {
+      foo: 'bar',
+      type: 'person',
+      date_of_birth: 1500,
+    };
+    const result = evalInContext(compiled, contact, {}, []);
+    expect(result).to.deep.eq({
+      fields: [
+        {
+          label: 'testing',
+          value: 5,
+        },
+        {
+          filter: 'age',
+          label: 'contact.age',
+          value: 1500,
+          width: 3,
+        },
+      ],
+      context: {
+        foo: 'bar',
+        muted: false,
+      },
+      cards: [
+        {
+          fields: [],
+          label: 'card1'
+        }
+      ],
     });
 
-    it('package and use templated file', () => {
-      const expectedProjectPath = '/project';
-      const options = {};
-      const mocks = genMocks();
-      mocks.fs.exists
-        .withArgs('/project/contact-summary.js').returns(false)
-        .withArgs('/project/contact-summary.templated.js').returns(true);
-
-      return compileContactSummary
-        .__with__(mocks)(() => compileContactSummary(expectedProjectPath, options))
-        .then(actualCode => {
-          expect(actualCode).to.eq('var ContactSummary = {}; code return ContactSummary;');
-          expect(mocks.pack.callCount).to.eq(1);
-
-          const [actualProjectPath, actualEntryPath, config] = mocks.pack.args[0];
-          expect(actualProjectPath).to.eq(expectedProjectPath);
-          expect(path.basename(actualEntryPath)).to.eq('lib.js');
-          expect(fs.existsSync(actualEntryPath)).to.eq(true);
-
-          expect(path.basename(config.baseEslintPath)).to.eq('.eslintrc');
-          expect(fs.existsSync(config.baseEslintPath)).to.eq(true);
-
-          expect(config.options).to.deep.eq({ libraryTarget: 'ContactSummary' });
-        });
+    const otherContact = { type: 'clinic' };
+    const otherResult = evalInContext(compiled, otherContact, {}, []);
+    expect(otherResult).to.deep.eq({
+      fields: [
+        {
+          label: 'not.a.person',
+          value: 'clinic',
+          width: 3,
+        },
+      ],
+      context: {
+        foo: 'bar',
+        muted: undefined,
+      },
+      cards: [
+        {
+          fields: [],
+          label: 'card2',
+        }
+      ],
     });
   });
 
-  describe('file based scenarios', () => {
-    const options = { minifyScripts: true };
-    const evalInContext = (js, contact, reports, lineage) => new Function(
-      'contact', 'reports', 'lineage', js
-    )(contact, reports, lineage);
+  it('configurable hierarchies', async () => {
+    const compiled = await compileContactSummary(`${BASE_DIR}/configurable-hierarchies`, options);
 
-    it('pack a simple file', async () => {
-      // when
-      const compiled = await compileContactSummary(`${BASE_DIR}/verbatim`, options);
-
-      // then
-      expect(compiled).to.include('contact.x=\'a string\'');
-    });
-
-    it('legacy script', async () => {
-      // when
-      const compiled = await compileContactSummary(`${BASE_DIR}/legacy`, options);
-
-      // then
-      expect(compiled).to.include('contact.x=\'from original\'');
-      expect(compiled).to.include('reports.y=\'from included\'');
-
-      const contact = { foo: 'bar' };
-      const reports = {};
-
-      const result = evalInContext(compiled, contact, reports, []);
-      expect(result).to.deep.eq({
-        fields: [{
+    const patient = {
+      type: 'contact',
+      contact_type: 'patient',
+      date_of_birth: 'Oct 10 2015',
+    };
+    const resultPatient = evalInContext(compiled, patient, {}, []);
+    expect(resultPatient).to.deep.equal({
+      fields: [
+        {
           label: 'testing',
           value: 5,
-        }],
-        context: {
-          foo: 'bar',
         },
-      });
-      expect(contact.x).to.eq('from original');
-      expect(contact.foo).to.eq('bar');
-      expect(reports.y).to.eq('from included');
-    });
-
-    it('templated script', async () => {
-      // when
-      const compiled = await compileContactSummary(`${BASE_DIR}/templated`, options);
-
-      // then
-      const contact = {
+        {
+          filter: 'age',
+          label: 'contact.age',
+          value: 'Oct 10 2015',
+          width: 3,
+        },
+        {
+          label: 'everyone.except.chw',
+          value: 100,
+          width: 3,
+        },
+      ],
+      context: {
         foo: 'bar',
-        type: 'person',
-        date_of_birth: 1500,
-      };
-      const reports = {};
-
-      const result = evalInContext(compiled, contact, reports, []);
-      expect(result).to.deep.eq({
-        fields: [
-          {
-            label: 'testing',
-            value: 5,
-          },
-          {
-            filter: 'age',
-            label: 'contact.age',
-            value: 1500,
-            width: 3,
-          },
-        ],
-        context: {
-          foo: 'bar',
-          muted: false,
-        },
-        cards: [
-          {
-            fields: [],
-            label: 'card1'
-          }
-        ],
-      });
-
-      const otherContact = { type: 'clinic' };
-      const otherResult = evalInContext(compiled, otherContact, {}, []);
-      expect(otherResult).to.deep.eq({
-        fields: [
-          {
-            label: 'not.a.person',
-            value: 'clinic',
-            width: 3,
-          },
-        ],
-        context: {
-          foo: 'bar',
-          muted: undefined,
-        },
-        cards: [
-          {
-            fields: [],
-            label: 'card2',
-          }
-        ],
-      });
-
+        muted: false,
+      },
+      cards: [
+        {
+          fields: [],
+          label: 'for.patient'
+        }
+      ],
     });
 
-    it('configurable hierarchies', async () => {
-      // when
-      const compiled = await compileContactSummary(`${BASE_DIR}/configurable-hierarchies`, options);
-
-      const patient = {
-        type: 'contact',
-        contact_type: 'patient',
-        date_of_birth: 'Oct 10 2015',
-      };
-      const resultPatient = evalInContext(compiled, patient, {}, []);
-      expect(resultPatient).to.deep.equal({
-        fields: [
-          {
-            label: 'testing',
-            value: 5,
-          },
-          {
-            filter: 'age',
-            label: 'contact.age',
-            value: 'Oct 10 2015',
-            width: 3,
-          },
-          {
-            label: 'everyone.except.chw',
-            value: 100,
-            width: 3,
-          },
-        ],
-        context: {
-          foo: 'bar',
-          muted: false,
+    const chw = {
+      type: 'contact',
+      contact_type: 'chw',
+      phone: '555 8758',
+    };
+    const resultChw = evalInContext(compiled, chw, {}, []);
+    expect(resultChw).to.deep.equal({
+      fields: [
+        {
+          filter: 'phone',
+          label: 'contact.phone',
+          value: '555 8758',
         },
-        cards: [
-          {
-            fields: [],
-            label: 'for.patient'
-          }
-        ],
-      });
-
-      const chw = {
-        type: 'contact',
-        contact_type: 'chw',
-        phone: '555 8758',
-      };
-      const resultChw = evalInContext(compiled, chw, {}, []);
-      expect(resultChw).to.deep.equal({
-        fields: [
-          {
-            filter: 'phone',
-            label: 'contact.phone',
-            value: '555 8758',
-          },
-        ],
-        context: {
-          foo: 'bar',
-          muted: false,
-        },
-        cards: [
-          {
-            fields: [],
-            label: 'for.chw'
-          }
-        ],
-      });
-
-      const clinic = {
-        type: 'contact',
-        contact_type: 'clinic',
-        place_id: '22222',
-      };
-      const resultClinic = evalInContext(compiled, clinic, {}, []);
-      expect(resultClinic).to.deep.equal({
-        fields: [
-          {
-            label: 'everyone.except.chw',
-            value: 100,
-            width: 3,
-          },
-          {
-            label: 'contact.place_id',
-            value: '22222',
-            width: 2,
-          },
-        ],
-        context: {
-          foo: 'bar',
-          muted: false,
-        },
-        cards: [
-          {
-            fields: [],
-            label: 'for.clinic'
-          }
-        ],
-      });
+      ],
+      context: {
+        foo: 'bar',
+        muted: false,
+      },
+      cards: [
+        {
+          fields: [],
+          label: 'for.chw'
+        }
+      ],
     });
 
-    it('merges context, fields and cards from *.contact-summary.js extensions', async () => {
-      const compiled = await compileContactSummary(`${BASE_DIR}/with-extensions`, options);
-
-      const contact = { type: 'person' };
-      const result = evalInContext(compiled, contact, {}, []);
-
-      // Context should have both base and extension vars, with extension overriding conflicts
-      expect(result.context.baseVar).to.equal('from-base');
-      expect(result.context.extensionVar).to.equal('from-extension');
-      expect(result.context.overrideMe).to.equal('extension-value');
-
-      // Fields should include both base and extension fields
-      expect(result.fields).to.have.length(2);
-      expect(result.fields[0].label).to.equal('base.field');
-      expect(result.fields[1].label).to.equal('extension.field');
-
-      // Cards should include both base and extension cards
-      expect(result.cards).to.have.length(2);
-      expect(result.cards[0].label).to.equal('base.card');
-      expect(result.cards[1].label).to.equal('extension.card');
+    const clinic = {
+      type: 'contact',
+      contact_type: 'clinic',
+      place_id: '22222',
+    };
+    const resultClinic = evalInContext(compiled, clinic, {}, []);
+    expect(resultClinic).to.deep.equal({
+      fields: [
+        {
+          label: 'everyone.except.chw',
+          value: 100,
+          width: 3,
+        },
+        {
+          label: 'contact.place_id',
+          value: '22222',
+          width: 2,
+        },
+      ],
+      context: {
+        foo: 'bar',
+        muted: false,
+      },
+      cards: [
+        {
+          fields: [],
+          label: 'for.clinic'
+        }
+      ],
     });
+  });
+
+  it('merges context, fields and cards from contact-summary/*.js with the templated base most preferred', async () => {
+    const compiled = await compileContactSummary(`${BASE_DIR}/with-extensions`, options);
+
+    const contact = { type: 'person' };
+    const result = evalInContext(compiled, contact, {}, []);
+
+    // Context has both base and extension vars; base is most preferred (first-writer-wins)
+    expect(result.context.baseVar).to.equal('from-base');
+    expect(result.context.extensionVar).to.equal('from-extension');
+    expect(result.context.overrideMe).to.equal('base-value');
+
+    // Fields include both, base first
+    expect(result.fields).to.have.length(2);
+    expect(result.fields[0].label).to.equal('base.field');
+    expect(result.fields[1].label).to.equal('extension.field');
+
+    // Cards include both, base first
+    expect(result.cards).to.have.length(2);
+    expect(result.cards[0].label).to.equal('base.card');
+    expect(result.cards[1].label).to.equal('extension.card');
+  });
+
+  it('warns that contact-summary.templated.js is deprecated', async () => {
+    const mod = rewire('../../../src/lib/compilation/compile-contact-summary');
+    const warn = sinon.spy();
+    mod.__set__('warn', warn);
+
+    await mod(`${BASE_DIR}/templated`, options);
+
+    expect(warn.calledWithMatch(/contact-summary\.templated\.js is deprecated/)).to.equal(true);
   });
 });
