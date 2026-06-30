@@ -1,7 +1,8 @@
-function emitter(contactSummary, contact, reports) {
-  var fields = contactSummary.fields || [];
-  var context = contactSummary.context || {};
-  var cards = contactSummary.cards || [];
+function emitter(contactSummaries, contact, reports) {
+  var merged = mergeContactSummaries(contactSummaries);
+  var fields = merged.fields;
+  var context = merged.context;
+  var cards = merged.cards;
 
   var contactType = contact && (contact.type === 'contact' ? contact.contact_type : contact.type);
 
@@ -130,6 +131,39 @@ function addCard(card, context, r) {
     summary.collapsed = card.collapsed;
   }
   return summary;
+}
+
+function mergeContactSummaries(contactSummaries) {
+  var list = Array.isArray(contactSummaries) ? contactSummaries : [contactSummaries];
+  var cards = [];
+  var fields = [];
+  var context = {};
+
+  list.forEach(function(entry) {
+    if (!entry) {
+      return;
+    }
+    if (Array.isArray(entry)) {
+      cards = cards.concat(entry);
+      return;
+    }
+    if (Array.isArray(entry.cards)) {
+      cards = cards.concat(entry.cards);
+    }
+    if (Array.isArray(entry.fields)) {
+      fields = fields.concat(entry.fields);
+    }
+    if (entry.context && typeof entry.context === 'object') {
+      Object.keys(entry.context).forEach(function(key) {
+        // first-writer-wins: earlier (more preferred) entries keep their value
+        if (!(key in context)) {
+          context[key] = entry.context[key];
+        }
+      });
+    }
+  });
+
+  return { cards: cards, fields: fields, context: context };
 }
 
 module.exports = emitter;
