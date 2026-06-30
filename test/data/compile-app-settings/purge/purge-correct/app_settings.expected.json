@@ -5,7 +5,8 @@
     "schedules": {
       "test": true
     },
-    "targets": {}
+    "targets": {},
+    "isDeclarative": true
   },
   "purge": {
     "fn": "function (userCtx, contact, reports, messages) {\n    return reports.filter(r => r.reported_date < 10)\n      .concat(messages.filter(m => m.reported_date < 100))\n      .map(o => o._id);\n  }",

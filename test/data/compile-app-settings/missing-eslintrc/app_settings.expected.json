@@ -17,7 +17,8 @@
           "icon": "pregnancy-1"
         }
       ]
-    }
+    },
+    "isDeclarative": true
   },
   "purge": {}
 }

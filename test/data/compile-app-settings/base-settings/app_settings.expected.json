@@ -33,7 +33,8 @@
   "contact_summary": "",
   "tasks": {
     "rules": "",
-    "targets": {}
+    "targets": {},
+    "isDeclarative": true
   },
   "purge": {}
 }

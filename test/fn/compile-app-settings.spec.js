@@ -78,11 +78,6 @@ const scenarios = [
     error: 'schema validation errors',
   },
   {
-    description: 'should reject a project with both old and new nools config',
-    folder: 'unexpected-legacy-nools-rules/project',
-    error: 'Both legacy and declarative',
-  },
-  {
     description: 'should reject a project with both purge and purging files',
     folder: 'purge/both-purge-and-purging/project',
     error: 'Purge is defined at both',
@@ -130,6 +125,14 @@ const scenarios = [
   {
     description: 'should compile max_task_notifications to tasks.max_task_notifications',
     folder: 'task-notifications/project',
+  },
+  {
+    description: 'should compile a project using contact-summary/, tasks/ and targets/ directories',
+    folder: 'declarative-directories/project',
+  },
+  {
+    description: 'should compile a project that omits contact-summary, tasks and targets entirely',
+    folder: 'no-declarative-config/project',
   }
 ];
 

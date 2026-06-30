@@ -1,0 +1,18 @@
+{
+  "contact_summary": "",
+  "tasks": {
+    "rules": "",
+    "isDeclarative": true,
+    "targets": {
+      "enabled": true,
+      "items": [
+        {
+          "id": "births",
+          "type": "count",
+          "goal": -1
+        }
+      ]
+    }
+  },
+  "purge": {}
+}

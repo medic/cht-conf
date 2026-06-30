@@ -1,10 +1,12 @@
 {
   "contact_summary": "",
   "tasks": {
-    "rules": "var x = 1;console.log(x);",
+    "rules": "",
+    "isDeclarative": true,
     "targets": {
       "enabled": true,
       "items": []
     }
-  }
+  },
+  "purge": {}
 }

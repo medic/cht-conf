@@ -56,7 +56,8 @@
   "tasks": {
     "rules": "",
     "schedules": {},
-    "targets": {}
+    "targets": {},
+    "isDeclarative": true
   },
   "purge": {}
 }
