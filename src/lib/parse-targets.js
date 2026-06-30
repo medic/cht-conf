@@ -1,5 +1,12 @@
 const path = require('path');
 const fs = require('./sync-fs');
+const { findTargetsFiles } = require('./auto-include');
+
+const TARGET_FIELDS = [
+  'id', 'type', 'goal', 'translation_key', 'passesIfGroupCount', 'icon',
+  'context', 'subtitle_translation_key', 'dhis', 'visible', 'aggregate',
+  'limit_count_to_goal',
+];
 
 const pick = (obj, attributes) => attributes.reduce((agg, curr) => {
   if (curr in obj) {
@@ -8,50 +15,40 @@ const pick = (obj, attributes) => attributes.reduce((agg, curr) => {
   return agg;
 }, {});
 
+const requireTargetArray = (filePath) => {
+  const targets = require(filePath);
+  if (!Array.isArray(targets)) {
+    throw new Error(`Targets file is expected to module.exports=[] an array of targets. ${filePath}`);
+  }
+  return targets.map(target => pick(target, TARGET_FIELDS));
+};
+
 module.exports = projectDir => {
   const jsonPath = path.join(projectDir, 'targets.json');
   const jsPath = path.join(projectDir, 'targets.js');
-
   const jsonExists = fs.exists(jsonPath);
-  const jsExists   = fs.exists(jsPath);
-
-  const throwError = err => {
-    throw new Error(`Error loading targets: ${err}`);
-  };
-
-  if (!jsonExists && !jsExists) {
-    throwError(`Expected to find targets defined at one of ${jsonPath} or ${jsPath}, but could not find either.`);
-  }
+  const jsExists = fs.exists(jsPath);
 
   if (jsonExists && jsExists) {
-    throwError(`Targets are defined at both ${jsonPath} and ${jsPath}.  Only one of these files should exist.`);
+    throw new Error(
+      `Targets are defined at both ${jsonPath} and ${jsPath}. Only one of these files should exist.`
+    );
   }
+
+  const dirItems = findTargetsFiles(projectDir).flatMap(requireTargetArray);
 
   if (jsonExists) {
-    return fs.readJson(jsonPath);
+    const json = fs.readJson(jsonPath);
+    // Preserve exact legacy behaviour when no directory files are present.
+    if (dirItems.length === 0) {
+      return json;
+    }
+    return Object.assign({}, json, { items: (json.items || []).concat(dirItems) });
   }
 
-  const pathToTargetJs = path.join(projectDir, 'targets.js');
-  const targets = require(pathToTargetJs);
-  if (!targets || !Array.isArray(targets)) {
-    throwError(`Targets.js is expected to module.exports=[] an array of targets. ${jsPath}`);
+  if (jsExists) {
+    return { enabled: true, items: requireTargetArray(jsPath).concat(dirItems) };
   }
 
-  return {
-    enabled: true,
-    items: targets.map(target => pick(target, [
-      'id',
-      'type',
-      'goal',
-      'translation_key',
-      'passesIfGroupCount',
-      'icon',
-      'context',
-      'subtitle_translation_key',
-      'dhis',
-      'visible',
-      'aggregate',
-      'limit_count_to_goal',
-    ])),
-  };
+  return { enabled: true, items: dirItems };
 };
