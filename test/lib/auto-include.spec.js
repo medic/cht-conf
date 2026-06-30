@@ -3,10 +3,10 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const {
-  findAutoIncludeFiles,
-  findTasksExtensions,
-  findTargetsExtensions,
-  findContactSummaryExtensions,
+  findConfigFiles,
+  findTasksFiles,
+  findTargetsFiles,
+  findContactSummaryFiles,
 } = require('../../src/lib/auto-include');
 
 describe('auto-include', () => {
@@ -20,95 +20,67 @@ describe('auto-include', () => {
     fs.rmSync(testDir, { recursive: true });
   });
 
-  describe('findTasksExtensions', () => {
-    it('should find *.tasks.js files', () => {
-      fs.writeFileSync(path.join(testDir, 'tasks.js'), 'module.exports = [];');
-      fs.writeFileSync(path.join(testDir, 'stock.tasks.js'), 'module.exports = [];');
-      fs.writeFileSync(path.join(testDir, 'vaccination.tasks.js'), 'module.exports = [];');
+  const writeFile = (dir, name, content = 'module.exports = [];') => {
+    fs.mkdirSync(path.join(testDir, dir), { recursive: true });
+    fs.writeFileSync(path.join(testDir, dir, name), content);
+  };
 
-      const result = findTasksExtensions(testDir);
+  describe('findTasksFiles', () => {
+    it('finds all *.js files in the tasks directory', () => {
+      writeFile('tasks', 'base.js');
+      writeFile('tasks', 'stock.js');
+
+      const result = findTasksFiles(testDir);
 
       expect(result).to.have.length(2);
-      expect(result[0]).to.include('stock.tasks.js');
-      expect(result[1]).to.include('vaccination.tasks.js');
+      expect(result[0]).to.include(path.join('tasks', 'base.js'));
+      expect(result[1]).to.include(path.join('tasks', 'stock.js'));
     });
 
-    it('should exclude tasks.js itself', () => {
-      fs.writeFileSync(path.join(testDir, 'tasks.js'), 'module.exports = [];');
-
-      const result = findTasksExtensions(testDir);
-
-      expect(result).to.have.length(0);
+    it('returns empty array when the tasks directory is absent', () => {
+      expect(findTasksFiles(testDir)).to.deep.equal([]);
     });
 
-    it('should return empty array for non-existent directory', () => {
-      const result = findTasksExtensions('/non/existent/path');
+    it('sorts files alphabetically for deterministic order', () => {
+      writeFile('tasks', 'z-last.js');
+      writeFile('tasks', 'a-first.js');
+      writeFile('tasks', 'm-middle.js');
 
-      expect(result).to.deep.equal([]);
+      const result = findTasksFiles(testDir).map(p => path.basename(p));
+
+      expect(result).to.deep.equal(['a-first.js', 'm-middle.js', 'z-last.js']);
     });
 
-    it('should sort files alphabetically for deterministic order', () => {
-      fs.writeFileSync(path.join(testDir, 'z-last.tasks.js'), '');
-      fs.writeFileSync(path.join(testDir, 'a-first.tasks.js'), '');
-      fs.writeFileSync(path.join(testDir, 'm-middle.tasks.js'), '');
+    it('ignores non-js files and subdirectories', () => {
+      writeFile('tasks', 'base.js');
+      writeFile('tasks', 'notes.txt', 'hello');
+      fs.mkdirSync(path.join(testDir, 'tasks', 'nested'));
 
-      const result = findTasksExtensions(testDir);
+      const result = findTasksFiles(testDir).map(p => path.basename(p));
 
-      expect(path.basename(result[0])).to.equal('a-first.tasks.js');
-      expect(path.basename(result[1])).to.equal('m-middle.tasks.js');
-      expect(path.basename(result[2])).to.equal('z-last.tasks.js');
+      expect(result).to.deep.equal(['base.js']);
     });
   });
 
-  describe('findTargetsExtensions', () => {
-    it('should find *.targets.js files', () => {
-      fs.writeFileSync(path.join(testDir, 'targets.js'), 'module.exports = [];');
-      fs.writeFileSync(path.join(testDir, 'stock.targets.js'), 'module.exports = [];');
-
-      const result = findTargetsExtensions(testDir);
-
-      expect(result).to.have.length(1);
-      expect(result[0]).to.include('stock.targets.js');
-    });
-
-    it('should exclude targets.js itself', () => {
-      fs.writeFileSync(path.join(testDir, 'targets.js'), 'module.exports = [];');
-
-      const result = findTargetsExtensions(testDir);
-
-      expect(result).to.have.length(0);
+  describe('findTargetsFiles', () => {
+    it('finds *.js files in the targets directory', () => {
+      writeFile('targets', 'base.js');
+      expect(findTargetsFiles(testDir).map(p => path.basename(p))).to.deep.equal(['base.js']);
     });
   });
 
-  describe('findContactSummaryExtensions', () => {
-    it('should find *.contact-summary.js files', () => {
-      fs.writeFileSync(path.join(testDir, 'contact-summary.templated.js'), 'module.exports = {};');
-      fs.writeFileSync(path.join(testDir, 'stock.contact-summary.js'), 'module.exports = {};');
-
-      const result = findContactSummaryExtensions(testDir);
-
-      expect(result).to.have.length(1);
-      expect(result[0]).to.include('stock.contact-summary.js');
-    });
-
-    it('should exclude contact-summary.templated.js', () => {
-      fs.writeFileSync(path.join(testDir, 'contact-summary.templated.js'), 'module.exports = {};');
-
-      const result = findContactSummaryExtensions(testDir);
-
-      expect(result).to.have.length(0);
+  describe('findContactSummaryFiles', () => {
+    it('finds *.js files in the contact-summary directory', () => {
+      writeFile('contact-summary', 'base.js');
+      expect(findContactSummaryFiles(testDir).map(p => path.basename(p))).to.deep.equal(['base.js']);
     });
   });
 
-  describe('findAutoIncludeFiles', () => {
-    it('should only return files, not directories', () => {
-      fs.writeFileSync(path.join(testDir, 'real.tasks.js'), '');
-      fs.mkdirSync(path.join(testDir, 'fake.tasks.js'));
-
-      const result = findAutoIncludeFiles(testDir, '.tasks.js', 'tasks.js');
-
-      expect(result).to.have.length(1);
-      expect(result[0]).to.include('real.tasks.js');
+  describe('findConfigFiles', () => {
+    it('returns absolute paths', () => {
+      writeFile('tasks', 'base.js');
+      const [result] = findConfigFiles(testDir, 'tasks');
+      expect(path.isAbsolute(result)).to.equal(true);
     });
   });
 });
