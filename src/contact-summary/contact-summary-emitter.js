@@ -142,29 +142,34 @@ function mergeContext(context, entryContext) {
   });
 }
 
+// Normalise an entry (a { cards, fields, context } object, or a bare array of
+// cards) into a consistent shape.
+function normalizeEntry(entry) {
+  if (Array.isArray(entry)) {
+    return { cards: entry, fields: [], context: {} };
+  }
+  const hasContext = entry.context && typeof entry.context === 'object';
+  return {
+    cards: Array.isArray(entry.cards) ? entry.cards : [],
+    fields: Array.isArray(entry.fields) ? entry.fields : [],
+    context: hasContext ? entry.context : {},
+  };
+}
+
 function mergeContactSummaries(contactSummaries) {
   const list = Array.isArray(contactSummaries) ? contactSummaries : [contactSummaries];
-  let cards = [];
-  let fields = [];
+  const cards = [];
+  const fields = [];
   const context = {};
 
   list.forEach(function(entry) {
     if (!entry) {
       return;
     }
-    if (Array.isArray(entry)) {
-      cards = cards.concat(entry);
-      return;
-    }
-    if (Array.isArray(entry.cards)) {
-      cards = cards.concat(entry.cards);
-    }
-    if (Array.isArray(entry.fields)) {
-      fields = fields.concat(entry.fields);
-    }
-    if (entry.context && typeof entry.context === 'object') {
-      mergeContext(context, entry.context);
-    }
+    const normalized = normalizeEntry(entry);
+    cards.push(...normalized.cards);
+    fields.push(...normalized.fields);
+    mergeContext(context, normalized.context);
   });
 
   return { cards: cards, fields: fields, context: context };
