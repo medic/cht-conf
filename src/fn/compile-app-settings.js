@@ -72,6 +72,7 @@ const compileAppSettingsForProject = async (projectDir, options) => {
     }
     return maxTaskNotifications;
   };
+  const isValidTimeFormat = (time) => /^([01]\d|2[0-3]):[0-5]\d$/.test(time);
 
   // Fail if no eslintrc file is found
   if (!fs.exists(esLintFilePath)) {
@@ -140,6 +141,16 @@ const compileAppSettingsForProject = async (projectDir, options) => {
   if (appSettings.max_task_notifications) {
     appSettings.tasks.max_task_notifications = parseMaxTaskNotifications(appSettings.max_task_notifications);
     delete appSettings.max_task_notifications;
+  }
+
+  if (appSettings.task_notification_window) {
+    const startTime = appSettings.task_notification_window.start;
+    const endTime = appSettings.task_notification_window.end;
+    if (!isValidTimeFormat(startTime) || !isValidTimeFormat(endTime)) {
+      throw new Error(`Invalid task notification window time`);
+    }
+    appSettings.tasks.task_notification_window = appSettings.task_notification_window;
+    delete appSettings.task_notification_window;
   }
 
   const purgeConfig = parsePurge(projectDir);
