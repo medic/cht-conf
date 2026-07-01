@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('./sync-fs');
 const { findTargetsFiles } = require('./auto-include');
 const { TARGET_METADATA_FIELDS } = require('./compilation/validate-declarative-schema');
+const { warn } = require('./log');
 
 const pick = (obj, attributes) => attributes.reduce((agg, curr) => {
   if (curr in obj) {
@@ -33,6 +34,9 @@ module.exports = projectDir => {
   const dirItems = findTargetsFiles(projectDir).flatMap(requireTargetArray);
 
   if (jsonExists) {
+    // targets.js is warned via the compile step (collectConfigFiles); targets.json
+    // never touches that path, so this is the single place it can be flagged.
+    warn('targets.json is deprecated. Please move your targets to targets/base.js');
     const json = fs.readJson(jsonPath);
     // Preserve exact legacy behaviour when no directory files are present.
     if (dirItems.length === 0) {

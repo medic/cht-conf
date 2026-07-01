@@ -2,6 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const { expect } = require('chai');
+const sinon = require('sinon');
+const rewire = require('rewire');
 const parseTargets = require('../../src/lib/parse-targets');
 
 describe('parse-targets', () => {
@@ -73,5 +75,27 @@ describe('parse-targets', () => {
       'module.exports = [{ id: "a", type: "percent", goal: 1, percentage_count_translation_key: "k" }];');
     const result = parseTargets(dir);
     expect(result.items[0]).to.have.property('percentage_count_translation_key', 'k');
+  });
+
+  it('warns that targets.json is deprecated', () => {
+    writeJson('targets.json', {});
+    const mod = rewire('../../src/lib/parse-targets');
+    const warn = sinon.spy();
+    mod.__set__('warn', warn);
+
+    mod(dir);
+
+    expect(warn.calledWithMatch(/targets\.json is deprecated/)).to.equal(true);
+  });
+
+  it('does not warn from parse-targets when only targets.js is present (avoids double warning)', () => {
+    writeJs('targets.js', 'module.exports = [];');
+    const mod = rewire('../../src/lib/parse-targets');
+    const warn = sinon.spy();
+    mod.__set__('warn', warn);
+
+    mod(dir);
+
+    expect(warn.called).to.equal(false);
   });
 });
