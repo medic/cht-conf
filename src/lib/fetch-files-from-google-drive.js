@@ -58,14 +58,8 @@ module.exports = async (filesJson, targetDir, mimeType) => {
       }
 
       async function downloadFile(fetchOpts, target) {
-        const res = await drive.files.export(fetchOpts, { responseType:'stream' });
-        await new Promise((resolve, reject) => {
-          const writeStream = fs.fs.createWriteStream(target);
-          res.data.on('error', reject);
-          writeStream.on('error', reject);
-          writeStream.on('finish', resolve);
-          res.data.pipe(writeStream);
-        });
+        const res = await drive.files.export(fetchOpts, { responseType:'arraybuffer' });
+        fs.fs.writeFileSync(target, Buffer.from(res.data));
       }
     });
 };
