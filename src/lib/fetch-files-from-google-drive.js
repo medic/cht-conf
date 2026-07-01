@@ -2,7 +2,7 @@ const fs = require('./sync-fs');
 const google = require('googleapis').google;
 const googleAuth = require('./google-auth');
 const info = require('./log').info;
-
+//this logic fails in unittest
 // List of valid MIME types: https://developers.google.com/drive/api/v3/manage-downloads#downloading_google_documents
 module.exports = async (filesJson, targetDir, mimeType) => {
   return googleAuth()
