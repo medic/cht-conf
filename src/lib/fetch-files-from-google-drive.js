@@ -2,7 +2,13 @@ const fs = require('./sync-fs');
 const google = require('googleapis').google;
 const googleAuth = require('./google-auth');
 const info = require('./log').info;
-//this logic fails in unittest
+const warn = require('./log').warn;
+
+const MAX_ATTEMPTS = 3;
+const RETRY_BASE_DELAY = 1000;
+
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 // List of valid MIME types: https://developers.google.com/drive/api/v3/manage-downloads#downloading_google_documents
 module.exports = async (filesJson, targetDir, mimeType) => {
   return googleAuth()
@@ -20,34 +26,46 @@ module.exports = async (filesJson, targetDir, mimeType) => {
           setTimeout(resolve, 500);
         }));
 
-      function fetchFile(promiseChain, localName) {
-        return promiseChain
-          .then(() => new Promise((resolve, reject) => {
-            const remoteName = files[localName];
+      async function fetchFile(promiseChain, localName) {
+        await promiseChain;
 
-            const fetchOpts = {
-              auth,
-              fileId: files[localName],
-              mimeType,
-            };
+        const remoteName = files[localName];
+        const fetchOpts = {
+          auth,
+          fileId: files[localName],
+          mimeType,
+        };
 
-            const target = `${targetDir}/${localName}`;
-            fs.mkdir(fs.path.dirname(target));
+        const target = `${targetDir}/${localName}`;
+        fs.mkdir(fs.path.dirname(target));
 
-            info(`Exporting ${remoteName} from google drive to ${target}…`);
+        for (let attempt = 1; ; attempt++) {
+          info(`Exporting ${remoteName} from google drive to ${target}…`);
+          try {
+            await downloadFile(fetchOpts, target);
+            info(`Successfully wrote ${target}.`);
+            return;
+          } catch (e) {
+            // node-fetch throws "Premature close" when the response stream is
+            // dropped mid-download; retry with backoff before giving up.
+            if (attempt >= MAX_ATTEMPTS) {
+              throw e;
+            }
+            warn(`Failed to export ${remoteName} (attempt ${attempt}/${MAX_ATTEMPTS}): ${e.message}. Retrying…`);
+            await delay(RETRY_BASE_DELAY * attempt);
+          }
+        }
+      }
 
-            drive.files.export(fetchOpts, { responseType:'stream' })
-              .then(res => {
-                res.data
-                  .on('end', () => {
-                    info(`Successfully wrote ${target}.`);
-                    resolve();
-                  })
-                  .on('error', reject)
-                  .pipe(fs.fs.createWriteStream(target));
-              })
-              .catch(reject);
-          }));
+      async function downloadFile(fetchOpts, target) {
+        const res = await drive.files.export(fetchOpts, { responseType:'stream' });
+        await new Promise((resolve, reject) => {
+          const writeStream = fs.fs.createWriteStream(target);
+          res.data.on('error', reject);
+          writeStream.on('error', reject);
+          writeStream.on('finish', resolve);
+          res.data.pipe(writeStream);
+        });
       }
     });
 };
