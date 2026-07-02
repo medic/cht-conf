@@ -109,6 +109,24 @@ describe('main', () => {
     expect(mocks.usage.called).to.be.false;
   });
 
+  it('does not load api url for optional-instance actions without instance config', async () => {
+    await main([...normalArgv, 'validate-contact-forms'], {});
+    expect(mocks.getApiUrl.called).to.be.false;
+    expect(mocks.environment.initialize.args[0][4]).to.be.undefined;
+    expect(mocks.executeAction.callCount).to.deep.eq(1);
+    expect(mocks.executeAction.args[0][0].name).to.eq('validate-contact-forms');
+  });
+
+  it('loads api url for optional-instance actions when instance config is provided', async () => {
+    await main([...normalArgv, '--url=https://admin:pwd@example.com/', 'validate-contact-forms'], {});
+    expect(mocks.getApiUrl.calledOnce).to.be.true;
+    expect(mocks.getApiUrl.args[0][0].url).to.eq('https://admin:pwd@example.com/');
+    expect(mocks.environment.initialize.args[0][4]).to.eq('http://api');
+    expect(mocks.executeAction.callCount).to.deep.eq(1);
+    expect(mocks.executeAction.args[0][0].name).to.eq('validate-contact-forms');
+    expect(apiAvailable.called).to.be.false;
+  });
+
   const expectExecuteActionBehavior = (expectedActions, expectedExtraParams, expectRequireUrl = true) => {
     if (Array.isArray(expectedActions)) {
       expect(mocks.executeAction.args.map(args => args[0].name)).to.deep.eq(expectedActions);
