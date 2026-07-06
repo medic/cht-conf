@@ -47,13 +47,17 @@ module.exports = async (projectDir, options) => {
     label: 'contact-summary',
     log: true,
   });
-  const entryPath = generateEntry(files);
+  const { entryPath, cleanup } = generateEntry(files);
 
   const baseEslintPath = path.join(__dirname, '../../contact-summary/.eslintrc');
 
   // WebApp expects the contact-summary to make a bare return
   // This isn't a direct output option for webpack, so add some boilerplate
   const packOptions = Object.assign({}, options, { libraryTarget: 'ContactSummary' });
-  const code = await pack(projectDir, entryPath, { baseEslintPath, options: packOptions });
-  return `var ContactSummary = {}; ${code} return ContactSummary;`;
+  try {
+    const code = await pack(projectDir, entryPath, { baseEslintPath, options: packOptions });
+    return `var ContactSummary = {}; ${code} return ContactSummary;`;
+  } finally {
+    cleanup();
+  }
 };

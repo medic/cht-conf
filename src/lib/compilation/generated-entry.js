@@ -16,13 +16,16 @@ const requireStatements = (paths) => paths.map(p => `require(${JSON.stringify(p)
  * compiles (parallel CI, monorepos) never clobber each other's entry file.
  * @param {string} prefix - Temp directory name prefix (e.g. 'nools')
  * @param {string} content - Entry file source
- * @returns {string} Path to the written entry file
+ * @returns {{ entryPath: string, cleanup: () => void }} Entry path and cleanup
  */
 const writeEntry = (prefix, content) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), `${prefix}-`));
   const entryPath = path.join(dir, 'lib.js');
   fs.writeFileSync(entryPath, content);
-  return entryPath;
+  return {
+    entryPath,
+    cleanup: () => fs.rmSync(dir, { recursive: true, force: true }),
+  };
 };
 
 module.exports = { requireStatements, writeEntry };

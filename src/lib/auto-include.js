@@ -11,21 +11,27 @@ const { info, warn } = require('./log');
 const findConfigFiles = (projectDir, subdir) => {
   const dir = path.join(projectDir, subdir);
   try {
-    return fs.readdirSync(dir, { withFileTypes: true })
-      .filter(dirent => dirent.isFile() && dirent.name.endsWith('.js'))
-      .map(dirent => dirent.name)
+    return fs
+      .readdirSync(dir, { withFileTypes: true })
+      .filter((dirent) => dirent.isFile() && dirent.name.endsWith('.js'))
+      .map((dirent) => dirent.name)
       .sort()
-      .map(name => path.join(dir, name));
-  } catch {
-    // Directory may not exist, which is expected when the project does not
-    // use this config type. Return empty array.
-    return [];
+      .map((name) => path.join(dir, name));
+  } catch (err) {
+    // A missing directory is expected when the project does not use this config
+    // type. Any other error (permissions, not-a-directory, fd exhaustion) means
+    // config exists but could not be read — fail loudly rather than silently
+    // dropping it.
+    if (err.code === 'ENOENT') {
+      return [];
+    }
+    throw err;
   }
 };
 
 /**
  * Build the ordered list of config files for a config type: the deprecated
- * single base file first (most preferred), then the directory files
+ * single base file first, then the directory files
  * alphabetically. Optionally logs a deprecation warning for the base file and
  * an info line per directory file.
  * @param {string} projectDir - Project directory path
@@ -36,7 +42,10 @@ const findConfigFiles = (projectDir, subdir) => {
  * @param {boolean} [opts.log=false] - Emit deprecation/info logs
  * @returns {string[]} Ordered absolute paths
  */
-const collectConfigFiles = (projectDir, { baseFilename, subdir, label, log = false }) => {
+const collectConfigFiles = (
+  projectDir,
+  { baseFilename, subdir, label, log = false },
+) => {
   const files = [];
   const basePath = path.join(projectDir, baseFilename);
   if (fs.existsSync(basePath)) {
@@ -45,7 +54,7 @@ const collectConfigFiles = (projectDir, { baseFilename, subdir, label, log = fal
     }
     files.push(basePath);
   }
-  findConfigFiles(projectDir, subdir).forEach(filePath => {
+  findConfigFiles(projectDir, subdir).forEach((filePath) => {
     if (log) {
       info(`Including ${label}: ${path.basename(filePath)}`);
     }
@@ -56,7 +65,8 @@ const collectConfigFiles = (projectDir, { baseFilename, subdir, label, log = fal
 
 const findTasksFiles = (projectDir) => findConfigFiles(projectDir, 'tasks');
 const findTargetsFiles = (projectDir) => findConfigFiles(projectDir, 'targets');
-const findContactSummaryFiles = (projectDir) => findConfigFiles(projectDir, 'contact-summary');
+const findContactSummaryFiles = (projectDir) =>
+  findConfigFiles(projectDir, 'contact-summary');
 
 module.exports = {
   findConfigFiles,

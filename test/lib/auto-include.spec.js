@@ -85,6 +85,13 @@ describe('auto-include', () => {
       const [result] = findConfigFiles(testDir, 'tasks');
       expect(path.isAbsolute(result)).to.equal(true);
     });
+
+    it('surfaces non-ENOENT errors instead of silently returning []', () => {
+      // A plain file where a directory is expected makes readdirSync throw
+      // ENOTDIR; config that exists but cannot be read must fail loudly.
+      fs.writeFileSync(path.join(testDir, 'tasks'), 'not a directory');
+      expect(() => findConfigFiles(testDir, 'tasks')).to.throw(/ENOTDIR/);
+    });
   });
 
   describe('collectConfigFiles', () => {

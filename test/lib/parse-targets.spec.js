@@ -49,12 +49,10 @@ describe('parse-targets', () => {
     expect(parseTargets(dir)).to.deep.equal({});
   });
 
-  it('preserves targets.json fields and merges directory items', () => {
+  it('throws when targets.json coexists with the targets/ directory (no silent merge)', () => {
     writeJson('targets.json', { enabled: false, items: [{ id: 'j' }] });
     writeJs('targets/extra.js', 'module.exports = [{ id: "e", type: "count", goal: 1 }];');
-    const result = parseTargets(dir);
-    expect(result.enabled).to.equal(false);
-    expect(result.items.map(t => t.id)).to.deep.equal(['j', 'e']);
+    expect(() => parseTargets(dir)).to.throw(/targets\.json is deprecated/);
   });
 
   it('throws if both targets.json and targets.js exist', () => {

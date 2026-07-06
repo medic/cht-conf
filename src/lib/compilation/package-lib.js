@@ -1,5 +1,4 @@
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
@@ -16,7 +15,8 @@ module.exports = (pathToProject, entry, config = {}) => {
   const libName = path.basename(directoryContainingEntry);
   info(`Packaging ${libName}`);
 
-  const outputDirectoryPath = os.tmpdir();
+
+  const outputDirectoryPath = directoryContainingEntry;
   const outputFilename = `./${libName}.js`;
 
   const compiler = webpack({

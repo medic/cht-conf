@@ -65,11 +65,15 @@ const compileTasksAndTargets = async (projectDir, options = {}) => {
 
   validateDeclarativeSchema(projectDir, options.haltOnSchemaError);
 
-  const entryPath = generateEntry(taskFiles, targetFiles);
+  const { entryPath, cleanup } = generateEntry(taskFiles, targetFiles);
   const baseEslintPath = path.join(__dirname, '../../nools/.eslintrc');
 
-  const rules = await pack(projectDir, entryPath, { baseEslintPath, options });
-  return { rules, isDeclarative: true };
+  try {
+    const rules = await pack(projectDir, entryPath, { baseEslintPath, options });
+    return { rules, isDeclarative: true };
+  } finally {
+    cleanup();
+  }
 };
 
 module.exports = compileTasksAndTargets;
