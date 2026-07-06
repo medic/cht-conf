@@ -7,7 +7,7 @@ const webpack = require('webpack');
 const fsUtils = require('../sync-fs');
 const { info, warn, error } = require('../log');
 
-module.exports = (pathToProject, entry, config = {}) => {
+const packageLib = (pathToProject, entry, config = {}) => {
   const { baseEslintPath, options = {}, extraAliases = {} } = config;
   const baseEslintConfig = fsUtils.readJson(baseEslintPath);
 
@@ -109,3 +109,5 @@ module.exports = (pathToProject, entry, config = {}) => {
     });
   });
 };
+
+module.exports = packageLib;
