@@ -1,3 +1,10 @@
+## [6.5.1](https://github.com/medic/cht-conf/compare/v6.5.0...v6.5.1) (2026-07-15)
+
+
+### Bug Fixes
+
+* **#830:** backup-form should not crash if form has no attachments ([#831](https://github.com/medic/cht-conf/issues/831)) ([48ada02](https://github.com/medic/cht-conf/commit/48ada020f4c1df2e896da7e64a55b71779845bbb)), closes [#830](https://github.com/medic/cht-conf/issues/830)
+
 # [6.5.0](https://github.com/medic/cht-conf/compare/v6.4.1...v6.5.0) (2026-06-23)
 
 
