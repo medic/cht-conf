@@ -5,6 +5,7 @@ const { CONTACT_FORMS_PATH } = require('../lib/project-paths');
 
 const convertContactForm = (forms) => {
   const dir = `${environment.pathToProject}/${CONTACT_FORMS_PATH}`;
+  const userContactSummaryXML = '\n    <instance id="user-contact-summary"/>';
   const placeTypesJson = `${dir}/place-types.json`;
 
   let PLACE_TYPES;
@@ -80,7 +81,7 @@ const convertContactForm = (forms) => {
           }
         }
       }
-
+      xml = xml.replace('</instance>', `</instance>${userContactSummaryXML}`);     
       return xml;
     },
   });
@@ -92,3 +93,4 @@ module.exports = {
   CONTACT_FORMS_PATH,
   execute: () => convertContactForm(environment.extraArgs)
 };
+
