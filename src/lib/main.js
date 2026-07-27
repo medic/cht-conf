@@ -38,6 +38,7 @@ const defaultActions = [
   'upload-custom-translations',
   'upload-privacy-policies',
   'upload-extension-libs',
+  'upload-ui-extensions',
   'upload-database-indexes',
 ];
 const defaultArchiveActions = [
@@ -61,6 +62,7 @@ const defaultArchiveActions = [
   'upload-custom-translations',
   'upload-privacy-policies',
   'upload-extension-libs',
+  'upload-ui-extensions',
   'upload-database-indexes',
 ];
 

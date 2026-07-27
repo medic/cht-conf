@@ -1,3 +1,45 @@
+## [6.5.1](https://github.com/medic/cht-conf/compare/v6.5.0...v6.5.1) (2026-07-15)
+
+
+### Bug Fixes
+
+* **#830:** backup-form should not crash if form has no attachments ([#831](https://github.com/medic/cht-conf/issues/831)) ([48ada02](https://github.com/medic/cht-conf/commit/48ada020f4c1df2e896da7e64a55b71779845bbb)), closes [#830](https://github.com/medic/cht-conf/issues/830)
+
+# [6.5.0](https://github.com/medic/cht-conf/compare/v6.4.1...v6.5.0) (2026-06-23)
+
+
+### Features
+
+* **#10224:** add actions for upload/delete UI extensions ([#823](https://github.com/medic/cht-conf/issues/823)) ([178bbfc](https://github.com/medic/cht-conf/commit/178bbfc9f412a2ea6c7ee2fe9d0610a18c2a50e3)), closes [#10224](https://github.com/medic/cht-conf/issues/10224)
+
+## [6.4.1](https://github.com/medic/cht-conf/compare/v6.4.0...v6.4.1) (2026-05-12)
+
+
+### Bug Fixes
+
+* **#769:** consider local-ip hosts as local ([#806](https://github.com/medic/cht-conf/issues/806)) ([79c0020](https://github.com/medic/cht-conf/commit/79c0020c885f416fb305ed53ab320c1f909b8095)), closes [#769](https://github.com/medic/cht-conf/issues/769) [#769](https://github.com/medic/cht-conf/issues/769)
+
+# [6.4.0](https://github.com/medic/cht-conf/compare/v6.3.0...v6.4.0) (2026-05-08)
+
+
+### Features
+
+* **#771:** deprecate NO_LABEL usage in forms ([#813](https://github.com/medic/cht-conf/issues/813)) ([197202a](https://github.com/medic/cht-conf/commit/197202a11d0bb6003606efa1b5cf6b79e56bc44c)), closes [#771](https://github.com/medic/cht-conf/issues/771)
+
+# [6.3.0](https://github.com/medic/cht-conf/compare/v6.2.0...v6.3.0) (2026-04-27)
+
+
+### Features
+
+* **#10766:** support `collapsed` in contact summary card ([#812](https://github.com/medic/cht-conf/issues/812)) ([8b3f34a](https://github.com/medic/cht-conf/commit/8b3f34a3b58ffbd2c58c0e28f15dbc87e6d1e572)), closes [#10766](https://github.com/medic/cht-conf/issues/10766)
+
+# [6.2.0](https://github.com/medic/cht-conf/compare/v6.1.1...v6.2.0) (2026-04-18)
+
+
+### Features
+
+* **#10240:** allow limit_count_to_goal in target configuration schema ([#800](https://github.com/medic/cht-conf/issues/800)) ([7c6ec4f](https://github.com/medic/cht-conf/commit/7c6ec4fffb1a4721b309e7510b86e8ac9a7e745d)), closes [#10240](https://github.com/medic/cht-conf/issues/10240) [medic/cht-core#10772](https://github.com/medic/cht-core/issues/10772)
+
 ## [6.1.1](https://github.com/medic/cht-conf/compare/v6.1.0...v6.1.1) (2026-04-10)
 
 

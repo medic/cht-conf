@@ -1,4 +1,5 @@
 const { getNodes, removeNode, XPATH_MODEL, XPATH_BODY } = require('../forms-utils');
+const log = require('../log');
 
 module.exports = {
   /**
@@ -17,7 +18,17 @@ module.exports = {
     noLabelItextNodes.forEach(removeNode);
 
     // Remove any additional NO_LABEL values from translation nodes that have other (multimedia) values
-    getNodes(xmlDoc, `${XPATH_MODEL}/itext/translation//value[text()="NO_LABEL" or text()="DELETE_THIS_LINE"]`)
-      .forEach(removeNode);
+    const noLabelValueNodes = getNodes(
+      xmlDoc,
+      `${XPATH_MODEL}/itext/translation//value[text()="NO_LABEL" or text()="DELETE_THIS_LINE"]`
+    );
+    noLabelValueNodes.forEach(removeNode);
+
+    if (noLabelItextNodes.length > 0 || noLabelValueNodes.length > 0) {
+      log.warn(
+        'The "NO_LABEL/DELETE_THIS_LINE" value is deprecated and will be removed in a future version of cht-conf. ' +
+        'For groups, a label is not required. If the field should not be visible, use the "hidden" or "calculate" type.'
+      );
+    }
   }
 };
