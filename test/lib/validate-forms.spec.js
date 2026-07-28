@@ -42,6 +42,11 @@ describe('validate-forms', () => {
     expect(hasInstanceId.requiresInstance).to.equal(false);
     expect(hasInstanceId.skipFurtherValidation).to.equal(true);
 
+    const canValidateFieldPaths = validations.shift();
+    expect(canValidateFieldPaths.name).to.equal('validate-field-paths.js');
+    expect(canValidateFieldPaths.requiresInstance).to.equal(false);
+    expect(canValidateFieldPaths.skipFurtherValidation).to.equal(true);
+
     const canGeneratexForm = validations.shift();
     expect(canGeneratexForm.name).to.equal('can-generate-xform.js');
     expect(canGeneratexForm.requiresInstance).to.equal(true);

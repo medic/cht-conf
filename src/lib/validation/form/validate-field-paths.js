@@ -1,10 +1,9 @@
-const { getBindNodes } = require('../forms-utils');
-const { warn, error: err } = require('../log');
+const { getBindNodes } = require('../../forms-utils');
 const joi = require('joi');
 
 const XML_ATT_NODESET = 'nodeset';
 
-const propsSchema = joi.object({
+const schema = joi.object({
   ['warn_length']: joi.number().integer().min(0).when('error_length', {
     is: joi.number().required().greater(0),
     then: joi.number().less(joi.ref('error_length')),
@@ -14,19 +13,19 @@ const propsSchema = joi.object({
   ['reserved_list']: joi.array().items(joi.string().pattern(/[`'"]/, { invert: true })).optional().default([]),
 });
 
-function formatFeedbackMsg(title, items, footer){
-  return `${title}\n${items.join('\n')}\n${footer}`;
+function formatFeedbackMsg(title, items, footer) {
+  return `${title}\n${items.join('\n')}${footer ? `\n${footer}` : ''}`;
 }
 
-function checkListOverlap(ignoreList, reservedList){
-  if(!ignoreList.length || !reservedList.length){
+function checkListOverlap(ignoreList, reservedList) {
+  if (!ignoreList.length || !reservedList.length) {
     return;
   }
 
   const reservedSet = new Set(reservedList);
   const overlap = ignoreList.filter(x => reservedSet.has(x));
 
-  if(overlap.length > 0){
+  if (overlap.length > 0) {
     throw new Error(formatFeedbackMsg(
       'Overlap between reserved and ignore lists:',
       overlap,
@@ -35,50 +34,55 @@ function checkListOverlap(ignoreList, reservedList){
   }
 }
 
-function processPropData(props){
-  if(!props || Object.keys(props).length === 0){
-    err('If you would like to customize these checks, please create a properties JSON file with the structure:', {
-      'warn_length': 'positive integer (required)',
-      'error_length': 'positive integer (required)',
-      'ignore_list': 'array of strings representing nodeset paths to ignore (optional)',
-      'reserved_list': 'array of strings representing reserved keywords (optional)'
-    });
-    throw Error('Unable to run field path checks');
+function warnIfNoProps(props) {
+  if (!props || Object.keys(props).length === 0) {
+    return formatFeedbackMsg(
+      'If you would like enable form field linting, please ensure the object has the following structure:',
+      [
+        '"warn_length": "positive integer (optional)"',
+        '"error_length": "positive integer (optional)"',
+        '"ignore_list": "array of strings representing nodeset paths to ignore (optional)"',
+        '"reserved_list": "array of strings representing reserved keywords (optional)"'
+      ]
+    );
   }
+}
 
-  const { error, value } = propsSchema.validate(props??{}, { abortEarly: false });
+function validatePropDataOrThrow(props) {
+  const { error, value } = schema.validate(props, { abortEarly: false });
   if (error) {
     throw new Error(error.details.map(d => d.message).join('; '));
   }
+  return value;
+}
 
-  const warnLength = value['warn_length'];
-  const errorLength = value['error_length'];
-  const ignoreList = value['ignore_list'];
-  const reservedList = value['reserved_list'];
-
-  checkListOverlap(ignoreList, reservedList);
+function unpackProps(props) {
+  const warnLength = props['warn_length'];
+  const errorLength = props['error_length'];
+  const ignoreList = props['ignore_list'];
+  const reservedList = props['reserved_list'];
 
   return { warnLength, errorLength, ignoreList, reservedList };
 }
 
-function buildExclusionPath(list){
-  if(!list.length){
+function buildExclusionPath(list) {
+  if (!list.length) {
     return '';
   }
   const conditions = Array.from(list).map(v => `@${XML_ATT_NODESET} = "${v}"`).join(' or ');
   return `[not(${conditions})]`;
 }
 
-function getFilteredBindNodes(xmlDoc, ignoreList){
+function getFilteredBindNodes(xmlDoc, ignoreList) {
   return getBindNodes(xmlDoc, buildExclusionPath(ignoreList));
 }
 
-function getNodePath(node){
+function getNodePath(node) {
   return node.getAttribute(XML_ATT_NODESET).replace(/\/data/, '');
 }
 
-function getPathsWithLength(bindNodePaths, targetLength){
-  if(!targetLength){
+function getPathsWithLength(bindNodePaths, targetLength) {
+  if (!targetLength) {
     return [];
   }
 
@@ -87,7 +91,7 @@ function getPathsWithLength(bindNodePaths, targetLength){
 
 function validateReservedNodes(bindNodePaths, reserved) {
   const reservedNodes = bindNodePaths.filter(path => reserved.includes(path));
-  if(reservedNodes.length > 0){
+  if (reservedNodes.length > 0) {
     throw new Error(formatFeedbackMsg(
       'The following reserved entries were found in the form:',
       reservedNodes,
@@ -98,18 +102,18 @@ function validateReservedNodes(bindNodePaths, reserved) {
 
 function validateWarnLength(bindNodePaths, warnLength) {
   const warnLengthPaths = getPathsWithLength(bindNodePaths, warnLength);
-  if(warnLengthPaths.length > 0){
-    warn(formatFeedbackMsg(
+  if (warnLengthPaths.length > 0) {
+    return formatFeedbackMsg(
       `The following vars are longer than the acceptable var length (${warnLength}):`,
       warnLengthPaths,
       'Please consider simplifying nesting or removing verbosity.'
-    ));
+    );
   }
 }
 
 function validateErrorLength(bindNodePaths, errorLength) {
   const errorLengthPaths = getPathsWithLength(bindNodePaths, errorLength);
-  if(errorLengthPaths.length > 0){
+  if (errorLengthPaths.length > 0) {
     throw new Error(formatFeedbackMsg(
       `The following vars are longer than the acceptable var length (${errorLength}):`,
       errorLengthPaths,
@@ -118,17 +122,45 @@ function validateErrorLength(bindNodePaths, errorLength) {
   }
 }
 
-function checkFieldPaths(xmlDoc, props) {
-  const varConfig = processPropData(props);
-  const { warnLength, errorLength, ignoreList, reservedList } = varConfig;
-  
+function validateFieldPaths(xmlDoc, props) {
+  const propWarning = warnIfNoProps(props);
+  if(propWarning){
+    return [ propWarning ];
+  }
+
+  const validatedProps = validatePropDataOrThrow(props);
+
+  const { warnLength, errorLength, ignoreList, reservedList } = unpackProps(validatedProps);
+
+  checkListOverlap(ignoreList, reservedList);
   const bindNodes = getFilteredBindNodes(xmlDoc, ignoreList);
   const bindNodePaths = bindNodes.map(node => getNodePath(node));
   validateReservedNodes(bindNodePaths, reservedList);
   validateErrorLength(bindNodePaths, errorLength);
-  validateWarnLength(bindNodePaths, warnLength);
+  const warning = validateWarnLength(bindNodePaths, warnLength);
+
+  return warning ? [ warning ] : [];
+}
+
+async function execute({ xmlDoc, propsData }) {
+  const warnings = [];
+  const errors = [];
+  try {
+    if(!propsData || !('field_path_linting' in propsData) ){
+      return { warnings, errors };
+    }
+
+    warnings.push(...validateFieldPaths(xmlDoc, propsData['field_path_linting']));
+  }
+  catch (e) {
+    errors.push(e.message);
+  }
+
+  return { warnings, errors };
 }
 
 module.exports = {
-  checkFieldPaths
+  requiresInstance: false,
+  skipFurtherValidation: true,
+  execute
 };

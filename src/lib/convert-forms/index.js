@@ -12,7 +12,6 @@ const { removeNoLabelNodes } = require('./handle-no-label-placeholders');
 const { removeExtraRepeatInstance, addRepeatCount } = require('./handle-repeat');
 const { handleDbDocRefs } = require('./handle-db-doc-ref');
 const { handleFormId } = require('./handle-form-id');
-const { checkFieldPaths } = require('./handle-field-path-checks');
 
 const domParser = new DOMParser();
 const serializer = new XMLSerializer();
@@ -156,9 +155,6 @@ const fixXml = (path, propsData, transformer, enketo) => {
   removeExtraRepeatInstance(xmlDoc);
   addRepeatCount(xmlDoc);
   handleDbDocRefs(xmlDoc);
-  if(propsData[FORM_PROPERTIES_FIELD_PATH_LINTING]){
-    checkFieldPaths(xmlDoc, propsData[FORM_PROPERTIES_FIELD_PATH_LINTING]);
-  }
 
   const xmlString = serializer.serializeToString(xmlDoc);
   xml = xmlFormat(xmlString, {
@@ -179,10 +175,8 @@ const fixXml = (path, propsData, transformer, enketo) => {
 };
 
 const FORM_PROPERTIES_HIDDEN_FIELDS = 'hidden_fields';
-const FORM_PROPERTIES_FIELD_PATH_LINTING = 'field_path_linting';
 const DEFAULT_PROPS = {
   [FORM_PROPERTIES_HIDDEN_FIELDS]: undefined,
-  [FORM_PROPERTIES_FIELD_PATH_LINTING]: undefined 
 };
 function getPropsData(propsJson) {
   if(!fs.exists(propsJson) || !fs.statSync(propsJson).isFile()){
@@ -196,7 +190,6 @@ function getPropsData(propsJson) {
 
   return {
     [FORM_PROPERTIES_HIDDEN_FIELDS]: json[FORM_PROPERTIES_HIDDEN_FIELDS],
-    [FORM_PROPERTIES_FIELD_PATH_LINTING]: json[FORM_PROPERTIES_FIELD_PATH_LINTING]
   };
 }
 
