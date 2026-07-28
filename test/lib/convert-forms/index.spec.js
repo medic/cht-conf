@@ -258,7 +258,7 @@ describe('convert-forms', () => {
     });
     afterEach(sinon.restore);
 
-    it('checkFieldPaths not throw when no "field_path_linting" config is being supplied', async () => {
+    it('does not call checkFieldPaths when no "field_path_linting" config is being supplied', async () => {
       getPropsData = sinon.stub().returns({});
       convertForms.__set__('getPropsData', getPropsData);
       await expect(convertForms.execute('./path', 'app', { forms: [FORM_ID] })).to.be.fulfilled;
@@ -267,8 +267,7 @@ describe('convert-forms', () => {
       expect(getPropsData.args[0][0]).to.be.equal('./path/forms/app/c.properties.json');
       expect(fixXml.calledOnce).to.be.true;
       expect(fixXml.args[0][1]).to.be.deep.equal({});
-      expect(checkFieldPaths.callCount).to.be.equal(1);
-      expect(checkFieldPaths.args[0][1]).to.be.equal(undefined);
+      expect(checkFieldPaths.callCount).to.be.equal(0);
       expect(fs.write.calledOnce).to.be.true;
     });
 

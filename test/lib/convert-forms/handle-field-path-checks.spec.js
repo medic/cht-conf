@@ -47,8 +47,8 @@ describe('Handle field path checks', () => {
   let bindNodes;
   let xml;
   let props;
-  let info;
   let warn;
+  let err;
   beforeEach(() => {
     bindNodes = [
       '<bind nodeset="/data/inputs/user/contact_id" type="string"/>'
@@ -57,39 +57,18 @@ describe('Handle field path checks', () => {
 
     props = { 'some_prop': 'some_value' };
 
-    info = sinon.spy(checks.__get__('info'));
-    checks.__set__('info', info);
     warn = sinon.spy(checks.__get__('warn'));
     checks.__set__('warn', warn);
+    err = sinon.spy(checks.__get__('err'));
+    checks.__set__('err', err);
   });
   afterEach(sinon.restore);
 
-  it('should use DEFAULT when no "field_path_linting" config is being supplied', () => {
-    const processPropData = sinon.spy(checks.__get__('processPropData'));
-    checks.__set__('processPropData', processPropData);
-    props = null;
-    expect(() => checks.checkFieldPaths(xml, props)).to.not.throw();
-    expect(info.callCount).to.be.equal(2);
-    expect(warn.callCount).to.be.equal(0);
-    expect(processPropData.calledOnce).to.be.true;
-    expect(processPropData.calledWith(null)).to.be.true;
-    expect(processPropData.returned({ 
-      warnLength: 100, 
-      errorLength: 138,
-      ignoreSet: new Set(),
-      reservedSet: new Set() 
-    })).to.be.true;
-  });
-
-  it('should pick up var config & if object is empty, use defaults', () => {
+  it('should pick up var config object is empty and throw error', () => {
     props = {};
-    expect(() => checks.checkFieldPaths(xml, props)).to.not.throw();
-    expect(info.callCount).to.be.equal(2);
-    expect(info.args[0][0]).to.be.equal('No var restriction properties provided, using defaults: ', {
-      'warn_length': 100,
-      'error_length': 138
-    });
-    expect(info.args[1][0]).to.be.equal('If you would like to customize these checks,'+
+    expect(() => checks.checkFieldPaths(xml, props)).to.throw('Unable to run field path checks');
+    expect(err.calledOnce).to.be.true;
+    expect(err.args[0][0]).to.be.equal('If you would like to customize these checks,'+  
       ' please create a properties JSON file with the structure:', {
       'warn_length': 'positive integer (optional, default: 100, disable by setting to 0)',
       'error_length': 'positive integer (optional, default: 138, disable by setting to 0)',
@@ -104,10 +83,6 @@ describe('Handle field path checks', () => {
       error_length: 0
     };
     expect(() => checks.checkFieldPaths(xml, props)).to.not.throw();
-    expect(info.calledOnce).to.be.true;
-    expect(info.args[0][0]).to.be.equal(
-      'Warn and error lengths and reserved list not provided. Skipping field path checks.'
-    );
   });
 
   it('should throw if warn and error has the same value', () => {
@@ -116,7 +91,7 @@ describe('Handle field path checks', () => {
       error_length: 1,
     };
     expect(() => checks.checkFieldPaths(xml, props)).to.throw(
-      'The error length needs to be larger than the warn length.'
+      '"warn_length" must be less than ref:error_length'
     );
   });
 
@@ -136,7 +111,6 @@ describe('Handle field path checks', () => {
     };
 
     expect(() => checks.checkFieldPaths(xml, props)).to.not.throw();
-    expect(info.callCount).to.be.equal(0);
     expect(warn.args[0][0]).to.be.equal('The following vars are longer than the acceptable var length (1):\n' +
       '/inputs/user/contact_id\n' +
       'Please consider simplifying nesting or removing verbosity.');
@@ -162,7 +136,6 @@ describe('Handle field path checks', () => {
     };
 
     expect(() => checks.checkFieldPaths(xml, props)).to.not.throw();
-    expect(info.callCount).to.be.equal(0);
     expect(warn.args[0][0]).to.be.equal(
       'The following vars are longer than the acceptable var length (23):\n' +
       '/inputs/user/contact_id\n' +
@@ -177,7 +150,6 @@ describe('Handle field path checks', () => {
     };
 
     expect(() => checks.checkFieldPaths(xml, props)).to.not.throw();
-    expect(info.callCount).to.be.equal(0);
     expect(warn.callCount).to.be.equal(0);
   });
 
@@ -194,7 +166,6 @@ describe('Handle field path checks', () => {
     xml = createXformDoc(getXmlString(bindNodes));
 
     expect(() => checks.checkFieldPaths(xml, props)).to.not.throw();
-    expect(info.callCount).to.be.equal(0);
     expect(warn.callCount).to.be.equal(0);
   });
 
@@ -206,7 +177,6 @@ describe('Handle field path checks', () => {
     };
 
     expect(() => checks.checkFieldPaths(xml, props)).to.not.throw();
-    expect(info.callCount).to.be.equal(1);
     expect(warn.callCount).to.be.equal(0);
   });
 
@@ -227,7 +197,6 @@ describe('Handle field path checks', () => {
       '/inputs/user/name\n' +
       'Please remove or rename as appropriate.'
     );
-    expect(info.callCount).to.be.equal(0);
     expect(warn.callCount).to.be.equal(0);
   });
 
@@ -244,11 +213,8 @@ describe('Handle field path checks', () => {
     xml = createXformDoc(getXmlString(bindNodes));
 
     expect(() => checks.checkFieldPaths(xml, props)).to.throw(
-      'The following ignored entries are invalid:\n' +
-      '/data/inputs/user/"name`\n' + 
-      'Please fix or remove where appropriate.'
+      '"ignore_list[0]" with value "/data/inputs/user/"name`" matches the inverted pattern: /[`\'"]/'
     );
-    expect(info.callCount).to.be.equal(0);
     expect(warn.callCount).to.be.equal(0);
   });
 
@@ -265,11 +231,8 @@ describe('Handle field path checks', () => {
     xml = createXformDoc(getXmlString(bindNodes));
 
     expect(() => checks.checkFieldPaths(xml, props)).to.throw(
-      'The following reserved entries are invalid:\n' +
-      '/data/inputs/user/"name`\n' + 
-      'Please fix or remove where appropriate.'
+      '"reserved_list[0]" with value "/data/inputs/user/"name`" matches the inverted pattern: /[`\'"]/'
     );
-    expect(info.callCount).to.be.equal(0);
     expect(warn.callCount).to.be.equal(0);
   });
 
@@ -291,7 +254,6 @@ describe('Handle field path checks', () => {
       '/data/inputs/user/name\n' + 
       'Please remove where appropriate.'
     );
-    expect(info.callCount).to.be.equal(0);
     expect(warn.callCount).to.be.equal(0);
   });
 });

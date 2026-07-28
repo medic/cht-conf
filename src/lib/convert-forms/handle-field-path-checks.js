@@ -1,76 +1,30 @@
-const { getNodes, XPATH_MODEL } = require('../forms-utils');
-const { info, warn} = require('../log');
+const { getBindNodes } = require('../forms-utils');
+const { warn, error: err } = require('../log');
 const joi = require('joi');
 
 const XML_ATT_NODESET = 'nodeset';
 
-const KEY_WARN_LENGTH = 'warn_length';
-const KEY_ERROR_LENGTH = 'error_length';
-const KEY_IGNORE_LIST = 'ignore_list';
-const KEY_RESERVED_LIST = 'reserved_list';
-const DEFAULT = {
-  [KEY_WARN_LENGTH]: 100,
-  [KEY_ERROR_LENGTH]: 138
-};
-
 const propsSchema = joi.object({
-  [KEY_WARN_LENGTH]: joi.number().integer().min(0).optional()
-    .default(DEFAULT[KEY_WARN_LENGTH]),
-  [KEY_ERROR_LENGTH]: joi.number().integer().min(0).optional()
-    .default(DEFAULT[KEY_ERROR_LENGTH]),
-  [KEY_IGNORE_LIST]: joi.array().items(joi.string()).optional()
-    .custom(processListInput, 'process list input').default([new Set(), []]),
-  [KEY_RESERVED_LIST]: joi.array().items(joi.string()).optional()
-    .custom(processListInput, 'process list input').default([new Set(), []])
+  ['warn_length']: joi.number().integer().min(0).when('error_length', {
+    is: joi.number().required().greater(0),
+    then: joi.number().less(joi.ref('error_length')),
+  }).optional(),
+  ['error_length']: joi.number().integer().min(0).optional(),
+  ['ignore_list']: joi.array().items(joi.string().pattern(/[`'"]/, { invert: true })).optional().default([]),
+  ['reserved_list']: joi.array().items(joi.string().pattern(/[`'"]/, { invert: true })).optional().default([]),
 });
-
-function processListInput(e) {
-  const set = new Set([]);
-  const invalidPaths = [];
-  
-  for(const entry of e){
-    if(/[`'"]/.test(entry)){
-      invalidPaths.push(entry);
-    }
-    else {
-      set.add(entry);
-    }
-  }
-
-  return [set, invalidPaths];
-}
 
 function formatFeedbackMsg(title, items, footer){
   return `${title}\n${items.join('\n')}\n${footer}`;
 }
 
-function checkLengthEntries(warnLength, errorLength){
-  if(errorLength && warnLength && warnLength >= errorLength){
-    throw new Error('The error length needs to be larger than the warn length.');
-  }
-}
-
-function checkInvalidListEntries(entries, label){
-  if(entries.length > 0){
-    throw new Error(formatFeedbackMsg(
-      `The following ${label} entries are invalid:`, 
-      entries, 
-      'Please fix or remove where appropriate.'
-    ));
-  }
-}
-
-function checkListOverlap(ignoreSet, reservedSet){
-  if(!ignoreSet.size || !reservedSet.size){
+function checkListOverlap(ignoreList, reservedList){
+  if(!ignoreList.length || !reservedList.length){
     return;
   }
 
-  const overlap = [];
-  for(const ignore of ignoreSet){
-    if(reservedSet.has(ignore)){
-      overlap.push(ignore);
-    }
-  }
+  const reservedSet = new Set(reservedList);
+  const overlap = ignoreList.filter(x => reservedSet.has(x));
 
   if(overlap.length > 0){
     throw new Error(formatFeedbackMsg(
@@ -83,14 +37,13 @@ function checkListOverlap(ignoreSet, reservedSet){
 
 function processPropData(props){
   if(!props || Object.keys(props).length === 0){
-    // DEFAULT values will still apply through the joi schema validation
-    info('No var restriction properties provided, using defaults: ', DEFAULT);
-    info('If you would like to customize these checks, please create a properties JSON file with the structure:', {
-      [KEY_WARN_LENGTH]: 'positive integer (optional, default: 100, disable by setting to 0)',
-      [KEY_ERROR_LENGTH]: 'positive integer (optional, default: 138, disable by setting to 0)',
-      [KEY_IGNORE_LIST]: 'array of strings representing nodeset paths to ignore (optional)',
-      [KEY_RESERVED_LIST]: 'array of strings representing reserved keywords (optional)'
+    err('If you would like to customize these checks, please create a properties JSON file with the structure:', {
+      'warn_length': 'positive integer (required)',
+      'error_length': 'positive integer (required)',
+      'ignore_list': 'array of strings representing nodeset paths to ignore (optional)',
+      'reserved_list': 'array of strings representing reserved keywords (optional)'
     });
+    throw Error('Unable to run field path checks');
   }
 
   const { error, value } = propsSchema.validate(props??{}, { abortEarly: false });
@@ -98,70 +51,42 @@ function processPropData(props){
     throw new Error(error.details.map(d => d.message).join('; '));
   }
 
-  const warnLength = value[KEY_WARN_LENGTH];
-  const errorLength = value[KEY_ERROR_LENGTH];
-  const [ignoreSet, invalidIgnoreEntries] = value[KEY_IGNORE_LIST];
-  const [reservedSet, invalidReservedEntries] = value[KEY_RESERVED_LIST];
+  const warnLength = value['warn_length'];
+  const errorLength = value['error_length'];
+  const ignoreList = value['ignore_list'];
+  const reservedList = value['reserved_list'];
 
-  checkLengthEntries(warnLength, errorLength);
-  checkInvalidListEntries(invalidIgnoreEntries, 'ignored');
-  checkInvalidListEntries(invalidReservedEntries, 'reserved');
-  checkListOverlap(ignoreSet, reservedSet);
+  checkListOverlap(ignoreList, reservedList);
 
-  return { warnLength, errorLength, ignoreSet, reservedSet };
+  return { warnLength, errorLength, ignoreList, reservedList };
 }
 
-function buildExclusionPath(set){
-  if(!set.size){
+function buildExclusionPath(list){
+  if(!list.length){
     return '';
   }
-  const conditions = Array.from(set).map(v => `@${XML_ATT_NODESET} = "${v}"`).join(' or ');
+  const conditions = Array.from(list).map(v => `@${XML_ATT_NODESET} = "${v}"`).join(' or ');
   return `[not(${conditions})]`;
 }
 
-function getBindNodes(xmlDoc, ignoreSet){
-  return getNodes(
-    xmlDoc,
-    `${XPATH_MODEL}/bind${buildExclusionPath(ignoreSet)}`
-  );
+function getFilteredBindNodes(xmlDoc, ignoreList){
+  return getBindNodes(xmlDoc, buildExclusionPath(ignoreList));
 }
 
-function categorizeBindNode(bindNode, warnLength, errorLength, reservedSet){
-  const length = bindNode.length;
-  let reserved;
-  let error;
-  let warn;
-
-  if (reservedSet.has(bindNode)){
-    reserved = bindNode;
-  }
-  if (errorLength > 0 && length >= errorLength) {
-    error = bindNode;
-  }
-  if (warnLength > 0 && length >= warnLength) {
-    warn = bindNode;
-  }
-  return { reserved, error, warn };
+function getNodePath(node){
+  return node.getAttribute(XML_ATT_NODESET).replace(/\/data/, '');
 }
 
-function processBindNodes(bindNodes, warnLength, errorLength, reservedSet){
-  const reservedNodes = [];
-  const errorNodes = [];
-  const warnNodes = [];
-
-  for (const bind of bindNodes) {
-    const nodeset = bind.getAttribute(XML_ATT_NODESET);
-    const stripped = nodeset.replace(/\/data/, '');
-    const { reserved, error, warn } = categorizeBindNode(stripped, warnLength, errorLength, reservedSet);
-    reserved && reservedNodes.push(reserved);
-    error && errorNodes.push(error);
-    warn && warnNodes.push(warn);
+function getPathsWithLength(bindNodePaths, targetLength){
+  if(!targetLength){
+    return [];
   }
 
-  return { reservedNodes, errorNodes, warnNodes };
+  return bindNodePaths.filter(path => path.length >= targetLength);
 }
 
-function handleFormVarResults(reservedNodes, warnNodes, errorNodes){
+function validateReservedNodes(bindNodePaths, reserved) {
+  const reservedNodes = bindNodePaths.filter(path => reserved.includes(path));
   if(reservedNodes.length > 0){
     throw new Error(formatFeedbackMsg(
       'The following reserved entries were found in the form:',
@@ -169,33 +94,39 @@ function handleFormVarResults(reservedNodes, warnNodes, errorNodes){
       'Please remove or rename as appropriate.'
     ));
   }
-  if(errorNodes.errorNodes.length > 0){
-    throw new Error(formatFeedbackMsg(
-      `The following vars are longer than the acceptable var length (${errorNodes.errorLength}):`,
-      errorNodes.errorNodes,
-      'Please simplify nesting or remove verbosity.'
+}
+
+function validateWarnLength(bindNodePaths, warnLength) {
+  const warnLengthPaths = getPathsWithLength(bindNodePaths, warnLength);
+  if(warnLengthPaths.length > 0){
+    warn(formatFeedbackMsg(
+      `The following vars are longer than the acceptable var length (${warnLength}):`,
+      warnLengthPaths,
+      'Please consider simplifying nesting or removing verbosity.'
     ));
   }
-  else if(warnNodes.warnNodes.length > 0){
-    warn(formatFeedbackMsg(
-      `The following vars are longer than the acceptable var length (${warnNodes.warnLength}):`,
-      warnNodes.warnNodes,
-      'Please consider simplifying nesting or removing verbosity.'
+}
+
+function validateErrorLength(bindNodePaths, errorLength) {
+  const errorLengthPaths = getPathsWithLength(bindNodePaths, errorLength);
+  if(errorLengthPaths.length > 0){
+    throw new Error(formatFeedbackMsg(
+      `The following vars are longer than the acceptable var length (${errorLength}):`,
+      errorLengthPaths,
+      'Please simplify nesting or remove verbosity.'
     ));
   }
 }
 
 function checkFieldPaths(xmlDoc, props) {
   const varConfig = processPropData(props);
-  const { warnLength, errorLength, ignoreSet, reservedSet } = varConfig;
-
-  if(!warnLength && !errorLength && reservedSet.size === 0){
-    info('Warn and error lengths and reserved list not provided. Skipping field path checks.');
-  }
+  const { warnLength, errorLength, ignoreList, reservedList } = varConfig;
   
-  const bindNodes = getBindNodes(xmlDoc, ignoreSet);
-  const { reservedNodes, errorNodes, warnNodes } = processBindNodes(bindNodes, warnLength, errorLength, reservedSet);
-  handleFormVarResults(reservedNodes, { warnNodes, warnLength }, { errorNodes, errorLength } );
+  const bindNodes = getFilteredBindNodes(xmlDoc, ignoreList);
+  const bindNodePaths = bindNodes.map(node => getNodePath(node));
+  validateReservedNodes(bindNodePaths, reservedList);
+  validateErrorLength(bindNodePaths, errorLength);
+  validateWarnLength(bindNodePaths, warnLength);
 }
 
 module.exports = {

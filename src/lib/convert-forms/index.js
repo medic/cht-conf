@@ -156,7 +156,9 @@ const fixXml = (path, propsData, transformer, enketo) => {
   removeExtraRepeatInstance(xmlDoc);
   addRepeatCount(xmlDoc);
   handleDbDocRefs(xmlDoc);
-  checkFieldPaths(xmlDoc, propsData[FORM_PROPERTIES_FIELD_PATH_LINTING]);
+  if(propsData[FORM_PROPERTIES_FIELD_PATH_LINTING]){
+    checkFieldPaths(xmlDoc, propsData[FORM_PROPERTIES_FIELD_PATH_LINTING]);
+  }
 
   const xmlString = serializer.serializeToString(xmlDoc);
   xml = xmlFormat(xmlString, {
