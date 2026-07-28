@@ -14,7 +14,8 @@ const schema = joi.object({
 });
 
 function formatFeedbackMsg(title, items, footer) {
-  return `${title}\n${items.join('\n')}${footer ? `\n${footer}` : ''}`;
+  const footerText = footer ? `\n${footer}` : '';
+  return `${title}\n${items.join('\n')}${footerText}`;
 }
 
 function checkListOverlap(ignoreList, reservedList) {
