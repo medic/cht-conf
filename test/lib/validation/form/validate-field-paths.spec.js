@@ -382,4 +382,29 @@ describe('Validate field paths', () => {
         );
       });
   });
+
+  it('should handle when "/data" prefix is NOT part of ignore/reserve list path', () => {
+    propsData = {
+      field_path_linting: {
+        ignore_list: ['/inputs/user/name'],
+      }
+    };
+
+    bindNodes.push(
+      '<bind nodeset="/data/inputs/user/name" type="string"/>'
+    );
+    xmlDoc = createXformDoc(getXmlString(bindNodes));
+
+    const buildExclusion = sinon.spy(checks.__get__('buildExclusion'));
+    checks.__set__('buildExclusion', buildExclusion);
+    
+    return checks.execute({ xmlDoc, propsData })
+      .then(output => {
+        expect(output.warnings).is.empty;
+        expect(output.errors).is.empty;
+        expect(buildExclusion.callCount).to.be.equal(1);
+        expect(buildExclusion.args[0][0]).to.be.equal('/inputs/user/name');
+        expect(buildExclusion.returnValues[0]).to.be.equal('/data/inputs/user/name');
+      });
+  });
 });

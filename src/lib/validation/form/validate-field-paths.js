@@ -66,11 +66,15 @@ function unpackProps(props) {
   return { warnLength, errorLength, ignoreList, reservedList };
 }
 
+function buildExclusion(entry){
+  return entry.startsWith('/data') ? entry : `/data${entry}`;
+}
+
 function buildExclusionPath(list) {
   if (!list.length) {
     return '';
   }
-  const conditions = Array.from(list).map(v => `@${XML_ATT_NODESET} = "${v}"`).join(' or ');
+  const conditions = Array.from(list).map(v => `@${XML_ATT_NODESET} = "${buildExclusion(v)}"`).join(' or ');
   return `[not(${conditions})]`;
 }
 
