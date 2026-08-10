@@ -1,3 +1,10 @@
+## [6.5.2](https://github.com/medic/cht-conf/compare/v6.5.1...v6.5.2) (2026-08-10)
+
+
+### Bug Fixes
+
+* **#832:** fix contact form xml parsing when init has sub-group ([#835](https://github.com/medic/cht-conf/issues/835)) ([e4a11ce](https://github.com/medic/cht-conf/commit/e4a11ced5a48019718299600a122fcd70067b38a))
+
 ## [6.5.1](https://github.com/medic/cht-conf/compare/v6.5.0...v6.5.1) (2026-07-15)
 
 
