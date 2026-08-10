@@ -2,6 +2,23 @@ const convertForms = require('../lib/convert-forms').execute;
 const environment = require('../lib/environment');
 const fs = require('../lib/sync-fs');
 const { CONTACT_FORMS_PATH } = require('../lib/project-paths');
+const { getNode, XPATH_BODY } = require('../lib/forms-utils');
+
+const getBodyGroup = (xmlDoc, ref) => getNode(xmlDoc, `${XPATH_BODY}//group[@ref="${ref}"]`);
+
+/**
+ * Renders the contact fields on the init page instead of on a page of their own, by making the
+ * <contact> body group the last child of the <init> group. Only the body group is moved: the
+ * contact data must stay at /data/contact for the webapp to save the doc correctly.
+ */
+const moveContactGroupIntoInit = (xmlDoc) => {
+  const initGroup = getBodyGroup(xmlDoc, '/data/init');
+  const contactGroup = getBodyGroup(xmlDoc, '/data/contact');
+
+  if (initGroup && contactGroup) {
+    initGroup.appendChild(contactGroup);
+  }
+};
 
 const convertContactForm = (forms) => {
   const dir = `${environment.pathToProject}/${CONTACT_FORMS_PATH}`;
@@ -20,6 +37,7 @@ const convertContactForm = (forms) => {
   return convertForms(environment.pathToProject, 'contact', {
     enketo: true,
     forms: forms,
+    domTransformer: moveContactGroupIntoInit,
     transformer: (xml, path) => {
       const type = path.replace(/.*\/(.*?)(-(create|edit))?\.xml.swp$/, '$1');
 
@@ -57,27 +75,6 @@ const convertContactForm = (forms) => {
         if (matchedBlock) {
           const targetMatcher = new RegExp(`\\s*<input ref="/data/${type}/external_id">\\s*(\\r|\\n)`);
           xml = xml.replace(targetMatcher, match => matchedBlock + match);
-        }
-      }
-
-      if (xml.includes('ref="/data/contact"')) {
-        const groupRegex = name => new RegExp(`(\\s*)<group(\\s.*)?\\sref="${name}"(\\s.*)?>[^]*?</group>`);
-        let matchedBlock;
-
-        if (xml.match(groupRegex('/data/init'))) {
-          xml = xml.replace(groupRegex('/data/contact'), match => {
-            matchedBlock = match;
-            return '';
-          });
-
-          if (matchedBlock) {
-            const stripTrailingGroup = s => s.replace(/[\r\n\s]*<\/group>$/, '');
-            xml = xml.replace(groupRegex('/data/init'), match => {
-              return stripTrailingGroup(match) +
-                stripTrailingGroup(matchedBlock).replace(/\n/g, '\n  ') +
-                '\n        </group>\n      </group>';
-            });
-          }
         }
       }
 

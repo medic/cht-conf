@@ -53,7 +53,7 @@ const execute = async (projectDir, subDirectory, options = {}) => {
     try {
       await xls2xform(escapeWhitespacesInPath(sourcePath), escapeWhitespacesInPath(xmlSwpPath), xls);
       const hiddenFields = await getHiddenFields(`${fs.withoutExtension(sourcePath)}.properties.json`);
-      fixXml(xmlSwpPath, hiddenFields, options.transformer, options.enketo);
+      fixXml(xmlSwpPath, hiddenFields, options);
     } catch (e) {
       nodeFs.rmSync(xmlSwpPath, { force: true });
       throw e;
@@ -123,7 +123,7 @@ const xls2xform = async (sourcePath, targetPath, xlsxFileName) => {
 
 // here we fix the form content in arcane ways.  Seeing as we have out own fork
 // of pyxform, we should probably be doing this fixing there.
-const fixXml = (path, hiddenFields, transformer, enketo) => {
+const fixXml = (path, hiddenFields, { transformer, domTransformer, enketo } = {}) => {
   // This is not how you should modify XML, but we have reasonable control over
   // the input and so far this works OK.  Keep an eye on the tests, and any
   // future changes to the output of xls2xform.
@@ -158,6 +158,10 @@ const fixXml = (path, hiddenFields, transformer, enketo) => {
   removeExtraRepeatInstance(xmlDoc);
   addRepeatCount(xmlDoc);
   handleDbDocRefs(xmlDoc);
+
+  if (domTransformer) {
+    domTransformer(xmlDoc, path);
+  }
 
   const xmlString = serializer.serializeToString(xmlDoc);
   xml = xmlFormat(xmlString, {
