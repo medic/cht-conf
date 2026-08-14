@@ -77,6 +77,11 @@ describe('validate-forms', () => {
     expect(noRequiredNotes.requiresInstance).to.equal(false);
     expect(noRequiredNotes.skipFurtherValidation).to.equal(false);
 
+    const noteCountdownTimer = validations.shift();
+    expect(noteCountdownTimer.name).to.equal('note-countdown-timer.js');
+    expect(noteCountdownTimer.requiresInstance).to.equal(true);
+    expect(noteCountdownTimer.skipFurtherValidation).to.equal(false);
+
     expect(validations, 'Update this test if you have added a new form validation.').to.be.empty;
   });
 
