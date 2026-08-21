@@ -81,9 +81,11 @@ module.exports = {
   /**
    * Returns the `bind` nodes for the given form XML.
    * @param {Document} xmlDoc the form XML document
+   * @param {string} filter the form XML bind nodes (optional). 
+   *  Example: [not(@nodeset = "/data/inputs/user/contact_id")]
    * @returns {Element}
    */
-  getBindNodes: xmlDoc => getNodes(xmlDoc, `${XPATH_MODEL}/bind`),
+  getBindNodes: (xmlDoc, filter = '') => getNodes(xmlDoc, `${XPATH_MODEL}/bind${filter}`),
 
   /**
    * Returns the `instance` node with the given ID for the given form XML.

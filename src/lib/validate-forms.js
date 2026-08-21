@@ -35,6 +35,14 @@ const validations = fs.readdir(VALIDATIONS_PATH)
     return a.name.localeCompare(b.name);
   });
 
+const getPropsData = (propsJson) => {
+  if(!fs.exists(propsJson) || !fs.statSync(propsJson).isFile()){
+    return {};
+  }
+
+  return fs.readJson(propsJson) || {};
+};
+
 module.exports = async (projectDir, subDirectory, options={}) => {
 
   const formsDir = getFormDir(projectDir, subDirectory);
@@ -53,13 +61,15 @@ module.exports = async (projectDir, subDirectory, options={}) => {
   for(const fileName of fileNames) {
     log.info(`Validating form: ${fileName}…`);
 
-    const { xformPath } = getFormFilePaths(formsDir, fileName);
+    const { xformPath, baseFileName } = getFormFilePaths(formsDir, fileName);
     const xml = fs.read(xformPath);
+    const propsData = getPropsData(`${formsDir}/${baseFileName}.properties.json`);
 
     const valParams = {
       xformPath,
       xmlStr: xml,
       xmlDoc: domParser.parseFromString(xml),
+      propsData,
       apiVersion,
     };
     for(const validation of validations) {

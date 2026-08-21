@@ -77,6 +77,11 @@ describe('validate-forms', () => {
     expect(noRequiredNotes.requiresInstance).to.equal(false);
     expect(noRequiredNotes.skipFurtherValidation).to.equal(false);
 
+    const canValidateFieldPaths = validations.shift();
+    expect(canValidateFieldPaths.name).to.equal('validate-field-paths.js');
+    expect(canValidateFieldPaths.requiresInstance).to.equal(false);
+    expect(canValidateFieldPaths.skipFurtherValidation).to.equal(false);
+
     expect(validations, 'Update this test if you have added a new form validation.').to.be.empty;
   });
 
@@ -144,13 +149,15 @@ describe('validate-forms', () => {
       // Assert params passed to validations
       const {args} = validation.execute;
       expect(args.length).to.equal(1);
-      const { xformPath, xmlStr, xmlDoc, apiVersion } = args[0][0];
+      const { xformPath, xmlStr, xmlDoc, propsData, apiVersion } = args[0][0];
       const expectedXmlPath = `${BASE_DIR}/merge-properties/forms/${FORMS_SUBDIR}/example.xml`;
       const expectedXmlStr = fs.readFileSync(expectedXmlPath, 'utf8');
       expect(xformPath).to.equal(expectedXmlPath);
       expect(xmlStr).to.equal(expectedXmlStr);
       // Make sure valid xml doc is passed in
       expect(xmlDoc.getElementsByTagName('h:title')[0].textContent).to.equal('Merge properties');
+      const expectedPropsPath = `${BASE_DIR}/merge-properties/forms/${FORMS_SUBDIR}/example.properties.json`;
+      expect(propsData).to.deep.equal(JSON.parse(fs.readFileSync(expectedPropsPath, 'utf8')));
       expect(apiVersion).to.equal('1.0.0');
     });
   });
@@ -196,6 +203,16 @@ describe('validate-forms', () => {
       expect(logWarn.args[1][0]).to.equal('Warning 2');
       expect(logWarn.args[2][0]).to.equal('Warning 1');
       expect(logWarn.args[3][0]).to.equal('Warning 2');
+    });
+  });
+
+  it('should pass empty props data when the form has no properties file', () => {
+    const validation = mockValidation();
+    return validateForms.__with__({ validations: [validation] })(async () => {
+      await validateForms(`${BASE_DIR}/no-instance-id`, FORMS_SUBDIR);
+      const { args } = validation.execute;
+      expect(args).to.have.lengthOf(1);
+      expect(args[0][0].propsData).to.deep.equal({});
     });
   });
 

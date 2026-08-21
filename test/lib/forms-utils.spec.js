@@ -188,6 +188,12 @@ describe('form-utils', () => {
       const nodes = formUtils.getBindNodes(domParser.parseFromString(emptyXml));
       expect(nodes).to.be.empty;
     });
+
+    it('applies the given XPath predicate filter', () => {
+      const nodes = formUtils.getBindNodes(getXmlDoc(), '[not(@nodeset = "/data/name")]');
+      expect(nodes).to.have.lengthOf(1);
+      expect(nodes[0].getAttribute('nodeset')).to.equal('/data/age');
+    });
   });
 
   describe('getInstanceNode', () => {
