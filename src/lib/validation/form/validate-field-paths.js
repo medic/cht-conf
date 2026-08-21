@@ -4,18 +4,17 @@ const joi = require('joi');
 const XML_ATT_NODESET = 'nodeset';
 
 const schema = joi.object({
-  ['warn_length']: joi.number().integer().min(0).when('error_length', {
+  warn_length: joi.number().integer().min(0).when('error_length', {
     is: joi.number().required().greater(0),
     then: joi.number().less(joi.ref('error_length')),
   }).optional(),
-  ['error_length']: joi.number().integer().min(0).optional(),
-  ['ignore_list']: joi.array().items(joi.string().pattern(/[`'"]/, { invert: true })).optional().default([]),
-  ['reserved_list']: joi.array().items(joi.string().pattern(/[`'"]/, { invert: true })).optional().default([]),
+  error_length: joi.number().integer().min(0).optional(),
+  ignore_list: joi.array().items(joi.string().pattern(/[`'"]/, { invert: true })).optional().default([]),
+  reserved_list: joi.array().items(joi.string().pattern(/[`'"]/, { invert: true })).optional().default([]),
 });
 
 function formatFeedbackMsg(title, items, footer) {
-  const footerText = footer ? `\n${footer}` : '';
-  return `${title}\n${items.join('\n')}${footerText}`;
+  return `${title}\n${items.join('\n')}\n${footer}`;
 }
 
 function checkListOverlap(ignoreList, reservedList) {
@@ -35,20 +34,6 @@ function checkListOverlap(ignoreList, reservedList) {
   }
 }
 
-function warnIfNoProps(props) {
-  if (!props || Object.keys(props).length === 0) {
-    return formatFeedbackMsg(
-      'If you would like enable form field linting, please ensure the object has the following structure:',
-      [
-        '"warn_length": "positive integer (optional)"',
-        '"error_length": "positive integer (optional)"',
-        '"ignore_list": "array of strings representing nodeset paths to ignore (optional)"',
-        '"reserved_list": "array of strings representing reserved keywords (optional)"'
-      ]
-    );
-  }
-}
-
 function validatePropDataOrThrow(props) {
   const { error, value } = schema.validate(props, { abortEarly: false });
   if (error) {
@@ -57,33 +42,29 @@ function validatePropDataOrThrow(props) {
   return value;
 }
 
+function buildPath(entry) {
+  return `/data/${entry.replace(/^\/?(data\/)?/, '')}`;
+}
+
 function unpackProps(props) {
   const warnLength = props['warn_length'];
   const errorLength = props['error_length'];
-  const ignoreList = props['ignore_list'];
-  const reservedList = props['reserved_list'];
+  const ignoreList = props['ignore_list'].map(buildPath);
+  const reservedList = props['reserved_list'].map(buildPath);
 
   return { warnLength, errorLength, ignoreList, reservedList };
-}
-
-function buildExclusion(entry){
-  return entry.startsWith('/data') ? entry : `/data${entry}`;
 }
 
 function buildExclusionPath(list) {
   if (!list.length) {
     return '';
   }
-  const conditions = Array.from(list).map(v => `@${XML_ATT_NODESET} = "${buildExclusion(v)}"`).join(' or ');
+  const conditions = list.map(v => `@${XML_ATT_NODESET} = "${v}"`).join(' or ');
   return `[not(${conditions})]`;
 }
 
 function getFilteredBindNodes(xmlDoc, ignoreList) {
   return getBindNodes(xmlDoc, buildExclusionPath(ignoreList));
-}
-
-function getNodePath(node) {
-  return node.getAttribute(XML_ATT_NODESET).replace(/\/data/, '');
 }
 
 function getPathsWithLength(bindNodePaths, targetLength) {
@@ -128,18 +109,13 @@ function validateErrorLength(bindNodePaths, errorLength) {
 }
 
 function validateFieldPaths(xmlDoc, props) {
-  const propWarning = warnIfNoProps(props);
-  if(propWarning){
-    return [ propWarning ];
-  }
-
   const validatedProps = validatePropDataOrThrow(props);
 
   const { warnLength, errorLength, ignoreList, reservedList } = unpackProps(validatedProps);
 
   checkListOverlap(ignoreList, reservedList);
   const bindNodes = getFilteredBindNodes(xmlDoc, ignoreList);
-  const bindNodePaths = bindNodes.map(node => getNodePath(node));
+  const bindNodePaths = bindNodes.map(node => node.getAttribute(XML_ATT_NODESET));
   validateReservedNodes(bindNodePaths, reservedList);
   validateErrorLength(bindNodePaths, errorLength);
   const warning = validateWarnLength(bindNodePaths, warnLength);
@@ -151,11 +127,12 @@ async function execute({ xmlDoc, propsData }) {
   const warnings = [];
   const errors = [];
   try {
-    if(!propsData || !('field_path_linting' in propsData) ){
+    const fieldPathLinting = propsData.field_path_linting;
+    if (!fieldPathLinting || Object.keys(fieldPathLinting).length === 0) {
       return { warnings, errors };
     }
 
-    warnings.push(...validateFieldPaths(xmlDoc, propsData['field_path_linting']));
+    warnings.push(...validateFieldPaths(xmlDoc, fieldPathLinting));
   }
   catch (e) {
     errors.push(e.message);
@@ -166,6 +143,6 @@ async function execute({ xmlDoc, propsData }) {
 
 module.exports = {
   requiresInstance: false,
-  skipFurtherValidation: true,
+  skipFurtherValidation: false,
   execute
 };

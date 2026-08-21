@@ -42,11 +42,6 @@ describe('validate-forms', () => {
     expect(hasInstanceId.requiresInstance).to.equal(false);
     expect(hasInstanceId.skipFurtherValidation).to.equal(true);
 
-    const canValidateFieldPaths = validations.shift();
-    expect(canValidateFieldPaths.name).to.equal('validate-field-paths.js');
-    expect(canValidateFieldPaths.requiresInstance).to.equal(false);
-    expect(canValidateFieldPaths.skipFurtherValidation).to.equal(true);
-
     const canGeneratexForm = validations.shift();
     expect(canGeneratexForm.name).to.equal('can-generate-xform.js');
     expect(canGeneratexForm.requiresInstance).to.equal(true);
@@ -81,6 +76,11 @@ describe('validate-forms', () => {
     expect(noRequiredNotes.name).to.equal('no-required-notes.js');
     expect(noRequiredNotes.requiresInstance).to.equal(false);
     expect(noRequiredNotes.skipFurtherValidation).to.equal(false);
+
+    const canValidateFieldPaths = validations.shift();
+    expect(canValidateFieldPaths.name).to.equal('validate-field-paths.js');
+    expect(canValidateFieldPaths.requiresInstance).to.equal(false);
+    expect(canValidateFieldPaths.skipFurtherValidation).to.equal(false);
 
     expect(validations, 'Update this test if you have added a new form validation.').to.be.empty;
   });

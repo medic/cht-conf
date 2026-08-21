@@ -1,7 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
-const rewire = require('rewire');
-const checks = rewire('../../../../src/lib/validation/form/validate-field-paths');
+const checks = require('../../../../src/lib/validation/form/validate-field-paths');
 const { createXformDoc, FORM_ID } = require('../../../fn/convert-forms.utils');
 
 describe('Validate field paths', () => {
@@ -66,39 +65,25 @@ describe('Validate field paths', () => {
       });
   });
 
-  it('should handle undefined "field_path_linting" data', () => {
+  it('should skip linting when "field_path_linting" is undefined', () => {
     propsData = {
       field_path_linting: undefined
     };
     return checks.execute({ xmlDoc, propsData })
       .then(output => {
+        expect(output.warnings).is.empty;
         expect(output.errors).is.empty;
-        expect(output.warnings).is.not.empty;
-        expect(output.warnings[0]).to.be.equal(
-          'If you would like enable form field linting, please ensure the object has the following structure:\n' +
-          '"warn_length": "positive integer (optional)"\n' +
-          '"error_length": "positive integer (optional)"\n' +
-          '"ignore_list": "array of strings representing nodeset paths to ignore (optional)"\n' +
-          '"reserved_list": "array of strings representing reserved keywords (optional)"'
-        );
       });
   });
 
-  it('should handle empty "field_path_linting" data', () => {
+  it('should skip linting when "field_path_linting" is empty', () => {
     propsData = {
       field_path_linting: {}
     };
     return checks.execute({ xmlDoc, propsData })
       .then(output => {
+        expect(output.warnings).is.empty;
         expect(output.errors).is.empty;
-        expect(output.warnings).is.not.empty;
-        expect(output.warnings[0]).to.be.equal(
-          'If you would like enable form field linting, please ensure the object has the following structure:\n' +
-          '"warn_length": "positive integer (optional)"\n' +
-          '"error_length": "positive integer (optional)"\n' +
-          '"ignore_list": "array of strings representing nodeset paths to ignore (optional)"\n' +
-          '"reserved_list": "array of strings representing reserved keywords (optional)"'
-        );
       });
   });
 
@@ -188,7 +173,7 @@ describe('Validate field paths', () => {
         expect(output.warnings).is.not.empty;
         expect(output.warnings[0]).to.be.equal(
           'The following vars are longer than the acceptable var length (1):\n' +
-          '/inputs/user/contact_id\n' +
+          '/data/inputs/user/contact_id\n' +
           'Please consider simplifying nesting or removing verbosity.'
         );
       });
@@ -207,7 +192,7 @@ describe('Validate field paths', () => {
         expect(output.errors).is.not.empty;
         expect(output.errors[0]).to.be.equal(
           'The following vars are longer than the acceptable var length (1):\n' +
-          '/inputs/user/contact_id\n' +
+          '/data/inputs/user/contact_id\n' +
           'Please simplify nesting or remove verbosity.'
         );
       });
@@ -216,8 +201,8 @@ describe('Validate field paths', () => {
   it('should pass when error value is larger than variable length', () => {
     propsData = {
       field_path_linting: {
-        warn_length: 23,
-        error_length: 24
+        warn_length: 28,
+        error_length: 29
       }
     };
     return checks.execute({ xmlDoc, propsData })
@@ -225,8 +210,8 @@ describe('Validate field paths', () => {
         expect(output.errors).is.empty;
         expect(output.warnings).is.not.empty;
         expect(output.warnings[0]).to.be.equal(
-          'The following vars are longer than the acceptable var length (23):\n' +
-          '/inputs/user/contact_id\n' +
+          'The following vars are longer than the acceptable var length (28):\n' +
+          '/data/inputs/user/contact_id\n' +
           'Please consider simplifying nesting or removing verbosity.'
         );
       });
@@ -302,7 +287,7 @@ describe('Validate field paths', () => {
         expect(output.errors).is.not.empty;
         expect(output.errors[0]).to.be.equal(
           'The following reserved entries were found in the form:\n' +
-          '/inputs/user/name\n' +
+          '/data/inputs/user/name\n' +
           'Please remove or rename as appropriate.'
         );
       });
@@ -383,28 +368,53 @@ describe('Validate field paths', () => {
       });
   });
 
-  it('should handle when "/data" prefix is NOT part of ignore/reserve list path', () => {
+  it('should prefix an entry naming a field that starts with "data"', () => {
     propsData = {
       field_path_linting: {
-        ignore_list: ['/inputs/user/name'],
+        warn_length: 7,
+        ignore_list: ['/database_id']
       }
     };
 
     bindNodes.push(
-      '<bind nodeset="/data/inputs/user/name" type="string"/>'
+      '<bind nodeset="/data/database_id" type="string"/>'
     );
     xmlDoc = createXformDoc(getXmlString(bindNodes));
 
-    const buildExclusion = sinon.spy(checks.__get__('buildExclusion'));
-    checks.__set__('buildExclusion', buildExclusion);
-    
+    return checks.execute({ xmlDoc, propsData })
+      .then(output => {
+        expect(output.errors).is.empty;
+        expect(output.warnings).is.not.empty;
+        // /data/database_id was ignored; only the un-ignored bind is reported.
+        expect(output.warnings[0]).to.be.equal(
+          'The following vars are longer than the acceptable var length (7):\n' +
+          '/data/inputs/user/contact_id\n' +
+          'Please consider simplifying nesting or removing verbosity.'
+        );
+      });
+  });
+
+  it('should match a reserved entry naming a field that starts with "data"', () => {
+    propsData = {
+      field_path_linting: {
+        reserved_list: ['/database_id']
+      }
+    };
+
+    bindNodes.push(
+      '<bind nodeset="/data/database_id" type="string"/>'
+    );
+    xmlDoc = createXformDoc(getXmlString(bindNodes));
+
     return checks.execute({ xmlDoc, propsData })
       .then(output => {
         expect(output.warnings).is.empty;
-        expect(output.errors).is.empty;
-        expect(buildExclusion.callCount).to.be.equal(1);
-        expect(buildExclusion.args[0][0]).to.be.equal('/inputs/user/name');
-        expect(buildExclusion.returnValues[0]).to.be.equal('/data/inputs/user/name');
+        expect(output.errors).is.not.empty;
+        expect(output.errors[0]).to.be.equal(
+          'The following reserved entries were found in the form:\n' +
+          '/data/database_id\n' +
+          'Please remove or rename as appropriate.'
+        );
       });
   });
 });
