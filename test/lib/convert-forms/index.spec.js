@@ -7,9 +7,20 @@ const nodeFs = require('node:fs');
 const path = require('path');
 const log = require('../../../src/lib/log');
 const { LEVEL_NONE } = log;
+const { createXformString, FORM_ID } = require('../../fn/convert-forms.utils');
 const convertForms = rewire('./../../../src/lib/convert-forms');
 
 const XLS2XFORM = path.join(__dirname, '..', '..', '..', 'bin', 'xls2xform-medic');
+
+const createXform = ({ formId = FORM_ID, primaryInstance = '', itext, body = '<group ref="/data/init"/>' } = {}) => {
+  const itextSection = itext ? `<itext>${itext}</itext>` : '';
+  return createXformString({
+    model: `${itextSection}<instance><data id="${formId}">${primaryInstance}</data></instance>`,
+    body,
+  });
+};
+
+const formIdFromSwpPath = (swpPath) => swpPath.match(/([^/]+)\.xml\.swp$/)[1];
 
 describe('convert-forms', () => {
   let mockExec;
@@ -17,12 +28,13 @@ describe('convert-forms', () => {
     mockExec = sinon.stub();
     convertForms.__set__('warn', sinon.stub(log, 'warn'));
     convertForms.__set__('exec', mockExec);
-    convertForms.__set__('fixXml', sinon.stub());
     convertForms.__set__('getPropsData', sinon.stub());
 
     sinon.stub(fs, 'readdir').returns(['a.xml', 'b.xlsx', 'c.xlsx']);
     sinon.stub(fs, 'exists').returns(true);
     sinon.stub(fs, 'readJson').returns({});
+    sinon.stub(fs, 'read').callsFake(swpPath => createXform({ formId: formIdFromSwpPath(swpPath) }));
+    sinon.stub(fs, 'write');
     sinon.stub(nodeFs, 'rmSync');
     sinon.stub(nodeFs, 'renameSync');
   });
@@ -216,6 +228,115 @@ describe('convert-forms', () => {
           './path\\ with\\ space/forms/app/c.xml.swp'
         ], LEVEL_NONE]
       ]);
+    });
+  });
+
+  describe('fixing the xml', () => {
+    const swpPath = `./path/forms/app/${FORM_ID}.xml.swp`;
+
+    beforeEach(() => {
+      fs.readdir.returns([`${FORM_ID}.xlsx`]);
+      mockExec.resolves(JSON.stringify({ code: 100 }));
+    });
+
+    const convertForm = async (xform = createXform(), options) => {
+      fs.read.returns(xform);
+
+      await convertForms.execute('./path', 'app', options);
+
+      expect(fs.read.args).to.deep.equal([[swpPath]]);
+      expect(fs.write.args).to.have.lengthOf(1);
+      expect(fs.write.args[0][0]).to.equal(swpPath);
+      return fs.write.args[0][1];
+    };
+
+    it('formats the xml and writes it to the swp file', async () => {
+      const primaryInstance = '<init><name/></init><contact><parent/></contact>';
+
+      const xml = await convertForm(createXform({ primaryInstance }));
+
+      expect(xml).xml.to.equal(createXform({ primaryInstance }));
+      expect(nodeFs.renameSync.args).to.deep.equal([[swpPath, `./path/forms/app/${FORM_ID}.xml`]]);
+    });
+
+    it('adds the meta section to the inputs group', async () => {
+      const xml = await convertForm(createXform({ primaryInstance: '<inputs><source/></inputs>' }));
+
+      expect(xml).xml.to.equal(createXform({
+        primaryInstance: `
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source/>
+          </inputs>
+        `
+      }));
+    });
+
+    it('removes the default language when converting for enketo', async () => {
+      const translation = '<text id="a"><value>Hello</value></text>';
+
+      const xml = await convertForm(
+        createXform({ itext: `<translation lang="en" default="true()">${translation}</translation>` }),
+        { enketo: true }
+      );
+
+      expect(xml).xml.to.equal(createXform({ itext: `<translation lang="en">${translation}</translation>` }));
+    });
+
+    it('keeps the default language when not converting for enketo', async () => {
+      const itext = '<translation lang="en" default="true()"><text id="a"><value>Hello</value></text></translation>';
+
+      const xml = await convertForm(createXform({ itext }));
+
+      expect(xml).xml.to.equal(createXform({ itext }));
+    });
+
+    it('tags the hidden fields listed in the properties json', async () => {
+      fs.readJson.returns({ hidden_fields: ['name', 'age'] });
+
+      const xml = await convertForm(createXform({ primaryInstance: '<name/><age/><other/>' }));
+
+      expect(xml).xml.to.equal(createXform({
+        primaryInstance: '<name tag="hidden"/><age tag="hidden"/><other/>'
+      }));
+      expect(fs.readJson.args).to.deep.equal([[`./path/forms/app/${FORM_ID}.properties.json`]]);
+    });
+
+    it('warns when the form uses the deprecated repeat-relevant', async () => {
+      await convertForm(createXform({ body: '<group ref="/data/init" appearance="repeat-relevant"/>' }));
+
+      expect(log.warn.args).to.deep.equal([[
+        'From webapp version 2.14.0, repeat-relevant is no longer required.  ' +
+        'See https://github.com/medic/cht-core/issues/3449 for more info.'
+      ]]);
+    });
+
+    it('domTransformer is applied to the parsed document', async () => {
+      const domTransformer = sinon.stub().callsFake((xmlDoc) => {
+        const init = xmlDoc.getElementsByTagName('init')[0];
+        const contact = xmlDoc.getElementsByTagName('contact')[0];
+        init.appendChild(contact);
+      });
+
+      const xml = await convertForm(
+        createXform({ primaryInstance: '<init><name/></init><contact><parent/></contact>' }),
+        { domTransformer }
+      );
+
+      expect(xml).xml.to.equal(createXform({
+        primaryInstance: '<init><name/><contact><parent/></contact></init>'
+      }));
+      expect(domTransformer.calledOnce).to.be.true;
+      const [xmlDoc, calledPath] = domTransformer.args[0];
+      expect(xmlDoc.documentElement.nodeName).to.equal('h:html');
+      expect(calledPath).to.equal(swpPath);
     });
   });
 });
