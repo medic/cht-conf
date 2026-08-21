@@ -28,7 +28,6 @@ describe('convert-forms', () => {
     mockExec = sinon.stub();
     convertForms.__set__('warn', sinon.stub(log, 'warn'));
     convertForms.__set__('exec', mockExec);
-    convertForms.__set__('getPropsData', sinon.stub());
 
     sinon.stub(fs, 'readdir').returns(['a.xml', 'b.xlsx', 'c.xlsx']);
     sinon.stub(fs, 'exists').returns(true);
