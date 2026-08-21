@@ -1,3 +1,10 @@
+# [6.6.0](https://github.com/medic/cht-conf/compare/v6.5.2...v6.6.0) (2026-08-21)
+
+
+### Features
+
+* **#804:** support linting form field paths during validation ([#805](https://github.com/medic/cht-conf/issues/805)) ([30853a7](https://github.com/medic/cht-conf/commit/30853a795658e626a533871d67023be91ada7801)), closes [#804](https://github.com/medic/cht-conf/issues/804)
+
 ## [6.5.2](https://github.com/medic/cht-conf/compare/v6.5.1...v6.5.2) (2026-08-10)
 
 
