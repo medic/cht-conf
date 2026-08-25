@@ -391,7 +391,7 @@ describe('api', () => {
       });
     });
 
-    describe('getReportsBySubmitter', async () => {
+    describe('getReportsBySubmitter', () => {
       beforeEach(() => {
         sinon.stub(environment, 'isArchiveMode').get(() => false);
       });
