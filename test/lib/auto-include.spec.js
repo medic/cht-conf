@@ -4,13 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const {
-  findConfigFiles,
-  collectConfigFiles,
-  findTasksFiles,
-  findTargetsFiles,
-  findContactSummaryFiles,
-} = require('../../src/lib/auto-include');
+const { findConfigFiles, collectConfigFiles, findTargetsFiles } = require('../../src/lib/auto-include');
 
 describe('auto-include', () => {
   let testDir;
@@ -28,20 +22,20 @@ describe('auto-include', () => {
     fs.writeFileSync(path.join(testDir, dir, name), content);
   };
 
-  describe('findTasksFiles', () => {
-    it('finds all *.js files in the tasks directory', () => {
+  describe('findConfigFiles', () => {
+    it('finds all *.js files in the directory', () => {
       writeFile('tasks', 'base.js');
       writeFile('tasks', 'stock.js');
 
-      const result = findTasksFiles(testDir);
+      const result = findConfigFiles(testDir, 'tasks');
 
       expect(result).to.have.length(2);
       expect(result[0]).to.include(path.join('tasks', 'base.js'));
       expect(result[1]).to.include(path.join('tasks', 'stock.js'));
     });
 
-    it('returns empty array when the tasks directory is absent', () => {
-      expect(findTasksFiles(testDir)).to.deep.equal([]);
+    it('returns empty array when the directory is absent', () => {
+      expect(findConfigFiles(testDir, 'tasks')).to.deep.equal([]);
     });
 
     it('sorts files alphabetically for deterministic order', () => {
@@ -49,7 +43,7 @@ describe('auto-include', () => {
       writeFile('tasks', 'a-first.js');
       writeFile('tasks', 'm-middle.js');
 
-      const result = findTasksFiles(testDir).map(p => path.basename(p));
+      const result = findConfigFiles(testDir, 'tasks').map(p => path.basename(p));
 
       expect(result).to.deep.equal(['a-first.js', 'm-middle.js', 'z-last.js']);
     });
@@ -59,27 +53,11 @@ describe('auto-include', () => {
       writeFile('tasks', 'notes.txt', 'hello');
       fs.mkdirSync(path.join(testDir, 'tasks', 'nested'));
 
-      const result = findTasksFiles(testDir).map(p => path.basename(p));
+      const result = findConfigFiles(testDir, 'tasks').map(p => path.basename(p));
 
       expect(result).to.deep.equal(['base.js']);
     });
-  });
 
-  describe('findTargetsFiles', () => {
-    it('finds *.js files in the targets directory', () => {
-      writeFile('targets', 'base.js');
-      expect(findTargetsFiles(testDir).map(p => path.basename(p))).to.deep.equal(['base.js']);
-    });
-  });
-
-  describe('findContactSummaryFiles', () => {
-    it('finds *.js files in the contact-summary directory', () => {
-      writeFile('contact-summary', 'base.js');
-      expect(findContactSummaryFiles(testDir).map(p => path.basename(p))).to.deep.equal(['base.js']);
-    });
-  });
-
-  describe('findConfigFiles', () => {
     it('returns absolute paths', () => {
       writeFile('tasks', 'base.js');
       const [result] = findConfigFiles(testDir, 'tasks');
@@ -94,8 +72,15 @@ describe('auto-include', () => {
     });
   });
 
+  describe('findTargetsFiles', () => {
+    it('finds *.js files in the targets directory', () => {
+      writeFile('targets', 'base.js');
+      expect(findTargetsFiles(testDir).map(p => path.basename(p))).to.deep.equal(['base.js']);
+    });
+  });
+
   describe('collectConfigFiles', () => {
-    const opts = { baseFilename: 'tasks.js', subdir: 'tasks', label: 'tasks' };
+    const opts = { baseFilename: 'tasks.js', subdir: 'tasks' };
 
     it('orders the deprecated base file first, then directory files alphabetically', () => {
       fs.writeFileSync(path.join(testDir, 'tasks.js'), 'module.exports = [];');

@@ -44,7 +44,6 @@ module.exports = async (projectDir, options) => {
   const files = collectConfigFiles(projectDir, {
     baseFilename: 'contact-summary.templated.js',
     subdir: 'contact-summary',
-    label: 'contact-summary',
     log: true,
   });
   const { entryPath, cleanup } = generateEntry(files);

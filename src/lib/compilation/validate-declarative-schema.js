@@ -274,10 +274,8 @@ const formatJoiError = (desc, detail) => {
 module.exports = (projectDir, errorOnValidation) => {
   const logEvent = errorOnValidation ? error : warn;
 
-  const taskFiles = collectConfigFiles(projectDir, { baseFilename: 'tasks.js', subdir: 'tasks', label: 'tasks' });
-  const targetFiles = collectConfigFiles(projectDir, {
-    baseFilename: 'targets.js', subdir: 'targets', label: 'targets',
-  });
+  const taskFiles = collectConfigFiles(projectDir, { baseFilename: 'tasks.js', subdir: 'tasks' });
+  const targetFiles = collectConfigFiles(projectDir, { baseFilename: 'targets.js', subdir: 'targets' });
 
   const tasksValid = validateFiles(logEvent, taskFiles, TaskSchema, 'name');
   const targetsValid = validateFiles(logEvent, targetFiles, TargetSchema, 'id');

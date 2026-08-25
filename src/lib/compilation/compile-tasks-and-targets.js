@@ -57,10 +57,10 @@ const compileTasksAndTargets = async (projectDir, options = {}) => {
   warnRemovedFiles(projectDir);
 
   const taskFiles = collectConfigFiles(projectDir, {
-    baseFilename: 'tasks.js', subdir: 'tasks', label: 'tasks', log: true,
+    baseFilename: 'tasks.js', subdir: 'tasks', log: true,
   });
   const targetFiles = collectConfigFiles(projectDir, {
-    baseFilename: 'targets.js', subdir: 'targets', label: 'targets', log: true,
+    baseFilename: 'targets.js', subdir: 'targets', log: true,
   });
 
   validateDeclarativeSchema(projectDir, options.haltOnSchemaError);
