@@ -8,6 +8,6 @@ module.exports = {
     const configurationPath = `${environment.pathToProject}/branding.json`;
     const directoryPath = `${environment.pathToProject}/branding`;
 
-    return uploadConfigurationDocs(configurationPath, directoryPath, 'branding', undefined, validateBranding);
+    return uploadConfigurationDocs(configurationPath, directoryPath, 'branding', { validate: validateBranding });
   }
 };

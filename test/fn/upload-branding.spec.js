@@ -23,8 +23,7 @@ describe('Upload Branding', () => {
       expect(uploadConfigurationDocs.args[0][0]).to.equal(configurationPath);
       expect(uploadConfigurationDocs.args[0][1]).to.equal(directoryPath);
       expect(uploadConfigurationDocs.args[0][2]).to.equal(dbDocName);
-      expect(uploadConfigurationDocs.args[0][3]).to.be.undefined;
-      expect(uploadConfigurationDocs.args[0][4]).to.equal(validateBranding);
+      expect(uploadConfigurationDocs.args[0][3]).to.deep.equal({ validate: validateBranding });
     });
   });
 });

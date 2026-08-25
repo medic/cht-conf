@@ -16,7 +16,7 @@ module.exports = {
     const configurationPath = `${environment.pathToProject}/${RESOURCE_CONFIG_PATH}`;
     const directoryPath = `${environment.pathToProject}/${RESOURCES_DIR_PATH}`;
 
-    return uploadConfigurationDocs(configurationPath, directoryPath, 'resources', processJson);
+    return uploadConfigurationDocs(configurationPath, directoryPath, 'resources', { processJson });
   }
 };
 

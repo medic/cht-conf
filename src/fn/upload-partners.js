@@ -8,6 +8,6 @@ module.exports = {
     const configurationPath = `${environment.pathToProject}/partners.json`;
     const directoryPath = `${environment.pathToProject}/partners`;
 
-    return uploadConfigurationDocs(configurationPath, directoryPath, 'partners', undefined, validatePartners);
+    return uploadConfigurationDocs(configurationPath, directoryPath, 'partners', { validate: validatePartners });
   }
 };

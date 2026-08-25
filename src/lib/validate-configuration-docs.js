@@ -27,13 +27,13 @@ const validateSchema = (schema, config) => {
 // Every `resources` value must reference a file that exists in the attachments directory,
 // otherwise cht-core will look up an attachment that was never uploaded.
 const findMissingAttachments = (config, attachments) => {
-  const resources = config && config.resources;
+  const resources = config?.resources;
   if (!resources || typeof resources !== 'object') {
     return [];
   }
   return Object
     .entries(resources)
-    .filter(([, fileName]) => !attachments || !attachments[fileName])
+    .filter(([, fileName]) => !attachments?.[fileName])
     .map(([key, fileName]) => `"resources.${key}" references "${fileName}" but no such file was found`);
 };
 

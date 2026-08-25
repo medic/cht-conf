@@ -103,7 +103,9 @@ describe('Upload Configuration Docs', () => {
     };
 
     return uploadConfigurationDocs.__with__(rewireWith)(async () => {
-      await uploadConfigurationDocs('path/configuration.json', 'path/configuration', 'configurationDoc', processJson);
+      await uploadConfigurationDocs(
+        'path/configuration.json', 'path/configuration', 'configurationDoc', { processJson }
+      );
 
       expect(attachmentsFromDir.called).to.be.true;
       expect(pouch.called).to.be.true;
@@ -128,7 +130,7 @@ describe('Upload Configuration Docs', () => {
 
     return uploadConfigurationDocs.__with__(rewireWith)(async () => {
       await uploadConfigurationDocs(
-        'path/configuration.json', 'path/configuration', 'configurationDoc', undefined, validate
+        'path/configuration.json', 'path/configuration', 'configurationDoc', { validate }
       );
 
       expect(validate.calledOnce).to.be.true;
@@ -153,7 +155,7 @@ describe('Upload Configuration Docs', () => {
 
     return uploadConfigurationDocs.__with__(rewireWith)(async () => {
       await expect(uploadConfigurationDocs(
-        'path/configuration.json', 'path/configuration', 'configurationDoc', undefined, validate
+        'path/configuration.json', 'path/configuration', 'configurationDoc', { validate }
       )).to.be.rejectedWith('Invalid configurationDoc configuration in path/configuration.json: "title" is required');
 
       expect(pouch.called).to.be.false;
