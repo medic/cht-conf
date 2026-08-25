@@ -390,6 +390,94 @@ describe('api', () => {
         });
       });
     });
+
+    describe('getReportsBySubmitter', async () => {
+      beforeEach(() => {
+        sinon.stub(environment, 'isArchiveMode').get(() => false);
+      });
+
+      describe('successful requests', () => {
+        it('should make correct API call and return mapped documents', async () => {
+          const submitterIds = ['user1', 'user2'];
+          const limit = 10;
+          const bookmark = 'abc123';
+          const mockResponse = {
+            hits: [
+              {doc: {_id: 'report1', content: 'data1'}},
+              {doc: {_id: 'report2', content: 'data2'}}
+            ],
+            bookmark: 'next_page_bookmark'
+          };
+
+          mockRequest.post.resolves(mockResponse);
+
+          const result = await api().getReportsBySubmitter(submitterIds, limit, bookmark);
+
+          expect(mockRequest.post.callCount).to.equal(1);
+          const [url, options] = mockRequest.post.getCall(0).args;
+          expect(url).to.equal('http://example.com/db-name/_design/medic/_nouveau/docs_by_replication_key');
+          expect(options.body).to.deep.equal({
+            q: 'submitter:"user1" OR submitter:"user2"',
+            include_docs: true,
+            limit: 10,
+            bookmark: 'abc123'
+          });
+          expect(options.json).to.be.true;
+          expect(result).to.deep.equal({
+            docs: [
+              {_id: 'report1', content: 'data1'},
+              {_id: 'report2', content: 'data2'}
+            ],
+            bookmark: 'next_page_bookmark'
+          });
+        });
+
+        it('should handle single ID and empty results', async () => {
+          const submitterIds = ['user1'];
+          const mockResponse = { hits: [], bookmark: null };
+
+          mockRequest.post.resolves(mockResponse);
+
+          const result = await api().getReportsBySubmitter(submitterIds, undefined, null);
+
+          const [, options] = mockRequest.post.getCall(0).args;
+          expect(options.body.q).to.equal('submitter:"user1"');
+          expect(options.body.bookmark).to.be.undefined;
+          expect(result).to.deep.equal({ docs: [], bookmark: null });
+        });
+      });
+
+      describe('edge cases', () => {
+        it('should handle various edge case inputs', async () => {
+          const mockResponse = { hits: [] };
+          mockRequest.post.resolves(mockResponse);
+
+          // Test empty array
+          await api().getReportsBySubmitter([], 10, 0);
+          expect(mockRequest.post.getCall(0).args[1].body.q).to.equal('');
+
+          // Test special characters in IDs
+          await api().getReportsBySubmitter(['user@domain.com', 'user-with-dashes'], 10, 0);
+          expect(
+            mockRequest.post.getCall(1).args[1].body.q
+          ).to.equal('submitter:"user@domain.com" OR submitter:"user-with-dashes"');
+        });
+      });
+
+      describe('error handling', () => {
+        it('should propagate request errors', async () => {
+          const expectedError = new Error('Network error');
+          mockRequest.post.rejects(expectedError);
+
+          try {
+            await api().getReportsBySubmitter(['user1'], 10, 0);
+            expect.fail('Should have thrown an error');
+          } catch (error) {
+            expect(error).to.equal(expectedError);
+          }
+        });
+      });
+    });
   });
 
   describe('retry mechanism', function () {
