@@ -29,9 +29,11 @@ function filterAttachments(attachments, settings) {
  * @param dbDocName (Mandatory) String. DB's document name.
  * @param processJson (Optional) Function. Receives the content of configuration json and
  *        returns an object that is used for extending the DB's document.
+ * @param validate (Optional) Function. Receives the settings and the attachments and returns
+ *        `{ valid: boolean, error?: string }`. When invalid, nothing is uploaded and an error is thrown.
  * @return {Promise<void>}
  */
-module.exports = async (configPath, directoryPath, dbDocName, processJson) => {
+module.exports = async (configPath, directoryPath, dbDocName, processJson, validate) => {
   if (!configPath && !directoryPath && !dbDocName) {
     warn('Information missing: Make sure to provide the configuration file path and the directory path.');
     return Promise.resolve();
@@ -47,6 +49,13 @@ module.exports = async (configPath, directoryPath, dbDocName, processJson) => {
   const json = fs.readJson(jsonPath);
   const settings = processJson ? processJson(json) : json;
   const attachments = attachmentsFromDir(directoryPath);
+
+  if (validate) {
+    const validation = validate(settings, attachments);
+    if (!validation.valid) {
+      throw new Error(`Invalid ${dbDocName} configuration in ${jsonPath}: ${validation.error}`);
+    }
+  }
   const baseDocument = {
     _id: dbDocName,
     _attachments: filterAttachments(attachments, settings)
