@@ -22,7 +22,7 @@ function filterAttachments(attachments, settings) {
     }, {});
 }
 
-const assertValidConfiguration = (validate, settings, attachments, dbDocName, jsonPath) => {
+const assertValidConfiguration = (validate, settings, attachments, { dbDocName, jsonPath }) => {
   if (!validate) {
     return;
   }
@@ -76,7 +76,7 @@ async function uploadConfigurationDocs(configPath, directoryPath, dbDocName, opt
   const settings = processJson ? processJson(json) : json;
   const attachments = attachmentsFromDir(directoryPath);
 
-  assertValidConfiguration(validate, settings, attachments, dbDocName, jsonPath);
+  assertValidConfiguration(validate, settings, attachments, { dbDocName, jsonPath });
 
   const baseDocument = {
     _id: dbDocName,
