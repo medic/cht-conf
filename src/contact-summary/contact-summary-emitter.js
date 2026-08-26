@@ -4,13 +4,13 @@ function emitter(contactSummaries, contact, reports) {
   const context = merged.context;
   const cards = merged.cards;
 
-  var contactType = contact && (contact.type === 'contact' ? contact.contact_type : contact.type);
+  const contactType = contact && (contact.type === 'contact' ? contact.contact_type : contact.type);
 
-  var result = {
+  const result = {
     cards: [],
     fields: fields.filter(function(f) {
-      var appliesToType = convertToArray(f.appliesToType);
-      var appliesToNotType = appliesToType.filter(function(type) {
+      const appliesToType = convertToArray(f.appliesToType);
+      const appliesToNotType = appliesToType.filter(function(type) {
         return type && type.charAt(0) === '!';
       });
       if (appliesToType.length === 0 || appliesToType.includes(contactType) ||
@@ -25,22 +25,20 @@ function emitter(contactSummaries, contact, reports) {
   };
 
   cards.forEach(function(card) {
-    var idx1, r, added;
-
-    var appliesToType = convertToArray(card.appliesToType);
+    const appliesToType = convertToArray(card.appliesToType);
 
     if (appliesToType.includes('report') && appliesToType.length > 1) {
       throw new Error("You cannot set appliesToType to an array which includes the type 'report' and another type.");
     }
 
     if (appliesToType.includes('report')) {
-      for (idx1=0; idx1<reports.length; ++idx1) {
-        r = reports[idx1];
+      for (let idx1=0; idx1<reports.length; ++idx1) {
+        const r = reports[idx1];
         if (!isReportValid(r)) {
           continue;
         }
 
-        added = addCard(card, context, r);
+        const added = addCard(card, context, r);
         if (added) {
           result.cards.push(added);
         }
@@ -50,7 +48,7 @@ function emitter(contactSummaries, contact, reports) {
         return;
       }
 
-      added = addCard(card, context);
+      const added = addCard(card, context);
       if (added) {
         result.cards.push(added);
       }
@@ -97,14 +95,14 @@ function addCard(card, context, r) {
     }
   }
 
-  var fields = typeof card.fields === 'function' ?
+  const fields = typeof card.fields === 'function' ?
       card.fields(r) :
       card.fields
         .filter(function(f) {
           return execAppliesIf(f.appliesIf, r);
         })
         .map(function(f) {
-          var ret = {};
+          const ret = {};
           addValue(f, ret, 'label');
           addValue(f, ret, 'value');
           addValue(f, ret, 'translate');
