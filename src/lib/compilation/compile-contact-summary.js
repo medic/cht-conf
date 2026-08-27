@@ -3,20 +3,24 @@ const nodeFs = require('node:fs');
 const pack = require('./package-lib');
 const { collectConfigFiles } = require('../auto-include');
 const { requireStatements, writeEntry } = require('./generated-entry');
-const { warn } = require('../log');
 
 const REMOVED_FREEFORM_FILE = 'contact-summary.js';
+const CONTACT_SUMMARY_DOCS_URL =
+  'https://docs.communityhealthtoolkit.org/building/contact-summary/contact-summary-templated/';
 
 /**
- * Warn (once) if the project still has the removed freeform contact-summary
- * file, which is silently ignored as of cht-conf 7.0.
+ * Fail if the project still has the removed freeform contact-summary file.
+ * Compiling it would silently produce an empty contact-summary config, which
+ * would then wipe the contact-summary on the server it is uploaded to.
  * @param {string} projectDir - Project directory path
+ * @throws {Error} If the removed freeform file is present
  */
-const warnRemovedFiles = (projectDir) => {
+const assertNoRemovedFiles = (projectDir) => {
   if (nodeFs.existsSync(path.join(projectDir, REMOVED_FREEFORM_FILE))) {
-    warn(
-      `${REMOVED_FREEFORM_FILE} (freeform contact-summary) is no longer supported and will be ignored. `
-      + 'Migrate to declarative contact-summary/ configuration.'
+    throw new Error(
+      `${REMOVED_FREEFORM_FILE} (freeform contact-summary) is no longer supported. `
+      + 'Migrate to declarative contact-summary/ configuration, then delete the file. '
+      + `See ${CONTACT_SUMMARY_DOCS_URL}`
     );
   }
 };
@@ -39,7 +43,7 @@ module.exports = emitter(contactSummaries, contact, reports);
 };
 
 module.exports = async (projectDir, options) => {
-  warnRemovedFiles(projectDir);
+  assertNoRemovedFiles(projectDir);
 
   const files = collectConfigFiles(projectDir, {
     baseFilename: 'contact-summary.templated.js',

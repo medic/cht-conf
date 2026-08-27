@@ -5,20 +5,23 @@ const pack = require('./package-lib');
 const validateDeclarativeSchema = require('./validate-declarative-schema');
 const { collectConfigFiles } = require('../auto-include');
 const { requireStatements, writeEntry } = require('./generated-entry');
-const { warn } = require('../log');
 
 const REMOVED_NOOLS_FILE = 'rules.nools.js';
+const TASKS_DOCS_URL = 'https://docs.communityhealthtoolkit.org/building/tasks/';
 
 /**
- * Warn (once) if the project still has the removed nools rules file, which is
- * silently ignored as of cht-conf 7.0.
+ * Fail if the project still has the removed nools rules file. Compiling it
+ * would silently produce empty tasks/targets config, which would then wipe the
+ * rules on the server it is uploaded to.
  * @param {string} projectDir - Project directory path
+ * @throws {Error} If the removed nools file is present
  */
-const warnRemovedFiles = (projectDir) => {
+const assertNoRemovedFiles = (projectDir) => {
   if (nodeFs.existsSync(path.join(projectDir, REMOVED_NOOLS_FILE))) {
-    warn(
-      `${REMOVED_NOOLS_FILE} is no longer supported and will be ignored. `
-      + 'Migrate your nools rules to declarative tasks/ and targets/ configuration.'
+    throw new Error(
+      `${REMOVED_NOOLS_FILE} is no longer supported. `
+      + 'Migrate your nools rules to declarative tasks/ and targets/ configuration, '
+      + `then delete the file. See ${TASKS_DOCS_URL}`
     );
   }
 };
@@ -54,7 +57,7 @@ emit('_complete', { _id: true });
 };
 
 const compileTasksAndTargets = async (projectDir, options = {}) => {
-  warnRemovedFiles(projectDir);
+  assertNoRemovedFiles(projectDir);
 
   const taskFiles = collectConfigFiles(projectDir, {
     baseFilename: 'tasks.js', subdir: 'tasks', log: true,

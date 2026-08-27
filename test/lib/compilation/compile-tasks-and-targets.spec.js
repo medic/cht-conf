@@ -1,7 +1,5 @@
 const { expect } = require('chai');
 const path = require('path');
-const sinon = require('sinon');
-const rewire = require('rewire');
 
 const compile = require('../../../src/lib/compilation/compile-tasks-and-targets');
 
@@ -28,13 +26,15 @@ describe('compile-tasks-and-targets', () => {
     expect(result.rules).to.include('_complete');
   });
 
-  it('warns that rules.nools.js is no longer supported', async () => {
-    const mod = rewire('../../../src/lib/compilation/compile-tasks-and-targets');
-    const warn = sinon.spy();
-    mod.__set__('warn', warn);
+  it('fails when the removed rules.nools.js is present', async () => {
+    // Compiling it would emit empty tasks/targets, which would wipe the rules
+    // on whichever server the result is uploaded to.
+    await expect(compile(`${BASE_DIR}/removed-nools`, options))
+      .to.be.rejectedWith(/rules\.nools\.js is no longer supported/);
+  });
 
-    await mod(`${BASE_DIR}/removed-nools`, options);
-
-    expect(warn.calledWithMatch(/rules\.nools\.js is no longer supported/)).to.equal(true);
+  it('points at the tasks docs when it fails', async () => {
+    await expect(compile(`${BASE_DIR}/removed-nools`, options))
+      .to.be.rejectedWith(/docs\.communityhealthtoolkit\.org.*building\/tasks/);
   });
 });

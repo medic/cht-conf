@@ -1,7 +1,5 @@
 const { expect } = require('chai');
 const path = require('path');
-const sinon = require('sinon');
-const rewire = require('rewire');
 
 const compileContactSummary = require('../../../src/lib/compilation/compile-contact-summary');
 
@@ -205,13 +203,15 @@ describe('compile-contact-summary', () => {
     expect(result.cards[1].label).to.equal('extension.card');
   });
 
-  it('warns that freeform contact-summary.js is no longer supported', async () => {
-    const mod = rewire('../../../src/lib/compilation/compile-contact-summary');
-    const warn = sinon.spy();
-    mod.__set__('warn', warn);
+  it('fails when the removed freeform contact-summary.js is present', async () => {
+    // Compiling it would emit an empty contact-summary, which would wipe the
+    // contact-summary on whichever server the result is uploaded to.
+    await expect(compileContactSummary(`${BASE_DIR}/removed-freeform`, options))
+      .to.be.rejectedWith(/contact-summary\.js .* is no longer supported/);
+  });
 
-    await mod(`${BASE_DIR}/removed-freeform`, options);
-
-    expect(warn.calledWithMatch(/contact-summary\.js .* is no longer supported/)).to.equal(true);
+  it('points at the contact-summary docs when it fails', async () => {
+    await expect(compileContactSummary(`${BASE_DIR}/removed-freeform`, options))
+      .to.be.rejectedWith(/docs\.communityhealthtoolkit\.org.*contact-summary-templated/);
   });
 });
