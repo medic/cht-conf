@@ -5,6 +5,7 @@ const { collectConfigFiles } = require('../auto-include');
 const { requireStatements, writeEntry } = require('./generated-entry');
 
 const REMOVED_FREEFORM_FILE = 'contact-summary.js';
+//TODO: Update with the updated doc link
 const CONTACT_SUMMARY_DOCS_URL =
   'https://docs.communityhealthtoolkit.org/building/contact-summary/contact-summary-templated/';
 
