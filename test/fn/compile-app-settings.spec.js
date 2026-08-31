@@ -70,6 +70,10 @@ const scenarios = [
     description: 'should handle a configuration using the assetlinks.json file',
     folder: 'android-app-links/project',
   },
+  {
+    description: 'should compile max_task_notifications to tasks.max_task_notifications',
+    folder: 'task-notifications/project',
+  },
 
   // REJECTION SCENARIOS
   {
@@ -128,8 +132,9 @@ const scenarios = [
     error: 'Invalid assetlinks: ValidationError: "[0].target.sha256_cert_fingerprints" is required',
   },
   {
-    description: 'should compile max_task_notifications to tasks.max_task_notifications',
-    folder: 'task-notifications/project',
+    description: 'should reject a task notification window with an invalid time format',
+    folder: 'task-notifications/invalid-notification-window',
+    error: 'Invalid task notification window time',
   }
 ];
 

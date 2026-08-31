@@ -5,7 +5,11 @@
   "tasks": {
     "rules": "",
     "targets": {},
-    "max_task_notifications": 25
+    "max_task_notifications": 25,
+    "task_notification_window": {
+      "start": "08:00",
+      "end": "19:00"
+    }
   },
   "purge": {}
 }
