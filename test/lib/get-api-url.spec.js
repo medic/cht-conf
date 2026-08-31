@@ -35,7 +35,12 @@ describe('get-api-url', () => {
 
     it('use environment variable', () => {
       const actual = apiUrlLib.getApiUrl({ local: true }, { COUCH_URL: 'http://user:pwd@localhost:5984/db' });
-      expect(actual).to.deep.equal(new url.URL('http://user:pwd@localhost:5988/medic'));
+      expect(actual).to.deep.equal(new url.URL('http://user:pwd@localhost:5984/medic'));
+    });
+
+    it('use environment variable with custom port', () => {
+      const actual = apiUrlLib.getApiUrl({ local: true }, { COUCH_URL: 'http://medic:pass@localhost:61418/medic' });
+      expect(actual).to.deep.equal(new url.URL('http://medic:pass@localhost:61418/medic'));
     });
 
     it('warn if environment variable targets remote', () => {
@@ -70,11 +75,17 @@ describe('get-api-url', () => {
     it('basic', () =>
       expect(parseLocalUrl('http://admin:pass@localhost:5988/medic').href).to.eq('http://admin:pass@localhost:5988/'));
 
-    it('updates port', () =>
-      expect(parseLocalUrl('http://admin:pass@localhost:5984/medic').href).to.eq('http://admin:pass@localhost:5988/'));
+    it('preserves port from COUCH_URL', () =>
+      expect(parseLocalUrl('http://admin:pass@localhost:5984/medic').href).to.eq('http://admin:pass@localhost:5984/'));
+
+    it('preserves custom port from COUCH_URL', () =>
+      expect(parseLocalUrl('http://admin:pass@localhost:61418/medic').href).to.eq('http://admin:pass@localhost:61418/'));
+
+    it('defaults to 5988 when no port specified', () =>
+      expect(parseLocalUrl('http://admin:pass@localhost/medic').href).to.eq('http://admin:pass@localhost:5988/'));
 
     it('ignores path', () =>
-      expect(parseLocalUrl('http://admin:pass@localhost:5984/foo').href).to.eq('http://admin:pass@localhost:5988/'));
+      expect(parseLocalUrl('http://admin:pass@localhost:5984/foo').href).to.eq('http://admin:pass@localhost:5984/'));
   });
 
   describe('isLocalhost', () => {
