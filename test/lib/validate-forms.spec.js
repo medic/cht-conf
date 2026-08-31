@@ -72,6 +72,11 @@ describe('validate-forms', () => {
     expect(deprecatedTelType.requiresInstance).to.equal(true);
     expect(deprecatedTelType.skipFurtherValidation).to.equal(false);
 
+    const noCsvExternalDatasets = validations.shift();
+    expect(noCsvExternalDatasets.name).to.equal('no-csv-external-datasets.js');
+    expect(noCsvExternalDatasets.requiresInstance).to.equal(false);
+    expect(noCsvExternalDatasets.skipFurtherValidation).to.equal(false);
+
     const noRequiredNotes = validations.shift();
     expect(noRequiredNotes.name).to.equal('no-required-notes.js');
     expect(noRequiredNotes.requiresInstance).to.equal(false);
