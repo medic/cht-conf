@@ -1,3 +1,10 @@
+## [6.6.1](https://github.com/medic/cht-conf/compare/v6.6.0...v6.6.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* **#821:** ignore deleted primary-contact ref in move-contacts ([#824](https://github.com/medic/cht-conf/issues/824)) ([d9904ef](https://github.com/medic/cht-conf/commit/d9904ef2aa85e0da84263a7e95f01515be37fce6)), closes [#821](https://github.com/medic/cht-conf/issues/821) [#821](https://github.com/medic/cht-conf/issues/821)
+
 # [6.6.0](https://github.com/medic/cht-conf/compare/v6.5.2...v6.6.0) (2026-08-21)
 
 
