@@ -1,57 +1,64 @@
 const path = require('path');
 const fs = require('./sync-fs');
+const { findTargetsFiles } = require('./auto-include');
+const {
+  TARGET_METADATA_FIELDS,
+} = require('./compilation/validate-declarative-schema');
+const { warn } = require('./log');
 
-const pick = (obj, attributes) => attributes.reduce((agg, curr) => {
-  if (curr in obj) {
-    agg[curr] = obj[curr];
+const pick = (obj, attributes) =>
+  attributes.reduce((agg, curr) => {
+    if (curr in obj) {
+      agg[curr] = obj[curr];
+    }
+    return agg;
+  }, {});
+
+const requireTargetArray = (filePath) => {
+  const targets = require(filePath);
+  if (!Array.isArray(targets)) {
+    throw new TypeError(
+      `Targets file is expected to module.exports=[] an array of targets. ${filePath}`,
+    );
   }
-  return agg;
-}, {});
+  return targets.map((target) => pick(target, TARGET_METADATA_FIELDS));
+};
 
-module.exports = projectDir => {
+const readTargetsJson = (jsonPath, jsPath, jsExists, dirFiles) => {
+  if (jsExists) {
+    throw new Error(
+      `Targets are defined at both ${jsonPath} and ${jsPath}. Only one of these files should exist.`,
+    );
+  }
+  if (dirFiles.length) {
+    throw new Error(
+      `Targets are defined in both ${jsonPath} and the targets/ directory. ` +
+        'targets.json is deprecated: move its contents into targets/base.js and delete targets.json.',
+    );
+  }
+  warn(
+    'targets.json is deprecated. Please move your targets to targets/base.js and delete targets.json.',
+  );
+  return fs.readJson(jsonPath);
+};
+
+const parseTargets = (projectDir) => {
   const jsonPath = path.join(projectDir, 'targets.json');
   const jsPath = path.join(projectDir, 'targets.js');
+  const jsExists = fs.exists(jsPath);
+  const dirFiles = findTargetsFiles(projectDir);
 
-  const jsonExists = fs.exists(jsonPath);
-  const jsExists   = fs.exists(jsPath);
-
-  const throwError = err => {
-    throw new Error(`Error loading targets: ${err}`);
-  };
-
-  if (!jsonExists && !jsExists) {
-    throwError(`Expected to find targets defined at one of ${jsonPath} or ${jsPath}, but could not find either.`);
+  if (fs.exists(jsonPath)) {
+    return readTargetsJson(jsonPath, jsPath, jsExists, dirFiles);
   }
 
-  if (jsonExists && jsExists) {
-    throwError(`Targets are defined at both ${jsonPath} and ${jsPath}.  Only one of these files should exist.`);
-  }
-
-  if (jsonExists) {
-    return fs.readJson(jsonPath);
-  }
-
-  const pathToTargetJs = path.join(projectDir, 'targets.js');
-  const targets = require(pathToTargetJs);
-  if (!targets || !Array.isArray(targets)) {
-    throwError(`Targets.js is expected to module.exports=[] an array of targets. ${jsPath}`);
-  }
-
-  return {
-    enabled: true,
-    items: targets.map(target => pick(target, [
-      'id',
-      'type',
-      'goal',
-      'translation_key',
-      'passesIfGroupCount',
-      'icon',
-      'context',
-      'subtitle_translation_key',
-      'dhis',
-      'visible',
-      'aggregate',
-      'limit_count_to_goal',
-    ])),
-  };
+  // targets.js (deprecated base file, most-preferred) and targets/*.js merge
+  // cleanly: both are arrays normalised through the same metadata whitelist,
+  // `enabled` is always true, and cross-file duplicate ids are caught by
+  // validate-declarative-schema.
+  const jsItems = jsExists ? requireTargetArray(jsPath) : [];
+  const dirItems = dirFiles.flatMap(requireTargetArray);
+  return { enabled: true, items: jsItems.concat(dirItems) };
 };
+
+module.exports = parseTargets;

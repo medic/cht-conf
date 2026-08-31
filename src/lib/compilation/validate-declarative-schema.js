@@ -1,6 +1,7 @@
 const path = require('path');
 const joi = require('joi');
 const { error, warn } = require('../log');
+const { collectConfigFiles } = require('../auto-include');
 
 const err = (filename, message) => details => {
   const acceptedValues = details[0].local.valids
@@ -14,6 +15,14 @@ Current value of ${filename}${details[0].local.label} is ${JSON.stringify(detail
 const targetError = message => err('targets', message);
 const taskError = message => err('tasks', message);
 
+// Marks a target property as static display metadata that belongs in
+// app_settings.tasks.targets.items. parse-targets derives its whitelist from
+// these tags (see TARGET_METADATA_FIELDS), so the schema is the single source
+// of truth and the two cannot drift. Runtime/logic properties (appliesIf,
+// passesIf, groupBy, date, emitCustom, idType, appliesTo, appliesToType) are
+// intentionally left untagged.
+const APP_SETTINGS_META = { appSettingsTarget: true };
+
 const DhisSchema = joi.object({
   dataSet: joi.string().min(1).max(15).optional(),
   dataElement: joi.string().min(1).max(15).required(),
@@ -22,19 +31,19 @@ const DhisSchema = joi.object({
 
 const TargetSchema = joi.array().items(
   joi.object({
-    id: joi.string().min(1).required(),
-    icon: joi.string().min(1).optional(),
-    translation_key: joi.string().min(1).optional(),
-    subtitle_translation_key: joi.string().min(1).optional(),
-    percentage_count_translation_key: joi.string().min(1).optional(),
-    context: joi.string().optional(),
+    id: joi.string().min(1).required().meta(APP_SETTINGS_META),
+    icon: joi.string().min(1).optional().meta(APP_SETTINGS_META),
+    translation_key: joi.string().min(1).optional().meta(APP_SETTINGS_META),
+    subtitle_translation_key: joi.string().min(1).optional().meta(APP_SETTINGS_META),
+    percentage_count_translation_key: joi.string().min(1).optional().meta(APP_SETTINGS_META),
+    context: joi.string().optional().meta(APP_SETTINGS_META),
 
-    type: joi.string().valid('count', 'percent').required(),
+    type: joi.string().valid('count', 'percent').required().meta(APP_SETTINGS_META),
     goal: joi.alternatives().conditional('type', {
       is: 'percent',
       then: joi.number().min(-1).max(100).required(),
       otherwise: joi.number().min(-1).required(),
-    }),
+    }).meta(APP_SETTINGS_META),
     appliesTo: joi.string().valid('contacts', 'reports').required(),
     appliesToType: joi.array().items(joi.string()).optional().min(1),
     appliesIf: joi.function().optional()
@@ -58,7 +67,7 @@ const TargetSchema = joi.array().items(
         gte: joi.number().required(),
       }).required(),
       otherwise: joi.forbidden(),
-    }),
+    }).meta(APP_SETTINGS_META),
     date: joi.alternatives().try(
       joi.string().valid('reported', 'now'),
       joi.function(),
@@ -73,20 +82,31 @@ const TargetSchema = joi.array().items(
       DhisSchema,
       joi.array().items(DhisSchema),
     )
-      .optional(),
-    visible: joi.boolean().optional(),
+      .optional()
+      .meta(APP_SETTINGS_META),
+    visible: joi.boolean().optional().meta(APP_SETTINGS_META),
     idType: joi.alternatives().try(
       joi.string().valid('report', 'contact'),
       joi.function(),
     )
       .optional()
       .error(targetError('idType should be either "report" or "contact" or "function(contact, report)"')),
-    aggregate: joi.boolean().optional(),
-    limit_count_to_goal: joi.boolean().optional(),
+    aggregate: joi.boolean().optional().meta(APP_SETTINGS_META),
+    limit_count_to_goal: joi.boolean().optional().meta(APP_SETTINGS_META),
   })
 )
   .unique('id')
   .required();
+
+// Derive the static-metadata field whitelist directly from the schema's
+// `appSettingsTarget` tags, so adding a tagged property to TargetSchema is the
+// only step needed for it to flow into app_settings (no separate list to keep
+// in sync). parse-targets consumes this via the module export.
+const deriveTargetMetadataFields = (arraySchema) => {
+  const { keys } = arraySchema.describe().items[0];
+  return Object.keys(keys).filter(name => (keys[name].metas || []).some(meta => meta.appSettingsTarget));
+};
+const TARGET_METADATA_FIELDS = deriveTargetMetadataFields(TargetSchema);
 
 const EventSchema = idPresence => joi.object({
   id: joi.string().presence(idPresence),
@@ -164,22 +184,64 @@ const TaskSchema = joi.array().items(
   .unique('name')
   .required();
 
-const validateFile = (logEvent, projectDir, filename, schema) => {
-  const pathToTasks = path.join(projectDir, filename);
+const validateFile = (logEvent, filePath, displayName, schema) => {
   let fileContent;
   try {
-    fileContent = require(pathToTasks);
+    fileContent = require(filePath);
   } catch (err) {
-    logEvent(`Failed to parse file ${pathToTasks}. ${err}`);
-    return false;
+    logEvent(`Failed to parse file ${filePath}. ${err}`);
+    return { valid: false };
   }
 
-  const errors = validate(filename, fileContent, schema);
+  const errors = validate(displayName, fileContent, schema);
   if (errors.length) {
-    logEvent(`${filename} invalid schema:`);
+    logEvent(`${displayName} invalid schema:`);
     errors.forEach(err => logEvent(err));
   }
-  return errors.length === 0;
+  return { valid: errors.length === 0, content: fileContent };
+};
+
+const findDuplicates = (items, key) => {
+  const seen = new Set();
+  const duplicates = new Set();
+  items.forEach(item => {
+    if (item && typeof item === 'object' && key in item) {
+      const value = item[key];
+      if (seen.has(value)) {
+        duplicates.add(value);
+      } else {
+        seen.add(value);
+      }
+    }
+  });
+  return [...duplicates];
+};
+
+// Validates every file (no short-circuit, so all schema errors surface) and then
+// checks that `uniqueKey` is unique across the combined set, since the directory
+// files are concatenated at compile time and per-file joi `.unique()` cannot catch
+// duplicates spanning multiple files.
+const validateFiles = (logEvent, files, schema, uniqueKey) => {
+  let valid = true;
+  const allItems = [];
+
+  files.forEach(filePath => {
+    const { valid: fileValid, content } = validateFile(logEvent, filePath, path.basename(filePath), schema);
+    if (!fileValid) {
+      valid = false;
+    }
+    if (Array.isArray(content)) {
+      allItems.push(...content);
+    }
+  });
+
+  const duplicates = findDuplicates(allItems, uniqueKey);
+  if (duplicates.length) {
+    logEvent(`Duplicate "${uniqueKey}" value(s) found across files: ${duplicates.join(', ')}`);
+    valid = false;
+  }
+
+  return valid;
 };
 
 const validate = (filename, fileContent, schema) => {
@@ -211,11 +273,19 @@ const formatJoiError = (desc, detail) => {
 
 module.exports = (projectDir, errorOnValidation) => {
   const logEvent = errorOnValidation ? error : warn;
-  const tasksValid = validateFile(logEvent, projectDir, 'tasks.js', TaskSchema);
-  const targetsValid = validateFile(logEvent, projectDir, 'targets.js', TargetSchema);
+
+  const taskFiles = collectConfigFiles(projectDir, { baseFilename: 'tasks.js', subdir: 'tasks' });
+  const targetFiles = collectConfigFiles(projectDir, { baseFilename: 'targets.js', subdir: 'targets' });
+
+  const tasksValid = validateFiles(logEvent, taskFiles, TaskSchema, 'name');
+  const targetsValid = validateFiles(logEvent, targetFiles, TargetSchema, 'id');
 
   const success = tasksValid && targetsValid;
   if (errorOnValidation && !success) {
     throw Error('Declarative configuration schema validation errors');
   }
 };
+
+// Whitelist of target properties that are copied verbatim into
+// app_settings.tasks.targets.items, derived from the schema (see above).
+module.exports.TARGET_METADATA_FIELDS = TARGET_METADATA_FIELDS;

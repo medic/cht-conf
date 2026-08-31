@@ -260,4 +260,45 @@ describe('contact-summary-emitter', function() {
       assert.isFalse(isReportValid({ errors:['???'] }));
     });
   });
+
+  describe('array merging', () => {
+    it('returns empty config for an empty array', () => {
+      const result = emitter([], { type: 'person' }, []);
+      expect(result.cards).to.deep.equal([]);
+      expect(result.fields).to.deep.equal([]);
+      expect(result.context).to.deep.equal({});
+    });
+
+    it('concatenates cards and fields in array order (base file first)', () => {
+      const base = {
+        fields: [{ label: 'base-field', value: 1 }],
+        cards: [{ label: 'base-card', fields: [] }],
+      };
+      const extension = {
+        fields: [{ label: 'ext-field', value: 2 }],
+        cards: [{ label: 'ext-card', fields: [] }],
+      };
+
+      const result = emitter([base, extension], { type: 'person' }, []);
+
+      expect(result.fields.map(f => f.label)).to.deep.equal(['base-field', 'ext-field']);
+      expect(result.cards.map(c => c.label)).to.deep.equal(['base-card', 'ext-card']);
+    });
+
+    it('treats a plain array entry as cards', () => {
+      const result = emitter([[{ label: 'arr-card', fields: [] }]], { type: 'person' }, []);
+      expect(result.cards.map(c => c.label)).to.deep.equal(['arr-card']);
+    });
+
+    it('merges context with first-writer-wins (base file preferred)', () => {
+      const base = { context: { muted: false, shared: 'base' } };
+      const extension = { context: { shared: 'ext', extra: true } };
+
+      const result = emitter([base, extension], { type: 'person' }, []);
+
+      expect(result.context.shared).to.equal('base');
+      expect(result.context.muted).to.equal(false);
+      expect(result.context.extra).to.equal(true);
+    });
+  });
 });

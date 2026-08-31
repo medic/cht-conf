@@ -1,0 +1,12 @@
+{
+  "contact_summary": "",
+  "tasks": {
+    "rules": "",
+    "isDeclarative": true,
+    "targets": {
+      "enabled": true,
+      "items": []
+    }
+  },
+  "purge": {}
+}

@@ -207,4 +207,46 @@ describe('validate-declarative-schema', () => {
       ]);
     });
   });
+
+  describe('directory and base file validation', () => {
+    const path = require('path');
+    const BASE = path.join(__dirname, '../../data/validate-declarative-schema');
+
+    it('throws for an invalid task inside the tasks/ directory', () => {
+      expect(() => validateDeclarativeSchema(`${BASE}/directory-invalid`, true))
+        .to.throw('Declarative configuration schema validation errors');
+    });
+
+    it('passes for valid targets/ directory files', () => {
+      expect(() => validateDeclarativeSchema(`${BASE}/directory-valid`, true)).to.not.throw();
+    });
+
+    it('does not throw when no tasks/targets files exist', () => {
+      expect(() => validateDeclarativeSchema(`${BASE}/empty`, true)).to.not.throw();
+    });
+
+    it('throws on a target id duplicated across two directory files', () => {
+      expect(() => validateDeclarativeSchema(`${BASE}/directory-duplicate-ids`, true))
+        .to.throw('Declarative configuration schema validation errors');
+    });
+  });
+
+  describe('TARGET_METADATA_FIELDS', () => {
+    const { TARGET_METADATA_FIELDS } = require('../../../src/lib/compilation/validate-declarative-schema');
+
+    it('is derived from the schema and includes every display-metadata field', () => {
+      expect(TARGET_METADATA_FIELDS).to.include.members([
+        'id', 'type', 'goal', 'translation_key', 'subtitle_translation_key',
+        'percentage_count_translation_key', 'icon', 'context', 'passesIfGroupCount',
+        'dhis', 'visible', 'aggregate', 'limit_count_to_goal',
+      ]);
+    });
+
+    it('excludes runtime/logic fields', () => {
+      const runtimeFields = [
+        'appliesTo', 'appliesToType', 'appliesIf', 'passesIf', 'groupBy', 'date', 'emitCustom', 'idType',
+      ];
+      runtimeFields.forEach(field => expect(TARGET_METADATA_FIELDS).to.not.include(field));
+    });
+  });
 });

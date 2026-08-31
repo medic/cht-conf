@@ -1,15 +1,16 @@
-function emitter(contactSummary, contact, reports) {
-  var fields = contactSummary.fields || [];
-  var context = contactSummary.context || {};
-  var cards = contactSummary.cards || [];
+function emitter(contactSummaries, contact, reports) {
+  const merged = mergeContactSummaries(contactSummaries);
+  const fields = merged.fields;
+  const context = merged.context;
+  const cards = merged.cards;
 
-  var contactType = contact && (contact.type === 'contact' ? contact.contact_type : contact.type);
+  const contactType = contact && (contact.type === 'contact' ? contact.contact_type : contact.type);
 
-  var result = {
+  const result = {
     cards: [],
     fields: fields.filter(function(f) {
-      var appliesToType = convertToArray(f.appliesToType);
-      var appliesToNotType = appliesToType.filter(function(type) {
+      const appliesToType = convertToArray(f.appliesToType);
+      const appliesToNotType = appliesToType.filter(function(type) {
         return type && type.charAt(0) === '!';
       });
       if (appliesToType.length === 0 || appliesToType.includes(contactType) ||
@@ -24,22 +25,20 @@ function emitter(contactSummary, contact, reports) {
   };
 
   cards.forEach(function(card) {
-    var idx1, r, added;
-
-    var appliesToType = convertToArray(card.appliesToType);
+    const appliesToType = convertToArray(card.appliesToType);
 
     if (appliesToType.includes('report') && appliesToType.length > 1) {
       throw new Error("You cannot set appliesToType to an array which includes the type 'report' and another type.");
     }
 
     if (appliesToType.includes('report')) {
-      for (idx1=0; idx1<reports.length; ++idx1) {
-        r = reports[idx1];
+      for (let idx1=0; idx1<reports.length; ++idx1) {
+        const r = reports[idx1];
         if (!isReportValid(r)) {
           continue;
         }
 
-        added = addCard(card, context, r);
+        const added = addCard(card, context, r);
         if (added) {
           result.cards.push(added);
         }
@@ -49,7 +48,7 @@ function emitter(contactSummary, contact, reports) {
         return;
       }
 
-      added = addCard(card, context);
+      const added = addCard(card, context);
       if (added) {
         result.cards.push(added);
       }
@@ -96,14 +95,14 @@ function addCard(card, context, r) {
     }
   }
 
-  var fields = typeof card.fields === 'function' ?
+  const fields = typeof card.fields === 'function' ?
       card.fields(r) :
       card.fields
         .filter(function(f) {
           return execAppliesIf(f.appliesIf, r);
         })
         .map(function(f) {
-          var ret = {};
+          const ret = {};
           addValue(f, ret, 'label');
           addValue(f, ret, 'value');
           addValue(f, ret, 'translate');
@@ -130,6 +129,48 @@ function addCard(card, context, r) {
     summary.collapsed = card.collapsed;
   }
   return summary;
+}
+
+function mergeContext(context, entryContext) {
+  // first-writer-wins: earlier (more preferred) entries keep their value
+  Object.keys(entryContext).forEach(function(key) {
+    if (!(key in context)) {
+      context[key] = entryContext[key];
+    }
+  });
+}
+
+// Normalise an entry (a { cards, fields, context } object, or a bare array of
+// cards) into a consistent shape.
+function normalizeEntry(entry) {
+  if (Array.isArray(entry)) {
+    return { cards: entry, fields: [], context: {} };
+  }
+  const hasContext = entry.context && typeof entry.context === 'object';
+  return {
+    cards: Array.isArray(entry.cards) ? entry.cards : [],
+    fields: Array.isArray(entry.fields) ? entry.fields : [],
+    context: hasContext ? entry.context : {},
+  };
+}
+
+function mergeContactSummaries(contactSummaries) {
+  const list = Array.isArray(contactSummaries) ? contactSummaries : [contactSummaries];
+  const cards = [];
+  const fields = [];
+  const context = {};
+
+  list.forEach(function(entry) {
+    if (!entry) {
+      return;
+    }
+    const normalized = normalizeEntry(entry);
+    cards.push(...normalized.cards);
+    fields.push(...normalized.fields);
+    mergeContext(context, normalized.context);
+  });
+
+  return { cards: cards, fields: fields, context: context };
 }
 
 module.exports = emitter;

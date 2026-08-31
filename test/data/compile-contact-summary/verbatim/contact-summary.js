@@ -1,1 +1,0 @@
-contact.x = 'a string';

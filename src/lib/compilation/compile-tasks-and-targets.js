@@ -1,60 +1,82 @@
 const path = require('path');
+const nodeFs = require('node:fs');
 
-const fs = require('../sync-fs');
 const pack = require('./package-lib');
-const nools = require('../nools-utils');
 const validateDeclarativeSchema = require('./validate-declarative-schema');
+const { collectConfigFiles } = require('../auto-include');
+const { requireStatements, writeEntry } = require('./generated-entry');
 
-const DECLARATIVE_NOOLS_FILES = [ 'tasks.js', 'targets.js' ];
+const REMOVED_NOOLS_FILE = 'rules.nools.js';
+const TASKS_DOCS_URL = 'https://docs.communityhealthtoolkit.org/building/tasks/';
 
-const compileTasksAndTargets = async (projectDir, options = {}) => {
-  const tryLoadLegacyRules = legacyNoolsFilePath => {
-    let result;
-    if (fs.exists(legacyNoolsFilePath)) {
-      result = fs.read(legacyNoolsFilePath);
-    }
-  
-    return result;
-  };
-
-  const legacyNoolsFilePath = path.join(projectDir, 'rules.nools.js');
-  const legacyRules = tryLoadLegacyRules(legacyNoolsFilePath);
-  
-  if (legacyRules !== undefined) {
-    if (findMissingDeclarativeFiles(projectDir).length !== DECLARATIVE_NOOLS_FILES.length) {
-      throw new Error(
-        'Both legacy and declarative files found. '
-        + `You should either have rules.nools.js xor ${DECLARATIVE_NOOLS_FILES} files.`
-      );
-    }
-
-    const rules = options.minifyScripts ? nools.minify(legacyRules) : legacyRules;
-    return { rules };
+/**
+ * Fail if the project still has the removed nools rules file. Compiling it
+ * would silently produce empty tasks/targets config, which would then wipe the
+ * rules on the server it is uploaded to.
+ * @param {string} projectDir - Project directory path
+ * @throws {Error} If the removed nools file is present
+ */
+const assertNoRemovedFiles = (projectDir) => {
+  if (nodeFs.existsSync(path.join(projectDir, REMOVED_NOOLS_FILE))) {
+    throw new Error(
+      `${REMOVED_NOOLS_FILE} is no longer supported. `
+      + 'Migrate your nools rules to declarative tasks/ and targets/ configuration, '
+      + `then delete the file. See ${TASKS_DOCS_URL}`
+    );
   }
-
-  return {
-    rules: await compileDeclarativeFiles(projectDir, options),
-    isDeclarative: true,
-  };
 };
 
-const findMissingDeclarativeFiles = projectDir => DECLARATIVE_NOOLS_FILES.filter(filename => {
-  const filePath = path.join(projectDir, filename);
-  return !fs.exists(filePath);
-});
+/**
+ * Generate the webpack entry that requires every task/target file and emits
+ * them via the emitters.
+ * @param {string[]} taskFiles - Absolute paths of task source files
+ * @param {string[]} targetFiles - Absolute paths of target source files
+ * @returns {string} Path to the generated entry file
+ */
+const generateEntry = (taskFiles, targetFiles) => {
+  const taskEmitterPath = path.join(__dirname, '../../nools/task-emitter');
+  const targetEmitterPath = path.join(__dirname, '../../nools/target-emitter');
 
-const compileDeclarativeFiles = async (projectDir, options) => {
-  const missingFiles = findMissingDeclarativeFiles(projectDir);
-  if (missingFiles.length > 0) {
-    throw new Error(`Missing required declarative configuration file(s): ${missingFiles}`);
-  }
+  const content = `/* global c, emit, Task, Target, Utils */
+const taskEmitter = require(${JSON.stringify(taskEmitterPath)});
+const targetEmitter = require(${JSON.stringify(targetEmitterPath)});
+
+const allTasks = [].concat(
+  ${requireStatements(taskFiles).join(',\n  ')}
+);
+const allTargets = [].concat(
+  ${requireStatements(targetFiles).join(',\n  ')}
+);
+
+targetEmitter(allTargets, c, Utils, Target, emit);
+taskEmitter(allTasks, c, Utils, Task, emit);
+
+emit('_complete', { _id: true });
+`;
+  return writeEntry('nools', content);
+};
+
+const compileTasksAndTargets = async (projectDir, options = {}) => {
+  assertNoRemovedFiles(projectDir);
+
+  const taskFiles = collectConfigFiles(projectDir, {
+    baseFilename: 'tasks.js', subdir: 'tasks', log: true,
+  });
+  const targetFiles = collectConfigFiles(projectDir, {
+    baseFilename: 'targets.js', subdir: 'targets', log: true,
+  });
 
   validateDeclarativeSchema(projectDir, options.haltOnSchemaError);
 
-  const pathToDeclarativeLib = path.join(__dirname, '../../nools/lib.js');
+  const { entryPath, cleanup } = generateEntry(taskFiles, targetFiles);
   const baseEslintPath = path.join(__dirname, '../../nools/.eslintrc');
-  
-  return pack(projectDir, pathToDeclarativeLib, baseEslintPath, options);
+
+  try {
+    const rules = await pack(projectDir, entryPath, { baseEslintPath, options });
+    return { rules, isDeclarative: true };
+  } finally {
+    cleanup();
+  }
 };
 
 module.exports = compileTasksAndTargets;

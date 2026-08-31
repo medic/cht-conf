@@ -5,7 +5,8 @@
     "schedules": {
       "test": true
     },
-    "targets": {}
+    "targets": {},
+    "isDeclarative": true
   },
   "purge": {}
 }

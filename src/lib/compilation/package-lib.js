@@ -1,5 +1,4 @@
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
@@ -8,14 +7,16 @@ const webpack = require('webpack');
 const fsUtils = require('../sync-fs');
 const { info, warn, error } = require('../log');
 
-module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
+const packageLib = (pathToProject, entry, config = {}) => {
+  const { baseEslintPath, options = {}, extraAliases = {} } = config;
   const baseEslintConfig = fsUtils.readJson(baseEslintPath);
 
   const directoryContainingEntry = path.dirname(entry);
   const libName = path.basename(directoryContainingEntry);
   info(`Packaging ${libName}`);
 
-  const outputDirectoryPath = os.tmpdir();
+
+  const outputDirectoryPath = directoryContainingEntry;
   const outputFilename = `./${libName}.js`;
 
   const compiler = webpack({
@@ -44,9 +45,7 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
     },
     resolve: {
       alias: {
-        'tasks.js': path.join(pathToProject, 'tasks.js'),
-        'targets.js': path.join(pathToProject, 'targets.js'),
-        'contact-summary.templated.js': path.join(pathToProject, 'contact-summary.templated.js'),
+        ...extraAliases,
       },
     },
     resolveLoader: {
@@ -110,3 +109,5 @@ module.exports = (pathToProject, entry, baseEslintPath, options = {}) => {
     });
   });
 };
+
+module.exports = packageLib;

@@ -17,14 +17,14 @@ describe('initialise-project-layout', () => {
     initialiseProjectLayout.execute();
 
     // then
-    assertExists('contact-summary.templated.js');
+    assertExists('contact-summary/base.js');
     assertExists('forms/app');
     assertExists('forms/collect');
     assertExists('forms/contact');
     assertExists('resources');
     assertExists('resources.json');
-    assertExists('tasks.js');
-    assertExists('targets.js');
+    assertExists('tasks/base.js');
+    assertExists('targets/base.js');
     assertExists('.eslintrc');
     assertExists('translations');
     assertExists('app_settings/base_settings.json');
@@ -35,6 +35,11 @@ describe('initialise-project-layout', () => {
     assertExists('test/contact-summary');
     assertExists('test/tasks');
     assertExists('test/targets');
+
+    // deprecated single config files are no longer scaffolded
+    assertNotExists('contact-summary.templated.js');
+    assertNotExists('tasks.js');
+    assertNotExists('targets.js');
   });
 });
 
@@ -42,4 +47,9 @@ describe('initialise-project-layout', () => {
 function assertExists(relativePath) {
   const path = `${TARGET_DIR}/${relativePath}`;
   assert.isTrue(fs.exists(path), `Expected file/dir not found: ${path}`);
+}
+
+function assertNotExists(relativePath) {
+  const path = `${TARGET_DIR}/${relativePath}`;
+  assert.isFalse(fs.exists(path), `Unexpected file/dir found: ${path}`);
 }
