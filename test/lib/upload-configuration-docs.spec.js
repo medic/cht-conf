@@ -103,13 +103,64 @@ describe('Upload Configuration Docs', () => {
     };
 
     return uploadConfigurationDocs.__with__(rewireWith)(async () => {
-      await uploadConfigurationDocs('path/configuration.json', 'path/configuration', 'configurationDoc', processJson);
+      await uploadConfigurationDocs(
+        'path/configuration.json', 'path/configuration', 'configurationDoc', { processJson }
+      );
 
       expect(attachmentsFromDir.called).to.be.true;
       expect(pouch.called).to.be.true;
       expect(warnUploadOverwrite.preUploadDoc.args[0][1]).to.deep.include(configurationDoc);
       expect(warnUploadOverwrite.postUploadDoc.args[0][1]).to.deep.include(configurationDoc);
       expect(insertOrReplace.args[0][1]).to.deep.include(configurationDoc);
+    });
+  });
+
+  it('should upload when validate accepts the configuration', async () => {
+    warnUploadOverwrite.preUploadDoc.returns(true);
+    insertOrReplace.returns(Promise.resolve());
+    attachmentsFromDir.returns({ 'greatCompany.png': {} });
+    const validate = sinon.stub().returns({ valid: true });
+    const rewireWith = {
+      fs,
+      pouch,
+      attachmentsFromDir,
+      warnUploadOverwrite,
+      insertOrReplace
+    };
+
+    return uploadConfigurationDocs.__with__(rewireWith)(async () => {
+      await uploadConfigurationDocs(
+        'path/configuration.json', 'path/configuration', 'configurationDoc', { validate }
+      );
+
+      expect(validate.calledOnce).to.be.true;
+      expect(validate.args[0][0]).to.deep.equal(configuration);
+      expect(validate.args[0][1]).to.deep.equal({ 'greatCompany.png': {} });
+      expect(insertOrReplace.called).to.be.true;
+    });
+  });
+
+  it('should throw and not upload when validate rejects the configuration', async () => {
+    warnUploadOverwrite.preUploadDoc.returns(true);
+    insertOrReplace.returns(Promise.resolve());
+    attachmentsFromDir.returns({ 'greatCompany.png': {} });
+    const validate = sinon.stub().returns({ valid: false, error: '"title" is required' });
+    const rewireWith = {
+      fs,
+      pouch,
+      attachmentsFromDir,
+      warnUploadOverwrite,
+      insertOrReplace
+    };
+
+    return uploadConfigurationDocs.__with__(rewireWith)(async () => {
+      await expect(uploadConfigurationDocs(
+        'path/configuration.json', 'path/configuration', 'configurationDoc', { validate }
+      )).to.be.rejectedWith('Invalid configurationDoc configuration in path/configuration.json: "title" is required');
+
+      expect(pouch.called).to.be.false;
+      expect(warnUploadOverwrite.preUploadDoc.called).to.be.false;
+      expect(insertOrReplace.called).to.be.false;
     });
   });
 
