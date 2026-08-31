@@ -1,4 +1,5 @@
 const DataSource = require('./hierarchy-data-source');
+const { getValidApiVersion } = require('../get-api-version');
 const deleteHierarchy = require('./delete-hierarchy');
 const JsDocs = require('./jsdocFolder');
 const lineageManipulation = require('./lineage-manipulation');
@@ -77,13 +78,13 @@ async function updateReports(db, options, moveContext) {
   const createdAtIds = getReportsCreatedAtIds(moveContext);
 
   let totalCount = 0;
-  const useNouveau = await DataSource.useNouveauSearch();
+  const coreVersion = await getValidApiVersion();
 
   let cursor = null;
   let result;
   do {
     info(`Processing creator reports ${totalCount} to ${totalCount + DataSource.BATCH_SIZE}`);
-    result = await DataSource.fetchReportsByCreator(db, descendantIds, cursor, useNouveau);
+    result = await DataSource.fetchReportsByCreator(db, descendantIds, cursor, coreVersion);
     processAndWriteReportBatch(result.docs, options, moveContext);
     cursor = result.cursor;
     totalCount += result.docs.length;

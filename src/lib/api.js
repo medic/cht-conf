@@ -273,6 +273,22 @@ const api = {
       body, json: true
     });
     return { docs: res.hits.map(item => item.doc), bookmark: res.bookmark };
+  },
+
+  async getReportsBySubmitter (submitterIds, limit, bookmark) {
+    const queryString = submitterIds.map(id => `submitter:"${id}"`).join(' OR ');
+    const body = {
+      q: queryString,
+      include_docs: true,
+      limit,
+    };
+    if (bookmark) {
+      body.bookmark = bookmark;
+    }
+    const res = await request.post(`${environment.apiUrl}/_design/medic/_nouveau/docs_by_replication_key`, {
+      body, json: true
+    });
+    return { docs: res.hits.map(item => item.doc), bookmark: res.bookmark };
   }
 };
 
