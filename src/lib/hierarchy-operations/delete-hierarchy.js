@@ -24,7 +24,7 @@ async function deleteHierarchy(db, options, sourceIds) {
     const affectedContactCount = descendantsAndSelf.length;
     
     info(
-      `Staged updates to delete ${prettyPrintDocument(sourceDoc)}. ${affectedContactCount.length} contact(s) `
+      `Staged updates to delete ${prettyPrintDocument(sourceDoc)}. ${affectedContactCount} contact(s) `
       + `and ${affectedReportCount} report(s).`
     );
   }
