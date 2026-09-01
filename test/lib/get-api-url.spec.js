@@ -44,6 +44,25 @@ describe('get-api-url', () => {
     });
   });
 
+  describe('--archive', () => {
+    const DEFAULT_LOCAL_URL = new url.URL('http://admin:pass@localhost:5988/medic');
+
+    it('no environment variable has a default', () => {
+      const actual = apiUrlLib.getApiUrl({ archive: true });
+      expect(actual).to.deep.equal(DEFAULT_LOCAL_URL);
+    });
+
+    it('ignores local environment variable', () => {
+      const actual = apiUrlLib.getApiUrl({ archive: true }, { COUCH_URL: 'http://user:pwd@localhost:5984/db' });
+      expect(actual).to.deep.equal(DEFAULT_LOCAL_URL);
+    });
+
+    it('ignores environment variable targeting remote', () => {
+      const actual = apiUrlLib.getApiUrl({ archive: true }, { COUCH_URL: 'http://user:pwd@remote:5984/db' });
+      expect(actual).to.deep.equal(DEFAULT_LOCAL_URL);
+    });
+  });
+
   describe('--instance', () => {
     it('with default user', () => {
       readline.question.returns('entered');

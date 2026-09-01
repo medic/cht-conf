@@ -18,11 +18,13 @@ const getApiUrl = (cmdArgs, env = {}) => {
   }
 
   let instanceUrl;
-  if (cmdArgs.local || cmdArgs.archive) {
-    // Although `--archive` mode won't connect with the
-    // local database, a URL is required to mimic the
+  if (cmdArgs.archive) {
+    // Although `--archive` mode won't connect with any
+    // database, a URL is required to mimic the
     // behaviour as it is connecting to.
     // See ./archiving-db.js
+    instanceUrl = parseLocalUrl();
+  } else if (cmdArgs.local) {
     instanceUrl = parseLocalUrl(env.COUCH_URL);
     if (instanceUrl.hostname !== 'localhost') {
       throw Error(
