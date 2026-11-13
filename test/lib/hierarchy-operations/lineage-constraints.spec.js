@@ -1,12 +1,10 @@
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
 const rewire = require('rewire');
 
-chai.use(chaiAsPromised);
-const { expect } = chai;
+const { expect } = require('chai');
+const sinon = require('sinon');
 
 const { mockHierarchy } = require('../../mock-hierarchies');
 
@@ -109,8 +107,8 @@ describe('lineage constriants', () => {
     });
   });
 
-  describe('getPrimaryContactViolations', () => {
-    const assertNoHierarchyErrors = lineageConstraints.__get__('getPrimaryContactViolations');
+  describe('assertOnPrimaryContactRemoval', () => {
+    const assertOnPrimaryContactRemoval = lineageConstraints.__get__('assertOnPrimaryContactRemoval');
 
     describe('on memory pouchdb', async () => {
       let pouchDb;
@@ -141,21 +139,21 @@ describe('lineage constriants', () => {
         const contactDoc = await pouchDb.get('clinic_1_contact');
         const parentDoc = await pouchDb.get('clinic_2');
 
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
-        expect(doc).to.deep.include({ _id: 'clinic_1_contact' });
+        const actual = assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, [contactDoc]);
+        await expect(actual).to.eventually.be.rejectedWith(`clinic_1_contact) from the hierarchy`);
       });
 
       it('cannot move clinic_1_contact to root', async () => {
         const contactDoc = await pouchDb.get('clinic_1_contact');
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, undefined, [contactDoc]);
-        expect(doc).to.deep.include({ _id: 'clinic_1_contact' });
+        const actual = assertOnPrimaryContactRemoval(pouchDb, contactDoc, undefined, [contactDoc]);
+        await expect(actual).to.eventually.be.rejectedWith(`clinic_1_contact) from the hierarchy`);
       });
 
       it('can move clinic_1_contact to clinic_1', async () => {
         const contactDoc = await pouchDb.get('clinic_1_contact');
         const parentDoc = await pouchDb.get('clinic_1');
 
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
+        const doc = await assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, [contactDoc]);
         expect(doc).to.be.undefined;
       });
 
@@ -166,7 +164,7 @@ describe('lineage constriants', () => {
         const descendants = await Promise.all([
           'health_center_2_contact', 'clinic_2', 'clinic_2_contact', 'patient_2'
         ].map(id => pouchDb.get(id)));
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, descendants);
+        const doc = await assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, descendants);
         expect(doc).to.be.undefined;
       });
 
@@ -181,8 +179,8 @@ describe('lineage constriants', () => {
         const descendants = await Promise.all([
           'health_center_1_contact', 'clinic_1', 'clinic_1_contact', 'patient_1'
         ].map(id => pouchDb.get(id)));
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, descendants);
-        expect(doc).to.deep.include({ _id: 'patient_1' });
+        const actual = assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, descendants);
+        await expect(actual).to.eventually.be.rejectedWith(`patient_1) from the hierarchy`);
       });
 
       // It is possible that one or more parents will not be found. Since these parents are being removed, do not throw
@@ -192,9 +190,61 @@ describe('lineage constriants', () => {
 
         contactDoc.parent._id = 'dne';
 
-        const doc = await assertNoHierarchyErrors(pouchDb, contactDoc, parentDoc, [contactDoc]);
+        const doc = await assertOnPrimaryContactRemoval(pouchDb, contactDoc, parentDoc, [contactDoc]);
         expect(doc).to.be.undefined;
       });
+    });
+  });
+
+  describe('assertSourcePrimaryContactType', () => {
+    let warnStub;
+    beforeEach(() => {
+      warnStub = sinon.stub(log, 'warn');
+    });
+
+    afterEach(sinon.restore);
+    
+    const assertSourcePrimaryContactType = lineageConstraints.__get__('assertSourcePrimaryContactType');
+
+    it('no error when sourceDoc has no primary contact', async () => {
+      const mockDb = { get: sinon.stub() };
+      const sourceDoc = { _id: 'place_1', type: 'health_center' };
+      await assertSourcePrimaryContactType(mockDb, {}, sourceDoc);
+      expect(mockDb.get.called).to.be.false;
+    });
+
+    it('no error when primary contact doc is deleted (404)', async () => {
+      const deletedErr = Object.assign(new Error('deleted'), { status: 404 });
+      const mockDb = { get: sinon.stub().rejects(deletedErr) };
+      const sourceDoc = { _id: 'place_1', type: 'health_center', contact: { _id: 'deleted_person' } };
+      await assertSourcePrimaryContactType(mockDb, {}, sourceDoc);
+      expect(warnStub.calledOnce).to.be.true;
+      expect(warnStub.firstCall.args[0]).to.include('place_1');
+      expect(warnStub.firstCall.args[0]).to.include('deleted_person');
+    });
+
+    it('rethrows non-404 errors', async () => {
+      const serverErr = Object.assign(new Error('server_error'), { status: 500 });
+      const mockDb = { get: sinon.stub().rejects(serverErr) };
+      const sourceDoc = { _id: 'place_1', type: 'health_center', contact: { _id: 'some_person' } };
+      await expect(assertSourcePrimaryContactType(mockDb, {}, sourceDoc)).to.eventually.be.rejectedWith('server_error');
+    });
+
+    it('throws when primary contact is a place', async () => {
+      const placeDoc = { _id: 'place_2', type: 'clinic' };
+      const contactTypeInfo = { clinic: { parents: ['health_center'], person: false } };
+      const mockDb = { get: sinon.stub().resolves(placeDoc) };
+      const sourceDoc = { _id: 'place_1', type: 'health_center', contact: { _id: 'place_2' } };
+      await expect(assertSourcePrimaryContactType(mockDb, contactTypeInfo, sourceDoc))
+        .to.eventually.be.rejectedWith('which is of type place');
+    });
+
+    it('no error when primary contact is a person', async () => {
+      const personDoc = { _id: 'person_1', type: 'person' };
+      const contactTypeInfo = { person: { parents: ['health_center'], person: true } };
+      const mockDb = { get: sinon.stub().resolves(personDoc) };
+      const sourceDoc = { _id: 'place_1', type: 'health_center', contact: { _id: 'person_1' } };
+      await assertSourcePrimaryContactType(mockDb, contactTypeInfo, sourceDoc);
     });
   });
 });

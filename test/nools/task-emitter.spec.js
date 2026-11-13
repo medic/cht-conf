@@ -1,4 +1,3 @@
-const chai = require('chai');
 const sinon = require('sinon');
 const runNoolsLib = require('../run-nools-lib');
 const {
@@ -22,8 +21,7 @@ const {
   calculatePriorityScore
 } = require('./mocks');
 
-const { assert, expect } = chai;
-chai.use(require('chai-shallow-deep-equal'));
+const { assert, expect } = require('chai');
 
 describe('task-emitter', () => {
   beforeEach(() => reset());

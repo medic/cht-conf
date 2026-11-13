@@ -1,5 +1,3 @@
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
@@ -8,8 +6,7 @@ const environment = require('../../src/lib/environment');
 const uploadDocs = rewire('../../src/fn/upload-docs');
 const userPrompt = rewire('../../src/lib/user-prompt');
 
-const { assert, expect } = chai;
-chai.use(chaiAsPromised);
+const { assert, expect } = require('chai');
 const readLine = { keyInYN: () => true };
 userPrompt.__set__('readline', readLine);
 uploadDocs.__set__('userPrompt', userPrompt);
@@ -124,6 +121,7 @@ describe('upload-docs', function() {
 
   it('should throw if user denies the warning', async () => {
     userPrompt.__set__('readline', { keyInYN: () => false });
+    await assertDbEmpty();
     const actual = uploadDocs.execute();
     await expect(actual).to.eventually.be.rejectedWith('User aborted execution.');
   });

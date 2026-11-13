@@ -7,23 +7,14 @@ RUN apt update \
       curl \
       git \
       openssh-client \
-      python3-pip \
-      python3-setuptools \
-      python3-venv \
-      python3-wheel \
+      python3 \
       xsltproc \
     # Remove chromium to save space. We only installed it to get the transitive dependencies that are needed
     # when running tests with puppeteer. (puppeteer-chromium-resolver will always download its own version of chromium)
     && apt remove -y chromium \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g cht-conf
 
-ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv "$VIRTUAL_ENV"
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
-RUN python3 -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-
-RUN npm install -g cht-conf
 
 # Using the 1000:1000 user is recommended for VSCode dev containers
 # https://code.visualstudio.com/remote/advancedcontainers/add-nonroot-user

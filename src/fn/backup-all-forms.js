@@ -20,7 +20,7 @@ module.exports = {
       return db.get(form.id, { attachments: true, binary: true })
         .then(form => {
           fs.writeJson(`${backupDir}/context.json`, form.context);
-          Object.keys(form._attachments).forEach(name => {
+          Object.keys(form._attachments || {}).forEach(name => {
             const att = form._attachments[name];
             const destination = fs.path.join(backupDir, name);
             if (fs.path.dirname(destination) !== backupDir) {

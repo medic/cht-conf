@@ -117,6 +117,15 @@ describe('warn-upload-overwrite', () => {
       expect(actual).to.equal('abc');
     });
 
+    it('returns matching snapshot with specified db name for local-ip hostname', () => {
+      const given = { id1: { '192-168-0-3.local-ip.medicmobile.org/medic': 'abc' } };
+      sinon.stub(fs, 'read').returns(JSON.stringify(given));
+      sinon.stub(environment, 'apiUrl').get(() => 'https://192-168-0-3.local-ip.medicmobile.org:8443/medic');
+      const actual = warnUploadOverwrite.__get__('getStoredHash')('id1');
+      expect(fs.read.callCount).to.equal(1);
+      expect(fs.read.args[0][0]).to.equal('.snapshots/local.json');
+      expect(actual).to.equal('abc');
+    });
   });
 
   describe('prompts when attempting to overwrite docs', () => {

@@ -11,4 +11,5 @@ module.exports = {
   RESOURCE_CONFIG_PATH: 'resources.json',
   RESOURCES_DIR_PATH: 'resources',
   EXTENSION_LIBS_PATH: 'extension-libs',
+  UI_EXTENSIONS_PATH: 'ui-extensions',
 };
