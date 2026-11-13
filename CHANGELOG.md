@@ -1,3 +1,10 @@
+# [6.7.0](https://github.com/medic/cht-conf/compare/v6.6.1...v6.7.0) (2026-11-13)
+
+
+### Features
+
+* **#690:** add individual attachment upload for forms with large attachments ([#724](https://github.com/medic/cht-conf/issues/724)) ([8bea476](https://github.com/medic/cht-conf/commit/8bea47639725b411b80ac8f5773df751920009e9)), closes [#690](https://github.com/medic/cht-conf/issues/690)
+
 ## [6.6.1](https://github.com/medic/cht-conf/compare/v6.6.0...v6.6.1) (2026-08-31)
 
 
